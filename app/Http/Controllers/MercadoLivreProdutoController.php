@@ -34,9 +34,14 @@ class MercadoLivreProdutoController extends Controller
 
     private function __validaToken(){
         $retorno = $this->utilMercadoLivre->refreshToken(request()->empresa_id);
+        if($retorno === "Configuração não encontrada") {
+            session()->flash("flash_error", "Configure as credenciais do Mercado Livre primeiro.");
+            return redirect()->route('mercado-livre-config.index')->send();
+        }
         if($retorno != 'token valido!'){
             if(!isset($retorno->access_token)){
-                dd($retorno);
+                session()->flash("flash_error", "Erro ao validar token com o Mercado Livre.");
+                return redirect()->route('mercado-livre-config.index')->send();
             }
         }
     }

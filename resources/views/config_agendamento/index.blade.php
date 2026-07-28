@@ -1,24 +1,37 @@
 @extends('layouts.app', ['title' => 'Configurações de Agendamento'])
-@section('content')
 
-<div class="mt-3">
-    <div class="row justify-content-center">
-        <div class="col-lg-12">
-            <div class="card border-0 shadow-sm text-dark">
-                <!-- Cabeçalho -->
-                <div class="card-header bg-transparent border-bottom py-3">
-                    <div class="d-flex align-items-center justify-content-between">
+@section('css')
+<style>
+    .modulo-header-gradient { background: linear-gradient(135deg, #0d2b40 0%, #1a4a6e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
+    .modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
+    .modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.15); padding: 8px; border-radius: 10px; color: #fff; }
+    .modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.85) !important; font-weight: 400; }
+    
+    .modulo-form-card { border: 1px solid #eef0f5; border-radius: 12px; overflow: hidden; background: #fff; }
+</style>
+@endsection
+
+@section('content')
+<div class="mt-3 text-dark">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm modulo-form-card">
+                
+                <div class="card-header modulo-header-gradient py-3 px-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <div>
-                            <h4 class="mb-1 text-dark d-flex align-items-center">
-                                <i class="ri-settings-4-line me-2 text-primary fs-22"></i>
+                            <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
+                                <i class="ri-settings-4-fill"></i>
                                 Configuração de Agendamento
                             </h4>
-                            <p class="text-muted mb-0 fs-13">Configure o tempo de descanso entre os atendimentos e regras de alertas via WhatsApp.</p>
+                            <p class="mb-0 modulo-subtitle fs-13">
+                                Configure o tempo de descanso entre os atendimentos e regras de alertas via WhatsApp.
+                            </p>
                         </div>
                     </div>
                 </div>
-                <!-- Corpo do Formulário -->
-                <div class="card-body p-4">
+
+                <div class="card-body bg-white p-4">
                     {!!Form::open()->fill($item)
                     ->post()
                     ->route('config-agendamento.store')
@@ -33,5 +46,4 @@
         </div>
     </div>
 </div>
-
 @endsection

@@ -78,7 +78,7 @@
     <div class="col-12 mt-4">
         <hr class="text-muted opacity-25">
         <div class="d-flex align-items-center justify-content-end">
-            <button type="submit" class="btn btn-success px-5" id="btn-store">
+            <button type="submit" class="btn btn-success px-5 py-2 fw-semibold shadow-sm" id="btn-store">
                 <i class="ri-save-line align-middle me-1"></i> Salvar Configuração
             </button>
         </div>

@@ -19,6 +19,10 @@ class MercadoLivreUtil
         $config = MercadoLivreConfig::where('empresa_id', $empresa_id)
         ->first();
 
+        if ($config == null) {
+            return "Configuração não encontrada";
+        }
+
         $strtotimeAtual = strtotime(date('Y-m-d H:i:s'));
         // echo $strtotimeAtual . "<br>";
         // echo $config->token_expira . "<br>";

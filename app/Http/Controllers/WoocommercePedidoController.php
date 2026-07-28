@@ -23,6 +23,10 @@ class WoocommercePedidoController extends Controller
 
     public function index(Request $request){
         $woocommerceClient = $this->util->getConfig($request->empresa_id);
+        if($woocommerceClient == null) {
+            session()->flash("flash_error", "Configure as credenciais do WooCommerce primeiro.");
+            return redirect()->route('woocommerce-config.index');
+        }
         $data = $woocommerceClient->get($this->endpoint);
         // dd($data);
         foreach($data as $pedido){

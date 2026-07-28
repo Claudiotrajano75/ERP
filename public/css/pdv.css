@@ -1,0 +1,1872 @@
+/* ============================================================
+   PDV (Ponto de Venda) - Estilos Refinados
+   Mantém compatibilidade total com o layout existente
+   ============================================================ */
+
+/* --- Variáveis CSS --- */
+:root {
+    --pdv-primary: #5572f5;
+    --pdv-primary-dark: #3d56d4;
+    --pdv-success: #28a745;
+    --pdv-success-light: #d4edda;
+    --pdv-warning: #ffc107;
+    --pdv-danger: #dc3545;
+    --pdv-info: #17a2b8;
+    --pdv-dark: #343a40;
+    --pdv-light-bg: #f8f9fc;
+    --pdv-card-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --pdv-card-shadow-hover: 0 4px 16px rgba(0,0,0,0.12);
+    --pdv-border-radius: 10px;
+    --pdv-border-radius-sm: 6px;
+    --pdv-transition: all 0.25s ease;
+    --pdv-font-size-sm: 12px;
+    --pdv-font-size-md: 14px;
+
+    /* Cores aprimoradas para o PDV */
+    --pdv-client-bg: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    --pdv-client-border: #66bb6a;
+    --pdv-seller-bg: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    --pdv-seller-border: #ff9800;
+    --pdv-total-bg: linear-gradient(135deg, #343a40 0%, #23272b 100%);
+}
+
+/* ============================================================
+   1. CARDS CLIENTE / VENDEDOR
+   ============================================================ */
+.pdv-card-client {
+    background: var(--pdv-client-bg) !important;
+    border: 1px solid var(--pdv-client-border) !important;
+    border-radius: var(--pdv-border-radius) !important;
+    box-shadow: var(--pdv-card-shadow) !important;
+    transition: var(--pdv-transition) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.pdv-card-client:hover {
+    box-shadow: var(--pdv-card-shadow-hover) !important;
+    transform: translateY(-1px);
+}
+
+.pdv-card-client::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--pdv-client-border);
+    border-radius: 4px 0 0 4px;
+}
+
+.pdv-card-seller {
+    background: var(--pdv-seller-bg) !important;
+    border: 1px solid var(--pdv-seller-border) !important;
+    border-radius: var(--pdv-border-radius) !important;
+    box-shadow: var(--pdv-card-shadow) !important;
+    transition: var(--pdv-transition) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.pdv-card-seller:hover {
+    box-shadow: var(--pdv-card-shadow-hover) !important;
+    transform: translateY(-1px);
+}
+
+.pdv-card-seller::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--pdv-seller-border);
+    border-radius: 4px 0 0 4px;
+}
+
+.pdv-card-label {
+    font-size: var(--pdv-font-size-sm) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.pdv-card-value {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    margin-bottom: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pdv-card-value-empty {
+    font-size: 13px !important;
+    color: #999 !important;
+    font-style: italic;
+    margin-bottom: 0;
+}
+
+.pdv-card-icon-btn {
+    width: 38px !important;
+    height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: var(--pdv-border-radius-sm) !important;
+    border: none !important;
+    transition: var(--pdv-transition) !important;
+    cursor: pointer;
+}
+
+.pdv-card-icon-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+}
+
+.pdv-badge-status {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: 4px;
+}
+
+.pdv-badge-selected {
+    background: rgba(40, 167, 69, 0.15);
+    color: #28a745;
+}
+
+.pdv-badge-pending {
+    background: rgba(255, 193, 7, 0.15);
+    color: #cc9a00;
+}
+
+/* ============================================================
+   2. CATEGORIAS - CHIPS / PILLS
+   ============================================================ */
+.pdv-categories-wrapper {
+    background: #f8f9fc !important;
+    border-radius: var(--pdv-border-radius) !important;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.pdv-categories-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px 4px;
+}
+
+.pdv-categories-title {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: #495057 !important;
+    margin: 0;
+}
+
+.pdv-categories-scroll {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 8px 8px;
+    position: relative;
+}
+
+.pdv-categories-container {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    white-space: nowrap;
+    scroll-behavior: smooth;
+    padding: 4px 0;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.pdv-categories-container::-webkit-scrollbar {
+    height: 4px;
+}
+
+.pdv-categories-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.pdv-categories-container::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+.pdv-nav-arrow {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid #dee2e6;
+    background: #fff;
+    color: #6c757d;
+    font-size: 14px;
+    cursor: pointer;
+    transition: var(--pdv-transition);
+    z-index: 2;
+}
+
+.pdv-nav-arrow:hover {
+    background: var(--pdv-primary);
+    color: #fff;
+    border-color: var(--pdv-primary);
+}
+
+.btn-pdv-cat {
+    border-radius: 20px !important;
+    padding: 5px 14px !important;
+    margin: 2px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    background-color: #fff !important;
+    color: #495057 !important;
+    border: 1px solid #e0e0e0 !important;
+    transition: var(--pdv-transition) !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.btn-pdv-cat:hover {
+    background-color: #f0f2f5 !important;
+    color: var(--pdv-primary) !important;
+    border-color: var(--pdv-primary) !important;
+}
+
+.btn-pdv-cat.active {
+    background: var(--pdv-primary) !important;
+    color: #fff !important;
+    border-color: var(--pdv-primary) !important;
+    box-shadow: 0 2px 6px rgba(85, 114, 245, 0.3) !important;
+}
+
+/* ============================================================
+   3. CARDS DE PRODUTOS
+   ============================================================ */
+.pdv-product-card {
+    border-radius: var(--pdv-border-radius) !important;
+    border: 1px solid #f0f0f0 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+    transition: var(--pdv-transition) !important;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.pdv-product-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1) !important;
+    border-color: var(--pdv-primary) !important;
+}
+
+.pdv-product-img-wrapper {
+    position: relative;
+    overflow: hidden;
+    height: 100px;
+    background: #f5f5f5;
+    border-radius: var(--pdv-border-radius) var(--pdv-border-radius) 0 0;
+}
+
+.pdv-product-img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.pdv-product-card:hover .pdv-product-img {
+    transform: scale(1.05);
+}
+
+/* Stock badge removido conforme solicitado */
+.pdv-stock-badge {
+    display: none !important;
+}
+
+/* Overlay simplificado e mais sutil */
+.pdv-product-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(85, 114, 245, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.pdv-product-card:hover .pdv-product-overlay {
+    opacity: 1;
+}
+
+.pdv-product-overlay-icon {
+    width: 32px;
+    height: 32px;
+    background: rgba(255,255,255,0.85);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--pdv-primary);
+}
+
+.pdv-product-body {
+    padding: 6px 8px;
+    line-height: 1.2;
+}
+
+.pdv-product-name {
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    margin-bottom: 2px !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.3;
+    color: #333 !important;
+}
+
+.pdv-product-price {
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    color: #49526B !important;
+    margin-bottom: 0 !important;
+}
+
+.pdv-product-price .pdv-currency {
+    font-size: 11px;
+    font-weight: 600;
+    color: #888;
+}
+
+/* ============================================================
+   4. TABELA DE ITENS
+   ============================================================ */
+.pdv-table-items {
+    margin-bottom: 0;
+}
+
+.pdv-table-items thead th {
+    background: #f8f9fc;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: #6c757d;
+    border-bottom: 2px solid #dee2e6;
+    padding: 8px 6px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.pdv-table-items tbody tr {
+    transition: background 0.15s ease;
+}
+
+.pdv-table-items tbody tr:hover {
+    background: #f0f4ff !important;
+}
+
+.pdv-table-items tbody td {
+    padding: 6px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.pdv-item-img {
+    width: 36px;
+    height: 44px;
+    border-radius: 6px;
+    object-fit: cover;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.pdv-item-name {
+    background: transparent !important;
+    border: none !important;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 4px 6px !important;
+    box-shadow: none !important;
+    color: #333 !important;
+    width: 100%;
+}
+
+.pdv-qty-group {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    width: 120px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+}
+
+.pdv-qty-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    padding: 0;
+}
+
+.pdv-qty-btn-minus {
+    background: #f8f9fa;
+    color: var(--pdv-danger);
+}
+
+.pdv-qty-btn-minus:hover {
+    background: var(--pdv-danger);
+    color: #fff;
+}
+
+.pdv-qty-btn-plus {
+    background: #f8f9fa;
+    color: var(--pdv-success);
+}
+
+.pdv-qty-btn-plus:hover {
+    background: var(--pdv-success);
+    color: #fff;
+}
+
+.pdv-qty-input {
+    width: 56px;
+    height: 32px;
+    border: none;
+    border-left: 1px solid #e0e0e0;
+    border-right: 1px solid #e0e0e0;
+    text-align: center;
+    font-weight: 600;
+    font-size: 13px;
+    background: #fff;
+    box-shadow: none !important;
+}
+
+.pdv-item-value {
+    background: transparent !important;
+    border: none !important;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 6px !important;
+    box-shadow: none !important;
+    color: #333 !important;
+    text-align: right;
+    width: 100%;
+}
+
+.pdv-item-subtotal {
+    background: transparent !important;
+    border: none !important;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 6px !important;
+    box-shadow: none !important;
+    color: var(--pdv-primary-dark) !important;
+    text-align: right;
+    width: 100%;
+}
+
+.pdv-btn-delete {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px !important;
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    color: var(--pdv-danger);
+    transition: var(--pdv-transition);
+    cursor: pointer;
+    padding: 0;
+}
+
+.pdv-btn-delete:hover {
+    background: var(--pdv-danger);
+    color: #fff;
+    border-color: var(--pdv-danger);
+}
+
+/* ============================================================
+   5. SEÇÃO DE FINALIZAÇÃO
+   ============================================================ */
+.pdv-fin-card {
+    border-radius: var(--pdv-border-radius) !important;
+    border: 1px solid #e8e8e8 !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04) !important;
+    transition: var(--pdv-transition) !important;
+    margin-bottom: 6px !important;
+}
+
+.pdv-fin-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+}
+
+.pdv-fin-card-body {
+    padding: 10px 12px !important;
+}
+
+.pdv-fin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+}
+
+.pdv-fin-label {
+    font-size: var(--pdv-font-size-sm) !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: #6c757d !important;
+    margin-bottom: 0;
+}
+
+.pdv-fin-icon-box {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--pdv-border-radius-sm) !important;
+    font-size: 14px;
+}
+
+.pdv-fin-value {
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    margin-bottom: 0;
+    color: #333;
+}
+
+/* Card DESTAQUE do Total */
+.pdv-fin-total {
+    background: var(--pdv-total-bg) !important;
+    border-color: #343a40 !important;
+}
+
+.pdv-fin-total .pdv-fin-label {
+    color: rgba(255,255,255,0.8) !important;
+}
+
+.pdv-fin-total .pdv-fin-value {
+    color: #fff !important;
+    font-size: 20px !important;
+}
+
+/* Pagamento Select */
+.pdv-pagamento-select {
+    font-size: 13px !important;
+    font-weight: 500;
+    border-radius: var(--pdv-border-radius-sm) !important;
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: none !important;
+}
+
+/* Troco badge compacto (lado a lado com input Recebido) */
+.pdv-troco-badge {
+    background: #fff3f3;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    padding: 4px 12px;
+    min-width: 95px;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.pdv-troco-badge .pdv-troco-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #721c24;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 0;
+}
+
+.pdv-troco-badge .pdv-troco-value {
+    font-size: 14px;
+    font-weight: 800;
+    color: #721c24;
+    display: block;
+}
+
+/* Data de Vencimento */
+.pdv-vencimento-card {
+    border: 1px solid #e8e8e8 !important;
+    border-radius: var(--pdv-border-radius) !important;
+    padding: 8px 12px;
+    text-align: center;
+}
+
+.pdv-vencimento-label {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #6c757d;
+}
+
+/* ============================================================
+   6. BOTÕES DE AÇÃO
+   ============================================================ */
+.pdv-action-btn {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    border-radius: var(--pdv-border-radius-sm) !important;
+    padding: 6px 4px !important;
+    transition: var(--pdv-transition) !important;
+    border-width: 1.5px !important;
+}
+
+.pdv-action-btn i {
+    font-size: 14px;
+    margin-right: 2px;
+}
+
+.pdv-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1) !important;
+}
+
+.pdv-action-btn:active {
+    transform: translateY(0);
+}
+
+/* Botão Finalizar principal */
+.pdv-btn-finalizar {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    padding: 10px 12px !important;
+    border-radius: var(--pdv-border-radius-sm) !important;
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+    border: none !important;
+    color: #fff !important;
+    transition: var(--pdv-transition) !important;
+    width: 100%;
+    letter-spacing: 0.3px;
+    cursor: pointer !important;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    user-select: none;
+    line-height: 1.5;
+}
+
+.pdv-btn-finalizar:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3) !important;
+}
+
+.pdv-btn-finalizar:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.pdv-btn-finalizar:disabled,
+.pdv-btn-finalizar[disabled] {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    filter: grayscale(0.5);
+}
+
+.pdv-btn-finalizar i {
+    font-size: 18px;
+    margin-right: 6px;
+}
+
+/* ============================================================
+   7. INPUTS / FORM
+   ============================================================ */
+.pdv-input-search {
+    border-radius: var(--pdv-border-radius-sm) !important;
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: none !important;
+    font-size: 13px;
+    padding: 6px 10px;
+    transition: var(--pdv-transition);
+}
+
+.pdv-input-search:focus {
+    border-color: var(--pdv-primary) !important;
+    box-shadow: 0 0 0 3px rgba(85, 114, 245, 0.1) !important;
+}
+
+.pdv-select-produto {
+    border-radius: var(--pdv-border-radius-sm) !important;
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: none !important;
+    font-size: 13px;
+}
+
+.pdv-input-qtd {
+    border-radius: var(--pdv-border-radius-sm) !important;
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: none !important;
+    font-size: 13px;
+    text-align: center;
+}
+
+.pdv-btn-add-item {
+    border-radius: var(--pdv-border-radius-sm) !important;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 12px;
+    background: var(--pdv-primary) !important;
+    border: none !important;
+    transition: var(--pdv-transition) !important;
+}
+
+.pdv-btn-add-item:hover {
+    background: var(--pdv-primary-dark) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(85, 114, 245, 0.3) !important;
+}
+
+/* ============================================================
+   8. LEITOR DE CÓDIGO DE BARRAS
+   ============================================================ */
+.pdv-barcode-input {
+    border: none !important;
+    width: 10px !important;
+    height: 10px !important;
+    background: #333 !important;
+    opacity: 0;
+    position: absolute;
+}
+
+.pdv-barcode-status {
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* ============================================================
+   9. RESPONSIVIDADE
+   ============================================================ */
+@media (max-width: 1200px) {
+    .pdv-qty-group {
+        width: 100px;
+    }
+    .pdv-qty-input {
+        width: 36px;
+    }
+    .pdv-product-img-wrapper {
+        height: 80px;
+    }
+    .pdv-product-img {
+        height: 80px;
+    }
+}
+
+@media (max-width: 768px) {
+    .pdv-card-client::before,
+    .pdv-card-seller::before {
+        width: 3px;
+    }
+    .pdv-fin-value {
+        font-size: 15px !important;
+    }
+    .pdv-fin-total .pdv-fin-value {
+        font-size: 17px !important;
+    }
+    .pdv-product-img-wrapper {
+        height: 60px;
+    }
+    .pdv-product-img {
+        height: 60px;
+    }
+    .pdv-product-body {
+        padding: 4px 6px;
+    }
+    .pdv-product-name {
+        font-size: 10px !important;
+    }
+    .pdv-product-price {
+        font-size: 14px !important;
+    }
+    .pdv-table-items thead th {
+        font-size: 11px;
+        padding: 6px 4px;
+    }
+    .pdv-table-items tbody td {
+        padding: 4px;
+    }
+}
+
+/* ============================================================
+   10. ANIMAÇÕES
+   ============================================================ */
+@keyframes pdv-fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pdv-slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pdv-pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(40, 167, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
+.pdv-animate-fade-in {
+    animation: pdv-fadeIn 0.3s ease forwards;
+}
+
+.pdv-animate-slide-in {
+    animation: pdv-slideIn 0.25s ease forwards;
+}
+
+.pdv-animate-pulse-finalizar {
+    animation: pdv-pulse-green 2s infinite;
+}
+
+/* ============================================================
+   11. ADICIONAR PRODUTO - LINHA DE FORMULÁRIO
+   ============================================================ */
+.pdv-add-row {
+    background: #f8f9fc;
+    border-radius: var(--pdv-border-radius);
+    padding: 10px 12px;
+    margin: 0 6px 8px;
+}
+
+.pdv-add-row .form-group {
+    margin-bottom: 0;
+}
+
+.pdv-add-row label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: #6c757d;
+    margin-bottom: 2px;
+}
+
+/* ============================================================
+   12. RESPONSIVIDADE - CATEGORIAS HEADER
+   ============================================================ */
+.pdv-cat-header-compact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* ============================================================
+   13. BOTÕES DE AÇÃO SUPERIORES (compact layout)
+   ============================================================ */
+.pdv-top-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.pdv-top-btn {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    padding: 6px 12px !important;
+    border-radius: var(--pdv-border-radius-sm) !important;
+    transition: var(--pdv-transition) !important;
+}
+
+.pdv-top-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
+}
+
+/* ============================================================
+   14. CARRINHO (compact layout)
+   ============================================================ */
+.pdv-cart-item {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 6px 4px;
+    transition: background 0.15s ease;
+}
+
+.pdv-cart-item:hover {
+    background: #f8f9fc;
+}
+
+.pdv-cart-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.pdv-cart-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.2;
+}
+
+.pdv-cart-price {
+    font-size: 14px;
+    font-weight: 700;
+    color: #49526B;
+}
+
+.pdv-cart-action {
+    font-size: 16px;
+    cursor: pointer;
+    transition: var(--pdv-transition);
+    padding: 2px;
+}
+
+.pdv-cart-action:hover {
+    transform: scale(1.15);
+}
+
+/* ============================================================
+   15. SIDEBAR BOTOES (compact layout)
+   ============================================================ */
+.pdv-sidebar-btn {
+    border-radius: var(--pdv-border-radius-sm) !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    padding: 8px 12px !important;
+    transition: var(--pdv-transition) !important;
+    text-align: left;
+}
+
+.pdv-sidebar-btn:hover {
+    transform: translateX(2px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
+}
+
+.pdv-sidebar-btn i {
+    margin-right: 6px;
+    font-size: 14px;
+}
+
+/* ============================================================
+   16. ATALHOS DE TECLADO - INDICADORES VISUAIS
+   ============================================================ */
+.pdv-shortcut {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 0 4px;
+    margin-left: 4px;
+    min-width: 18px;
+    height: 16px;
+    line-height: 16px;
+    color: #6c757d;
+    font-family: monospace;
+    letter-spacing: -0.5px;
+    vertical-align: middle;
+}
+
+.pdv-shortcut-light {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.8);
+}
+
+.pdv-shortcut-sm {
+    font-size: 8px;
+    min-width: 14px;
+    height: 13px;
+    line-height: 13px;
+    padding: 0 3px;
+}
+
+.pdv-action-btn .pdv-shortcut {
+    display: none;
+}
+
+.pdv-action-btn:hover .pdv-shortcut {
+    display: inline-flex;
+}
+
+/* Tooltip de atalho no canto dos cards */
+[data-pdv-shortcut]:hover::after {
+    content: attr(data-pdv-shortcut);
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--pdv-primary);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: monospace;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 5;
+    line-height: 1.4;
+}
+
+/* Indicador de atalho no badge de categorias */
+.pdv-categories-title .pdv-shortcut {
+    margin-left: 6px;
+}
+
+/* ============================================================
+   17. CORES POR TIPO DE PAGAMENTO
+   ============================================================ */
+.pdv-pag-tp {
+    transition: all 0.3s ease !important;
+}
+
+.pdv-pag-tp option {
+    background: #fff !important;
+    color: #333 !important;
+}
+
+/* -- Dinheiro (01) -- */
+.pdv-pag-dinheiro {
+    background: #d4edda !important;
+    border-color: #28a745 !important;
+    color: #155724 !important;
+    font-weight: 700 !important;
+}
+
+/* -- Cheque (02) -- */
+.pdv-pag-cheque {
+    background: #fff3cd !important;
+    border-color: #ffc107 !important;
+    color: #856404 !important;
+}
+
+/* -- Cartão de Crédito (03, 30) -- */
+.pdv-pag-credito {
+    background: #cce5ff !important;
+    border-color: #007bff !important;
+    color: #004085 !important;
+}
+
+/* -- Cartão de Débito (04, 31) -- */
+.pdv-pag-debito {
+    background: #e0ccff !important;
+    border-color: #6610f2 !important;
+    color: #3a0080 !important;
+}
+
+/* -- Crédito Loja (05) -- */
+.pdv-pag-loja {
+    background: #e2d9f3 !important;
+    border-color: #6f42c1 !important;
+    color: #3a0070 !important;
+}
+
+/* -- Crediário (06) -- */
+.pdv-pag-crediario {
+    background: #ffe0b2 !important;
+    border-color: #fd7e14 !important;
+    color: #a04000 !important;
+}
+
+/* -- Vale Alimentação/Refeição (10, 11) -- */
+.pdv-pag-vale {
+    background: #d4edda !important;
+    border-color: #20c997 !important;
+    color: #0d5c3e !important;
+}
+
+/* -- Vale Presente (12) -- */
+.pdv-pag-presente {
+    background: #f8d7da !important;
+    border-color: #e83e8c !important;
+    color: #a01a5b !important;
+}
+
+/* -- Vale Combustível (13) -- */
+.pdv-pag-combustivel {
+    background: #d1ecf1 !important;
+    border-color: #17a2b8 !important;
+    color: #0c5460 !important;
+}
+
+/* -- Boleto (15) -- */
+.pdv-pag-boleto {
+    background: #e2e3e5 !important;
+    border-color: #6c757d !important;
+    color: #383d41 !important;
+}
+
+/* -- Depósito (16) -- */
+.pdv-pag-deposito {
+    background: #d6d8d9 !important;
+    border-color: #545b62 !important;
+    color: #1b1e21 !important;
+}
+
+/* -- PIX (17, 32) -- */
+.pdv-pag-pix {
+    background: #e8daef !important;
+    border-color: #8e44ad !important;
+    color: #4a0066 !important;
+    font-weight: 700 !important;
+}
+
+/* -- Sem Pagamento (90) -- */
+.pdv-pag-sem {
+    background: #f8d7da !important;
+    border-color: #dc3545 !important;
+    color: #721c24 !important;
+}
+
+/* ============================================================
+   18. TOASTS / NOTIFICAÇÕES
+   ============================================================ */
+.pdv-toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.pdv-toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+    border-left: 4px solid #28a745;
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    pointer-events: auto;
+    transform: translateX(120%);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+    max-width: 380px;
+    min-width: 260px;
+}
+
+.pdv-toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.pdv-toast.hide {
+    transform: translateX(120%);
+    opacity: 0;
+}
+
+.pdv-toast-icon {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #fff;
+}
+
+.pdv-toast-icon.success {
+    background: #28a745;
+}
+
+.pdv-toast-icon.error {
+    background: #dc3545;
+}
+
+.pdv-toast-icon.warning {
+    background: #ffc107;
+    color: #333;
+}
+
+.pdv-toast-icon.info {
+    background: #17a2b8;
+}
+
+.pdv-toast-body {
+    flex: 1;
+    line-height: 1.3;
+}
+
+.pdv-toast-title {
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 1px;
+}
+
+.pdv-toast-msg {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.pdv-toast-close {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border: none;
+    background: transparent;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    padding: 0;
+}
+
+.pdv-toast-close:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.pdv-toast.border-success { border-left-color: #28a745; }
+.pdv-toast.border-error   { border-left-color: #dc3545; }
+.pdv-toast.border-warning { border-left-color: #ffc107; }
+.pdv-toast.border-info    { border-left-color: #17a2b8; }
+
+/* Toast para mobile */
+@media (max-width: 576px) {
+    .pdv-toast-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+    }
+    .pdv-toast {
+        max-width: 100%;
+        min-width: 0;
+    }
+}
+
+/* ============================================================
+   19. LOADING STATE
+   ============================================================ */
+@keyframes pdv-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pdv-loading-dots {
+    0%, 80%, 100% { opacity: 0; transform: scale(0.6); }
+    40% { opacity: 1; transform: scale(1); }
+}
+
+.pdv-btn-loading {
+    position: relative;
+    pointer-events: none !important;
+    cursor: wait !important;
+    color: transparent !important;
+}
+
+.pdv-btn-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2.5px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: pdv-spin 0.6s linear infinite;
+}
+
+.pdv-btn-loading.pdv-btn-loading-sm::after {
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    border-width: 2px;
+}
+
+/* Loading dots para texto inline */
+.pdv-loading-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.pdv-loading-dots span {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--pdv-primary);
+    animation: pdv-loading-dots 1.4s infinite ease-in-out both;
+}
+
+.pdv-loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.pdv-loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+.pdv-loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+/* Skeleton loading para cards de produto */
+@keyframes pdv-skeleton {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+}
+
+.pdv-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200px 100%;
+    animation: pdv-skeleton 1.5s ease-in-out infinite;
+    border-radius: 6px;
+}
+
+.pdv-skeleton-text {
+    height: 12px;
+    margin-bottom: 6px;
+    width: 70%;
+}
+
+.pdv-skeleton-text-sm {
+    height: 10px;
+    width: 50%;
+    margin-bottom: 4px;
+}
+
+.pdv-skeleton-img {
+    height: 100px;
+    width: 100%;
+    border-radius: 10px 10px 0 0;
+}
+
+.pdv-skeleton-price {
+    height: 16px;
+    width: 40%;
+    margin-top: 4px;
+}
+
+/* ============================================================
+   20. MODAIS PADRONIZADOS DO PDV
+   ============================================================ */
+
+/* Container de modais com animação suave */
+.modal-pdv {
+    padding: 0 !important;
+}
+
+.modal-pdv .modal-dialog {
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+    transform: scale(0.92) translateY(20px);
+    opacity: 0;
+}
+
+.modal-pdv.show .modal-dialog {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.modal-pdv .modal-content {
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+    overflow: hidden;
+}
+
+.modal-pdv .modal-header {
+    background: linear-gradient(135deg, #f8f9fc 0%, #eef1f8 100%);
+    border-bottom: 1px solid #e8ecf4;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-pdv .modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a2e;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-pdv .modal-title i {
+    font-size: 20px;
+    color: var(--pdv-primary);
+}
+
+.modal-pdv .modal-title strong {
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.modal-pdv .modal-body {
+    padding: 20px;
+}
+
+.modal-pdv .modal-footer {
+    border-top: 1px solid #e8ecf4;
+    padding: 14px 20px;
+    background: #fafbfc;
+    gap: 8px;
+}
+
+/* Botão close padronizado */
+.modal-pdv .btn-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.04) url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+.modal-pdv .btn-close:hover {
+    opacity: 0.9;
+    background-color: rgba(0,0,0,0.08);
+    transform: rotate(90deg);
+}
+
+/* Animações de entrada/saída */
+.modal-pdv.fade .modal-dialog {
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+}
+
+.modal-pdv.fade:not(.show) .modal-dialog {
+    transform: scale(0.92) translateY(20px);
+    opacity: 0;
+}
+
+/* Backdrop mais elegante */
+.modal-backdrop.show {
+    opacity: 0.5 !important;
+}
+
+/* Tamanhos padronizados */
+.modal-pdv .modal-dialog {
+    max-width: 500px; /* default ~ md */
+}
+.modal-pdv .modal-dialog.modal-lg {
+    max-width: 680px;
+}
+.modal-pdv .modal-dialog.modal-xl {
+    max-width: 900px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .modal-pdv .modal-dialog,
+    .modal-pdv .modal-dialog.modal-lg,
+    .modal-pdv .modal-dialog.modal-xl {
+        max-width: calc(100% - 20px);
+        margin: 10px auto;
+    }
+    .modal-pdv .modal-header {
+        padding: 12px 16px;
+    }
+    .modal-pdv .modal-body {
+        padding: 16px;
+    }
+    .modal-pdv .modal-footer {
+        padding: 12px 16px;
+    }
+}
+
+/* ============================================================
+   21. CORES DE PAGAMENTO - MODAIS DE FINALIZAÇÃO
+   ============================================================ */
+
+/* Aplica cores no select2 dentro dos modais PDV */
+.modal-pdv .select2-container--bootstrap4 .select2-selection--single {
+    transition: all 0.3s ease !important;
+}
+
+/* Cores para o select2 - TODOS os tipos de pagamento */
+@keyframes pdv-pag-select2-color { from {} to {} }
+
+.modal-pdv select.pdv-pag-tp[class*="pdv-pag-"] + .select2-container .select2-selection--single {
+    animation: pdv-pag-select2-color 0.01s;
+}
+
+.modal-pdv .pdv-pag-dinheiro + .select2-container .select2-selection--single {
+    background: #d4edda !important;
+    border-color: #28a745 !important;
+}
+.modal-pdv .pdv-pag-dinheiro + .select2-container .select2-selection__rendered {
+    color: #155724 !important;
+    font-weight: 700 !important;
+}
+
+.modal-pdv .pdv-pag-credito + .select2-container .select2-selection--single {
+    background: #cce5ff !important;
+    border-color: #007bff !important;
+}
+.modal-pdv .pdv-pag-credito + .select2-container .select2-selection__rendered {
+    color: #004085 !important;
+    font-weight: 700 !important;
+}
+
+.modal-pdv .pdv-pag-debito + .select2-container .select2-selection--single {
+    background: #e0ccff !important;
+    border-color: #6610f2 !important;
+}
+.modal-pdv .pdv-pag-debito + .select2-container .select2-selection__rendered {
+    color: #3a0080 !important;
+    font-weight: 700 !important;
+}
+
+.modal-pdv .pdv-pag-pix + .select2-container .select2-selection--single {
+    background: #e8daef !important;
+    border-color: #8e44ad !important;
+}
+.modal-pdv .pdv-pag-pix + .select2-container .select2-selection__rendered {
+    color: #4a0066 !important;
+    font-weight: 700 !important;
+}
+
+.modal-pdv .pdv-pag-crediario + .select2-container .select2-selection--single {
+    background: #ffe0b2 !important;
+    border-color: #fd7e14 !important;
+}
+.modal-pdv .pdv-pag-crediario + .select2-container .select2-selection__rendered {
+    color: #a04000 !important;
+    font-weight: 700 !important;
+}
+
+.modal-pdv .pdv-pag-boleto + .select2-container .select2-selection--single {
+    background: #e2e3e5 !important;
+    border-color: #6c757d !important;
+}
+.modal-pdv .pdv-pag-boleto + .select2-container .select2-selection__rendered {
+    color: #383d41 !important;
+    font-weight: 700 !important;
+}
+
+.modal-pdv .pdv-pag-cheque + .select2-container .select2-selection--single {
+    background: #fff3cd !important;
+    border-color: #ffc107 !important;
+}
+.modal-pdv .pdv-pag-cheque + .select2-container .select2-selection__rendered {
+    color: #856404 !important;
+    font-weight: 700 !important;
+}
+
+.modal-pdv .pdv-pag-loja + .select2-container .select2-selection--single {
+    background: #e2d9f3 !important;
+    border-color: #6f42c1 !important;
+}
+.modal-pdv .pdv-pag-loja + .select2-container .select2-selection__rendered {
+    color: #3a0070 !important;
+    font-weight: 700 !important;
+}
+
+.modal-pdv .pdv-pag-vale + .select2-container .select2-selection--single {
+    background: #d4edda !important;
+    border-color: #20c997 !important;
+}
+.modal-pdv .pdv-pag-vale + .select2-container .select2-selection__rendered {
+    color: #0d5c3e !important;
+    font-weight: 700 !important;
+}
+
+.modal-pdv .pdv-pag-deposito + .select2-container .select2-selection--single {
+    background: #d6d8d9 !important;
+    border-color: #545b62 !important;
+}
+.modal-pdv .pdv-pag-deposito + .select2-container .select2-selection__rendered {
+    color: #1b1e21 !important;
+    font-weight: 700 !important;
+}
+
+.modal-pdv .pdv-pag-sem + .select2-container .select2-selection--single {
+    background: #f8d7da !important;
+    border-color: #dc3545 !important;
+}
+.modal-pdv .pdv-pag-sem + .select2-container .select2-selection__rendered {
+    color: #721c24 !important;
+    font-weight: 700 !important;
+}
+
+.modal-pdv .pdv-pag-combustivel + .select2-container .select2-selection--single {
+    background: #d1ecf1 !important;
+    border-color: #17a2b8 !important;
+}
+.modal-pdv .pdv-pag-combustivel + .select2-container .select2-selection__rendered {
+    color: #0c5460 !important;
+    font-weight: 700 !important;
+}
+
+.modal-pdv .pdv-pag-presente + .select2-container .select2-selection--single {
+    background: #f8d7da !important;
+    border-color: #e83e8c !important;
+}
+.modal-pdv .pdv-pag-presente + .select2-container .select2-selection__rendered {
+    color: #a01a5b !important;
+    font-weight: 700 !important;
+}
+
+/* Cores para selects nativos (pagamento múltiplo) */
+.modal-pdv select.pdv-pag-tp {
+    transition: all 0.3s ease !important;
+}
+
+.modal-pdv select.pdv-pag-tp option {
+    background: #fff !important;
+    color: #333 !important;
+}
+
+
+/* Cores para selects nativos (pagamento múltiplo) */
+.modal-pdv select.pdv-pag-tp {
+    transition: all 0.3s ease !important;
+}
+
+.modal-pdv select.pdv-pag-tp option {
+    background: #fff !important;
+    color: #333 !important;
+}
+
+
+/* ============================================================
+   22. MODAL FINALIZAR VENDA - OPÇÕES ESTILIZADAS
+   ============================================================ */
+.pdv-finish-option {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border: 1.5px solid #e8ecf4;
+    border-radius: 12px;
+    background: #fff;
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+}
+
+.pdv-finish-option::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.pdv-finish-option:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.12);
+    transform: translateY(-2px);
+}
+
+.pdv-finish-option:hover::before {
+    opacity: 1;
+}
+
+.pdv-finish-option:focus-visible {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+.pdv-finish-option:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+}
+
+.pdv-finish-option-icon {
+    flex-shrink: 0;
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: transform 0.25s ease;
+}
+
+.pdv-finish-option:hover .pdv-finish-option-icon {
+    transform: scale(1.08);
+}
+
+.pdv-finish-option-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pdv-finish-option-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1.3;
+}
+
+.pdv-finish-option-desc {
+    font-size: 11px;
+    color: #8892a4;
+    line-height: 1.3;
+}
+
+.pdv-finish-option-arrow {
+    flex-shrink: 0;
+    font-size: 22px;
+    color: #c0c8d8;
+    transition: all 0.25s ease;
+}
+
+.pdv-finish-option:hover .pdv-finish-option-arrow {
+    color: #667eea;
+    transform: translateX(3px);
+}
+
+/* ============================================================
+   23. ANIMAÇÃO DE NOVO ITEM NO CARRINHO
+   ============================================================ */
+@keyframes pdv-item-new {
+    0% {
+        background: rgba(40, 167, 69, 0.10);
+    }
+    100% {
+        background: transparent;
+    }
+}
+
+@keyframes pdv-total-bounce {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.12); }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.pdv-item-new,
+.pdv-item-new td {
+    animation: pdv-item-new 1.2s ease forwards;
+}
+
+@keyframes pdv-item-new-border {
+    0% { box-shadow: inset 3px 0 0 rgba(40, 167, 69, 0.3); }
+    100% { box-shadow: inset 3px 0 0 transparent; }
+}
+
+.pdv-item-new td:first-child {
+    animation: pdv-item-new 1.2s ease forwards, pdv-item-new-border 1.2s ease forwards;
+}
+
+.pdv-total-bounce {
+    display: inline-block;
+    animation: pdv-total-bounce 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ============================================================
+   24. BADGE ANIMADO DE CONTAGEM DO CARRINHO
+   ============================================================ */
+@keyframes pdv-cart-count-pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1.25); }
+    70% { transform: scale(0.95); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pdv-cart-count-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.5); }
+    70% { box-shadow: 0 0 0 8px rgba(40, 167, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
+.pdv-cart-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    vertical-align: middle;
+    transition: all 0.2s ease;
+}
+
+.pdv-cart-count.pop {
+    animation: pdv-cart-count-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+               pdv-cart-count-pulse 0.6s ease 0.1s;
+}
+
+/* Badge no compact layout - dentro do badge Itens da Venda */
+.badge .pdv-cart-count {
+    min-width: 18px;
+    height: 18px;
+    font-size: 9px;
+    padding: 0 5px;
+}
+
+/* ============================================================
+   25. HOVER EFFECT CARDS DE PRODUTO
+   ============================================================ */
+.pdv-card-produto {
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.pdv-card-produto:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 8px 25px rgba(85, 114, 245, 0.15) !important;
+    border-color: var(--pdv-primary) !important;
+}
+
+.pdv-card-produto:hover img {
+    transform: scale(1.04);
+}
+
+/* ============================================================
+   26. OVERRIDES MÍNIMOS PARA COMPATIBILIDADE
+   Mantém tudo funcionando como antes
+   ============================================================ */
+.pdv-preserve-hidden {
+    display: none;
+}
+
+.pdv-preserve-flex {
+    display: flex;
+}
+
+/* Garante que inputs hidden continuem funcionando */
+input[type="hidden"] {
+    box-shadow: none !important;
+}
+
+/* Garante que o scroll continua funcionando */
+.pdv-scroll-area {
+    scroll-behavior: smooth;
+}

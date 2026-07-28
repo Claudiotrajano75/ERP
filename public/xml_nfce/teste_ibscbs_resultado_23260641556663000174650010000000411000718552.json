@@ -1,0 +1,29 @@
+{
+    "erro": 1,
+    "error": {
+        "attributes": {
+            "versao": "4.00"
+        },
+        "tpAmb": "2",
+        "verAplic": "SVRSnfce2606251752",
+        "cStat": "104",
+        "xMotivo": "Lote processado",
+        "cUF": "23",
+        "dhRecbto": "2026-06-29T12:33:57-03:00",
+        "protNFe": {
+            "attributes": {
+                "versao": "4.00"
+            },
+            "infProt": {
+                "tpAmb": "2",
+                "verAplic": "SVRSnfce2606251752",
+                "chNFe": "23260641556663000174650010000000411000718552",
+                "dhRecbto": "2026-06-29T12:33:57-03:00",
+                "digVal": "aTPcGv36XGQuVanB\/diA3P+L4m0=",
+                "cStat": "481",
+                "xMotivo": "Rejeicao: Codigo Regime Tributario do emitente diverge do cadastro na SEFAZ"
+            }
+        }
+    },
+    "recibo": "<?xml version=\"1.0\" encoding=\"utf-8\"?><soap:Envelope xmlns:soap=\"http:\/\/www.w3.org\/2003\/05\/soap-envelope\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\" xmlns:xsd=\"http:\/\/www.w3.org\/2001\/XMLSchema\"><soap:Body><nfeResultMsg xmlns=\"http:\/\/www.portalfiscal.inf.br\/nfe\/wsdl\/NFeAutorizacao4\"><retEnviNFe versao=\"4.00\" xmlns=\"http:\/\/www.portalfiscal.inf.br\/nfe\"><tpAmb>2<\/tpAmb><verAplic>SVRSnfce2606251752<\/verAplic><cStat>104<\/cStat><xMotivo>Lote processado<\/xMotivo><cUF>23<\/cUF><dhRecbto>2026-06-29T12:33:57-03:00<\/dhRecbto><protNFe versao=\"4.00\"><infProt><tpAmb>2<\/tpAmb><verAplic>SVRSnfce2606251752<\/verAplic><chNFe>23260641556663000174650010000000411000718552<\/chNFe><dhRecbto>2026-06-29T12:33:57-03:00<\/dhRecbto><digVal>aTPcGv36XGQuVanB\/diA3P+L4m0=<\/digVal><cStat>481<\/cStat><xMotivo>Rejeicao: Codigo Regime Tributario do emitente diverge do cadastro na SEFAZ<\/xMotivo><\/infProt><\/protNFe><\/retEnviNFe><\/nfeResultMsg><\/soap:Body><\/soap:Envelope>"
+}

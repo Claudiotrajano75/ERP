@@ -1,0 +1,30 @@
+{
+    "erro": 1,
+    "error": "Erro ao autorizar: O documento de resposta relata um erro [1026] Rejeicao: Al\u00edquota do IBS da UF inv\u00e1lida [nItem:1].",
+    "protocolo": {
+        "attributes": {
+            "versao": "4.00"
+        },
+        "tpAmb": "1",
+        "verAplic": "SVRS2512111137DR",
+        "cStat": "104",
+        "xMotivo": "Lote processado",
+        "cUF": "23",
+        "dhRecbto": "2026-01-15T16:25:21-03:00",
+        "protNFe": {
+            "attributes": {
+                "versao": "4.00"
+            },
+            "infProt": {
+                "tpAmb": "1",
+                "verAplic": "SVRS2512111137DR",
+                "chNFe": "23260141556663000174550010000097041000732819",
+                "dhRecbto": "2026-01-15T16:25:21-03:00",
+                "digVal": "pz\/aKem9Vnv4E+nVcTW5nxdnQsw=",
+                "cStat": "1026",
+                "xMotivo": "Rejeicao: Al\u00edquota do IBS da UF inv\u00e1lida [nItem:1]"
+            }
+        }
+    },
+    "recibo": null
+}

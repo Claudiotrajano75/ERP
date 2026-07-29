@@ -1,35 +1,39 @@
-<div class="row">
-    <div class="col-md-4">
-        {!!Form::text('descricao', 'Descrição')->required()
-        !!}
+<div class="modulo-section-card mb-3">
+    <div class="card-header">
+        <h4><i class="ri-information-line me-2"></i>Informações Básicas</h4>
     </div>
-
-    <div class="col-md-2">
-        {!!Form::select('padrao', 'Padrão', [0 => 'Não', 1 => 'Sim'])
-        ->required()
-        ->attrs(['class' => 'form-select'])
-        !!}
-    </div>
-    <div class="col-md-2">
-        {!!Form::select('sobrescrever_cfop', 'Sobrescrever CFOP', [0 => 'Não', 1 => 'Sim'])
-        ->required()
-        ->attrs(['class' => 'form-select'])
-        !!}
-    </div>
-    <hr class="mt-2">
-
-    <div class="card">
-        <div class="card-header">
-            <h5>Dados para emissão</h5>
-            <p class="text-danger">
-                <i class="ri-information-line"></i>
-                Os campos abaixo são opcionais, se preenchidos iram sobrescrever os dados informados no cadastro do produto para gerar o XML.
-            </p>
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-md-4 mb-2">
+                {!!Form::text('descricao', 'Descrição')->required()!!}
+            </div>
+            <div class="col-md-2 mb-2">
+                {!!Form::select('padrao', 'Padrão', [0 => 'Não', 1 => 'Sim'])
+                ->required()
+                ->attrs(['class' => 'form-select'])
+                !!}
+            </div>
+            <div class="col-md-3 mb-2">
+                {!!Form::select('sobrescrever_cfop', 'Sobrescrever CFOP', [0 => 'Não', 1 => 'Sim'])
+                ->required()
+                ->attrs(['class' => 'form-select'])
+                !!}
+            </div>
         </div>
+    </div>
+</div>
 
-        <div class="card-body" style="margin-top: -30px">
-            <div class="row g-2">
-                <div class="col-md-6">
+<div class="modulo-section-card mb-3">
+    <div class="card-header">
+        <h4 class="mb-1"><i class="ri-file-list-3-line me-2"></i>Dados para emissão</h4>
+        <p class="text-danger mb-0 fs-12">
+            <i class="ri-alert-line me-1"></i>
+            Os campos abaixo são opcionais, se preenchidos irão sobrescrever os dados do produto para gerar o XML.
+        </p>
+    </div>
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-md-6 mb-2">
                     {!!Form::select('cst_csosn', 'CST/CSOSN', ['' => 'Selecione'] + $listaCTSCSOSN)
                     ->attrs(['class' => 'form-select'])
                     !!}
@@ -114,7 +118,6 @@
     <div class="col-12" style="text-align: right;">
         <button type="submit" class="btn btn-success px-5" id="btn-store">Salvar</button>
     </div>
-</div>
 @section('js')
 <script type="text/javascript">
 

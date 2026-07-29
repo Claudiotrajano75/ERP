@@ -1,93 +1,105 @@
+<div class="modulo-section-card mb-3">
+    <div class="card-header">
+        <h4><i class="ri-building-4-line me-2"></i>Dados Principais</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-md-2 mb-2">
+                {!!Form::tel('cnpj', 'CNPJ')
+                ->attrs(['class' => 'cnpj'])
+                !!}
+            </div>
+            <div class="col-md-3 mb-2">
+                {!!Form::text('razao_social', 'Razão social')
+                ->required()
+                !!}
+            </div>
+            <div class="col-md-3 mb-2">
+                {!!Form::text('nome_fantasia', 'Nome fantasia')
+                ->required()
+                !!}
+            </div>
+            <div class="col-md-2 mb-2">
+                {!!Form::tel('cpf', 'CPF')
+                ->attrs(['class' => 'cpf'])
+                !!}
+            </div>
+            <div class="col-md-2 mb-2">
+                {!!Form::tel('ie', 'IE')
+                !!}
+            </div>
+            <div class="col-md-2 mb-2">
+                {!!Form::tel('crc', 'CRC')
+                !!}
+            </div>
 
-<div class="row g-2">
-    <div class="col-md-2">
-        {!!Form::tel('cnpj', 'CNPJ')
-        ->attrs(['class' => 'cnpj'])
-        !!}
-    </div>
-    <div class="col-md-3">
-        {!!Form::text('razao_social', 'Razão social')
-        ->required()
-        !!}
-    </div>
-    <div class="col-md-3">
-        {!!Form::text('nome_fantasia', 'Nome fantasia')
-        ->required()
-        !!}
-    </div>
-    <div class="col-md-2">
-        {!!Form::tel('cpf', 'CPF')
-        ->attrs(['class' => 'cpf'])
-        !!}
-    </div>
-    <div class="col-md-2">
-        {!!Form::tel('ie', 'IE')
-        !!}
-    </div>
-    <div class="col-md-2">
-        {!!Form::tel('crc', 'CRC')
-        !!}
-    </div>
+            <div class="col-md-2 mb-2">
+                {!!Form::select('envio_xml_automatico', 'Enviar XML automático', [0 => 'Não', 1 => 'Sim'])
+                ->attrs(['class' => 'form-select tooltipp'])
+                !!}
+                <div class="text-tooltip d-none">
+                    Se marcar como sim todo documento transmitido será enviado para o email do escritório configurado
+                </div>
+            </div>
 
-    <div class="col-md-2">
-        {!!Form::select('envio_xml_automatico', 'Enviar XML automático', [0 => 'Não', 1 => 'Sim'])
-        ->attrs(['class' => 'form-select tooltipp'])
-        !!}
-        <div class="text-tooltip d-none">
-            Se marcar como sim todo documento transmitido será enviado para o email do escritório configurado
+            <div class="col-md-3 mb-2">
+                {!!Form::text('email', 'Email')
+                ->required()
+                ->type('email')
+                !!}
+            </div>
         </div>
     </div>
+</div>
+<div class="modulo-section-card mb-3">
+    <div class="card-header">
+        <h4><i class="ri-map-pin-line me-2"></i>Localização e Contato</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-md-2 mb-2">
+                {!!Form::tel('cep', 'CEP')
+                ->attrs(['class' => 'cep'])
+                ->required()
+                !!}
+            </div>
 
-    <div class="col-md-3">
-        {!!Form::text('email', 'Email')
-        ->required()
-        ->type('email')
-        !!}
-    </div>
+            <div class="col-md-4 mb-2">
+                {!!Form::text('rua', 'Rua')
+                ->required()
+                !!}
+            </div>
+            <div class="col-md-2 mb-2">
+                {!!Form::text('numero', 'Número')
+                ->required()
+                !!}
+            </div>
+            <div class="col-md-3 mb-2">
+                {!!Form::text('bairro', 'Bairro')
+                ->required()
+                !!}
+            </div>
 
-    <hr>
-    <div class="col-md-2">
-        {!!Form::tel('cep', 'CEP')
-        ->attrs(['class' => 'cep'])
-        ->required()
-        !!}
-    </div>
+            <div class="col-md-3 mb-2">
+                {!!Form::select('cidade_id', 'Cidade')
+                ->required()
+                ->options($item != null ? [$item->cidade->id => $item->cidade->info] : [])
+                !!}
+            </div>
 
-    <div class="col-md-4">
-        {!!Form::text('rua', 'Rua')
-        ->required()
-        !!}
-    </div>
-    <div class="col-md-2">
-        {!!Form::text('numero', 'Número')
-        ->required()
-        !!}
-    </div>
-    <div class="col-md-3">
-        {!!Form::text('bairro', 'Bairro')
-        ->required()
-        !!}
-    </div>
+            <div class="col-md-2 mb-2">
+                {!!Form::tel('telefone', 'Telefone')
+                ->attrs(['class' => 'fone'])
+                ->required()
+                !!}
+            </div>
 
-    <div class="col-md-3">
-        {!!Form::select('cidade_id', 'Cidade')
-        ->required()
-        ->options($item != null ? [$item->cidade->id => $item->cidade->info] : [])
-        !!}
-    </div>
-
-    <div class="col-md-2">
-        {!!Form::tel('telefone', 'Telefone')
-        ->attrs(['class' => 'fone'])
-        ->required()
-        !!}
-    </div>
-
-    <div class="col-12" style="text-align: right;">
-        <button type="submit" class="btn btn-success px-5" id="btn-store">Salvar</button>
+            <div class="col-12 mt-3" style="text-align: right;">
+                <button type="submit" class="btn btn-success px-5" id="btn-store">Salvar</button>
+            </div>
+        </div>
     </div>
 </div>
-
 @section('js')
 <script type="text/javascript">
 

@@ -1,36 +1,58 @@
-@extends('layouts.app', ['title' => 'Natureza de Operação'])
+@extends('layouts.app', ['title' => 'Naturezas de Operação'])
+
+@section('css')
+<style>
+    .modulo-header-gradient { background: linear-gradient(135deg, #0d2b40 0%, #1a4a6e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
+    .modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
+    .modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.15); padding: 8px; border-radius: 10px; color: #fff; }
+    .modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.85) !important; font-weight: 400; }
+    
+    .modulo-form-card { border: 1px solid #eef0f5; border-radius: 12px; overflow: hidden; background: #fff; }
+</style>
+@endsection
+
 @section('content')
 <div class="mt-3">
     <div class="row">
-        <div class="card">
-            <div class="card-body">
-                <div class="col-md-2">
-                    @can('natureza_operacao_create')
-                    <a href="{{ route('natureza-operacao.create') }}" class="btn btn-success">
-                        <i class="ri-add-circle-fill"></i>
-                        Nova Natureza
-                    </a>
-                    @endcan
+        <div class="col-md-12">
+            <div class="card modulo-form-card shadow-sm">
+                <!-- Cabeçalho Gradient Premium -->
+                <div class="card-header modulo-header-gradient py-3 px-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div>
+                            <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
+                                <i class="ri-settings-4-line"></i>
+                                Naturezas de Operação
+                            </h4>
+                            <p class="text-white-50 mb-0 modulo-subtitle fs-13">
+                                Gerencie as naturezas de operação para emissão de notas.
+                            </p>
+                        </div>
+                        <div>
+                            @can('natureza_operacao_create')
+                            <a href="{{ route('natureza-operacao.create') }}" class="btn btn-success btn-sm px-3 shadow-sm">
+                                <i class="ri-add-circle-fill align-middle me-1"></i> Nova Natureza
+                            </a>
+                            @endcan
+                        </div>
+                    </div>
                 </div>
-                <hr class="mt-3">
-                <div class="col-lg-12">
+
+                <div class="card-body p-4">
                     {!!Form::open()->fill(request()->all())
                     ->get()
                     !!}
-                    <div class="row mt-3">
+                    <div class="row g-2 mb-4">
                         <div class="col-md-4">
-                            {!!Form::text('descricao', 'Pesquisar por nome')
-                            !!}
+                            {!!Form::text('descricao', 'Pesquisar por nome')->attrs(['class' => 'form-control', 'placeholder' => 'Buscar por nome...'])!!}
                         </div>
-                        <div class="col-md-3 text-left ">
-                            <br>
-                            <button class="btn btn-primary" type="submit"> <i class="ri-search-line"></i>Pesquisar</button>
-                            <a id="clear-filter" class="btn btn-danger" href="{{ route('natureza-operacao.index') }}"><i class="ri-eraser-fill"></i>Limpar</a>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button class="btn btn-primary me-2" type="submit"> <i class="ri-search-line me-1"></i>Pesquisar</button>
+                            <a id="clear-filter" class="btn btn-danger" href="{{ route('natureza-operacao.index') }}"><i class="ri-eraser-fill me-1"></i>Limpar</a>
                         </div>
                     </div>
                     {!!Form::close()!!}
-                </div>
-                <div class="col-md-12 mt-3">
+                    
                     <div class="table-responsive-sm">
                         <table class="table table-centered">
                             <thead class="table-dark">

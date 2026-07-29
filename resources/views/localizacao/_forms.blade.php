@@ -143,90 +143,99 @@
 
     @if(!isset($firstLocation) || (isset($firstLocation) && !$firstLocation))
     <hr class="mt-4">
-    <h4>NFe</h4>
+    <h5 class="text-dark border-bottom pb-2 mb-3"><i class="ri-file-text-line text-primary me-2 align-middle fs-18"></i> NFe</h5>
     <div class="col-md-2">
         {!!Form::tel('numero_ultima_nfe_producao', 'Última Produção')
-        ->attrs(['class' => ''])
+        ->attrs(['class' => 'form-control'])
         !!}
     </div>
     <div class="col-md-2">
         {!!Form::tel('numero_ultima_nfe_homologacao', 'Última Homologação')
-        ->attrs(['class' => ''])
+        ->attrs(['class' => 'form-control'])
         !!}
     </div>
     <div class="col-md-2">
         {!!Form::tel('numero_serie_nfe', 'Nº de Série')
-        ->attrs(['class' => ''])
+        ->attrs(['class' => 'form-control'])
         !!}
     </div>
 
     <div class="col-md-2 div-simples">
         {!!Form::tel('perc_ap_cred', '% Aproveitamento crédito')
-        ->attrs(['class' => 'percentual'])
+        ->attrs(['class' => 'percentual form-control'])
         !!}
     </div>
 
 
     <div class="col-md-12 div-simples">
         {!!Form::textarea('mensagem_aproveitamento_credito', 'Mensagem de aproveitamento de crédito ICMS')
-        ->attrs(['rows' => '5', 'class' => 'tooltipp'])
+        ->attrs(['rows' => '5', 'class' => 'tooltipp form-control'])
         !!}
         <div class="text-tooltip d-none">
             Mensagem de aproveitamento de crédito ICMS, exemplo: Permite o aproveitamento de credito R$ correspondente ao %. Use R$ para calcular o valor
         </div>
     </div>
-    <hr>
-    <h4>NFCe</h4>
+    
+    <div class="col-12 mt-4">
+        <h5 class="text-dark border-bottom pb-2 mb-3"><i class="ri-receipt-line text-primary me-2 align-middle fs-18"></i> NFCe</h5>
+    </div>
     <div class="col-md-2">
         {!!Form::tel('numero_ultima_nfce_producao', 'Última Produção')
-        ->attrs(['class' => ''])
+        ->attrs(['class' => 'form-control'])
         !!}
     </div>
     <div class="col-md-2">
         {!!Form::tel('numero_ultima_nfce_homologacao', 'Última Homologação')
-        ->attrs(['class' => ''])
+        ->attrs(['class' => 'form-control'])
         !!}
     </div>
     <div class="col-md-2">
         {!!Form::tel('numero_serie_nfce', 'Nº de Série')
-        ->attrs(['class' => ''])
+        ->attrs(['class' => 'form-control'])
         !!}
     </div>
-    <hr>
-    <h4>CTe</h4>
+    
+    <div class="col-12 mt-4">
+        <h5 class="text-dark border-bottom pb-2 mb-3"><i class="ri-truck-line text-primary me-2 align-middle fs-18"></i> CTe</h5>
+    </div>
     <div class="col-md-2">
         {!!Form::tel('numero_ultima_cte_producao', 'Última Produção')
-        ->attrs(['class' => ''])
+        ->attrs(['class' => 'form-control'])
         !!}
     </div>
     <div class="col-md-2">
         {!!Form::tel('numero_ultima_cte_homologacao', 'Última Homologação')
-        ->attrs(['class' => ''])
+        ->attrs(['class' => 'form-control'])
         !!}
     </div>
     <div class="col-md-2">
         {!!Form::tel('numero_serie_cte', 'Nº de Série')
-        ->attrs(['class' => ''])
+        ->attrs(['class' => 'form-control'])
         !!}
     </div>
-    <hr>
-    <h4>MDFe</h4>
+    
+    <div class="col-12 mt-4">
+        <h5 class="text-dark border-bottom pb-2 mb-3"><i class="ri-ship-line text-primary me-2 align-middle fs-18"></i> MDFe</h5>
+    </div>
     <div class="col-md-2">
         {!!Form::tel('numero_ultima_mdfe_producao', 'Última Produção')
-        ->attrs(['class' => ''])
+        ->attrs(['class' => 'form-control'])
         !!}
     </div>
     <div class="col-md-2">
         {!!Form::tel('numero_ultima_mdfe_homologacao', 'Última Homologação')
-        ->attrs(['class' => ''])
+        ->attrs(['class' => 'form-control'])
         !!}
     </div>
     <div class="col-md-2">
         {!!Form::tel('numero_serie_mdfe', 'Nº de Série')
-        ->attrs(['class' => ''])
+        ->attrs(['class' => 'form-control'])
         !!}
     </div>
-    <hr>
+    
+    <div class="col-12 mt-4">
+        <h5 class="text-dark border-bottom pb-2 mb-3"><i class="ri-shield-keyhole-line text-primary me-2 align-middle fs-18"></i> Credenciais API</h5>
+    </div>
     <div class="col-md-4">
         {!!Form::text('csc', 'CSC')
         ->attrs(['class' => 'form-control'])
@@ -234,7 +243,7 @@
     </div>
     <div class="col-md-2">
         {!!Form::text('csc_id', 'CSC ID')
-        ->attrs(['data-mask' => '0000000000'])
+        ->attrs(['data-mask' => '0000000000', 'class' => 'form-control'])
         !!}
     </div>
     
@@ -246,51 +255,63 @@
 
     <div class="col-md-3">
         {!!Form::tel('aut_xml', 'Autorizador XML')
-        ->attrs(['class' => 'cnpj'])
+        ->attrs(['class' => 'cnpj form-control'])
         !!}
     </div>
 
-    <div class="card col-md-3 mt-3 form-input">
-        <h5>Selecionar imagem</h5>
-        <div class="preview">
-            <button type="button" id="btn-remove-imagem" class="btn btn-link-danger btn-sm btn-danger">x</button>
+    <div class="col-12 mt-4">
+        <h5 class="text-dark border-bottom pb-2 mb-3"><i class="ri-image-line text-primary me-2 align-middle fs-18"></i> Imagem (Logotipo)</h5>
+    </div>
+    <div class="card col-md-3 mt-2 form-input shadow-none border">
+        <div class="preview text-center py-2">
+            <button type="button" id="btn-remove-imagem" class="btn btn-link-danger btn-sm btn-danger position-absolute top-0 end-0 m-2"><i class="ri-close-line"></i></button>
             @isset($item)
-            <img id="file-ip-1-preview" src="{{ $item->img }}">
-            <a href="{{ route('localizacao.delete-logo') }}">remover imagem</a>
+            <img id="file-ip-1-preview" src="{{ $item->img }}" class="img-fluid rounded" style="max-height: 100px;">
+            <div class="mt-2"><a href="{{ route('localizacao.delete-logo') }}" class="text-danger fs-12"><i class="ri-delete-bin-line me-1"></i> remover imagem</a></div>
             @else
-            <img id="file-ip-1-preview" src="/imgs/no-image.png">
+            <img id="file-ip-1-preview" src="/imgs/no-image.png" class="img-fluid rounded" style="max-height: 100px;">
             @endif
         </div>
-        <label for="file-ip-1">Imagem</label>
-        <input type="file" id="file-ip-1" name="image" accept="image/*" onchange="showPreview(event);">
+        <div class="card-footer bg-light p-2 text-center">
+            <label for="file-ip-1" class="btn btn-sm btn-primary mb-0"><i class="ri-upload-cloud-2-line me-1"></i> Procurar</label>
+            <input type="file" id="file-ip-1" name="image" accept="image/*" onchange="showPreview(event);" class="d-none">
+        </div>
     </div>
 
-    <hr class="mt-4">
-    <p class="m-3">Arquivo do certificado A1 (Formato .pfx ou .p12)</p>
+    <div class="col-12 mt-4">
+        <h5 class="text-dark border-bottom pb-2 mb-3"><i class="ri-file-shield-line text-primary me-2 align-middle fs-18"></i> Certificado A1 (.pfx ou .p12)</h5>
+    </div>
     @if($dadosCertificado != null)
     <div class="col-12">
-        <div class="card m-2">
-            <div class="card-body">
-
-                <h6>serial <strong>{{ $dadosCertificado['serial'] }}</strong></h6>
-                <h6>inicio <strong>{{ $dadosCertificado['inicio'] }}</strong></h6>
-                <h6>expiracao <strong>{{ $dadosCertificado['expiracao'] }}</strong></h6>
-                <h6>id <strong>{{ $dadosCertificado['id'] }}</strong></h6>
+        <div class="card border shadow-none mb-3">
+            <div class="card-body py-2">
+                <div class="row text-muted fs-13">
+                    <div class="col-md-3">Serial: <strong class="text-dark">{{ $dadosCertificado['serial'] }}</strong></div>
+                    <div class="col-md-3">Início: <strong class="text-dark">{{ $dadosCertificado['inicio'] }}</strong></div>
+                    <div class="col-md-3">Expiração: <strong class="text-dark">{{ $dadosCertificado['expiracao'] }}</strong></div>
+                    <div class="col-md-3">ID: <strong class="text-dark">{{ $dadosCertificado['id'] }}</strong></div>
+                </div>
             </div>
         </div>
     </div>
     @endif
     <div class="col-md-3 file-certificado">
-        {!! Form::file('certificado', 'Certificado Digital')->value(isset($item) ? false : true) !!}
+        {!! Form::file('certificado', 'Certificado Digital')->value(isset($item) ? false : true)->attrs(['class' => 'form-control']) !!}
         <span class="text-danger" id="filename"></span>
     </div>
     <div class="col-md-2">
-        {!! Form::text('senha_certificado', 'Senha do certificado') !!}
+        {!! Form::text('senha_certificado', 'Senha do certificado')->attrs(['class' => 'form-control']) !!}
     </div>
     <hr class="mt-4">
     @endif
-    <div class="col-12" style="text-align: right;">
-        <button type="submit" class="btn btn-success px-5" id="btn-store">Salvar</button>
+    
+    <div class="col-12 mt-4">
+        <hr class="text-muted opacity-25">
+        <div class="d-flex align-items-center justify-content-end">
+            <button type="submit" class="btn btn-success px-5 py-2 fw-semibold shadow-sm" id="btn-store">
+                <i class="ri-save-line align-middle me-1"></i> Salvar Localização
+            </button>
+        </div>
     </div>
 </div>
 

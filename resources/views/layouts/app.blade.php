@@ -38,19 +38,22 @@
     <style>
         /* Ajuste do tamanho da logo no sidebar esquerdo */
         .leftside-menu .logo {
-            height: 70px !important;
-            line-height: 70px !important;
+            height: 80px !important;
+            line-height: 80px !important;
             padding: 0 !important;
             background: #fff !important;
+            position: relative !important;
         }
         .leftside-menu .logo img {
-            height: 100% !important;
-            max-height: 70px !important;
+            height: auto !important;
+            max-height: 65px !important;
             width: auto !important;
-            max-width: 100% !important;
+            max-width: 90% !important;
             object-fit: contain !important;
-            margin: 0 auto !important;
-            padding: 5px 15px !important;
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
         }
         
         /* Ajuste do tamanho da logo no topbar (mobile/detached) */
@@ -60,14 +63,18 @@
             padding: 0 !important;
             width: 220px !important;
             background: #fff !important;
+            position: relative !important;
         }
         .navbar-custom .logo-topbar img {
-            height: 100% !important;
-            max-height: 60px !important;
+            height: auto !important;
+            max-height: 55px !important;
             width: auto !important;
-            max-width: 100% !important;
+            max-width: 90% !important;
             object-fit: contain !important;
-            padding: 5px !important;
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
         }
     </style>
 </head>

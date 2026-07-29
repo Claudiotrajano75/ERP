@@ -139,6 +139,8 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
 
         Route::resource('planos-pendentes', 'PlanoPendenteController');
         Route::resource('configuracao-super', 'ConfiguracaoSuperController');
+        Route::get('config-geral-admin', [App\Http\Controllers\ConfiguracaoSuperController::class, 'logoForm'])->name('config-geral-admin.index');
+        Route::post('config-geral-admin/logo', [App\Http\Controllers\ConfiguracaoSuperController::class, 'updateLogo'])->name('config-geral-admin.update-logo');
         Route::resource('cidades', 'CidadeController');
         Route::resource('bairros-super', 'BairroSuperController');
         Route::resource('video-suporte', 'VideoSuporteController');

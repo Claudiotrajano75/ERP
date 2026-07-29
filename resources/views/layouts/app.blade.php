@@ -1,3 +1,7 @@
+@php
+    $configuracaoSuperGlobal = \App\Models\ConfiguracaoSuper::first();
+    $logoUrlGlobal = $configuracaoSuperGlobal ? $configuracaoSuperGlobal->logo_url : '/logo.jpg';
+@endphp
 <!doctype html>
 <html lang="pt-br">
 
@@ -10,7 +14,7 @@
 
     <title>{{ $title }}</title>
 
-    <link rel="shortcut icon" href="/logo-sm.png">
+    <link rel="shortcut icon" href="{{ $logoUrlGlobal }}">
     <link href="/assets/vendor/fullcalendar/main.min.css" rel="stylesheet" type="text/css" />
     <link href="/assets/vendor/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
     <link href="/assets/vendor/daterangepicker/daterangepicker.css" rel="stylesheet" type="text/css" />
@@ -31,7 +35,41 @@
 
     @yield('css')
 
-
+    <style>
+        /* Ajuste do tamanho da logo no sidebar esquerdo */
+        .leftside-menu .logo {
+            height: 70px !important;
+            line-height: 70px !important;
+            padding: 0 !important;
+            background: #fff !important;
+        }
+        .leftside-menu .logo img {
+            height: 100% !important;
+            max-height: 70px !important;
+            width: auto !important;
+            max-width: 100% !important;
+            object-fit: contain !important;
+            margin: 0 auto !important;
+            padding: 5px 15px !important;
+        }
+        
+        /* Ajuste do tamanho da logo no topbar (mobile/detached) */
+        .navbar-custom .logo-topbar {
+            height: 70px !important;
+            line-height: 70px !important;
+            padding: 0 !important;
+            width: 220px !important;
+            background: #fff !important;
+        }
+        .navbar-custom .logo-topbar img {
+            height: 100% !important;
+            max-height: 60px !important;
+            width: auto !important;
+            max-width: 100% !important;
+            object-fit: contain !important;
+            padding: 5px !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -53,21 +91,20 @@
                         <!-- Logo light -->
                         <a href="/" class="logo-light">
                             <span class="logo-lg">
-                                <img src="/logo-sm.png" alt="logo">
-
+                                <img src="{{ $logoUrlGlobal }}" alt="logo">
                             </span>
                             <span class="logo-sm">
-                                <img src="/logo-sm.png" alt="small logo">
+                                <img src="{{ $logoUrlGlobal }}" alt="small logo">
                             </span>
                         </a>
 
                         <!-- Logo Dark -->
                         <a href="/" class="logo-dark">
                             <span class="logo-lg">
-                                <img src="/logo-sm.png" alt="dark logo">
+                                <img src="{{ $logoUrlGlobal }}" alt="dark logo">
                             </span>
                             <span class="logo-sm">
-                                <img src="/logo-sm.png" alt="small logo">
+                                <img src="{{ $logoUrlGlobal }}" alt="small logo">
                             </span>
                         </a>
                     </div>
@@ -300,20 +337,20 @@
             <!-- Brand Logo Light -->
             <a href="/" class="logo logo-light">
                 <span class="logo-lg">
-                    <img class="logo-painel" src="/logo.jpg" alt="logo">
+                    <img class="logo-painel" src="{{ $logoUrlGlobal }}" alt="logo">
                 </span>
                 <span class="logo-sm">
-                    <img src="/logo-sm.png" alt="small logo">
+                    <img src="{{ $logoUrlGlobal }}" alt="small logo">
                 </span>
             </a>
 
             <!-- Brand Logo Dark -->
             <a href="/" class="logo logo-dark">
                 <span class="logo-lg">
-                    <img class="logo-painel" src="/logo.jpg" alt="dark logo">
+                    <img class="logo-painel" src="{{ $logoUrlGlobal }}" alt="dark logo">
                 </span>
                 <span class="logo-sm">
-                    <img src="/logo-sm.png" alt="small logo">
+                    <img src="{{ $logoUrlGlobal }}" alt="small logo">
                 </span>
             </a>
 
@@ -424,6 +461,9 @@
                                     </li>
                                     <li>
                                         <a href="{{ route('configuracao-super.index') }}">Configuração</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('config-geral-admin.index') }}">Configuração Geral</a>
                                     </li>
                                     <li>
                                         <a href="{{ route('notificacao-super.index') }}">Notificações</a>

@@ -1,40 +1,113 @@
 @section('css')
 <style type="text/css">
-    input[type="file"] {
-        display: none;
+    /* Títulos de Seção */
+    .section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #4f46e5 !important;
+        margin-top: 24px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
-    .file-certificado label {
-        padding: 8px 8px;
-        width: 100%;
-        background-color: #8833FF;
-        color: #FFF;
-        text-transform: uppercase;
-        text-align: center;
-        display: block;
-        margin-top: 20px;
+    .section-title i {
+        font-size: 18px;
+    }
+
+    /* Formulários de Filtro e Cadastro */
+    .form-control, .form-select, select, input[type="text"], input[type="tel"], input[type="email"], input[type="password"] {
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 10px !important;
+        padding: 10px 14px !important;
+        font-size: 13px !important;
+        color: #334155 !important;
+        transition: all 0.2s ease !important;
+        box-shadow: none !important;
+        background-color: #ffffff !important;
+    }
+
+    .form-control:focus, .form-select:focus, select:focus {
+        border-color: #4f46e5 !important;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
+    }
+
+    .form-label, label {
+        font-weight: 600 !important;
+        color: #475569 !important;
+        font-size: 13px !important;
+        margin-bottom: 6px !important;
+    }
+
+    /* Botões */
+    .btn {
+        border-radius: 10px !important;
+        font-weight: 500 !important;
+        font-size: 13px !important;
+        padding: 10px 20px !important;
+        transition: all 0.2s ease !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .btn-success {
+        background-color: #10b981 !important;
+        border-color: #10b981 !important;
+        color: #fff !important;
+    }
+
+    .btn-success:hover {
+        background-color: #059669 !important;
+        border-color: #059669 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+    }
+
+    /* Customização dos Toggles de Senha e Inputs em Grupo */
+    .input-group-text {
+        background-color: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 0 10px 10px 0 !important;
+        color: #64748b !important;
         cursor: pointer;
-        border-radius: 5px;
+        padding: 10px 14px !important;
     }
 
+    .input-group .form-control {
+        border-radius: 10px 0 0 10px !important;
+    }
+
+    hr {
+        border-color: rgba(0, 0, 0, 0.06) !important;
+        opacity: 1 !important;
+        margin: 24px 0 !important;
+    }
 </style>
 @endsection
 
-<div class="row g-2">
-    <div class="col-md-2">
+<div class="row g-3">
+    <!-- SEÇÃO: DADOS DO CONTADOR -->
+    <div class="col-12 mt-2">
+        <h5 class="section-title"><i class="ri-information-line"></i> Informações Básicas do Contador</h5>
+    </div>
+
+    <div class="col-md-3">
         {!!Form::tel('cpf_cnpj', 'CPF/CNPJ')
-        ->attrs(['class' => 'form-control cpf_cnpj', 'o'])
+        ->attrs(['class' => 'form-control cpf_cnpj'])
         ->required()
         !!}
     </div>
     
     <div class="col-md-4">
-        {!!Form::text('nome', 'Nome')
+        {!!Form::text('nome', 'Razão Social / Nome Completo')
         ->attrs(['class' => 'form-control'])
         ->required()
         !!}
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         {!!Form::text('nome_fantasia', 'Nome Fantasia')
         ->attrs(['class' => 'form-control'])
         ->required()
@@ -42,33 +115,41 @@
     </div>
     
     <div class="col-md-2">
-        {!!Form::tel('ie', 'IE')
+        {!!Form::tel('ie', 'Inscrição Estadual (IE) / RG')
         ->attrs(['data-mask' => '0000000000'])
         ->required()
         !!}
     </div>
-    <hr>
+
+    <!-- SEÇÃO: ENDEREÇO E CONTATO -->
+    <div class="col-12 mt-4">
+        <h5 class="section-title"><i class="ri-map-pin-line"></i> Endereço e Contato</h5>
+    </div>
+
+    <div class="col-md-2">
+        {!!Form::tel('cep', 'CEP')
+        ->attrs(['class' => 'cep'])
+        ->required()
+        !!}
+    </div>
     <div class="col-md-4">
         {!!Form::text('rua', 'Rua')
-        ->attrs(['class' => ''])
         ->required()
         !!}
     </div>
     <div class="col-md-2">
         {!!Form::tel('numero', 'Número')
-        ->attrs(['class' => ''])
         ->required()
         !!}
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
         {!!Form::text('bairro', 'Bairro')
-        ->attrs(['class' => ''])
         ->required()
         !!}
     </div>
+
     <div class="col-md-3">
         {!!Form::text('complemento', 'Complemento')
-        ->attrs(['class' => ''])
         !!}
     </div>
     <div class="col-md-3">
@@ -85,89 +166,81 @@
         !!}
         @endisset
     </div>
-    <div class="col-md-2">
-        {!!Form::tel('cep', 'CEP')
-        ->attrs(['class' => 'cep'])
-        ->required()
-        !!}
-    </div>
     <div class="col-md-3">
-        {!!Form::text('email_empresa', 'Email')
+        {!!Form::text('email_empresa', 'Email de Contato')
         ->attrs(['class' => ''])
         ->value(isset($item) ? $item->email : '')
         !!}
     </div>
-    <div class="col-md-2">
-        {!!Form::tel('celular', 'Telefone')
+    <div class="col-md-3">
+        {!!Form::tel('celular', 'Telefone / Celular')
         ->attrs(['class' => 'fone'])
         ->required()
         !!}
     </div>
-    
-    <div class="col-md-2">
-        {!!Form::select('status', 'Status', [1 => 'Ativo', 0 => 'Desativado'])
+    <div class="col-md-3">
+        {!!Form::select('status', 'Status do Cadastro', [1 => 'Ativo', 0 => 'Desativado'])
         ->attrs(['class' => 'form-select'])
         !!}
     </div>
 
+    <!-- SEÇÃO: DADOS DE USUÁRIO DE ACESSO -->
     @if(__isMaster())
     @if(!isset($item))
+    <div class="col-12 mt-4">
+        <h5 class="section-title"><i class="ri-user-settings-line"></i> Usuário de Acesso do Contador</h5>
+    </div>
 
-    <hr class="mt-4">
-    <h5>Dados do Usuário</h5>
-    <div class="col-md-2">
-        {!!Form::text('usuario', 'Nome')
-        ->attrs(['class' => ''])
+    <div class="col-md-3">
+        {!!Form::text('usuario', 'Nome do Usuário')
         ->required()
         !!}
     </div>
     <div class="col-md-3">
-        {!!Form::text('email', 'Email')
-        ->attrs(['class' => ''])
+        {!!Form::text('email', 'Email de Acesso')
         ->required()
         !!}
     </div>
-    <div class="col-md-2">
-        <div class="col-md-12">
-            <label class="required" for="">Senha</label>
-            <div class="input-group" id="show_hide_password">
-                <input required type="password" class="form-control" name="password" autocomplete="off" @if(isset($senhaCookie)) value="{{$senhaCookie}}" @endif>
-                <a class="input-group-text"><i class='ri-eye-line'></i></a>
-            </div>
+    <div class="col-md-3">
+        <label class="required form-label" for="">Senha</label>
+        <div class="input-group" id="show_hide_password">
+            <input required type="password" class="form-control" name="password" autocomplete="off" @if(isset($senhaCookie)) value="{{$senhaCookie}}" @endif>
+            <a class="input-group-text"><i class='ri-eye-line'></i></a>
         </div>
     </div>
-    <div class="col-md-2">
-        <div class="col-md-12">
-            <label class="required" for="">Repetir Senha</label>
-            <div class="input-group" id="show_hide_password_r">
-                <input required type="password" class="form-control" name="password_confirmation" autocomplete="off">
-                <a class="input-group-text"><i class='ri-eye-line'></i></a>
-            </div>
+    <div class="col-md-3">
+        <label class="required form-label" for="">Confirmar Senha</label>
+        <div class="input-group" id="show_hide_password_r">
+            <input required type="password" class="form-control" name="password_confirmation" autocomplete="off">
+            <a class="input-group-text"><i class='ri-eye-line'></i></a>
         </div>
     </div>
     @endif
 
-    <hr class="mt-4">
-    <h5>Dados do Contador</h5>
-    <div class="col-md-2">
-        {!!Form::text('percentual_comissao', '% Comissão')
+    <!-- SEÇÃO: DADOS ADICIONAIS DO CONTADOR -->
+    <div class="col-12 mt-4">
+        <h5 class="section-title"><i class="ri-settings-4-line"></i> Parâmetros Comerciais e Limites</h5>
+    </div>
+
+    <div class="col-md-4">
+        {!!Form::text('percentual_comissao', 'Percentual de Comissão (%)')
         ->attrs(['class' => 'comissao'])
         ->required()
         !!}
     </div>
-
-    <div class="col-md-3">
-        {!!Form::text('limite_cadastro_empresas', 'Limite cadastro de empresas')
+    <div class="col-md-4">
+        {!!Form::text('limite_cadastro_empresas', 'Limite de Cadastro de Empresas')
         ->attrs(['data-mask' => '0000'])
         ->required()
         !!}
     </div>
-
     @endif
 
     <hr class="mt-4">
-    <div class="col-12" style="text-align: right;">
-        <button type="submit" class="btn btn-success px-5" id="btn-store">Salvar</button>
+    <div class="col-12 d-flex justify-content-end">
+        <button type="submit" class="btn btn-success px-5" id="btn-store">
+            <i class="ri-save-line"></i> Salvar Cadastro
+        </button>
     </div>
 </div>
 

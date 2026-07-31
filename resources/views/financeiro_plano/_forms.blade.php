@@ -1,5 +1,5 @@
 <div class="row g-3">
-    <div class="col-md-3">
+    <div class="col-md-4">
         {!!Form::text('valor', 'Valor')->attrs(['class' => 'moeda form-control'])->required()
         ->value(__moeda($item->valor))!!}
     </div>
@@ -16,8 +16,8 @@
     </div>
     <div class="col-12 text-end mt-4">
         <hr class="mb-3">
-        <button type="submit" class="btn btn-success px-5" id="btn-store">
-            <i class="ri-save-line me-1 align-middle"></i> Salvar
+        <button type="submit" class="btn btn-success" id="btn-store">
+            <i class="ri-save-line"></i> Salvar
         </button>
     </div>
 </div>

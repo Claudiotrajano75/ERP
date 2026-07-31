@@ -2,13 +2,11 @@
 @section('content')
 
 <div class="card mt-1">
-    <div class="card-header">
-        <h4>Novo Pagamento</h4>
-        <div style="text-align: right; margin-top: -35px;">
-            <a href="{{ route('contadores.financeiro', [$contador->id]) }}" class="btn btn-danger btn-sm px-3">
-                <i class="ri-arrow-left-double-fill"></i>Voltar
-            </a>
-        </div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="m-0"><i class="ri-cash-line text-primary"></i> Novo Pagamento</h4>
+        <a href="{{ route('contadores.financeiro', [$contador->id]) }}" class="btn btn-danger btn-sm px-3">
+            <i class="ri-arrow-left-double-fill"></i>Voltar
+        </a>
     </div>
     <div class="card-body">
         {!!Form::open()

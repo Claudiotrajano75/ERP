@@ -113,7 +113,7 @@
                 </div>
             </div>
         </div>
-        <div class="card" style="min-height: calc(100vh - 150px)">
+        <div class="card" style="min-height: calc(100vh - 190px)">
 
             <div class="card pdv-categories-wrapper m-1 border-0 shadow-none">
                 <div class="pdv-categories-header">
@@ -136,7 +136,7 @@
                     </button>
                 </div>
             </div>                <div class="card-body lista_produtos m-1" data-simplebar data-simplebar-lg
-                style="max-height: calc(100vh - 320px);">
+                style="max-height: calc(100vh - 355px);">
                 <div class="row cards-categorias">
 
                 </div>
@@ -163,42 +163,57 @@
         </div>
     </div>
     <div class="col-lg-8 produtos">
-        <div class="card" style="min-height: calc(100vh - 150px)">
-            <div class="row m-2">
+        <div class="card" style="min-height: calc(100vh - 190px)">
+            {{-- ═══ LINHA: BUSCAR / ADICIONAR PRODUTO ═══ --}}
+            <div class="row m-2 align-items-end pdv-add-row g-2">
+
+                {{-- Campo: Produto --}}
                 <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="inp-produto_id" class="">Produto <span class="pdv-shortcut pdv-shortcut-sm">F1</span></label>
+                    <div class="form-group mb-0">
+                        <label for="inp-produto_id" class="pdv-add-label">
+                            <i class="ri-search-line me-1"></i>Produto <span class="pdv-shortcut pdv-shortcut-sm">F1</span>
+                        </label>
                         <div class="input-group">
                             <select class="form-control produto_id" name="produto_id" id="inp-produto_id"></select>
                         </div>
                         <input name="variacao_id" id="inp-variacao_id" type="hidden" value="">
-
                     </div>
                 </div>
-                <div class="col-md-2">
-                    {!! Form::tel('quantidade', 'Quantidade')->attrs(['data-mask' => '00000,000', 'data-mask-reverse' => "true"]) !!}
-                </div>
-                <div class="col-md-2">
-                    {!! Form::tel('valor_unitario', 'Valor Unitário')->attrs(['class' => 'moeda value_unit']) !!}
-                </div>
-                <div class="col-md-2">
-                    <div class="row">
-                        <div class="col-12">
-                            <br>
-                            <button class="btn btn-primary btn-add-item w-100" type="button"
-                                style="margin-left: 0px">Adicionar</button>
-                        </div>
 
+                {{-- Campo: Quantidade --}}
+                <div class="col-md-2">
+                    <div class="form-group mb-0">
+                        <label class="pdv-add-label"><i class="ri-numbers-line me-1"></i>Qtd.</label>
+                        {!! Form::tel('quantidade', false)->attrs(['data-mask' => '00000,000', 'data-mask-reverse' => "true", 'class' => 'form-control text-center pdv-add-input']) !!}
                     </div>
                 </div>
-                <div class="col-md-1">
+
+                {{-- Campo: Valor Unitário --}}
+                <div class="col-md-2">
+                    <div class="form-group mb-0">
+                        <label class="pdv-add-label"><i class="ri-price-tag-2-line me-1"></i>Valor Unit.</label>
+                        {!! Form::tel('valor_unitario', false)->attrs(['class' => 'moeda value_unit form-control text-end pdv-add-input']) !!}
+                    </div>
+                </div>
+
+                {{-- Botão: Adicionar --}}
+                <div class="col-md-2">
+                    <button class="btn btn-primary btn-add-item w-100" type="button">
+                        <i class="ri-add-circle-line me-1"></i>Adicionar
+                    </button>
+                </div>
+
+                {{-- Campos hidden --}}
+                <div class="col-md-1 d-none">
                     {!! Form::hidden('subtotal', 'SubTotal')->attrs(['class' => 'moeda']) !!}
                     {!! Form::hidden('valor_total', 'valor Total')->attrs(['class' => 'moeda']) !!}
                 </div>
+
             </div>
+
             <div class="card m-1">
                 <div data-bs-target="#navbar-example2" class="scrollspy-example table-responsive"
-                    style="height: calc(100vh - 355px)">
+                    style="height: calc(100vh - 395px)">
                     <table class="table table-striped dt-responsive nowrap table-itens pdv-table-items">
                         <thead>
                             <tr>
@@ -222,42 +237,36 @@
 
                                         <td>
                                             <img src="{{ $product->produto->img }}"
-                                                style="width: 30px; height: 40px; border-radius: 10px;">
+                                                class="pdv-item-img" alt="{{ $product->produto->nome }}">
                                         </td>
                                         <td>
                                             <input style="width: 100%" readonly type="text" name="produto_nome[]"
-                                                class="form-control"
+                                                class="pdv-item-name"
                                                 value="{{ $product->produto->nome }} @if($product->produtoVariacao != null) - {{ $product->produtoVariacao->descricao }} @endif">
                                         </td>
 
                                         <td class="datatable-cell">
-                                            <div class="form-group mb-2" style="width: 140px">
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <button id="btn-subtrai" class="btn btn-danger" type="button">-</button>
-                                                    </div>
-                                                    <input type="tel" readonly class="form-control qtd qtd_row"
-                                                        name="quantidade[]"
-                                                        value="{{ number_format($product->quantidade, 2, ',', '') }}">
-                                                    <div class="input-group-append">
-                                                        <button class="btn btn-success" id="btn-incrementa"
-                                                            type="button">+</button>
-                                                    </div>
-                                                </div>
+                                            <div class="pdv-qty-group">
+                                                <button class="pdv-qty-btn pdv-qty-btn-minus" id="btn-subtrai" type="button">-</button>
+                                                <input type="tel" readonly class="pdv-qty-input qtd qtd_row"
+                                                    name="quantidade[]"
+                                                    value="{{ number_format($product->quantidade, 2, ',', '') }}">
+                                                <button class="pdv-qty-btn pdv-qty-btn-plus" id="btn-incrementa" type="button">+</button>
                                             </div>
                                         </td>
                                         <td>
                                             <input style="width: 100%" readonly type="tel" name="valor_unitario[]"
-                                                class="form-control value-unit" value="{{ __moeda($product->valor_unitario) }}">
+                                                class="pdv-item-value value-unit" value="{{ __moeda($product->valor_unitario) }}">
                                         </td>
                                         <td>
                                             <input style="width: 100%" readonly type="tel" name="subtotal_item[]"
-                                                class="form-control subtotal-item"
+                                                class="pdv-item-subtotal subtotal-item"
                                                 value="{{ __moeda($product->valor_unitario * $product->quantidade) }}">
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-danger btn-sm btn-delete-row"><i
-                                                    class="ri-delete-bin-line"></i></button>
+                                            <button type="button" class="pdv-btn-delete btn-delete-row">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -271,39 +280,34 @@
 
                                         <td>
                                             <img src="{{ $servico->servico->img }}"
-                                                style="width: 30px; height: 40px; border-radius: 10px;">
+                                                class="pdv-item-img" alt="{{ $servico->servico->nome }}">
                                         </td>
                                         <td style="width: 100%">
-                                            <input readonly type="text" name="servico_nome[]" class="form-control"
-                                                value="{{ $servico->servico->nome }} [serviço]" style="color: darkred;">
+                                            <input readonly type="text" name="servico_nome[]" class="pdv-item-name text-danger"
+                                                value="{{ $servico->servico->nome }} [serviço]">
                                         </td>
                                         <td>
-                                            <div class="input-group">
-                                                <div class="input-group-prepend">
-                                                    <button disabled id="btn-subtrai" class="btn btn-danger"
-                                                        type="button">-</button>
-                                                </div>
+                                            <div class="pdv-qty-group opacity-75">
+                                                <button disabled id="btn-subtrai" class="pdv-qty-btn pdv-qty-btn-minus" type="button">-</button>
                                                 <input readonly type="tel" name="quantidade_servico[]"
-                                                    class="form-control qtd-item"
+                                                    class="pdv-qty-input qtd-item"
                                                     value="{{ number_format($servico->quantidade, 0) }}">
-                                                <div class="input-group-append">
-                                                    <button disabled class="btn btn-success" id="btn-incrementa"
-                                                        type="button">+</button>
-                                                </div>
+                                                <button disabled id="btn-incrementa" class="pdv-qty-btn pdv-qty-btn-plus" type="button">+</button>
                                             </div>
                                         </td>
                                         <td>
-                                            <input readonly type="tel" name="valor_unitario_servico[]" class="form-control"
+                                            <input readonly type="tel" name="valor_unitario_servico[]" class="pdv-item-value"
                                                 value="{{ __moeda($servico->valor) }}">
                                         </td>
                                         <td>
                                             <input readonly type="tel" name="subtotal_servico[]"
-                                                class="form-control subtotal-item"
+                                                class="pdv-item-subtotal subtotal-item"
                                                 value="{{ __moeda($servico->valor * $servico->quantidade) }}">
                                         </td>
                                         <td>
-                                            <button disabled type="button" class="btn btn-danger btn-sm btn-delete-row"><i
-                                                    class="ri-delete-bin-line"></i></button>
+                                            <button disabled type="button" class="pdv-btn-delete btn-delete-row">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -358,7 +362,7 @@
                     </table>
                 </div>
             </div>
-            <div class="mt-1">
+            <div class="mt-1 px-3 pb-2">
 
                 {{-- Finalização foi comentada no dia 26-06-2026 para da mais espaço na tela --}}
                 {{-- <h5 class="text-center mb-2 mt-1 fw-bold"><i class="ri-shopping-cart-2-fill me-1"></i>Finalização</h5> --}}

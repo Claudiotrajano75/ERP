@@ -111,15 +111,17 @@
                     <div class="row m-3">
                         <div class="col-md-5">
                             <label class="required">Cliente</label>
-                            <div class="input-group flex-nowrap">
-                                <select required id="inp-cliente_id" name="cliente_id" class="cliente_id">
-                                    @if(isset($item) && $item->cliente)
-                                    <option value="{{ $item->cliente_id }}">{{ $item->cliente->razao_social }}</option>
-                                    @endif
-                                </select>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="flex-grow-1">
+                                    <select required id="inp-cliente_id" name="cliente_id" class="cliente_id">
+                                        @if(isset($item) && $item->cliente)
+                                        <option value="{{ $item->cliente_id }}">{{ $item->cliente->razao_social }}</option>
+                                        @endif
+                                    </select>
+                                </div>
                                 @can('clientes_create')
-                                <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modal_novo_cliente" type="button">
-                                    <i class="ri-add-circle-fill"></i>
+                                <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modal_novo_cliente" type="button" style="height: 38px;">
+                                    <i class="ri-add-fill fs-18"></i>
                                 </button>
                                 @endcan
                             </div>
@@ -209,21 +211,23 @@
 
                         <div class="col-md-5">
                             <label>Fornecedor</label>
-                            <div class="input-group flex-nowrap">
-                                <select id="inp-fornecedor_id" name="fornecedor_id" class="fornecedor_id">
-                                    @isset($cotacao)
-                                    <option value="{{ $cotacao->fornecedor_id }}">{{ $cotacao->fornecedor->razao_social }}</option>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="flex-grow-1">
+                                    <select id="inp-fornecedor_id" name="fornecedor_id" class="fornecedor_id">
+                                        @isset($cotacao)
+                                        <option value="{{ $cotacao->fornecedor_id }}">{{ $cotacao->fornecedor->razao_social }}</option>
 
-                                    @else
-                                    @isset($item)
-                                    <option value="{{ $item->fornecedor_id }}">{{ $item->fornecedor->razao_social }}</option>
-                                    @endif
-                                    @endif
+                                        @else
+                                        @isset($item)
+                                        <option value="{{ $item->fornecedor_id }}">{{ $item->fornecedor->razao_social }}</option>
+                                        @endif
+                                        @endif
 
-                                </select>
+                                    </select>
+                                </div>
                                 @can('fornecedores_create')
-                                <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modal_novo_fornecedor" type="button">
-                                    <i class="ri-add-circle-fill"></i>
+                                <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modal_novo_fornecedor" type="button" style="height: 38px;">
+                                    <i class="ri-add-fill fs-18"></i>
                                 </button>
                                 @endcan
                             </div>

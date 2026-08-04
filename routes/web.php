@@ -367,6 +367,8 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         Route::post('teste-email-send', 'EmailController@send')->name('teste-email-send');
 
         Route::resource('nfe', 'NfeController');
+        Route::get('faturamento-avulso/create', 'FaturamentoAvulsoController@create')->name('faturamento-avulso.create');
+        Route::post('faturamento-avulso', 'FaturamentoAvulsoController@store')->name('faturamento-avulso.store');
         Route::resource('nfe-xml', 'NfeXmlController');
         Route::get('nfe-xml-download', 'NfeXmlController@download')->name('nfe-xml.download');
         Route::get('nfe-xml-envio-contador', 'NfeXmlController@enviarContador')->name('nfe-xml.envio-contador');

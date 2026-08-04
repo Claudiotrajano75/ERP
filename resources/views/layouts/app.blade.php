@@ -1059,6 +1059,9 @@
                                                 <li>
                                                     <a href="{{ route('nfe.create') }}">Nova</a>
                                                 </li>
+                                                <li>
+                                                    <a href="{{ route('faturamento-avulso.create') }}">Faturamento Avulso</a>
+                                                </li>
                                             @endcan
 
                                             @if (__isPlanoFiscal())

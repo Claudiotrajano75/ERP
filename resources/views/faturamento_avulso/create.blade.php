@@ -222,13 +222,15 @@
                             <!-- Cliente -->
                             <div class="col-md-6 col-12">
                                 <label class="required">Cliente (Destinatário)</label>
-                                <div class="input-group">
-                                    <select required id="inp-cliente_id" name="cliente_id" class="form-select cliente_id">
-                                        <option value="">Buscar cliente...</option>
-                                    </select>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="flex-grow-1">
+                                        <select required id="inp-cliente_id" name="cliente_id" class="form-select cliente_id">
+                                            <option value="">Buscar cliente...</option>
+                                        </select>
+                                    </div>
                                     @can('clientes_create')
-                                    <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modal_novo_cliente" type="button">
-                                        <i class="ri-add-circle-fill"></i>
+                                    <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modal_novo_cliente" type="button" style="height: 38px;">
+                                        <i class="ri-add-fill fs-18"></i>
                                     </button>
                                     @endcan
                                 </div>

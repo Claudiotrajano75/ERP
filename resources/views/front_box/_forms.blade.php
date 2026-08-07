@@ -4,6 +4,7 @@
         #salvar_venda:hover {
             cursor: pointer;
         }
+
         .table-responsive {
             overflow-x: auto;
         }
@@ -46,7 +47,8 @@
 
 <input type="hidden" id="estoque_view" value="@can('estoque_view') 1 @else 0 @endif">
 
-<div class="row">            <div class="col-lg-4">
+<div class="row align-items-stretch">
+    <div class="col-lg-4">
         <div class="row g-2">
             <div class="col-lg-6">
                 <div class="card pdv-card-client">
@@ -58,21 +60,20 @@
                                         @isset($cliente)
                                             <span class="pdv-badge-status pdv-badge-selected">✓ Selecionado</span>
                                         @else
-                                            <span class="pdv-badge-status pdv-badge-pending">○ Pendente</span>
+                                        <span class="pdv-badge-status pdv-badge-pending">○ Pendente</span>
                                         @endif
                                     </h5>
                                 </div>
                                 @isset($cliente)
                                     <h6 class="pdv-card-value cliente_selecionado mt-1">{{ $cliente->razao_social }}</h6>
                                 @else
-                                    <h6 class="pdv-card-value-empty cliente_selecionado mt-1"><i class="ri-user-search-line"></i> Nenhum cliente selecionado</h6>
+                                <h6 class="pdv-card-value-empty cliente_selecionado mt-1"><i
+                                        class="ri-user-search-line"></i> Nenhum cliente selecionado</h6>
                                 @endif
                             </div>
                             <div class="flex-shrink-0 ms-2">
-                                <button type="button"
-                                    class="pdv-card-icon-btn text-bg-success btn-selecionar_cliente"
-                                    data-bs-toggle="modal" data-bs-target="#cliente"
-                                    title="Selecionar Cliente">
+                                <button type="button" class="pdv-card-icon-btn text-bg-success btn-selecionar_cliente"
+                                    data-bs-toggle="modal" data-bs-target="#cliente" title="Selecionar Cliente">
                                     <i class="ri-group-line fs-5"></i>
                                 </button>
                             </div>
@@ -90,21 +91,20 @@
                                         @isset($funcionario)
                                             <span class="pdv-badge-status pdv-badge-selected">✓ Selecionado</span>
                                         @else
-                                            <span class="pdv-badge-status pdv-badge-pending">○ Pendente</span>
+                                        <span class="pdv-badge-status pdv-badge-pending">○ Pendente</span>
                                         @endif
                                     </h5>
                                 </div>
                                 @isset($funcionario)
                                     <h6 class="pdv-card-value funcionario_selecionado mt-1">{{ $funcionario->nome }}</h6>
                                 @else
-                                    <h6 class="pdv-card-value-empty funcionario_selecionado mt-1"><i class="ri-user-search-line"></i> Nenhum vendedor selecionado</h6>
+                                <h6 class="pdv-card-value-empty funcionario_selecionado mt-1"><i
+                                        class="ri-user-search-line"></i> Nenhum vendedor selecionado</h6>
                                 @endif
                             </div>
                             <div class="flex-shrink-0 ms-2">
-                                <button type="button"
-                                    class="pdv-card-icon-btn text-bg-warning"
-                                    data-bs-toggle="modal" data-bs-target="#funcionario"
-                                    title="Selecionar Vendedor">
+                                <button type="button" class="pdv-card-icon-btn text-bg-warning" data-bs-toggle="modal"
+                                    data-bs-target="#funcionario" title="Selecionar Vendedor">
                                     <i class="ri-user-2-line fs-5"></i>
                                 </button>
                             </div>
@@ -113,7 +113,7 @@
                 </div>
             </div>
         </div>
-        <div class="card" style="min-height: calc(100vh - 190px)">
+        <div class="card" style="min-height: calc(100vh - 190px); display: flex; flex-direction: column;">
 
             <div class="card pdv-categories-wrapper m-1 border-0 shadow-none">
                 <div class="pdv-categories-header">
@@ -121,40 +121,49 @@
                 </div>
                 <hr class="m-0 mb-1" style="border-top: 1px solid #e0e0e0;">
                 <div class="pdv-categories-scroll">
-                    <button type="button" class="pdv-nav-arrow" id="cat-scroll-left" onclick="document.querySelector('.pdv-categories-container').scrollBy({left: -200, behavior: 'smooth'})">
+                    <button type="button" class="pdv-nav-arrow" id="cat-scroll-left"
+                        onclick="document.querySelector('.pdv-categories-container').scrollBy({left: -200, behavior: 'smooth'})">
                         <i class="ri-arrow-left-s-line"></i>
                     </button>
                     <div class="pdv-categories-container" id="cat-container">
-                        <button type="button" id="cat_todos" onclick="todos()" class="btn-pdv-cat btn-cat active">Todos</button>
+                        <button type="button" id="cat_todos" onclick="todos()"
+                            class="btn-pdv-cat btn-cat active">Todos</button>
                         @foreach ($categorias as $cat)
                             <button type="button" class="btn-pdv-cat btn-cat btn_cat_{{ $cat->id }}"
                                 onclick="selectCat('{{ $cat->id }}')">{{$cat->nome}}</button>
                         @endforeach
                     </div>
-                    <button type="button" class="pdv-nav-arrow" id="cat-scroll-right" onclick="document.querySelector('.pdv-categories-container').scrollBy({left: 200, behavior: 'smooth'})">
+                    <button type="button" class="pdv-nav-arrow" id="cat-scroll-right"
+                        onclick="document.querySelector('.pdv-categories-container').scrollBy({left: 200, behavior: 'smooth'})">
                         <i class="ri-arrow-right-s-line"></i>
                     </button>
                 </div>
-            </div>                <div class="card-body lista_produtos m-1" data-simplebar data-simplebar-lg
-                style="max-height: calc(100vh - 355px);">
+            </div>
+            <div class="card-body lista_produtos m-1" data-simplebar data-simplebar-lg
+                style="flex: 1 1 auto; min-height: 0; height: calc(100vh - 340px); overflow-y: auto;">
                 <div class="row cards-categorias">
 
                 </div>
             </div>
-            <div class="row" style="margin-top: 0px">
-                <div class="col-1 text-center">
-                    <input class="mousetrap" type="" autofocus
-                        style="border: none; width: 10px; height: 10px; background-color:black" id="codBarras" name="">
-                </div>
-                <div class="col-6 leitor_ativado text-info">
-                    Leitor Ativado
-                </div>
-                <div class="col-6 leitor_desativado d-none">
-                    Leitor Desativado
+            <div class="row align-items-center px-2 pb-2 g-2" style="margin-top: 0px">
+                <div class="col">
+                    {{-- Botão liga/desliga do leitor de código de barras --}}
+                    <button type="button" id="btn-leitor-toggle"
+                        class="btn pdv-leitor-toggle leitor-on w-100"
+                        title="Clique para desativar o leitor de código de barras">
+                        <span class="d-inline-flex align-items-center gap-2">
+                            <i class="ri-barcode-line fs-5"></i>
+                            <span class="pdv-leitor-label">Leitor Ativado</span>
+                        </span>
+                        <span class="pdv-leitor-switch"><i class="ri-toggle-fill"></i></span>
+                    </button>
+                    {{-- Input invisível que recebe o código do leitor USB (funciona como teclado) --}}
+                    <input type="text" class="mousetrap pdv-barcode-input" autofocus id="codBarras" name=""
+                        autocomplete="off">
                 </div>
                 @if(__countLocalAtivo() > 1 && $caixa->localizacao)
-                    <div class="col-5 text-end">
-                        <strong class="text-danger" style="margin-right: 5px;">{{ $caixa->localizacao->descricao }}</strong>
+                    <div class="col-auto ms-auto text-end">
+                        <strong class="text-danger">{{ $caixa->localizacao->descricao }}</strong>
                     </div>
                 @endif
 
@@ -163,7 +172,7 @@
         </div>
     </div>
     <div class="col-lg-8 produtos">
-        <div class="card" style="min-height: calc(100vh - 190px)">
+        <div class="card" style="min-height: calc(100vh - 190px);">
             {{-- ═══ LINHA: BUSCAR / ADICIONAR PRODUTO ═══ --}}
             <div class="row m-2 align-items-end pdv-add-row g-2">
 
@@ -171,7 +180,8 @@
                 <div class="col-md-6">
                     <div class="form-group mb-0">
                         <label for="inp-produto_id" class="pdv-add-label">
-                            <i class="ri-search-line me-1"></i>Produto <span class="pdv-shortcut pdv-shortcut-sm">F1</span>
+                            <i class="ri-search-line me-1"></i>Produto <span
+                                class="pdv-shortcut pdv-shortcut-sm">F1</span>
                         </label>
                         <div class="input-group">
                             <select class="form-control produto_id" name="produto_id" id="inp-produto_id"></select>
@@ -218,7 +228,8 @@
                         <thead>
                             <tr>
                                 <th style="width:44px"></th>
-                                <th>Produto <span class="pdv-cart-count badge bg-success rounded-pill ms-1">0</span></th>
+                                <th>Produto <span class="pdv-cart-count badge bg-success rounded-pill ms-1">0</span>
+                                </th>
                                 <th style="width:130px">Quantidade</th>
                                 <th style="width:100px">Valor</th>
                                 <th style="width:100px">Subtotal</th>
@@ -236,8 +247,8 @@
                                         <input name="variacao_id[]" type="hidden" value="{{ $product->variacao_id }}">
 
                                         <td>
-                                            <img src="{{ $product->produto->img }}"
-                                                class="pdv-item-img" alt="{{ $product->produto->nome }}">
+                                            <img src="{{ $product->produto->img }}" class="pdv-item-img"
+                                                alt="{{ $product->produto->nome }}">
                                         </td>
                                         <td>
                                             <input style="width: 100%" readonly type="text" name="produto_nome[]"
@@ -247,16 +258,18 @@
 
                                         <td class="datatable-cell">
                                             <div class="pdv-qty-group">
-                                                <button class="pdv-qty-btn pdv-qty-btn-minus" id="btn-subtrai" type="button">-</button>
-                                                <input type="tel" readonly class="pdv-qty-input qtd qtd_row"
-                                                    name="quantidade[]"
+                                                <button class="pdv-qty-btn pdv-qty-btn-minus" id="btn-subtrai"
+                                                    type="button">-</button>
+                                                <input type="tel" readonly class="pdv-qty-input qtd qtd_row" name="quantidade[]"
                                                     value="{{ number_format($product->quantidade, 2, ',', '') }}">
-                                                <button class="pdv-qty-btn pdv-qty-btn-plus" id="btn-incrementa" type="button">+</button>
+                                                <button class="pdv-qty-btn pdv-qty-btn-plus" id="btn-incrementa"
+                                                    type="button">+</button>
                                             </div>
                                         </td>
                                         <td>
                                             <input style="width: 100%" readonly type="tel" name="valor_unitario[]"
-                                                class="pdv-item-value value-unit" value="{{ __moeda($product->valor_unitario) }}">
+                                                class="pdv-item-value value-unit"
+                                                value="{{ __moeda($product->valor_unitario) }}">
                                         </td>
                                         <td>
                                             <input style="width: 100%" readonly type="tel" name="subtotal_item[]"
@@ -279,8 +292,8 @@
                                             value="{{ $servico->servico->id }}">
 
                                         <td>
-                                            <img src="{{ $servico->servico->img }}"
-                                                class="pdv-item-img" alt="{{ $servico->servico->nome }}">
+                                            <img src="{{ $servico->servico->img }}" class="pdv-item-img"
+                                                alt="{{ $servico->servico->nome }}">
                                         </td>
                                         <td style="width: 100%">
                                             <input readonly type="text" name="servico_nome[]" class="pdv-item-name text-danger"
@@ -288,11 +301,13 @@
                                         </td>
                                         <td>
                                             <div class="pdv-qty-group opacity-75">
-                                                <button disabled id="btn-subtrai" class="pdv-qty-btn pdv-qty-btn-minus" type="button">-</button>
+                                                <button disabled id="btn-subtrai" class="pdv-qty-btn pdv-qty-btn-minus"
+                                                    type="button">-</button>
                                                 <input readonly type="tel" name="quantidade_servico[]"
                                                     class="pdv-qty-input qtd-item"
                                                     value="{{ number_format($servico->quantidade, 0) }}">
-                                                <button disabled id="btn-incrementa" class="pdv-qty-btn pdv-qty-btn-plus" type="button">+</button>
+                                                <button disabled id="btn-incrementa" class="pdv-qty-btn pdv-qty-btn-plus"
+                                                    type="button">+</button>
                                             </div>
                                         </td>
                                         <td>
@@ -323,8 +338,8 @@
                                         <input name="variacao_id[]" type="hidden" value="{{ $product->variacao_id }}">
 
                                         <td>
-                                            <img src="{{ $product->produto->img }}"
-                                                class="pdv-item-img" alt="{{ $product->produto->nome }}">
+                                            <img src="{{ $product->produto->img }}" class="pdv-item-img"
+                                                alt="{{ $product->produto->nome }}">
                                         </td>
                                         <td>
                                             <input style="width: 100%" readonly type="text" name="produto_nome[]"
@@ -334,16 +349,18 @@
 
                                         <td class="datatable-cell">
                                             <div class="pdv-qty-group">
-                                                <button class="pdv-qty-btn pdv-qty-btn-minus" id="btn-subtrai" type="button">-</button>
-                                                <input type="tel" readonly class="pdv-qty-input qtd qtd_row"
-                                                    name="quantidade[]"
+                                                <button class="pdv-qty-btn pdv-qty-btn-minus" id="btn-subtrai"
+                                                    type="button">-</button>
+                                                <input type="tel" readonly class="pdv-qty-input qtd qtd_row" name="quantidade[]"
                                                     value="{{ number_format($product->quantidade, 2, ',', '') }}">
-                                                <button class="pdv-qty-btn pdv-qty-btn-plus" id="btn-incrementa" type="button">+</button>
+                                                <button class="pdv-qty-btn pdv-qty-btn-plus" id="btn-incrementa"
+                                                    type="button">+</button>
                                             </div>
                                         </td>
                                         <td>
                                             <input style="width: 100%" readonly type="tel" name="valor_unitario[]"
-                                                class="pdv-item-value value-unit" value="{{ __moeda($product->valor_unitario) }}">
+                                                class="pdv-item-value value-unit"
+                                                value="{{ __moeda($product->valor_unitario) }}">
                                         </td>
                                         <td>
                                             <input style="width: 100%" readonly type="tel" name="subtotal_item[]"
@@ -365,7 +382,8 @@
             <div class="mt-1 px-3 pb-2">
 
                 {{-- Finalização foi comentada no dia 26-06-2026 para da mais espaço na tela --}}
-                {{-- <h5 class="text-center mb-2 mt-1 fw-bold"><i class="ri-shopping-cart-2-fill me-1"></i>Finalização</h5> --}}
+                {{-- <h5 class="text-center mb-2 mt-1 fw-bold"><i class="ri-shopping-cart-2-fill me-1"></i>Finalização
+                </h5> --}}
 
 
                 <div class="row">
@@ -391,8 +409,7 @@
                                 <div class="pdv-fin-header">
                                     <h5 class="pdv-fin-label">Acréscimo <span class="pdv-shortcut">F3</span></h5>
                                     <button type="button" onclick="setaAcrescimo()"
-                                        class="pdv-fin-icon-box text-bg-warning shadow-sm"
-                                        title="F3 - Abrir Acréscimo">
+                                        class="pdv-fin-icon-box text-bg-warning shadow-sm" title="F3 - Abrir Acréscimo">
                                         <i class="ri-add-box-line"></i>
                                     </button>
                                 </div>
@@ -409,8 +426,7 @@
                                 <div class="row g-0">
                                     <div class="col-6 text-center">
                                         <h6 class="pdv-fin-label mb-1">SUPRIM.</h6>
-                                        <button type="button" data-bs-toggle="modal"
-                                            data-bs-target="#suprimento_caixa"
+                                        <button type="button" data-bs-toggle="modal" data-bs-target="#suprimento_caixa"
                                             class="pdv-fin-icon-box text-bg-info shadow-sm mx-auto">
                                             <i class="ri-add-box-line"></i>
                                         </button>
@@ -440,7 +456,7 @@
                                     @isset($item)
                                         <strong class="total-venda">{{ __moeda($item->valor_total) }}</strong>
                                     @else
-                                        <strong class="total-venda">0,00</strong>
+                                    <strong class="total-venda">0,00</strong>
                                     @endif
                                 </h4>
                             </div>
@@ -485,7 +501,8 @@
                     </div>
                     <div class="col-lg-2 col-6 div-vencimento d-none">
                         <div class="pdv-vencimento-card h-100">
-                            <h6 class="pdv-vencimento-label"><i class="ri-calendar-line me-1"></i>Data de Vencimento</h6>
+                            <h6 class="pdv-vencimento-label"><i class="ri-calendar-line me-1"></i>Data de Vencimento
+                            </h6>
                             {!! Form::date('data_vencimento', '')->attrs(['class' => 'form-control form-control-sm data_atual']) !!}
                         </div>
                     </div> <!-- end col-->
@@ -498,28 +515,27 @@
                                             <button type="button"
                                                 class="btn pdv-action-btn btn-outline-info w-100 btn-pagamento-multi"
                                                 data-bs-toggle="modal" data-bs-target="#pagamento_multiplo"
-                                                title="F4 - Pagamento Múltiplo"><i
-                                                    class="ri-list-check-3"></i> Pag. Multi <span class="pdv-shortcut pdv-shortcut-sm">F4</span></button>
+                                                title="F4 - Pagamento Múltiplo"><i class="ri-list-check-3"></i> Pag.
+                                                Multiplos <span class="pdv-shortcut pdv-shortcut-sm">F4</span></button>
                                         </div>
                                         <div class="col-6">
-                                            <button type="button"                                                    class="btn pdv-action-btn btn-outline-secondary w-100"
+                                            <button type="button" class="btn pdv-action-btn btn-outline-secondary w-100"
                                                 data-bs-toggle="modal" data-bs-target="#lista_precos"
-                                                title="Lista de Preços"><i
-                                                    class="ri-cash-line"></i> Preços</button>
+                                                title="Lista de Preços"><i class="ri-cash-line"></i> Preços</button>
                                         </div>
                                         <div class="col-6">
-                                            <button type="button"                                                    class="btn pdv-action-btn btn-outline-primary w-100"
+                                            <button type="button" class="btn pdv-action-btn btn-outline-primary w-100"
                                                 data-bs-toggle="modal" data-bs-target="#observacao_pdv"
-                                                title="Observação"><i
-                                                    class="ri-file-edit-fill"></i> Observ.</button>
+                                                title="Observação"><i class="ri-file-edit-fill"></i>
+                                                Observações</button>
                                         </div>
                                         <div class="col-6">
                                             @if(!isset($item))
                                                 <button type="button"
                                                     class="btn pdv-action-btn btn-outline-dark w-100 btn-vendas-suspensas"
                                                     data-bs-toggle="modal" data-bs-target="#vendas_suspensas"
-                                                    title="Histórico de Vendas Suspensas"><i
-                                                        class="ri-time-fill"></i> Histór.</button>
+                                                    title="Histórico de Vendas Suspensas"><i class="ri-time-fill"></i>
+                                                    Históricos</button>
                                             @endif
                                         </div>
                                     </div>
@@ -533,17 +549,20 @@
                                 <div class="card-body p-2">
                                     <div class="row g-1">
                                         <div class="col-6">
-                                            <a class="btn pdv-action-btn btn-outline-danger w-100" href="{{ route('frontbox.index')}}">
+                                            <a class="btn pdv-action-btn btn-outline-danger w-100"
+                                                href="{{ route('frontbox.index')}}">
                                                 <i class="ri-arrow-left-s-line"></i> Sair
                                             </a>
                                         </div>
                                         <div class="col-6">
                                             @if($isVendaSuspensa == 0)
-                                                <button type="button" id="btn-suspender" class="btn pdv-action-btn btn-outline-warning w-100">
+                                                <button type="button" id="btn-suspender"
+                                                    class="btn pdv-action-btn btn-outline-warning w-100">
                                                     <i class="ri-timer-line"></i> Susp.
                                                 </button>
                                             @else
-                                                <a href="{{ route('frontbox.create') }}" class="btn pdv-action-btn btn-outline-warning w-100">
+                                                <a href="{{ route('frontbox.create') }}"
+                                                    class="btn pdv-action-btn btn-outline-warning w-100">
                                                     <i class="ri-refresh-line"></i> Nova
                                                 </a>
                                             @endif
@@ -551,15 +570,16 @@
                                         <div class="col-12">
                                             @if(isset($item) && $isVendaSuspensa == 0)
                                                 <button type="button" class="pdv-btn-finalizar mt-1" disabled
-                                                    id="editar_venda"
-                                                    title="F5 - Editar Venda">
-                                                    <i class="ri-checkbox-line"></i> Editar <span class="pdv-shortcut pdv-shortcut-light pdv-shortcut-sm">F5</span>
+                                                    id="editar_venda" title="F5 - Editar Venda">
+                                                    <i class="ri-checkbox-line"></i> Editar <span
+                                                        class="pdv-shortcut pdv-shortcut-light pdv-shortcut-sm">F5</span>
                                                 </button>
                                             @else
-                                                <button type="button" class="pdv-btn-finalizar mt-1 pdv-animate-pulse-finalizar" disabled
-                                                    id="salvar_venda"
-                                                    title="F5 - Finalizar Venda">
-                                                    <i class="ri-checkbox-circle-line"></i> Finalizar <span class="pdv-shortcut pdv-shortcut-light pdv-shortcut-sm">F5</span>
+                                                <button type="button"
+                                                    class="pdv-btn-finalizar mt-1 pdv-animate-pulse-finalizar" disabled
+                                                    id="salvar_venda" title="F5 - Finalizar Venda">
+                                                    <i class="ri-checkbox-circle-line"></i> Finalizar <span
+                                                        class="pdv-shortcut pdv-shortcut-light pdv-shortcut-sm">F5</span>
                                                 </button>
                                             @endif
                                         </div>
@@ -595,26 +615,26 @@
 @include('modals._cliente', ['cashback' => 1])
 
 @section('js')
-<script src="/js/frente_caixa.js?v={{time()}}" type=""></script>
-<script type="text/javascript" src="/js/mousetrap.js?v={{time()}}"></script>
-<script type="text/javascript" src="/js/controla_conta_empresa.js?v={{time()}}"></script>
-<script src="/js/pdv_session.js?v={{time()}}"></script>
-<script src="/js/novo_cliente.js?v={{time()}}"></script>
+    <script src="/js/frente_caixa.js?v={{time()}}" type=""></script>
+    <script type="text/javascript" src="/js/mousetrap.js?v={{time()}}"></script>
+    <script type="text/javascript" src="/js/controla_conta_empresa.js?v={{time()}}"></script>
+    <script src="/js/pdv_session.js?v={{time()}}"></script>
+    <script src="/js/novo_cliente.js?v={{time()}}"></script>
 
-<script type="text/javascript">
+    <script type="text/javascript">
 
-    @if(Session::has('sangria_id'))
-        window.open(path_url + 'sangria-print/' + {{ Session::get('sangria_id') }}, "_blank")
-    @endif
-    @if(Session::has('suprimento_id'))
-        window.open(path_url + 'suprimento-print/' + {{ Session::get('suprimento_id') }}, "_blank")
-    @endif
+        @if(Session::has('sangria_id'))
+            window.open(path_url + 'sangria-print/' + {{ Session::get('sangria_id') }}, "_blank")
+        @endif
+        @if(Session::has('suprimento_id'))
+            window.open(path_url + 'suprimento-print/' + {{ Session::get('suprimento_id') }}, "_blank")
+        @endif
 
-    $('.btn-novo-cliente').click(() => {
-        $('.modal-select-cliente .btn-close').trigger('click')
-        $('#modal_novo_cliente').modal('show')
+        $('.btn-novo-cliente').click(() => {
+            $('.modal-select-cliente .btn-close').trigger('click')
+            $('#modal_novo_cliente').modal('show')
 
-    })
-</script>
+        })
+    </script>
 
 @endsection

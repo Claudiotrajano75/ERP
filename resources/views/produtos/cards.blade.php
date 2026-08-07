@@ -1,5 +1,5 @@
 @foreach($produtos as $prod)
-    <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 col-6 p-1"
+    <div class="col-3 p-1"
         onclick="addProdutos('{{ $prod->id }}')"
         style="cursor: pointer;">
 

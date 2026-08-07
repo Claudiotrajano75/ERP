@@ -124,7 +124,7 @@
                                             </button>
                                             @endif
                                             @if($item->estado == 'novo' || $item->estado == 'rejeitado')
-                                            <a target="_blank" title="XML temporário" class="btn btn-light btn-sm" href="{{ route('nfce.xml-temp', $item->id) }}">
+                                            <a title="XML temporário" class="btn btn-light btn-sm" href="{{ route('nfce.xml-temp', $item->id) }}">
                                                 <i class="ri-file-code-line"></i>
                                             </a>
                                             @endif

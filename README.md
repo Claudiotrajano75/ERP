@@ -190,3 +190,20 @@ Hoje: Você continua usando o que acabamos de arrumar (Simples Nacional, CSOSN 1
 Final de 2026: Devemos ficar de olho na atualização da biblioteca NFePHP.
 Início de 2027: Será o momento de realmente sentarmos para atualizar o campo de CBS no seu sistema.
 Como o seu sistema é um ERP moderno, essa transição será feita via código de forma que você quase não perceba a complexidade. O programa fará o cálculo "por baixo dos panos" e você só verá os novos nomes dos impostos na tela
+
+
+Existe uma diferença fundamental entre as duas telas:
+
+1. A Tela Padrão (/nfe/create — Nova Venda NFe)
+Ela é voltada para a Venda de Mercadorias. No fluxo do seu ERP:
+
+Ela gera uma nota atrelada a uma transação comercial de saída (venda).
+Ela obrigatoriamente assume que a operação movimentará o estoque e gerará parcelas financeiras (contas a receber) de forma fixa e integrada ao fechamento de caixa do dia.
+Ela não permite a edição manual avançada de impostos por item (como alterar alíquotas e bases de cálculo de PIS/COFINS/IPI/ICMS dinamicamente) durante o lançamento — o sistema apenas aplica a tributação automática pré-configurada no produto e na natureza da operação.
+2. A Nova Tela (/faturamento-avulso/create — Faturamento à Parte)
+Ela foi desenhada para a Emissão Avulsa (Direta) de NFe, sem a obrigatoriedade de ser uma "venda":
+
+Liberdade Fiscal: É possível abrir o modal de cada item e mudar qualquer detalhe de imposto manualmente (como CST, base de cálculo e alíquota de ICMS, PIS, COFINS e IPI). Isso é fundamental para notas que não são vendas, como devolução de compra para fornecedor, remessa de conserto, transferência de estoque, entre outras.
+Flexibilidade Operacional: Você tem as chaves liga/desliga para escolher se a emissão deve ou não abaixar estoque, e se deve ou não gerar financeiro no contas a receber (na tela de vendas comum, você não tem essa flexibilidade).
+Organização em etapas: É muito mais simples e limpa para notas complexas, evitando a tabela gigante e confusa de rolagem horizontal da tela padrão.
+Resumo: A de /nfe/create serve para registrar Vendas normais com Nota, enquanto a nova de /faturamento-avulso/create serve para Faturamentos/Notas avulsas de qualquer tipo (Devolução, Remessa, Ajustes, etc.) sem prender-se a uma venda comercial.

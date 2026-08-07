@@ -60,11 +60,52 @@ var DESCONTO = 0;
 var VALORACRESCIMO = 0;
 var PERCENTUALMAXDESCONTO = false;
 
-$('.leitor_desativado').click(() => {
-    $('.leitor_ativado').removeClass('d-none')
-    $('.leitor_desativado').addClass('d-none')
-    $('#codBarras').focus()
-})
+// ============================================================
+// LEITOR DE CÓDIGO DE BARRAS - BOTÃO LIGA/DESLIGA
+// O leitor USB funciona como teclado: ele digita no input #codBarras,
+// que precisa estar FOCADO para receber o código. O botão liga/desliga
+// controla esse foco e o estado da leitura.
+// ============================================================
+var pdvLeitorLigado = true;
+
+function pdvAtualizarEstadoLeitor() {
+    var $btn = $('#btn-leitor-toggle');
+    if (pdvLeitorLigado) {
+        $btn.removeClass('leitor-off').addClass('leitor-on');
+        $btn.find('.pdv-leitor-label').text('Leitor Ativado');
+        $btn.attr('title', 'Clique para desativar o leitor de código de barras');
+    } else {
+        $btn.removeClass('leitor-on').addClass('leitor-off');
+        $btn.find('.pdv-leitor-label').text('Leitor Desativado');
+        $btn.attr('title', 'Clique para ativar o leitor de código de barras');
+    }
+}
+
+// Impede que o botão roube o foco do input (senão o toggle ficaria oscilando)
+$('#btn-leitor-toggle').on('mousedown', function (e) {
+    e.preventDefault();
+});
+
+$('#btn-leitor-toggle').on('click', function () {
+    if (pdvLeitorLigado) {
+        $('#codBarras').blur();
+    } else {
+        $('#codBarras').focus();
+    }
+});
+
+$('#codBarras').on('focus', function () {
+    pdvLeitorLigado = true;
+    pdvAtualizarEstadoLeitor();
+});
+
+$('#codBarras').on('focusout', function (e) {
+    // Se o foco foi para o botão do leitor (teclado via Tab), quem decide
+    // o novo estado é o handler de click do botão — evita toggle duplo.
+    if ($(e.relatedTarget).is('#btn-leitor-toggle')) return;
+    pdvLeitorLigado = false;
+    pdvAtualizarEstadoLeitor();
+});
 
 function ativaTef(){
 
@@ -106,20 +147,6 @@ $(function () {
         $("#valor_acrescimo").text("R$ " + convertFloatToMoeda(VALORACRESCIMO));
 
     }
-    $('#mousetrapTitle').click(() => {
-        $('#codBarras').focus()
-    })
-    $('#codBarras').focus(() => {
-        $('#mousetrapTitle').css('display', 'none');
-        $('.leitor_ativado').removeClass('d-none')
-        $('.leitor_desativado').addClass('d-none')
-    });
-    $('#codBarras').focusout(() => {
-        $('#mousetrapTitle').css('display', 'flex');
-        $('.leitor_desativado').removeClass('d-none')
-        $('.leitor_ativado').addClass('d-none')
-    });
-
     pdvAtualizarContagemCarrinho(false);
     validateButtonSave()
     calcTotal()
@@ -219,6 +246,8 @@ $("#inp-produto_id").select2({
 });
 
 $('#codBarras').keyup((v) => {
+    // Guarda: só processa o código se o leitor estiver LIGADO
+    if (!pdvLeitorLigado) return;
     setTimeout(() => {
         let barcode = v.target.value
         if (barcode.length > 7) {

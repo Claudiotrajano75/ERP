@@ -483,6 +483,11 @@ public function xmlTemp($id)
     $item = Nfce::findOrFail($id);
     __validaObjetoEmpresa($item);
 
+    if ($item->natureza == null) {
+        session()->flash("flash_error", "Natureza de Operação não definida para esta NFCe. Edite a NFCe e selecione a Natureza de Operação antes de gerar o XML.");
+        return redirect()->route('nfce.show', $id);
+    }
+
     $empresa = $item->empresa;
     $empresa = __objetoParaEmissao($empresa, $item->local_id);
 
@@ -519,6 +524,11 @@ public function danfceTemporaria($id)
 {
     $item = Nfce::findOrFail($id);
     __validaObjetoEmpresa($item);
+
+    if ($item->natureza == null) {
+        session()->flash("flash_error", "Natureza de Operação não definida para esta NFCe. Edite a NFCe e selecione a Natureza de Operação antes de gerar o DANFCE.");
+        return redirect()->route('nfce.show', $id);
+    }
 
     $empresa = $item->empresa;
 

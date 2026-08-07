@@ -253,7 +253,7 @@
                                                 <a class="btn btn-light btn-sm" title="Detalhes" href="{{ route('frontbox.show', $item->id) }}">
                                                     <i class="ri-eye-line"></i>
                                                 </a>
-                                                <a target="_blank" title="XML temporário" class="btn btn-dark btn-sm text-white" href="{{ route('nfce.xml-temp', $item->id) }}">
+                                                <a title="XML temporário" class="btn btn-dark btn-sm text-white" href="{{ route('nfce.xml-temp', $item->id) }}">
                                                     <i class="ri-file-code-line"></i>
                                                 </a>
                                                 @endif

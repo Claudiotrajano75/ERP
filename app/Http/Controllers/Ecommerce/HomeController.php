@@ -46,8 +46,7 @@ class HomeController extends Controller
         $config = EcommerceConfig::findOrfail($request->loja_id);
         $this->_validaHash($config);
 
-        $categorias = CategoriaProduto::where('ecommerce', 1)
-        ->where('empresa_id', $config->empresa_id)->get();
+        $categorias = $this->_getCategorias($config->empresa_id);
 
         $produtosEmDestaque = $this->produtosEmDestaque($config->empresa_id);
 
@@ -58,8 +57,7 @@ class HomeController extends Controller
 
     public function politicaPrivacidade(Request $request){
         $config = EcommerceConfig::findOrfail($request->loja_id);
-        $categorias = CategoriaProduto::where('ecommerce', 1)
-        ->where('empresa_id', $config->empresa_id)->get();
+        $categorias = $this->_getCategorias($config->empresa_id);
 
         $produtosEmDestaque = $this->produtosEmDestaque($config->empresa_id);
 
@@ -68,13 +66,21 @@ class HomeController extends Controller
         return view('loja.politica_privacidade', compact('config', 'categorias', 'produtosEmDestaque', 'carrinho'));
     }
 
+    private function _getCategorias($empresa_id){
+        return CategoriaProduto::withCount(['produtos as produtos_count' => function($q){
+            $q->where('ecommerce', 1);
+        }])
+        ->where('ecommerce', 1)
+        ->where('empresa_id', $empresa_id)
+        ->get();
+    }
+
     public function pesquisa(Request $request){
 
         $categoria_pesquisa = $request->categoria;
         $pesquisa = $request->pesquisa;
         $config = EcommerceConfig::findOrfail($request->loja_id);
-        $categorias = CategoriaProduto::where('ecommerce', 1)
-        ->where('empresa_id', $config->empresa_id)->get();
+        $categorias = $this->_getCategorias($config->empresa_id);
 
         $carrinho = $this->_getCarrinho();
 
@@ -106,6 +112,31 @@ class HomeController extends Controller
         return view('loja.pesquisa', compact('config', 'categorias', 'produtos', 'carrinho', 'categoria_pesquisa', 'pesquisa'));
     }
 
+    public function pesquisaAutocomplete(Request $request)
+    {
+        $pesquisa = $request->pesquisa;
+        $config = EcommerceConfig::findOrfail($request->loja_id);
+
+        $produtos = Produto::where('empresa_id', $config->empresa_id)
+            ->where('status', 1)
+            ->where('ecommerce', 1)
+            ->where('nome', 'like', "%$pesquisa%")
+            ->limit(6)
+            ->get();
+
+        $results = [];
+        foreach ($produtos as $p) {
+            $results[] = [
+                'nome' => $p->nome,
+                'img' => $p->img,
+                'valor' => $p->valor_ecommerce,
+                'hash_ecommerce' => $p->hash_ecommerce
+            ];
+        }
+
+        return response()->json($results);
+    }
+
     private function _getCarrinho(){
         $data = [];
         if(isset($_SESSION["session_cart"])){
@@ -118,8 +149,7 @@ class HomeController extends Controller
     public function produtosDaCategoria(Request $request, $hash){
 
         $config = EcommerceConfig::findOrfail($request->loja_id);
-        $categorias = CategoriaProduto::where('ecommerce', 1)
-        ->where('empresa_id', $config->empresa_id)->get();
+        $categorias = $this->_getCategorias($config->empresa_id);
         $categoria = CategoriaProduto::where('hash_ecommerce' ,$hash)->first();
 
         if($categoria == null){
@@ -177,11 +207,32 @@ class HomeController extends Controller
             return redirect()->back();
         }
 
-        $categorias = CategoriaProduto::where('ecommerce', 1)
-        ->where('empresa_id', $config->empresa_id)->get();
+        $categorias = $this->_getCategorias($config->empresa_id);
         $carrinho = $this->_getCarrinho();
 
-        return view('loja.produtos_detalhe', compact('config', 'categorias', 'produto', 'carrinho'));
+        // Produtos relacionados (mesma categoria, excluindo o atual)
+        $relacionados = [];
+        if($produto->categoria_id){
+            $relacionados = Produto::where('empresa_id', $config->empresa_id)
+            ->where('categoria_id', $produto->categoria_id)
+            ->where('id', '!=', $produto->id)
+            ->where('status', 1)
+            ->where('ecommerce', 1)
+            ->limit(4)->get();
+        }
+
+        $produtosRelacionados = [];
+        foreach($relacionados as $item){
+            if($item->gerenciar_estoque){
+                if($item->estoque && $item->estoque->quantidade > 0){
+                    array_push($produtosRelacionados, $item);
+                }
+            }else{
+                array_push($produtosRelacionados, $item);
+            }
+        }
+
+        return view('loja.produtos_detalhe', compact('config', 'categorias', 'produto', 'carrinho', 'produtosRelacionados'));
 
     }
 }

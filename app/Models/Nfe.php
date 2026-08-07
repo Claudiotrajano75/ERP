@@ -120,11 +120,24 @@ class Nfe extends Model
 
     public static function lastNumero($empresa)
     {
-        if ($empresa->ambiente == 2) {
-            return $empresa->numero_ultima_nfe_homologacao + 1;
-        } else {
-            return $empresa->numero_ultima_nfe_producao + 1;
-        }
+        $contador = $empresa->ambiente == 2
+            ? $empresa->numero_ultima_nfe_homologacao
+            : $empresa->numero_ultima_nfe_producao;
+
+        // Descobre o maior número já utilizado em chaves de NFes transmitidas da empresa
+        // (mesmo rejeitadas/canceladas, o número é consumido perante a SEFAZ)
+        $usados = self::where('empresa_id', $empresa->id)
+            ->whereNotNull('chave')
+            ->where('chave', '!=', '')
+            ->get()
+            ->map(function ($n) {
+                // nNF fica nas posições 25..33 da chave (44 dígitos)
+                return (int) ltrim(substr($n->chave, 25, 9), '0');
+            })
+            ->max();
+
+        $proximo = max((int) $contador, (int) $usados) + 1;
+        return $proximo;
     }
 
     public static function tiposPagamento()

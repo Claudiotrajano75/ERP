@@ -30,7 +30,10 @@ class CarrinhoController extends Controller
             ->first();
         }
 
-        $categorias = CategoriaProduto::where('ecommerce', 1)
+        $categorias = CategoriaProduto::withCount(['produtos as produtos_count' => function($q){
+            $q->where('ecommerce', 1);
+        }])
+        ->where('ecommerce', 1)
         ->where('empresa_id', $config->empresa_id)->get();
         $clienteLogado = $this->_getClienteLogado();
 
@@ -55,7 +58,32 @@ class CarrinhoController extends Controller
             }
         }
 
-        return view('loja.carrinho', compact('item', 'config', 'categorias', 'cliente', 'enderecos', 'dataFrete'));
+        // Sugestões: produtos da mesma categoria dos itens do carrinho
+        $sugestoes = [];
+        if(sizeof($item->itens) > 0){
+            $categoriasDoCarrinho = $item->itens->pluck('produto.categoria_id')->filter()->unique()->values();
+            $idsNoCarrinho = $item->itens->pluck('produto_id')->unique()->values();
+            if($categoriasDoCarrinho->count() > 0){
+                $data = Produto::where('empresa_id', $config->empresa_id)
+                ->whereIn('categoria_id', $categoriasDoCarrinho)
+                ->whereNotIn('id', $idsNoCarrinho)
+                ->where('status', 1)
+                ->where('ecommerce', 1)
+                ->limit(4)->get();
+
+                foreach($data as $p){
+                    if($p->gerenciar_estoque){
+                        if($p->estoque && $p->estoque->quantidade > 0){
+                            array_push($sugestoes, $p);
+                        }
+                    }else{
+                        array_push($sugestoes, $p);
+                    }
+                }
+            }
+        }
+
+        return view('loja.carrinho', compact('item', 'config', 'categorias', 'cliente', 'enderecos', 'dataFrete', 'sugestoes'));
     }
 
     private function _getCarrinho(){
@@ -144,7 +172,9 @@ class CarrinhoController extends Controller
             session()->flash("flash_success", "Produto adicionado ao carrinho!");
         }
         $this->_atualizaValorCarrinho($carrinho->id);
-        
+        if ($request->comprar_agora == 1) {
+            return redirect()->route('loja.pagamento', 'link='.$config->loja_id);
+        }
         return redirect()->route('loja.carrinho', 'link='.$config->loja_id);
     }
 

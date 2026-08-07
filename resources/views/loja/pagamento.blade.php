@@ -1,424 +1,366 @@
 @extends('loja.default', ['title' => 'Pagamento'])
+
 @section('css')
 <style type="text/css">
-	.w-100{
-		width: 100%;
-		margin-bottom: 10px;
-	}
-
-	.ml-2{
-		border-left: 10px;
-	}
-
-	.select{
-		border-bottom: 2px solid #D10024;
-	}
-	.header-pay{
-		text-align: center;
-	}
-	.header-pay:hover{
-		cursor: pointer;
-	}
-	.body-pay{
-		margin-top: 20px;
-	}
-	.d-none{
-		display: none;
-	}
-	label{
-		margin-top: 10px;
-		margin-bottom: -4px;
-	}
-
+    .luxe-form .payment-method-card { margin-bottom: 0; }
+    .body-pay { animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 @endsection
+
 @section('content')
 
-<div class="section">
-	<div class="container">
+{{-- Barra de etapas --}}
+@include('loja.partials.checkout_steps', ['checkoutStep' => 3])
 
-		<div class="col-md-4 order-details">
-			<div class="section-title text-center">
-				<h3 class="title">Seu Pedido</h3>
-			</div>
-			<div class="order-summary">
-				<div class="order-col">
-					<div><strong>PRODUTO</strong></div>
-					<div><strong>SUBTOTAL</strong></div>
-				</div>
-				<div class="order-products">
-					@foreach($carrinho->itens as $i)
-					<div class="order-col">
-						<div>{{ number_format($i->quantidade, 0) }}x {{ $i->produto->nome }}</div>
-						<div>R${{ __moeda($i->sub_total) }}</div>
-					</div>
-					@endforeach
-				</div>
-				<div class="order-col">
-					<div>Entrega</div>
-					<div><strong> {{ $carrinho->tipo_frete != 0 ? $carrinho->tipo_frete : ''}} R${{ __moeda($carrinho->valor_frete) }}</strong></div>
-				</div>
+<div class="section py-5 text-dark">
+    <div class="container">
+        <div class="row g-4">
 
-				<div class="order-col">
-					<div><strong>TOTAL</strong></div>
-					<div><strong class="order-total">R${{ __moeda($carrinho->valor_total) }}</strong></div>
-				</div>
-			</div>
+            <!-- ─── RESUMO DO PEDIDO (DIREITA NO DESKTOP) ─── -->
+            <div class="col-lg-5 col-12 order-lg-last">
+                <div class="summary-card">
+                    <div class="summary-title">Seu Pedido</div>
 
-			@if($carrinho->endereco)
-			<div class="section-title text-center">
-				<h4 class="title">Endereço de entrega</h4>
+                    <div style="max-height: 280px; overflow-y: auto; margin-bottom: 8px;">
+                        @foreach($carrinho->itens as $i)
+                        <div class="summary-item">
+                            <div style="min-width:0">
+                                <div class="si-name text-truncate">{{ $i->produto->nome }}</div>
+                                <div class="si-meta">Qtd: {{ number_format($i->quantidade, 0) }} x R$ {{ __moeda($i->valor_unitario) }}</div>
+                            </div>
+                            <div class="si-price">R$ {{ __moeda($i->sub_total) }}</div>
+                        </div>
+                        @endforeach
+                    </div>
 
-				<h5>{{ $carrinho->endereco->info }}</h5>
-			</div>
-			@endif
-			<label>Observação do pedido</label>
-			<textarea class="form-control" id="observacao"></textarea>
-		</div>
+                    <div class="summary-row-line">
+                        <span>Entrega ({{ $carrinho->tipo_frete != 0 ? $carrinho->tipo_frete : 'Frete' }}):</span>
+                        <strong style="color:var(--luxe-brown)">R$ {{ __moeda($carrinho->valor_frete) }}</strong>
+                    </div>
 
-		<div class="col-md-8 order-details">
+                    <div class="summary-row-line total mb-3">
+                        <span>TOTAL GERAL:</span>
+                        <span class="text-gold" id="checkout-total-val">R$ {{ __moeda($carrinho->valor_total) }}</span>
+                    </div>
 
-			<div class="row header-pay">
-				@if(in_array('Pix', $tiposPagamento))
-				<div class="{{ $config->sizeColumn() }} select-pix select-pay" onclick="selectPay('pix')">PIX</div>
-				@endif
-				@if(in_array('Boleto', $tiposPagamento))
-				<div class="col-md-{{ sizeof($tiposPagamento) == 2 ? '6' : '4'}} select-boleto select-pay" onclick="selectPay('boleto')">BOLETO</div>
-				@endif
-				@if(in_array('Cartão de credito', $tiposPagamento))
-				<div class="col-md-{{ sizeof($tiposPagamento) == 2 ? '6' : '4'}} select-cartao select-pay" onclick="selectPay('cartao')">CARTÃO DE CRÉDITO</div>
-				@endif
-				@if(in_array('Depósito bancário', $tiposPagamento))
-				<div class="col-md-{{ sizeof($tiposPagamento) == 2 ? '6' : '4'}} select-deposito select-pay" onclick="selectPay('deposito')">DEPÓSITO BANCÁRIO/TRANSFERÊNCIA</div>
-				@endif
-			</div>
+                    @if($carrinho->endereco)
+                    <div class="mb-3">
+                        <div class="summary-section-label">Endereço de Entrega</div>
+                        <div class="summary-info-box">
+                            {{ $carrinho->endereco->info ?? '' }}
+                        </div>
+                    </div>
+                    @endif
 
-			<div class="row body-pay">
-				<div class="body body-pix d-none">
-					<h4>Pagamento com PIX</h4>
-					<div class="row">
-						<form method="post" id="paymentFormPix" action="{{ route('loja.pagamento-pix', ['link='.$config->loja_id]) }}">
-							@csrf
-							<input type="hidden" name="observacao" class="observacao">
-							<div class="col-md-6">
-								<label>Nome</label>
-								<input required value="" name="payerFirstName" data-checkout="payerFirstName" type="text" class="form-control">
-							</div>
+                    <div>
+                        <label class="form-label fw-bold fs-12 mb-1" style="color:var(--luxe-brown)">Observações do Pedido</label>
+                        <textarea class="form-control" id="observacao" rows="3" placeholder="Instruções de entrega, referências, etc."
+                                  style="border:1.5px solid var(--border-light);border-radius:var(--radius-sm);font-size:13px;color:var(--luxe-brown)"></textarea>
+                    </div>
+                </div>
+            </div>
 
-							<div class="col-md-6">
-								<label>Sobre nome</label>
-								<input required value="" name="payerLastName" data-checkout="payerLastName" type="text" class="form-control">
-							</div>
+            <!-- ─── OPÇÕES DE PAGAMENTO (ESQUERDA) ─── -->
+            <div class="col-lg-7 col-12">
+                <div class="content-card luxe-form">
+                    <div class="card-heading">Forma de Pagamento</div>
+                    <p class="card-subheading">Escolha a opção que preferir para finalizar sua compra com segurança.</p>
 
-							<div class="col-md-6">
-								<label>Email</label>
-								<input required value="" name="payerEmail" data-checkout="payerEmail" id="payerEmail" type="email" class="form-control">
-							</div>
+                    <!-- Seletores das formas de pagamento -->
+                    <div class="payment-methods-grid">
+                        @if(in_array('Pix', $tiposPagamento))
+                        <div class="payment-method-card active" onclick="selectPay('pix', this)">
+                            <i class="ri-qr-code-line"></i> PIX
+                        </div>
+                        @endif
+                        @if(in_array('Boleto', $tiposPagamento))
+                        <div class="payment-method-card" onclick="selectPay('boleto', this)">
+                            <i class="ri-bill-line"></i> Boleto
+                        </div>
+                        @endif
+                        @if(in_array('Cartão de credito', $tiposPagamento))
+                        <div class="payment-method-card" onclick="selectPay('cartao', this)">
+                            <i class="ri-bank-card-line"></i> Cartão
+                        </div>
+                        @endif
+                        @if(in_array('Depósito bancário', $tiposPagamento))
+                        <div class="payment-method-card" onclick="selectPay('deposito', this)">
+                            <i class="ri-bank-line"></i> Depósito
+                        </div>
+                        @endif
+                    </div>
 
-							<div class="col-md-3">
-								<label>Tipo de documento</label>
-								<select required name="docType" id="docType" data-checkout="docType" class="form-control">
-								</select>
-							</div>
+                    <!-- Formulários de Pagamento -->
+                    <div style="border-top:1px solid var(--border-light);padding-top:24px">
 
-							<div class="col-md-6">
-								<label>Número do documento</label>
-								<input required value="" name="docNumber" data-checkout="docNumber" type="tel" class="form-control cpf_cnpj">
-							</div>
+                        <!-- PIX Form -->
+                        <div class="body-pay" id="pay-pix">
+                            <h5 class="fw-bold mb-3" style="font-family:'Roboto',serif;color:var(--luxe-brown)">Pagamento via PIX</h5>
+                            <p class="text-muted fs-13 mb-4">O QR Code e a chave copia e cola serão gerados na próxima etapa.</p>
+                            <form method="post" id="paymentFormPix" action="{{ route('loja.pagamento-pix', ['link='.$config->loja_id]) }}" class="row g-3">
+                                @csrf
+                                <input type="hidden" name="observacao" class="observacao">
+                                <div class="col-md-6">
+                                    <label class="required">Nome</label>
+                                    <input required name="payerFirstName" type="text" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="required">Sobrenome</label>
+                                    <input required name="payerLastName" type="text" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="required">E-mail</label>
+                                    <input required name="payerEmail" type="email" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="required">CPF / CNPJ</label>
+                                    <input required name="docNumber" type="tel" class="form-control cpf_cnpj">
+                                </div>
+                                <input type="hidden" name="docType" value="CPF">
+                                <div class="col-12 mt-4">
+                                    <button class="btn-luxe btn-submit-checkout" type="submit">
+                                        Confirmar e Pagar com PIX
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
 
-							<div class="col-md-6">
-								<br>
-								<button id="btn-pix" style="width: 100%; margin-top: 7px;" class="btn btn-success" type="submit">Pagar com PIX</button>
-							</div>
+                        <!-- BOLETO Form -->
+                        <div class="body-pay d-none" id="pay-boleto">
+                            <h5 class="fw-bold mb-3" style="font-family:'Roboto',serif;color:var(--luxe-brown)">Pagamento via Boleto</h5>
+                            <p class="text-muted fs-13 mb-4">O boleto bancário será gerado após a confirmação do pedido.</p>
+                            <form method="post" id="paymentFormBoleto" action="{{ route('loja.pagamento-boleto', ['link='.$config->loja_id]) }}" class="row g-3">
+                                @csrf
+                                <input type="hidden" name="observacao" class="observacao">
+                                <div class="col-md-6">
+                                    <label class="required">Nome</label>
+                                    <input required name="payerFirstName" type="text" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="required">Sobrenome</label>
+                                    <input required name="payerLastName" type="text" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="required">E-mail</label>
+                                    <input required name="payerEmail" type="email" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="required">CPF / CNPJ</label>
+                                    <input required name="docNumber" type="tel" class="form-control cpf_cnpj">
+                                </div>
+                                <input type="hidden" name="docType" value="CPF">
+                                <div class="col-12 mt-4">
+                                    <button class="btn-luxe btn-submit-checkout" type="submit">
+                                        Confirmar e Gerar Boleto
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
 
-						</form>
+                        <!-- CARTÃO Form -->
+                        <div class="body-pay d-none" id="pay-cartao">
+                            <h5 class="fw-bold mb-3" style="font-family:'Roboto',serif;color:var(--luxe-brown)">Pagamento via Cartão de Crédito</h5>
+                            <form method="post" id="paymentFormCartao" action="{{ route('loja.pagamento-cartao', ['link='.$config->loja_id]) }}" class="row g-3">
+                                @csrf
+                                <input type="hidden" name="observacao" class="observacao">
+                                <div class="col-md-8">
+                                    <label class="required">Titular do Cartão</label>
+                                    <input required id="cardholderName" data-checkout="cardholderName" type="text" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="required">CPF / CNPJ do Titular</label>
+                                    <input required name="docNumber" id="docNumber" type="tel" class="form-control cpf_cnpj cpf-cartao">
+                                </div>
+                                <input type="hidden" id="docType3" value="CPF">
+                                <div class="col-md-6">
+                                    <label class="required">E-mail</label>
+                                    <input required name="email" id="email" type="email" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="required">Número do Cartão</label>
+                                    <div class="input-group">
+                                        <input required data-checkout="cardNumber" id="cardNumber" type="tel" class="form-control" data-mask="0000 0000 0000 0000" placeholder="0000 0000 0000 0000">
+                                        <span class="input-group-text bg-white" style="border-left: none;"><img id="band-img" style="width: 30px;"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="required">Parcelas</label>
+                                    <select required name="installments" id="installments" class="form-select"></select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="required">Código de Segurança (CVC)</label>
+                                    <input required data-checkout="securityCode" id="securityCode" type="tel" class="form-control" data-mask="000" placeholder="123">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="required">Vencimento (Mês/Ano)</label>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <input required placeholder="MM" data-checkout="cardExpirationMonth" id="cardExpirationMonth" type="tel" class="form-control" data-mask="00">
+                                        </div>
+                                        <div class="col-6">
+                                            <input required placeholder="AA" data-checkout="cardExpirationYear" id="cardExpirationYear" type="tel" class="form-control" data-mask="00">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="visibility: hidden; height:0;" class="form-group">
+                                    <select class="custom-select" id="issuer" name="issuer" data-checkout="issuer"></select>
+                                </div>
+                                <input type="hidden" name="paymentMethodId" id="paymentMethodId"/>
+                                <input type="hidden" name="transactionAmount" id="transactionAmount" value="{{$carrinho->valor_total}}" />
+                                <div class="col-12 mt-4">
+                                    <button id="btn-cartao" class="btn-luxe btn-submit-checkout" type="submit">
+                                        Pagar com Cartão de Crédito
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
 
-					</div>
-				</div>
+                        <!-- DEPÓSITO Form -->
+                        <div class="body-pay d-none" id="pay-deposito">
+                            <h5 class="fw-bold mb-3" style="font-family:'Roboto',serif;color:var(--luxe-brown)">Pagamento via Depósito / Transferência</h5>
+                            <div class="summary-info-box mb-4">
+                                <div class="summary-section-label">Dados para Depósito:</div>
+                                <div style="font-size:13px;line-height:1.8;color:var(--luxe-tan)">
+                                    {!! $config->dados_deposito !!}
+                                </div>
+                            </div>
+                            <form method="post" id="paymentFormDeposito" action="{{ route('loja.pagamento-deposito', ['link='.$config->loja_id]) }}" class="row g-3">
+                                @csrf
+                                <input type="hidden" name="observacao" class="observacao">
+                                <p class="text-muted fs-13">Clique abaixo para confirmar a intenção de depósito e finalizar seu pedido.</p>
+                                <div class="col-12">
+                                    <button class="btn-luxe btn-submit-checkout" type="submit">
+                                        Confirmar e Finalizar Pedido
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
 
-				<div class="body body-boleto d-none">
-					<h4>Pagamento com BOLETO</h4>
-					<div class="row">
-						<form method="post" id="paymentFormBoleto" action="{{ route('loja.pagamento-boleto', ['link='.$config->loja_id]) }}">
-							@csrf
-							<input type="hidden" name="observacao" class="observacao">
+                    </div>
+                </div>
+            </div>
 
-							<div class="col-md-6">
-								<label>Nome</label>
-								<input required value="" name="payerFirstName" data-checkout="payerFirstName" type="text" class="form-control">
-							</div>
-
-							<div class="col-md-6">
-								<label>Sobre nome</label>
-								<input required value="" name="payerLastName" data-checkout="payerLastName" type="text" class="form-control">
-							</div>
-
-							<div class="col-md-6">
-								<label>Email</label>
-								<input required value="" name="payerEmail" data-checkout="payerEmail" id="payerEmail" type="email" class="form-control">
-							</div>
-
-							<div class="col-md-3">
-								<label>Tipo de documento</label>
-								<select required name="docType" id="docType2" data-checkout="docType" class="form-control">
-								</select>
-							</div>
-
-							<div class="col-md-6">
-								<label>Número do documento</label>
-								<input required value="" name="docNumber" data-checkout="docNumber" type="tel" class="form-control cpf_cnpj">
-							</div>
-
-							<div class="col-md-6">
-								<br>
-								<button id="btn-boleto" style="width: 100%; margin-top: 7px;" class="btn btn-success" type="submit">Pagar com BOLETO</button>
-							</div>
-
-						</form>
-
-					</div>
-				</div>
-
-				<div class="body body-cartao d-none">
-					<h4>Pagamento com CARTÃO DE CRÉDITO</h4>
-
-					<!-- pagamento cartao -->
-					<div class="row">
-						<form method="post" id="paymentFormCartao" action="{{ route('loja.pagamento-cartao', ['link='.$config->loja_id]) }}">
-							@csrf
-							<input type="hidden" name="observacao" class="observacao">
-
-							<div class="col-md-8">
-								<label>Titular do cartão</label>
-								<input required id="cardholderName" data-checkout="cardholderName" type="text" class="form-control">
-							</div>
-
-							<div class="col-md-3">
-								<label>Tipo de documento</label>
-								<select required name="docType" id="docType3" data-checkout="docType" class="form-control">
-								</select>
-							</div>
-
-							<div class="col-md-4">
-								<label>Número do documento</label>
-								<input required name="docNumber" data-checkout="docNumber" type="tel" class="form-control cpf_cnpj cpf-cartao">
-							</div>
-
-							<div class="col-md-6">
-								<label>Email</label>
-								<input required name="email" data-checkout="email" id="email" type="email" class="form-control">
-							</div>
-
-							<div class="col-md-5">
-								<label>Número do cartão</label>
-								<div class="row">
-									<div class="col-md-10">
-										<input required data-checkout="cardNumber" id="cardNumber" type="tel" class="form-control" data-mask="0000000000000000">
-									</div>
-									<div class="col-md-2">
-										<img id="band-img" style="width: 30px;">
-									</div>
-								</div>
-							</div>
-
-							<div class="col-md-6">
-								<label>Parcelas</label>
-								<select required name="installments" data-checkout="installments" id="installments" type="tel" class="form-control"></select>
-							</div>
-
-							<div class="col-md-3">
-								<label>Código de segurança</label>
-								<input required data-checkout="securityCode" id="securityCode" type="tel" class="form-control">
-							</div>
-
-							<div class="col-md-4">
-								<label>Data de Vencimento</label>
-								<div class="row">
-									<div class="col-md-6">
-										<input required placeholder="M" data-checkout="cardExpirationMonth" id="cardExpirationMonth" type="tel" class="form-control" data-mask="00">
-									</div>
-									<div class="col-md-6">
-										<input required placeholder="AA" data-checkout="cardExpirationYear" id="cardExpirationYear" type="tel" class="form-control" data-mask="00">
-									</div>
-								</div>
-							</div>
-
-							<div class="col-md-6">
-								<br>
-								<button id="btn-cartao" style="width: 100%;" class="btn btn-success" type="submit">Pagar com CARTÃO DE CRÉDITO</button>
-							</div>
-
-							<div style="visibility: hidden" class="form-group">
-								<select class="custom-select" id="issuer" name="issuer" data-checkout="issuer">
-								</select>
-							</div>
-
-							<input style="visibility: hidden" name="paymentMethodId" id="paymentMethodId"/>
-							<input style="visibility: hidden" name="transactionAmount" id="transactionAmount" value="{{$carrinho->valor_total}}" />
-						</form>
-					</div>
-					<!-- fim pagamento cartao -->
-				</div>
-
-				<div class="body body-deposito d-none">
-					<h4>Pagamento com Deposito bancário/transferência</h4>
-					<div class="row">
-						<form method="post" id="paymentFormDeposito" action="{{ route('loja.pagamento-deposito', ['link='.$config->loja_id]) }}">
-							@csrf
-							<input type="hidden" name="observacao" class="observacao">
-
-							<div class="container">
-								{!! $config->dados_deposito !!}
-							</div>
-
-							<div class="col-md-6">
-								<br>
-								<button id="btn-boleto" style="width: 100%; margin-top: 7px;" class="btn btn-success" type="submit">Pagar com Depósito</button>
-							</div>
-
-						</form>
-
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+        </div>
+    </div>
 </div>
 
 @endsection
+
 @section('js')
 <script src="https://secure.mlstatic.com/sdk/javascript/v1/mercadopago.js"></script>
 <script type="text/javascript">
-	$(function(){
-		$('.select-pay').first().trigger('click')
-		window.Mercadopago.setPublishableKey('{{ $config->mercadopago_public_key }}');
-		window.Mercadopago.getIdentificationTypes();
+    $(function(){
+        // Configurações Mercado Pago
+        window.Mercadopago.setPublishableKey('{{ $config->mercadopago_public_key }}');
+    });
 
-		setTimeout(() => {
-			let s = $('#docType').html()
-			$('#docType2').html(s)
-			$('#docType3').html(s)
-		}, 2000)
-	})
+    function selectPay(tipo, element){
+        $('.payment-method-card').removeClass('active');
+        $(element).addClass('active');
 
-	function selectPay(tipo){
-		$('.select-pay').removeClass('select')
-		$('.select-'+tipo).addClass('select')
+        $('.body-pay').addClass('d-none');
+        $('#pay-' + tipo).removeClass('d-none');
+    }
 
-		$('.body').addClass('d-none')
-		$('.body-'+tipo).removeClass('d-none')
-	}
+    $('#cardNumber').keyup(() => {
+        let cardnumber = $('#cardNumber').val().replaceAll(" ", "");
+        if (cardnumber.length >= 6) {
+            let bin = cardnumber.substring(0,6);
 
-	$('#cardNumber').keyup(() => {
-		let cardnumber = $('#cardNumber').val().replaceAll(" ", "");
-		if (cardnumber.length >= 6) {
-			let bin = cardnumber.substring(0,6);
+            window.Mercadopago.getPaymentMethod({
+                "bin": bin
+            }, setPaymentMethod);
+        }
+    });
 
-			window.Mercadopago.getPaymentMethod({
-				"bin": bin
-			}, setPaymentMethod);
-		}
-	})
+    function setPaymentMethod(status, response) {
+        if (status == 200) {
+            let paymentMethod = response[0];
+            document.getElementById('paymentMethodId').value = paymentMethod.id;
 
-	function setPaymentMethod(status, response) {
-		if (status == 200) {
-			let paymentMethod = response[0];
-			document.getElementById('paymentMethodId').value = paymentMethod.id;
+            $('#band-img').attr("src", paymentMethod.thumbnail);
+            getIssuers(paymentMethod.id);
+        }
+    }
 
-			$('#band-img').attr("src", paymentMethod.thumbnail);
-			getIssuers(paymentMethod.id);
-		} else {
-			alert(`payment method info error: ${response}`);
-		}
-	}
+    function getIssuers(paymentMethodId) {
+        window.Mercadopago.getIssuers(paymentMethodId, setIssuers);
+    }
 
-	function getIssuers(paymentMethodId) {
-		window.Mercadopago.getIssuers(
-			paymentMethodId,
-			setIssuers
-			);
-	}
+    function setIssuers(status, response) {
+        if (status == 200) {
+            let issuerSelect = document.getElementById('issuer');
+            $('#issuer').html('');
+            response.forEach( issuer => {
+                let opt = document.createElement('option');
+                opt.text = issuer.name;
+                opt.value = issuer.id;
+                issuerSelect.appendChild(opt);
+            });
 
-	function setIssuers(status, response) {
-		if (status == 200) {
-			let issuerSelect = document.getElementById('issuer');
-			$('#issuer').html('');
-			response.forEach( issuer => {
-				let opt = document.createElement('option');
-				opt.text = issuer.name;
-				opt.value = issuer.id;
-				issuerSelect.appendChild(opt);
-			});
+            getInstallments(
+                document.getElementById('paymentMethodId').value,
+                document.getElementById('transactionAmount').value,
+                issuerSelect.value
+            );
+        }
+    }
 
-			getInstallments(
-				document.getElementById('paymentMethodId').value,
-				document.getElementById('transactionAmount').value,
-				issuerSelect.value
-				);
-		} else {
-			alert(`issuers method info error: ${response}`);
-		}
-	}
+    function getInstallments(paymentMethodId, transactionAmount, issuerId){
+        window.Mercadopago.getInstallments({
+            "payment_method_id": paymentMethodId,
+            "amount": parseFloat(transactionAmount),
+            "issuer_id": parseInt(issuerId)
+        }, setInstallments);
+    }
 
-	function getInstallments(paymentMethodId, transactionAmount, issuerId){
-		window.Mercadopago.getInstallments({
-			"payment_method_id": paymentMethodId,
-			"amount": parseFloat(transactionAmount),
-			"issuer_id": parseInt(issuerId)
-		}, setInstallments);
-	}
+    function setInstallments(status, response){
+        if (status == 200) {
+            document.getElementById('installments').options.length = 0;
+            response[0].payer_costs.forEach( payerCost => {
+                let opt = document.createElement('option');
+                opt.text = payerCost.recommended_message;
+                opt.value = payerCost.installments;
+                document.getElementById('installments').appendChild(opt);
+            });
+        }
+    }
 
-	function setInstallments(status, response){
-		if (status == 200) {
-			document.getElementById('installments').options.length = 0;
-			response[0].payer_costs.forEach( payerCost => {
-				let opt = document.createElement('option');
-				opt.text = payerCost.recommended_message;
-				opt.value = payerCost.installments;
-				document.getElementById('installments').appendChild(opt);
-			});
-		} else {
-			alert(`installments method info error: ${response}`);
-		}
-	}
+    doSubmit = false;
+    document.getElementById('paymentFormCartao').addEventListener('submit', getCardToken);
 
-	doSubmit = false;
-	document.getElementById('paymentFormCartao').addEventListener('submit', getCardToken);
-	function getCardToken(event){
-		event.preventDefault();
-		if(!doSubmit){
-			let docNumber = $('.cpf-cartao').val().replace(/[^0-9]/g,'')
-			$('.cpf-cartao').val(docNumber)
-			setTimeout(() => {
-				let $form = document.getElementById('paymentFormCartao');
-				window.Mercadopago.createToken($form, setCardTokenAndPay);
-				return false;
-			}, 50)
-		}
-	};
+    function getCardToken(event){
+        event.preventDefault();
+        if(!doSubmit){
+            let docNumber = $('.cpf-cartao').val().replace(/[^0-9]/g,'');
+            $('.cpf-cartao').val(docNumber);
+            setTimeout(() => {
+                let $form = document.getElementById('paymentFormCartao');
+                window.Mercadopago.createToken($form, setCardTokenAndPay);
+                return false;
+            }, 50);
+        }
+    }
 
-	function setCardTokenAndPay(status, response) {
+    function setCardTokenAndPay(status, response) {
+        if (status == 200 || status == 201) {
+            let form = document.getElementById('paymentFormCartao');
+            let card = document.createElement('input');
+            card.setAttribute('name', 'token');
+            card.setAttribute('type', 'hidden');
+            card.setAttribute('value', response.id);
+            form.appendChild(card);
+            doSubmit = true;
+            $('.btn-submit-checkout').attr('disabled', true);
+            form.submit();
+        } else {
+            Swal.fire("Erro", "Por favor, verifique os dados do cartão de crédito digitados.", "error");
+        }
+    }
 
-		if (status == 200 || status == 201) {
-			let form = document.getElementById('paymentForm');
-			let card = document.createElement('input');
-			card.setAttribute('name', 'token');
-			card.setAttribute('type', 'hidden');
-			card.setAttribute('value', response.id);
-			form.appendChild(card);
-			doSubmit=true;
-			$('button').attr('disabled', true)
-
-
-			form.submit();
-		} else {
-			alert("Verify filled data!\n"+JSON.stringify(response, null, 4));
-		}
-	};
-
-	$('#observacao').focusout(() => {
-		$('.observacao').val($('#observacao').val())
-	})
-
+    $('#observacao').on('input', function() {
+        $('.observacao').val($(this).val());
+    });
 </script>
 @endsection

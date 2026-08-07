@@ -21,7 +21,10 @@ class ClienteController extends Controller
     public function cadastro(Request $request){
         $config = EcommerceConfig::findOrfail($request->loja_id);
         $carrinho = $this->_getCarrinho();
-        $categorias = CategoriaProduto::where('ecommerce', 1)
+        $categorias = CategoriaProduto::withCount(['produtos as produtos_count' => function($q){
+            $q->where('ecommerce', 1);
+        }])
+        ->where('ecommerce', 1)
         ->where('empresa_id', $config->empresa_id)->get();
         return view('loja.cadastro', compact('carrinho', 'config', 'categorias'));
     }
@@ -194,9 +197,13 @@ class ClienteController extends Controller
         if($clienteLogado){
             return redirect()->route('loja.minha-conta', 'link='.$config->loja_id);
         }
-        $categorias = CategoriaProduto::where('ecommerce', 1)
+        $categorias = CategoriaProduto::withCount(['produtos as produtos_count' => function($q){
+            $q->where('ecommerce', 1);
+        }])
+        ->where('ecommerce', 1)
         ->where('empresa_id', $config->empresa_id)->get();
-        return view('loja.login', compact('config', 'categorias'));
+        $carrinho = $this->_getCarrinho();
+        return view('loja.login', compact('config', 'categorias', 'carrinho'));
         
     }
 

@@ -278,14 +278,14 @@
 .pdv-product-img-wrapper {
     position: relative;
     overflow: hidden;
-    height: 110px;
+    height: 90px;
     background: linear-gradient(135deg, #f0f2ff 0%, #f8f9fc 100%);
     border-radius: 12px 12px 0 0;
 }
 
 .pdv-product-img {
     width: 100%;
-    height: 110px;
+    height: 90px;
     object-fit: cover;
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -2050,4 +2050,306 @@ input[type="hidden"] {
 /* Garante que o scroll continua funcionando */
 .pdv-scroll-area {
     scroll-behavior: smooth;
+}
+
+/* ============================================================
+   27. MODAIS MODERNIZADAS DO PDV (modal-pdv-modern)
+   ============================================================ */
+
+/* Header gradiente escuro premium nas modais modernizadas */
+.modal-pdv.modal-pdv-modern .modal-header.modulo-header-gradient {
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%) !important;
+    border-bottom: none !important;
+    padding: 18px 22px !important;
+}
+
+.modal-pdv.modal-pdv-modern .modal-header .modal-title {
+    color: #fff !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.3px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin: 0 !important;
+}
+
+.modal-pdv.modal-pdv-modern .modal-header .modal-title i {
+    background: rgba(255, 255, 255, 0.12) !important;
+    padding: 8px !important;
+    border-radius: 10px !important;
+    color: #a8b5ff !important;
+    font-size: 19px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.modal-pdv.modal-pdv-modern .modulo-header-subtitle {
+    color: rgba(255, 255, 255, 0.6) !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    margin: 3px 0 0 0 !important;
+    line-height: 1.4;
+}
+
+/* Botão fechar claro sobre o gradiente */
+.modal-pdv.modal-pdv-modern .modal-header .btn-close {
+    background: rgba(255, 255, 255, 0.14) url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+    opacity: 1;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.modal-pdv.modal-pdv-modern .modal-header .btn-close:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    transform: rotate(90deg);
+}
+
+/* Total da venda exibido no header da modal */
+.pdv-header-total {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    padding: 6px 14px !important;
+    border-radius: 999px !important;
+    color: #fff !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    white-space: nowrap;
+}
+
+.pdv-header-total strong {
+    color: #a8ffb8 !important;
+    font-weight: 800;
+}
+
+/* Cards de estatística do pagamento múltiplo */
+.pdv-modal-stat {
+    background: #f8f9fc !important;
+    border: 1px solid #e8ecf4 !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    height: 100%;
+    transition: all 0.2s ease;
+}
+
+.pdv-modal-stat:hover {
+    border-color: #c7d2fe;
+    box-shadow: 0 2px 10px rgba(79, 70, 229, 0.06);
+}
+
+.pdv-modal-stat-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #5a5a7a !important;
+    margin-bottom: 4px;
+}
+
+.pdv-modal-stat-value {
+    font-size: 19px !important;
+    font-weight: 800 !important;
+    color: #1a1a2e !important;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+}
+
+/* Área de adicionar forma de pagamento */
+.pdv-payment-add {
+    background: #f8f9fc !important;
+    border: 1px dashed #d0d5e0 !important;
+    border-radius: 12px !important;
+    padding: 14px !important;
+}
+
+.pdv-payment-add-title {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #5a5a7a !important;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Tabela padrão dentro das modais modernizadas */
+.pdv-modal-table thead th {
+    background: #f4f6fb !important;
+    color: #5a5a7a !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.4px !important;
+    border-bottom: 2px solid #e8eaf6 !important;
+    padding: 12px 14px !important;
+    white-space: nowrap;
+}
+
+.pdv-modal-table tbody td {
+    padding: 10px 14px !important;
+    vertical-align: middle !important;
+    font-size: 13px !important;
+    border-bottom: 1px solid #f0f2f8 !important;
+    color: #334155 !important;
+}
+
+.pdv-modal-table tbody tr {
+    transition: background 0.15s ease;
+}
+
+.pdv-modal-table tbody tr:hover {
+    background: #f5f6fe !important;
+}
+
+.pdv-modal-table tbody tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* Badge de tipo de pagamento dentro das tabelas */
+.pdv-pag-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #eef2ff !important;
+    color: #4338ca !important;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+/* Estado vazio das tabelas */
+.pdv-empty-state {
+    text-align: center !important;
+    padding: 32px 16px !important;
+    color: #9ca3af !important;
+    font-size: 13px !important;
+}
+
+.pdv-empty-state i {
+    font-size: 36px;
+    display: block;
+    margin-bottom: 8px;
+    color: #c5cae9;
+}
+
+/* Textarea de observação */
+.pdv-obs-textarea {
+    resize: vertical;
+}
+
+/* Labels com ícones dentro das modais */
+.modal-pdv .form-label {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #5a5a7a !important;
+    margin-bottom: 4px;
+}
+
+.modal-pdv .form-label i {
+    font-size: 13px;
+    color: var(--pdv-primary);
+}
+
+.modal-pdv .form-text {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+/* Inputs dentro das modais modernizadas */
+.modal-pdv.modal-pdv-modern .form-control,
+.modal-pdv.modal-pdv-modern .form-select {
+    border-radius: 10px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+    font-size: 13px;
+    padding: 9px 12px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modal-pdv.modal-pdv-modern .form-control:focus,
+.modal-pdv.modal-pdv-modern .form-select:focus {
+    border-color: #4f46e5 !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
+}
+
+/* Select2 dentro das modais modernizadas */
+.modal-pdv.modal-pdv-modern .select2-container .select2-selection--single {
+    border-radius: 10px !important;
+    border: 1px solid #e2e8f0 !important;
+    height: 38px !important;
+    display: flex;
+    align-items: center;
+}
+
+.modal-pdv.modal-pdv-modern .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 38px !important;
+    padding-left: 12px !important;
+    font-size: 13px;
+    color: #374151;
+}
+
+/* ============================================================
+   28. BOTÃO LIGA/DESLIGA DO LEITOR DE CÓDIGO DE BARRAS
+   ============================================================ */
+.pdv-leitor-toggle {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 10px 14px !important;
+    border-radius: 10px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    border: 1.5px solid !important;
+    transition: all 0.25s ease !important;
+    height: auto;
+}
+
+.pdv-leitor-toggle.leitor-on {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+    border-color: #10b981 !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+}
+
+.pdv-leitor-toggle.leitor-on:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4) !important;
+}
+
+.pdv-leitor-toggle.leitor-off {
+    background: #fff !important;
+    border-color: #d0d5e0 !important;
+    color: #6c757d !important;
+}
+
+.pdv-leitor-toggle.leitor-off:hover {
+    border-color: #6c757d;
+    color: #343a40;
+}
+
+.pdv-leitor-switch {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.pdv-leitor-toggle.leitor-off .pdv-leitor-switch {
+    color: #9ca3af;
+    transform: rotate(180deg);
+}
+
+.pdv-leitor-toggle .pdv-leitor-label {
+    font-weight: 600;
 }

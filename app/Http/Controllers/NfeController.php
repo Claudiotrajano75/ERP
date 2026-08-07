@@ -1145,19 +1145,22 @@ public function destroy($id)
         session()->flash("flash_error", 'Algo deu errado: '. $e->getMessage());
     }
     return redirect()->back();
-}
+}    public function xmlTemp($id)
+    {
+        $item = Nfe::findOrFail($id);
 
-public function xmlTemp($id)
-{
-    $item = Nfe::findOrFail($id);
+        if ($item->natureza == null) {
+            session()->flash("flash_error", "Natureza de Operação não definida para esta NFe. Edite a NFe e selecione a Natureza de Operação antes de gerar o XML.");
+            return redirect()->route('nfe.show', $id);
+        }
 
-    $empresa = $item->empresa;
-    $empresa = __objetoParaEmissao($empresa, $item->local_id);
+        $empresa = $item->empresa;
+        $empresa = __objetoParaEmissao($empresa, $item->local_id);
 
-    if ($empresa->arquivo == null) {
-        session()->flash("flash_error", "Certificado não encontrado para este emitente");
-        return redirect()->route('config.index');
-    }
+        if ($empresa->arquivo == null) {
+            session()->flash("flash_error", "Certificado não encontrado para este emitente");
+            return redirect()->route('config.index');
+        }
 
     $nfe_service = new NFeService([
         "atualizacao" => date('Y-m-d h:i:s'),
@@ -1179,20 +1182,23 @@ public function xmlTemp($id)
     } else {
         return response()->json($doc['erros_xml'], 401);
     }
-}
+}    public function danfeTemporaria($id)
+    {
+        $item = Nfe::findOrFail($id);
+        __validaObjetoEmpresa($item);
 
-public function danfeTemporaria($id)
-{
-    $item = Nfe::findOrFail($id);
-    __validaObjetoEmpresa($item);
+        if ($item->natureza == null) {
+            session()->flash("flash_error", "Natureza de Operação não definida para esta NFe. Edite a NFe e selecione a Natureza de Operação antes de gerar o DANFE.");
+            return redirect()->route('nfe.show', $id);
+        }
 
-    $empresa = $item->empresa;
-    $empresa = __objetoParaEmissao($empresa, $item->local_id);
-    
-    if ($empresa->arquivo == null) {
-        session()->flash("flash_error", "Certificado não encontrado para este emitente");
-        return redirect()->route('config.index');
-    }
+        $empresa = $item->empresa;
+        $empresa = __objetoParaEmissao($empresa, $item->local_id);
+        
+        if ($empresa->arquivo == null) {
+            session()->flash("flash_error", "Certificado não encontrado para este emitente");
+            return redirect()->route('config.index');
+        }
 
     $nfe_service = new NFeService([
         "atualizacao" => date('Y-m-d h:i:s'),
@@ -1318,24 +1324,24 @@ public function storeEstado(Request $request, $id)
         return redirect()->route('devolucao.index');
     }
     return redirect()->route('nfe.index');
-}
+}    public function imprimirVenda($id)
+    {
+        $item = Nfe::findOrFail($id);
+        __validaObjetoEmpresa($item);
+        $config = Empresa::where('id', $item->empresa_id)->first();
 
-public function imprimirVenda($id)
-{
-    $item = Nfe::findOrFail($id);
-    __validaObjetoEmpresa($item);
-    $config = Empresa::where('id', $item->empresa_id)->first();
+        $p = view('nfe.imprimir', compact('config', 'item'))->render();
 
-    $p = view('nfe.imprimir', compact('config', 'item'));
+        $domPdf = new Dompdf(["enable_remote" => true]);
+        $domPdf->loadHtml($p);
+        $domPdf->setPaper("A4");
+        $domPdf->render();
 
-    $domPdf = new Dompdf(["enable_remote" => true]);
-    $domPdf->loadHtml($p);
-    $pdf = ob_get_clean();
-    $domPdf->setPaper("A4");
-    $domPdf->render();
-    header("Content-Disposition: ; filename=Pedido.pdf");
-    $domPdf->stream("Venda de Produtos.pdf", array("Attachment" => false));
-}
+        $nomeArquivo = $item->tpNF == 1 ? 'Pedido de Venda' : 'Pedido de Compra';
+        return response($domPdf->output())
+        ->header('Content-Type', 'application/pdf')
+        ->header('Content-Disposition', 'inline; filename="' . $nomeArquivo . '.pdf"');
+    }
 
 public function show($id)
 {

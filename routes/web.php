@@ -84,6 +84,7 @@ Route::middleware(['validaEcommerce'])->group(function () {
     Route::get('loja-cadastro', 'Ecommerce\\ClienteController@cadastro')->name('loja.cadastro');
     Route::post('loja-cadastro', 'Ecommerce\\ClienteController@cadastroStore')->name('loja.cadastro');
     Route::get('loja-pesquisa', 'Ecommerce\\HomeController@pesquisa')->name('loja.pesquisa');
+    Route::get('loja-pesquisa-autocomplete', 'Ecommerce\\HomeController@pesquisaAutocomplete')->name('loja.pesquisa-autocomplete');
     Route::get('loja-pagamento', 'Ecommerce\\PagamentoController@index')->name('loja.pagamento');
 
     Route::get('loja-politica-privacidade', 'Ecommerce\\HomeController@politicaPrivacidade')->name('loja.politica-privacidade');

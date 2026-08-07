@@ -729,10 +729,27 @@
             <div class="tab-pane fade show" id="fatura" role="tabpanel">
                 <div class="card">
                     <div class="row m-3">
+                        @php
+                        // Natureza padrão por tipo de operação: compras usam natureza de compra, vendas/orçamentos usam natureza de venda
+                        $defaultNaturezaId = isset($item) && $item->natureza_id ? $item->natureza_id : '';
+                        if ($defaultNaturezaId == '' && isset($naturezas)) {
+                            $ehCompra = isset($isCompra) && $isCompra == 1;
+                            $naturezaTipo = $naturezas->first(function ($n) use ($ehCompra) {
+                                $desc = mb_strtolower((string)$n->descricao);
+                                $ehDeCompra = mb_strpos($desc, 'compra') !== false || mb_strpos($desc, 'entrada') !== false;
+                                return $ehDeCompra == $ehCompra;
+                            });
+                            if ($naturezaTipo != null) {
+                                $defaultNaturezaId = $naturezaTipo->id;
+                            } elseif (isset($naturezaPadrao)) {
+                                $defaultNaturezaId = $naturezaPadrao->id;
+                            }
+                        }
+                        @endphp
                         <div class="col-md-3">
                             {!!Form::select('natureza_id', 'Natureza de Operação', ['' => 'Selecione'] + $naturezas->pluck('descricao', 'id')->all())
                             ->attrs(['class' => 'form-select'])
-                            ->value(isset($item) ? $item->natureza_id : (isset($naturezaPadrao) && $naturezaPadrao != null ? $naturezaPadrao->id : '') )
+                            ->value($defaultNaturezaId)
                             ->required()
                             !!}
                         </div>

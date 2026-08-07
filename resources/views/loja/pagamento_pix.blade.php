@@ -1,139 +1,102 @@
-@extends('loja.default', ['title' => 'Pagamento'])
-@section('css')
-<style type="text/css">
-	.w-100{
-		width: 100%;
-		margin-bottom: 10px;
-	}
+@extends('loja.default', ['title' => 'Pagamento PIX'])
 
-	.ml-2{
-		border-left: 10px;
-	}
-
-	.select{
-		border-bottom: 2px solid #D10024;
-	}
-	.header-pay{
-		text-align: center;
-	}
-	.header-pay:hover{
-		cursor: pointer;
-	}
-	.body-pay{
-		margin-top: 20px;
-	}
-	.d-none{
-		display: none;
-	}
-	label{
-		margin-top: 10px;
-		margin-bottom: -4px;
-	}
-
-</style>
-@endsection
 @section('content')
 
-<div class="section">
-	<div class="container">
+<div class="section py-5 text-dark">
+    <div class="container">
+        <div class="row g-4">
 
-		<div class="col-md-4 order-details">
-			<div class="section-title text-center">
-				<h4 class="title">Pedido <strong style="font-size: 14px; color: #D10024">#{{ $item->hash_pedido }}</strong></h4>
-			</div>
-			<div class="order-summary">
-				<div class="order-col">
-					<div><strong>PRODUTO</strong></div>
-					<div><strong>SUBTOTAL</strong></div>
-				</div>
-				<div class="order-products">
-					@foreach($item->itens as $i)
-					<div class="order-col">
-						<div>{{ number_format($i->quantidade, 0) }}x {{ $i->produto->nome }}</div>
-						<div>R${{ __moeda($i->sub_total) }}</div>
-					</div>
-					@endforeach
-				</div>
-				<div class="order-col">
-					<div>Entrega</div>
-					<div><strong> {{ $item->tipo_frete != 0 ? $item->tipo_frete : ''}} R${{ __moeda($item->valor_frete) }}</strong></div>
-				</div>
+            <!-- ─── DETALHES DO PEDIDO (DIREITA) ─── -->
+            <div class="col-lg-5 col-12 order-lg-last">
+                <div class="summary-card">
+                    <div class="summary-title">Pedido #{{ $item->hash_pedido }}</div>
 
-				<div class="order-col">
-					<div><strong>TOTAL</strong></div>
-					<div><strong class="order-total">R${{ __moeda($item->valor_total) }}</strong></div>
-				</div>
-			</div>
+                    <div style="max-height: 280px; overflow-y: auto; margin-bottom: 8px;">
+                        @foreach($item->itens as $i)
+                        <div class="summary-item">
+                            <div style="min-width:0">
+                                <div class="si-name text-truncate">{{ $i->produto->nome }}</div>
+                                <div class="si-meta">Qtd: {{ number_format($i->quantidade, 0) }} x R$ {{ __moeda($i->valor_unitario) }}</div>
+                            </div>
+                            <div class="si-price">R$ {{ __moeda($i->sub_total) }}</div>
+                        </div>
+                        @endforeach
+                    </div>
 
-			@if($item->endereco && strlen(trim($item->endereco) > 10))
-			<div class="section-title text-center">
-				<h4 class="title">Endereço de entrega</h4>
+                    <div class="summary-row-line">
+                        <span>Entrega:</span>
+                        <strong style="color:var(--luxe-brown)">R$ {{ __moeda($item->valor_frete) }}</strong>
+                    </div>
 
-				<h5>{{ $item->endereco }}</h5>
-			</div>
-			@endif
+                    <div class="summary-row-line total">
+                        <span>TOTAL:</span>
+                        <span class="text-gold">R$ {{ __moeda($item->valor_total) }}</span>
+                    </div>
 
-		</div>
+                    @if($item->endereco)
+                    <div style="border-top:1px solid var(--border-light);padding-top:16px;margin-top:16px">
+                        <div class="summary-section-label">Endereço de Entrega</div>
+                        <div class="summary-info-box">
+                            {{ $item->endereco }}
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
 
-		<div class="col-md-8 order-details">
+            <!-- ─── FORMULÁRIO PIX (ESQUERDA) ─── -->
+            <div class="col-lg-7 col-12">
+                <div class="content-card luxe-form">
+                    <div class="card-heading">Pagamento via PIX</div>
+                    <p class="card-subheading">Confirme seus dados para gerar o QR Code de pagamento.</p>
 
-			<div class="row body-pay">
-				<div class="body body-pix">
-					<h4>Pagamento com PIX</h4>
-					<div class="row">
-						<form method="post" id="paymentFormPix" action="{{ route('loja.pagamento-novo-pix', ['link='.$config->loja_id]) }}">
-							@csrf
-							<input type="hidden" value="{{ $item->id }}" name="pedido_id">
-							<div class="col-md-6">
-								<label>Nome</label>
-								<input required value="{{ $item->nome }}" name="payerFirstName" data-checkout="payerFirstName" type="text" class="form-control">
-							</div>
+                    <form method="post" id="paymentFormPix" action="{{ route('loja.pagamento-novo-pix', ['link='.$config->loja_id]) }}" class="row g-3">
+                        @csrf
+                        <input type="hidden" value="{{ $item->id }}" name="pedido_id">
 
-							<div class="col-md-6">
-								<label>Sobre nome</label>
-								<input required value="{{ $item->sobre_nome }}" name="payerLastName" data-checkout="payerLastName" type="text" class="form-control">
-							</div>
+                        <div class="col-md-6 col-12">
+                            <label class="required">Nome</label>
+                            <input required value="{{ $item->nome }}" name="payerFirstName" type="text" class="form-control">
+                        </div>
 
-							<div class="col-md-6">
-								<label>Email</label>
-								<input required value="{{ $item->email }}" name="payerEmail" data-checkout="payerEmail" id="payerEmail" type="email" class="form-control">
-							</div>
+                        <div class="col-md-6 col-12">
+                            <label class="required">Sobrenome</label>
+                            <input required value="{{ $item->sobre_nome }}" name="payerLastName" type="text" class="form-control">
+                        </div>
 
-							<div class="col-md-3">
-								<label>Tipo de documento</label>
-								<select required name="docType" id="docType" data-checkout="docType" class="form-control">
-								</select>
-							</div>
+                        <div class="col-md-6 col-12">
+                            <label class="required">E-mail</label>
+                            <input required value="{{ $item->email }}" name="payerEmail" type="email" class="form-control">
+                        </div>
 
-							<div class="col-md-6">
-								<label>Número do documento</label>
-								<input required value="{{ $item->numero_documento }}" name="docNumber" data-checkout="docNumber" type="tel" class="form-control cpf_cnpj">
-							</div>
+                        <div class="col-md-6 col-12">
+                            <label class="required">CPF / CNPJ</label>
+                            <input required value="{{ $item->numero_documento }}" name="docNumber" type="tel" class="form-control cpf_cnpj">
+                        </div>
 
-							<div class="col-md-6">
-								<br>
-								<button id="btn-pix" style="width: 100%; margin-top: 7px;" class="btn btn-success" type="submit">Pagar com PIX</button>
-							</div>
+                        <input type="hidden" name="docType" value="CPF">
 
-						</form>
+                        <div class="col-12 mt-4">
+                            <button id="btn-pix" class="btn-luxe" type="submit">
+                                <i class="ri-qr-code-line"></i>
+                                Confirmar e Gerar Chave PIX
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
-					</div>
-				</div>
-
-			</div>
-		</div>
-	</div>
+        </div>
+    </div>
 </div>
 
 @endsection
+
 @section('js')
 <script src="https://secure.mlstatic.com/sdk/javascript/v1/mercadopago.js"></script>
 <script type="text/javascript">
-	$(function(){
-		$('.select-pay').first().trigger('click')
-		window.Mercadopago.setPublishableKey('{{ $config->mercadopago_public_key }}');
-		window.Mercadopago.getIdentificationTypes();
-
-	})
+    $(function(){
+        window.Mercadopago.setPublishableKey('{{ $config->mercadopago_public_key }}');
+    });
 </script>
 @endsection

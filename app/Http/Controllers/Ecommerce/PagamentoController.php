@@ -33,7 +33,10 @@ class PagamentoController extends Controller
         if($carrinho == []){
             return redirect()->route('loja.index', 'link='.$config->loja_id);
         }
-        $categorias = CategoriaProduto::where('ecommerce', 1)
+        $categorias = CategoriaProduto::withCount(['produtos as produtos_count' => function($q){
+            $q->where('ecommerce', 1);
+        }])
+        ->where('ecommerce', 1)
         ->where('empresa_id', $config->empresa_id)->get();
 
         $clienteLogado = $this->_getClienteLogado();
@@ -65,7 +68,10 @@ class PagamentoController extends Controller
         }
         $config = EcommerceConfig::findOrfail($request->loja_id);
         
-        $categorias = CategoriaProduto::where('ecommerce', 1)
+        $categorias = CategoriaProduto::withCount(['produtos as produtos_count' => function($q){
+            $q->where('ecommerce', 1);
+        }])
+        ->where('ecommerce', 1)
         ->where('empresa_id', $config->empresa_id)->get();
 
         return view('loja.pagamento_pix', compact('config', 'categorias', 'item'));

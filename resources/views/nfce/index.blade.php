@@ -271,7 +271,7 @@
                                                     <i class="ri-pencil-line"></i>
                                                 </a>
                                                 @endcan
-                                                <a target="_blank" title="XML temporário" class="btn btn-light btn-sm" href="{{ route('nfce.xml-temp', $item->id) }}">
+                                                <a title="XML temporário" class="btn btn-light btn-sm" href="{{ route('nfce.xml-temp', $item->id) }}">
                                                     <i class="ri-file-code-line"></i>
                                                 </a>
                                                 @can('nfce_delete')

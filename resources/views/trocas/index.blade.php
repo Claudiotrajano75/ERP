@@ -1,4 +1,4 @@
-﻿@extends('layouts.app', ['title' => 'Lista de trocas'])
+@extends('layouts.app', ['title' => 'Lista de trocas'])
 
 @section('content')
 @section('css')
@@ -11,13 +11,112 @@
 .modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
 .modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
 
-/* ─── Glass Filters ─── */
-.modulo-glass-filter { background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8) !important; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.04); }
-.modulo-glass-filter label { font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #5a5a7a; margin-bottom: 2px; }
-.modulo-glass-filter .form-control, .modulo-glass-filter .form-select { height: 38px; } .modulo-glass-filter .btn { border-radius: 8px; font-weight: 600; font-size: 13px; height: 38px; padding-top: 0; padding-bottom: 0; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
-.modulo-glass-filter .btn:hover { transform: translateY(-1px); }
+/* --- Novo Filtro de Pesquisa Premium --- */
+.modulo-glass-filter-premium {
+    background: #ffffff;
+    border: 1px solid #eef0f6 !important;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    padding: 20px !important;
+    margin-bottom: 24px;
+}
 
-/* ─── Premium Table ─── */
+/* Título e Header do Filtro */
+.filtro-premium-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #f1f3f9;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+.filtro-premium-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #3f3e6a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0;
+}
+.filtro-premium-title i {
+    color: #5572f5;
+    margin-right: 6px;
+}
+
+/* Customização dos Inputs dentro do Filtro */
+.modulo-glass-filter-premium label {
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #8c8ca6 !important;
+    margin-bottom: 6px !important;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.modulo-glass-filter-premium label i {
+    font-size: 12px;
+    color: #a8a8c0;
+}
+
+.modulo-glass-filter-premium .form-control,
+.modulo-glass-filter-premium .form-select {
+    height: 38px !important;
+    border-radius: 8px !important;
+    border: 1px solid #dcdce9 !important;
+    font-size: 13px !important;
+    padding: 6px 12px !important;
+    color: #374151 !important;
+    background-color: #fcfdfe !important;
+    transition: all 0.2s ease;
+}
+
+.modulo-glass-filter-premium .form-control:focus,
+.modulo-glass-filter-premium .form-select:focus {
+    border-color: #5572f5 !important;
+    background-color: #fff !important;
+    box-shadow: 0 0 0 3px rgba(85, 114, 245, 0.12) !important;
+}
+
+/* Botões do Filtro */
+.modulo-glass-filter-premium .btn-pesquisar {
+    background: linear-gradient(135deg, #5572f5 0%, #3d56d4 100%) !important;
+    border: none !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    height: 38px;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.modulo-glass-filter-premium .btn-pesquisar:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(85, 114, 245, 0.25) !important;
+}
+
+.modulo-glass-filter-premium .btn-limpar {
+    background: #f1f3f9 !important;
+    border: 1px solid #e2e5ec !important;
+    color: #5a5a7a !important;
+    font-weight: 600 !important;
+    height: 38px;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.modulo-glass-filter-premium .btn-limpar:hover {
+    background: #e8ebf3 !important;
+    color: #302b63 !important;
+}
 .modulo-table-wrap { border-radius: 12px; border: 1px solid #eef0f5; overflow: hidden; }
 .modulo-table-wrap table { margin-bottom: 0; }
 .modulo-table-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding: 12px 14px; border-bottom: 2px solid #e8eaf6; }
@@ -84,30 +183,41 @@
 
             <div class="card-body p-4">
 
-                <!-- FILTROS GLASS -->
-                <div class="modulo-glass-filter p-3 mb-4">
+                <!-- ═══ Filtros de Busca Premium ═══ -->
+                <div class="modulo-glass-filter-premium">
+                    <div class="filtro-premium-header">
+                        <h5 class="filtro-premium-title">
+                            <i class="ri-search-line"></i> Filtrar Trocas
+                        </h5>
+                    </div>
+
                     {!!Form::open()->fill(request()->all())->get()!!}
-                    <div class="row g-2 align-items-end">
-                        <div class="col-md-4 col-12">
-                            {!!Form::select('cliente_id', 'Cliente')->attrs(['class' => 'select2 form-select'])!!}
+                    <div class="row g-3">
+                        <div class="col-md-5 col-12">
+                            <label class="form-label"><i class="ri-user-line"></i> Cliente</label>
+                            {!!Form::select('cliente_id', '')->attrs(['class' => 'select2 form-select'])!!}
                         </div>
                         <div class="col-md-2 col-6">
-                            {!!Form::date('start_date', 'Data Inicial')!!}
+                            <label class="form-label"><i class="ri-calendar-line"></i> Data Inicial</label>
+                            {!!Form::date('start_date', '')->attrs(['class' => 'form-control'])!!}
                         </div>
                         <div class="col-md-2 col-6">
-                            {!!Form::date('end_date', 'Data Final')!!}
+                            <label class="form-label"><i class="ri-calendar-line"></i> Data Final</label>
+                            {!!Form::date('end_date', '')->attrs(['class' => 'form-control'])!!}
                         </div>
-                        <div class="col-md-2 col-12 ms-auto">
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-primary btn-sm flex-grow-1" type="submit">
-                                    <i class="ri-search-line me-1"></i> Pesquisar
+                        <div class="col-md-3 col-12 ms-auto d-flex align-items-end">
+                            <div class="d-flex gap-2 w-100">
+                                <button class="btn btn-pesquisar flex-grow-1" type="submit">
+                                    <i class="ri-search-line"></i> Buscar
                                 </button>
-                                <a class="btn btn-danger btn-sm px-3" href="{{ route('trocas.index') }}">
-                                    <i class="ri-eraser-line me-1"></i> Limpar
+                                <a class="btn btn-limpar px-3" href="{{ route('trocas.index') }}" title="Limpar Filtros">
+                                    <i class="ri-eraser-line"></i>
                                 </a>
                             </div>
                         </div>
                     </div>
+                    {!!Form::close()!!}
+                </div>
                     {!!Form::close()!!}
                 </div>
 

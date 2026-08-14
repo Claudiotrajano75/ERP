@@ -240,20 +240,20 @@
         <div class="row">
             <div class="col-12">
 
-                @if(sizeof($paymentMethods) > 0)
+                @if(isset($pagamentosAlterados) && count($pagamentosAlterados) > 0)
                     <div class="card border-0 shadow-sm modulo-form-card mb-4">
                         <div class="card-header bg-white border-bottom py-3 px-4">
                             <h5 class="mb-0 fs-14 fw-bold text-dark d-flex align-items-center gap-2">
-                                <i class="ri-bank-card-line text-primary"></i> Status das Integrações de Pagamento
+                                <i class="ri-notification-3-line text-primary"></i> Atualizações Automáticas de Pagamento (Mercado Pago)
                             </h5>
                         </div>
                         <div class="card-body p-4">
                             <div class="row g-3">
-                                @foreach($paymentMethods as $p)
-                                    <div class="col-md-6 col-12">
-                                        <div class="payment-alert {{ $p['status'] == 'success' ? 'success' : 'warning' }} mb-0">
-                                            <i class="ri-{{ $p['status'] == 'success' ? 'checkbox-circle-fill' : 'error-warning-fill' }} fs-18"></i>
-                                            <span>{{ $p['message'] }}</span>
+                                @foreach($pagamentosAlterados as $p)
+                                    <div class="col-md-4 col-12">
+                                        <div class="payment-alert {{ $p['status'] == 'approved' ? 'success' : 'danger' }} mb-0">
+                                            <i class="ri-{{ $p['status'] == 'approved' ? 'checkbox-circle-fill' : 'close-circle-fill' }} fs-18"></i>
+                                            <span>Pedido #{{ $p['hash_pedido'] }} alterado para: {{ strtoupper($p['status']) }}</span>
                                         </div>
                                     </div>
                                 @endforeach

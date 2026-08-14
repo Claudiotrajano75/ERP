@@ -1,5 +1,140 @@
 @extends('layouts.app', ['title' => 'Home'])
 @if(!__isContador())
+    @section('css')
+        <style>
+            /* ─── Header Gradiente Premium ─── */
+            .modulo-header-gradient {
+                background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+                border-radius: 12px 12px 0 0 !important;
+                border-bottom: none !important;
+            }
+
+            .modulo-header-gradient .modulo-title {
+                color: #fff;
+                font-weight: 700;
+                letter-spacing: -0.3px;
+            }
+
+            .modulo-header-gradient .modulo-title i {
+                background: rgba(255, 255, 255, 0.12);
+                padding: 8px;
+                border-radius: 10px;
+                color: #a8b5ff;
+            }
+
+            .modulo-header-gradient .modulo-subtitle {
+                color: rgba(255, 255, 255, 0.6) !important;
+                font-weight: 400;
+            }
+
+            .modulo-header-gradient .modulo-subtitle strong {
+                color: #fff;
+            }
+
+            /* ─── Cards de Ação da Home do Caixa ─── */
+            .home-action-card {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                padding: 22px 18px;
+                border-radius: 14px;
+                color: #fff;
+                height: 100%;
+                position: relative;
+                overflow: hidden;
+                text-decoration: none;
+                transition: all 0.25s ease;
+            }
+
+            .home-action-card::after {
+                content: '';
+                position: absolute;
+                top: -45px;
+                right: -45px;
+                width: 130px;
+                height: 130px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.08);
+                transition: transform 0.3s ease;
+            }
+
+            .home-action-card:hover {
+                transform: translateY(-4px);
+                text-decoration: none;
+                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2) !important;
+            }
+
+            .home-action-card:hover::after {
+                transform: scale(1.5);
+            }
+
+            .home-action-card:hover .home-action-arrow {
+                transform: translateX(4px);
+                opacity: 1;
+            }
+
+            .home-action-icon {
+                width: 52px;
+                height: 52px;
+                border-radius: 14px;
+                background: rgba(255, 255, 255, 0.2);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                font-size: 26px;
+            }
+
+            .home-action-card h5 {
+                margin: 0;
+                font-weight: 700;
+                font-size: 16px;
+                color: #fff;
+                letter-spacing: -0.2px;
+            }
+
+            .home-action-card p {
+                margin: 4px 0 0;
+                font-size: 12px;
+                color: rgba(255, 255, 255, 0.8);
+                line-height: 1.4;
+            }
+
+            .home-action-arrow {
+                font-size: 26px;
+                opacity: 0.6;
+                transition: all 0.25s ease;
+                flex-shrink: 0;
+            }
+
+            .home-action-blue {
+                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+            }
+
+            .home-action-green {
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+            }
+
+            .home-action-orange {
+                background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+                box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+            }
+
+            .home-action-purple {
+                background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+                box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+            }
+
+            @media (max-width: 768px) {
+                .modulo-header-gradient .modulo-title {
+                    font-size: 18px;
+                }
+            }
+        </style>
+    @endsection
+
     @section('content')
         <div class="mt-3">
             <div class="row">
@@ -346,35 +481,68 @@
                         </div>
                     </div>
                 @else
-                    <div class="card">
-                        <div class="card-body">
-                            <h3>Painel</h3>
+                    <!-- ═══ Painel Inicial — Home do Caixa ═══ -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header modulo-header-gradient py-3 px-4">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div>
+                                    <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
+                                        <i class="ri-home-5-line"></i>
+                                        Painel Inicial
+                                    </h4>
+                                    <p class="text-muted mb-0 modulo-subtitle fs-13">
+                                        Olá, <strong>{{ get_name_user() }}</strong>! Selecione uma ação para começar.
+                                    </p>
+                                </div>
+                                <div>
+                                    <span
+                                        class="badge bg-white bg-opacity-10 text-white border border-white border-opacity-25 px-3 py-2 fs-12">
+                                        <i class="ri-calendar-line me-1"></i> {{ __data_pt(date('Y-m-d'), 0) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
 
-                            <h5>Olá, <strong class="text-success">{{ get_name_user() }}</strong> seja bem vindo!</h5>
-
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <a href="{{ route('nfe.create') }}" class="btn btn-lg w-100 btn-light">
-                                        <i class="ri-shopping-bag-line"></i>
-                                        Nova Venda
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-6 col-lg-3">
+                                    <a href="{{ route('nfe.create') }}" class="home-action-card home-action-blue">
+                                        <div class="home-action-icon"><i class="ri-shopping-bag-line"></i></div>
+                                        <div class="flex-grow-1">
+                                            <h5>Nova Venda</h5>
+                                            <p>Emita uma NFe de venda para o cliente</p>
+                                        </div>
+                                        <i class="ri-arrow-right-s-line home-action-arrow"></i>
                                     </a>
                                 </div>
-                                <div class="col-md-3">
-                                    <a href="{{ route('frontbox.create') }}" class="btn btn-lg w-100 btn-light">
-                                        <i class="ri-shopping-basket-2-fill"></i>
-                                        Abrir PDV
+                                <div class="col-md-6 col-lg-3">
+                                    <a href="{{ route('pre-venda.create') }}" class="home-action-card home-action-green">
+                                        <div class="home-action-icon"><i class="ri-file-list-3-line"></i></div>
+                                        <div class="flex-grow-1">
+                                            <h5>Nova Pré-Venda</h5>
+                                            <p>Crie uma pré-venda para finalizar depois</p>
+                                        </div>
+                                        <i class="ri-arrow-right-s-line home-action-arrow"></i>
                                     </a>
                                 </div>
-                                <div class="col-md-3">
-                                    <a href="{{ route('produtos.create') }}" class="btn btn-lg w-100 btn-light">
-                                        <i class="ri-price-tag-3-line"></i>
-                                        Novo Produto
+                                <div class="col-md-6 col-lg-3">
+                                    <a href="{{ route('produtos.create') }}" class="home-action-card home-action-orange">
+                                        <div class="home-action-icon"><i class="ri-price-tag-3-line"></i></div>
+                                        <div class="flex-grow-1">
+                                            <h5>Novo Produto</h5>
+                                            <p>Cadastre um novo produto no estoque</p>
+                                        </div>
+                                        <i class="ri-arrow-right-s-line home-action-arrow"></i>
                                     </a>
                                 </div>
-                                <div class="col-md-3">
-                                    <a href="{{ route('clientes.create') }}" class="btn btn-lg w-100 btn-light">
-                                        <i class="ri-user-add-line"></i>
-                                        Novo Cliente
+                                <div class="col-md-6 col-lg-3">
+                                    <a href="{{ route('clientes.create') }}" class="home-action-card home-action-purple">
+                                        <div class="home-action-icon"><i class="ri-user-add-line"></i></div>
+                                        <div class="flex-grow-1">
+                                            <h5>Novo Cliente</h5>
+                                            <p>Cadastre um novo cliente</p>
+                                        </div>
+                                        <i class="ri-arrow-right-s-line home-action-arrow"></i>
                                     </a>
                                 </div>
                             </div>

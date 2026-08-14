@@ -44,6 +44,15 @@ class PreVenda extends Model
         return $this->belongsTo(Nfce::class, 'venda_id');
     }
 
+    /**
+     * Uma pré-venda só pode ser editada enquanto está aberta/pendente
+     * (status 1) e ainda não foi convertida em venda no PDV (venda_id nulo).
+     */
+    public function podeSerEditada(): bool
+    {
+        return $this->status == 1 && $this->venda_id == null;
+    }
+
     public static function tiposPagamento()
     {
         return [

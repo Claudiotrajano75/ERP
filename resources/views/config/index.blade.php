@@ -1,10 +1,9 @@
 @extends('layouts.app', ['title' => 'Configuração da Empresa'])
-@section('content')
 @section('css')
 <style>
     /* ─── Header Gradient Premium ─── */
     .modulo-header-gradient {
-        background: linear-gradient(135deg, #0d2b40 0%, #1a4a6e 100%);
+        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
         border-radius: 12px 12px 0 0 !important;
         border-bottom: none !important;
     }
@@ -52,7 +51,7 @@
                             </p>
                         </div>
                         <div>
-                            <a href="{{ route('empresas.index') }}" class="btn btn-light btn-sm px-3 text-dark shadow-sm">
+                            <a href="{{ route('home') }}" class="btn btn-light btn-sm px-3 text-dark shadow-sm">
                                 <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
                             </a>
                         </div>

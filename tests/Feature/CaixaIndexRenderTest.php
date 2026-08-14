@@ -94,6 +94,40 @@ class CaixaIndexRenderTest extends TestCase
     }
 
     /** @test */
+    public function tela_detalhes_caixa_renderiza_modernizada()
+    {
+        $this->actingAsUserBasico();
+        $item = $this->makeCaixa();
+        $item->status = 0;
+        $item->data_fechamento = now();
+        $item->valor_fechamento = 150.0;
+        $item->valor_dinheiro = 100.0;
+        $item->valor_cheque = 0.0;
+        $item->valor_outros = 50.0;
+
+        $html = view('caixa.show', [
+            'item' => $item,
+            'vendas' => [$this->makeVenda('OS')],
+            'somaTiposPagamento' => ['17' => 60.0],
+            'suprimentos' => collect([]),
+            'sangrias' => collect([]),
+            'contas' => [],
+            'receber' => collect([]),
+            'pagar' => collect([]),
+            'somaServicos' => 0,
+        ])->render();
+
+        // Header premium + cards coloridos + resumo de fechamento
+        $this->assertStringContainsString('modulo-header-gradient', $html);
+        $this->assertStringContainsString('widget-icon-box', $html);
+        $this->assertStringContainsString('text-bg-warning', $html);
+        $this->assertStringContainsString('Resumo do Fechamento', $html);
+        $this->assertStringContainsString('modulo-table-wrap', $html);
+        $this->assertStringContainsString('id="caixaTabs"', $html);
+        $this->assertStringContainsString('/caixa/list', $html);
+    }
+
+    /** @test */
     public function tela_caixa_renderiza_estado_fechado()
     {
         $this->actingAsUserBasico();

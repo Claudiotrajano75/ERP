@@ -1041,7 +1041,12 @@ function calcTotal() {
 $(function () {
     let data = new Date
     let dataFormatada = (data.getFullYear() + "-" + adicionaZero((data.getMonth() + 1)) + "-" + adicionaZero(data.getDate()));
-    $('.data_atual').val(dataFormatada)
+    // Preenche a data atual apenas em campos vazios (na edição preserva o vencimento salvo)
+    $('.data_atual').each(function () {
+        if (!$(this).val()) {
+            $(this).val(dataFormatada)
+        }
+    })
 })
 function adicionaZero(numero) {
     if (numero <= 9)

@@ -757,6 +757,7 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
 
         Route::resource('pre-venda', 'PreVendaController');
         Route::get('/pre-venda/imprimir/{codigo}', 'PreVendaController@imprimir')->name('pre-venda.imprimir');
+        Route::get('/pre-venda/auditoria/{id}', 'PreVendaController@auditoria')->name('pre-venda.auditoria');
 
         Route::group(['prefix' => 'ordem-servico'], function () {
             Route::post('/store-servico', 'OrdemServicoController@storeServico')->name('ordem-servico.store-servico');

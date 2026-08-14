@@ -190,20 +190,41 @@ return view('modulo.index', compact('data', 'stats'));
 
             <div class="card-body">
 
-                <!-- ═══ FILTROS ═══ -->
-                <div class="col-lg-12 mb-3">
+                <!-- ═══ FILTROS PREMIUM ═══ -->
+                <div class="modulo-glass-filter-premium">
+                    <div class="filtro-premium-header">
+                        <h5 class="filtro-premium-title">
+                            <i class="ri-search-line"></i> Filtrar Registros
+                        </h5>
+                    </div>
+
                     {!!Form::open()->fill(request()->all())->get()!!}
-                    <div class="row align-items-end g-2">
+                    <div class="row g-3">
                         <div class="col-md-4 col-12">
-                            {!!Form::text('nome', 'Pesquisar por nome')!!}
+                            <label class="form-label"><i class="ri-user-line"></i> Nome / Descrição</label>
+                            {!!Form::text('nome', '')->attrs(['class' => 'form-control', 'placeholder' => 'Digite para pesquisar...'])!!}
                         </div>
-                        <div class="col-md-3 col-12">
-                            <button class="btn btn-primary" type="submit">
-                                <i class="ri-search-line"></i> Pesquisar
-                            </button>
-                            <a id="clear-filter" class="btn btn-danger" href="{{ route('modulo.index') }}">
-                                <i class="ri-eraser-fill"></i> Limpar
-                            </a>
+                        <div class="col-md-2 col-6">
+                            <label class="form-label"><i class="ri-calendar-line"></i> Data Inicial</label>
+                            {!!Form::date('start_date', '')->attrs(['class' => 'form-control'])!!}
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <label class="form-label"><i class="ri-calendar-line"></i> Data Final</label>
+                            {!!Form::date('end_date', '')->attrs(['class' => 'form-control'])!!}
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <label class="form-label"><i class="ri-equalizer-line"></i> Status</label>
+                            {!!Form::select('status', '', ['' => 'Todos', '1' => 'Ativo', '0' => 'Inativo'])->attrs(['class' => 'form-select'])!!}
+                        </div>
+                        <div class="col-md-2 col-12 ms-auto d-flex align-items-end">
+                            <div class="d-flex gap-2 w-100">
+                                <button class="btn btn-pesquisar flex-grow-1" type="submit">
+                                    <i class="ri-search-line"></i> Buscar
+                                </button>
+                                <a class="btn btn-limpar px-3" href="{{ route('modulo.index') }}" title="Limpar Filtros">
+                                    <i class="ri-eraser-line"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                     {!!Form::close()!!}

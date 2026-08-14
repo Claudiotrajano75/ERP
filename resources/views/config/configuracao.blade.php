@@ -77,25 +77,25 @@
             <div class="col-md-12 mt-3">
                 <ul class="nav nav-pills nav-justified modulo-wizard form-wizard-header mb-3 m-2">
                     <li class="nav-item" role="presentation">
-                        <a class="nav-link active rounded-0 py-2 px-3" data-bs-toggle="tab" href="#empresa" role="tab" aria-selected="true">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#empresa" role="tab" aria-selected="true">
                             <i class="ri-briefcase-fill align-middle me-1"></i>
                             <span class="d-none d-sm-inline">Empresa</span>
                         </a>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <a class="nav-link rounded-0 py-2 px-3" data-bs-toggle="tab" href="#endereco" role="tab" aria-selected="false">
+                        <a class="nav-link" data-bs-toggle="tab" href="#endereco" role="tab" aria-selected="false">
                             <i class="ri-map-pin-2-line align-middle me-1"></i>
                             <span class="d-none d-sm-inline">Endereço</span>
                         </a>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <a class="nav-link rounded-0 py-2 px-3" data-bs-toggle="tab" href="#nota_fiscal" role="tab" aria-selected="false">
+                        <a class="nav-link" data-bs-toggle="tab" href="#nota_fiscal" role="tab" aria-selected="false">
                             <i class="ri-file-edit-line align-middle me-1"></i>
                             <span class="d-none d-sm-inline">Emissão</span>
                         </a>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <a class="nav-link rounded-0 py-2 px-3" data-bs-toggle="tab" href="#certificado" role="tab" aria-selected="false">
+                        <a class="nav-link" data-bs-toggle="tab" href="#certificado" role="tab" aria-selected="false">
                             <i class="ri-fingerprint-line align-middle me-1"></i>
                             <span class="d-none d-sm-inline">Certificado A1</span>
                         </a>

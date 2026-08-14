@@ -169,8 +169,8 @@
                                 <a class="btn btn-warning btn-sm py-1 px-2.5 fs-11 rounded fw-bold text-dark" href="{{ route('upgrade.index') }}">
                                     <i class="ri-arrow-up-circle-line align-middle me-0.5"></i> Upgrade
                                 </a>
-                                <button class="btn btn-info btn-sm py-1 px-2.5 fs-11 rounded fw-bold text-white" id="click-tour">
-                                    <i class="ri-compass-line align-middle me-0.5"></i> Tour
+                                <button class="btn btn-sm py-1 px-2.5 fs-11 rounded-3 fw-bold text-white shadow-sm" id="click-tour" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: none; transition: all 0.2s ease;">
+                                    <i class="ri-compass-3-line align-middle me-0.5"></i> Tour
                                 </button>
                                 @if (env('APP_ENV') == 'demo')
                                     <button class="btn btn-success btn-sm py-1 px-2.5 fs-11 rounded fw-bold" id="click-modal-dev">

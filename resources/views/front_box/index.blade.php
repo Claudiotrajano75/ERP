@@ -218,7 +218,7 @@
                                 <div class="d-flex justify-content-between">
                                     <div class="flex-grow-1 overflow-hidden">
                                         <h4 class="text-uppercase fs-12 mt-0 text-white-50">Faturamento</h4>
-                                        <h3 class="my-2 text-white fs-18">R$ {{ __moeda($stats['total_dinheiro']) }}</h3>
+                                        <h3 class="my-2 text-white fs-18">R$ {{ __moeda($stats['total_dinheiro'] ?? $stats['valor_total'] ?? 0) }}</h3>
                                         <p class="mb-0 text-white-50 fs-11">Recebido</p>
                                     </div>
                                     <div class="avatar-sm flex-shrink-0">

@@ -117,6 +117,7 @@ class FrontBoxController extends Controller
             'total_vendas' => (clone $statsQuery)->count(),
             'aprovadas' => (clone $statsQuery)->where('estado', 'aprovado')->count(),
             'valor_total' => (clone $statsQuery)->where('estado', 'aprovado')->sum('total'),
+            'total_dinheiro' => (clone $statsQuery)->where('estado', 'aprovado')->sum('total'),
             'canceladas' => (clone $statsQuery)->whereIn('estado', ['cancelado', 'rejeitado'])->count(),
         ];
 

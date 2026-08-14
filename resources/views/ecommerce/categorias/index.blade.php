@@ -9,8 +9,112 @@
     
     .modulo-form-card { border: 1px solid #eef0f5; border-radius: 12px; overflow: hidden; }
     
-    .modulo-filter-bar { background: #fff; border-bottom: 1px solid #eef0f5; padding: 16px 24px; }
-    .modulo-filter-bar label { font-size: 12px; font-weight: 600; color: #5a5a7a; }
+    /* --- Novo Filtro de Pesquisa Premium --- */
+    .modulo-glass-filter-premium {
+        background: #ffffff;
+        border: 1px solid #eef0f6 !important;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        padding: 20px !important;
+        margin-bottom: 24px;
+    }
+
+    /* Título e Header do Filtro */
+    .filtro-premium-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #f1f3f9;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+    }
+    .filtro-premium-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #3f3e6a;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0;
+    }
+    .filtro-premium-title i {
+        color: #5572f5;
+        margin-right: 6px;
+    }
+
+    /* Customização dos Inputs dentro do Filtro */
+    .modulo-glass-filter-premium label {
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #8c8ca6 !important;
+        margin-bottom: 6px !important;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .modulo-glass-filter-premium label i {
+        font-size: 12px;
+        color: #a8a8c0;
+    }
+
+    .modulo-glass-filter-premium .form-control,
+    .modulo-glass-filter-premium .form-select {
+        height: 38px !important;
+        border-radius: 8px !important;
+        border: 1px solid #dcdce9 !important;
+        font-size: 13px !important;
+        padding: 6px 12px !important;
+        color: #374151 !important;
+        background-color: #fcfdfe !important;
+        transition: all 0.2s ease;
+    }
+
+    .modulo-glass-filter-premium .form-control:focus,
+    .modulo-glass-filter-premium .form-select:focus {
+        border-color: #5572f5 !important;
+        background-color: #fff !important;
+        box-shadow: 0 0 0 3px rgba(85, 114, 245, 0.12) !important;
+    }
+
+    /* Botões do Filtro */
+    .modulo-glass-filter-premium .btn-pesquisar {
+        background: linear-gradient(135deg, #5572f5 0%, #3d56d4 100%) !important;
+        border: none !important;
+        color: #fff !important;
+        font-weight: 600 !important;
+        height: 38px;
+        border-radius: 8px !important;
+        font-size: 13px !important;
+        transition: all 0.2s ease !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+    .modulo-glass-filter-premium .btn-pesquisar:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(85, 114, 245, 0.25) !important;
+    }
+
+    .modulo-glass-filter-premium .btn-limpar {
+        background: #f1f3f9 !important;
+        border: 1px solid #e2e5ec !important;
+        color: #5a5a7a !important;
+        font-weight: 600 !important;
+        height: 38px;
+        border-radius: 8px !important;
+        font-size: 13px !important;
+        transition: all 0.2s ease !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+    .modulo-glass-filter-premium .btn-limpar:hover {
+        background: #e8ebf3 !important;
+        color: #302b63 !important;
+    }
     
     .modulo-table-wrap table { margin-bottom: 0; }
     .modulo-table-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding: 12px 16px; border-bottom: 2px solid #e8eaf6; }
@@ -53,26 +157,34 @@
                     </div>
                 </div>
 
-                {{-- BARRA DE FILTRO --}}
-                <div class="modulo-filter-bar">
-                    {!!Form::open()->fill(request()->all())->get()!!}
-                    <div class="row g-2 align-items-end">
-                        <div class="col-md-4">
-                            {!!Form::text('nome', 'Pesquisar por nome')!!}
+                <div class="card-body p-4">
+                    {{-- ═══ Filtros de Busca Premium ═══ --}}
+                    <div class="modulo-glass-filter-premium">
+                        <div class="filtro-premium-header">
+                            <h5 class="filtro-premium-title">
+                                <i class="ri-search-line"></i> Filtrar Categorias
+                            </h5>
                         </div>
-                        <div class="col-md-auto">
-                            <button class="btn btn-primary btn-sm px-3 d-flex align-items-center gap-1" type="submit">
-                                <i class="ri-search-line"></i> Pesquisar
-                            </button>
+
+                        {!!Form::open()->fill(request()->all())->get()!!}
+                        <div class="row g-3">
+                            <div class="col-md-5 col-12">
+                                <label class="form-label"><i class="ri-folder-line"></i> Nome da Categoria</label>
+                                {!!Form::text('nome', '')->attrs(['class' => 'form-control', 'placeholder' => 'Digite o nome da categoria...'])!!}
+                            </div>
+                            <div class="col-md-3 col-12 ms-auto d-flex align-items-end">
+                                <div class="d-flex gap-2 w-100">
+                                    <button class="btn btn-pesquisar flex-grow-1" type="submit">
+                                        <i class="ri-search-line"></i> Buscar
+                                    </button>
+                                    <a id="clear-filter" class="btn btn-limpar px-3" href="{{ route('produtos-ecommerce.categorias') }}" title="Limpar Filtros">
+                                        <i class="ri-eraser-line"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-auto">
-                            <a id="clear-filter" class="btn btn-outline-secondary btn-sm px-3 d-flex align-items-center gap-1" href="{{ route('produtos-ecommerce.categorias') }}">
-                                <i class="ri-eraser-fill"></i> Limpar
-                            </a>
-                        </div>
+                        {!!Form::close()!!}
                     </div>
-                    {!!Form::close()!!}
-                </div>
 
                 {{-- TABELA PREMIUM --}}
                 <div class="modulo-table-wrap">

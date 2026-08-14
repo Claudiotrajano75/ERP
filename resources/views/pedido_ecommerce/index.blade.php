@@ -32,16 +32,111 @@
             overflow: hidden;
         }
 
-        .modulo-filter-bar {
-            background: #fff;
-            border-bottom: 1px solid #eef0f5;
-            padding: 16px 24px;
+        /* --- Novo Filtro de Pesquisa Premium --- */
+        .modulo-glass-filter-premium {
+            background: #ffffff;
+            border: 1px solid #eef0f6 !important;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            padding: 20px !important;
+            margin-bottom: 24px;
         }
 
-        .modulo-filter-bar label {
+        /* Título e Header do Filtro */
+        .filtro-premium-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #f1f3f9;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+        .filtro-premium-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #3f3e6a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0;
+        }
+        .filtro-premium-title i {
+            color: #5572f5;
+            margin-right: 6px;
+        }
+
+        /* Customização dos Inputs dentro do Filtro */
+        .modulo-glass-filter-premium label {
+            font-size: 10px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #8c8ca6 !important;
+            margin-bottom: 6px !important;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .modulo-glass-filter-premium label i {
             font-size: 12px;
-            font-weight: 600;
-            color: #5a5a7a;
+            color: #a8a8c0;
+        }
+
+        .modulo-glass-filter-premium .form-control,
+        .modulo-glass-filter-premium .form-select {
+            height: 38px !important;
+            border-radius: 8px !important;
+            border: 1px solid #dcdce9 !important;
+            font-size: 13px !important;
+            padding: 6px 12px !important;
+            color: #374151 !important;
+            background-color: #fcfdfe !important;
+            transition: all 0.2s ease;
+        }
+
+        .modulo-glass-filter-premium .form-control:focus,
+        .modulo-glass-filter-premium .form-select:focus {
+            border-color: #5572f5 !important;
+            background-color: #fff !important;
+            box-shadow: 0 0 0 3px rgba(85, 114, 245, 0.12) !important;
+        }
+
+        /* Botões do Filtro */
+        .modulo-glass-filter-premium .btn-pesquisar {
+            background: linear-gradient(135deg, #5572f5 0%, #3d56d4 100%) !important;
+            border: none !important;
+            color: #fff !important;
+            font-weight: 600 !important;
+            height: 38px;
+            border-radius: 8px !important;
+            font-size: 13px !important;
+            transition: all 0.2s ease !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .modulo-glass-filter-premium .btn-pesquisar:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(85, 114, 245, 0.25) !important;
+        }
+
+        .modulo-glass-filter-premium .btn-limpar {
+            background: #f1f3f9 !important;
+            border: 1px solid #e2e5ec !important;
+            color: #5a5a7a !important;
+            font-weight: 600 !important;
+            height: 38px;
+            border-radius: 8px !important;
+            font-size: 13px !important;
+            transition: all 0.2s ease !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .modulo-glass-filter-premium .btn-limpar:hover {
+            background: #e8ebf3 !important;
+            color: #302b63 !important;
         }
 
         .modulo-table-wrap table {
@@ -115,6 +210,28 @@
             color: #ef4444;
             border: 1px solid rgba(239, 68, 68, 0.2);
         }
+
+        .payment-alert.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .badge-status {
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .badge-status.novo { background: #e0f2fe; color: #0284c7; }
+        .badge-status.pago { background: #dcfce7; color: #16a34a; }
+        .badge-status.preparando { background: #fef3c7; color: #d97706; }
+        .badge-status.enviado { background: #f3e8ff; color: #9333ea; }
+        .badge-status.entregue { background: #d1fae5; color: #059669; }
+        .badge-status.cancelado { background: #fee2e2; color: #dc2626; }
+        .badge-status.recusado { background: #f1f5f9; color: #475569; }
     </style>
 @endsection
 
@@ -123,19 +240,20 @@
         <div class="row">
             <div class="col-12">
 
-                @if(count($pagamentosAlterados) > 0)
-                    <div class="card border-0 shadow-sm mb-3">
-                        <div class="card-body p-3 pb-0">
-                            <h5 class="text-muted fs-14 fw-bold mb-3 d-flex align-items-center gap-2"><i
-                                    class="ri-notification-3-line"></i> Atualizações Automáticas de Pagamento (Mercado Pago)
+                @if(sizeof($paymentMethods) > 0)
+                    <div class="card border-0 shadow-sm modulo-form-card mb-4">
+                        <div class="card-header bg-white border-bottom py-3 px-4">
+                            <h5 class="mb-0 fs-14 fw-bold text-dark d-flex align-items-center gap-2">
+                                <i class="ri-bank-card-line text-primary"></i> Status das Integrações de Pagamento
                             </h5>
-                            <div class="row">
-                                @foreach($pagamentosAlterados as $p)
-                                    <div class="col-md-4">
-                                        <div class="payment-alert {{ $p['status'] == 'approved' ? 'success' : 'danger' }}">
-                                            <i
-                                                class="{{ $p['status'] == 'approved' ? 'ri-checkbox-circle-fill' : 'ri-close-circle-fill' }} fs-16"></i>
-                                            Pedido #{{ $p['hash_pedido'] }} alterado para: {{ strtoupper($p['status']) }}
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                @foreach($paymentMethods as $p)
+                                    <div class="col-md-6 col-12">
+                                        <div class="payment-alert {{ $p['status'] == 'success' ? 'success' : 'warning' }} mb-0">
+                                            <i class="ri-{{ $p['status'] == 'success' ? 'checkbox-circle-fill' : 'error-warning-fill' }} fs-18"></i>
+                                            <span>{{ $p['message'] }}</span>
                                         </div>
                                     </div>
                                 @endforeach
@@ -161,36 +279,43 @@
                         </div>
                     </div>
 
-                    {{-- BARRA DE FILTRO --}}
-                    <div class="modulo-filter-bar">
-                        {!!Form::open()->fill(request()->all())->get()!!}
-                        <div class="row g-2 align-items-end">
-                            <div class="col-md-6">
-                                {!!Form::select('cliente_id', 'Pesquisar por cliente')
-        ->options($cliente != null ? [$cliente->id => ($cliente->razao_social . " - " . $cliente->telefone)] : [])
-        ->attrs(['class' => 'select2'])
-                                !!}
+                    <div class="card-body p-4">
+                        {{-- ═══ Filtros de Busca Premium ═══ --}}
+                        <div class="modulo-glass-filter-premium">
+                            <div class="filtro-premium-header">
+                                <h5 class="filtro-premium-title">
+                                    <i class="ri-search-line"></i> Filtrar Pedidos
+                                </h5>
                             </div>
-                            <div class="col-md-3">
-                                {!!Form::select('estado', 'Estado', ['' => 'Selecione'] + App\Models\PedidoEcommerce::estados())
-        ->attrs(['class' => 'form-select'])
-                                !!}
+
+                            {!!Form::open()->fill(request()->all())->get()!!}
+                            <div class="row g-3">
+                                <div class="col-md-5 col-12">
+                                    <label class="form-label"><i class="ri-user-line"></i> Cliente</label>
+                                    {!!Form::select('cliente_id', '')
+                                        ->options($cliente != null ? [$cliente->id => ($cliente->razao_social . " - " . $cliente->telefone)] : [])
+                                        ->attrs(['class' => 'select2 form-select'])
+                                    !!}
+                                </div>
+                                <div class="col-md-4 col-6">
+                                    <label class="form-label"><i class="ri-checkbox-circle-line"></i> Estado do Pedido</label>
+                                    {!!Form::select('estado', '', ['' => 'Todos os Estados'] + App\Models\PedidoEcommerce::estados())
+                                        ->attrs(['class' => 'form-select'])
+                                    !!}
+                                </div>
+                                <div class="col-md-3 col-12 ms-auto d-flex align-items-end">
+                                    <div class="d-flex gap-2 w-100">
+                                        <button class="btn btn-pesquisar flex-grow-1" type="submit">
+                                            <i class="ri-search-line"></i> Buscar
+                                        </button>
+                                        <a id="clear-filter" class="btn btn-limpar px-3" href="{{ route('pedidos-ecommerce.index') }}" title="Limpar Filtros">
+                                            <i class="ri-eraser-line"></i>
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-auto">
-                                <button class="btn btn-primary btn-sm px-3 d-flex align-items-center gap-1" type="submit">
-                                    <i class="ri-search-line"></i> Pesquisar
-                                </button>
-                            </div>
-                            <div class="col-md-auto">
-                                <a id="clear-filter"
-                                    class="btn btn-outline-secondary btn-sm px-3 d-flex align-items-center gap-1"
-                                    href="{{ route('pedidos-ecommerce.index') }}">
-                                    <i class="ri-eraser-fill"></i> Limpar
-                                </a>
-                            </div>
+                            {!!Form::close()!!}
                         </div>
-                        {!!Form::close()!!}
-                    </div>
 
                     {{-- TABELA PREMIUM --}}
                     <div class="modulo-table-wrap">

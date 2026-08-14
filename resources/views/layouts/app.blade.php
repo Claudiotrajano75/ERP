@@ -132,17 +132,25 @@
 
                     <!-- Topbar Info Block (Ambiente, IP, Plano e Ações) -->
                     <div class="d-flex align-items-center gap-2">
-                        <!-- Ambiente & IP empilhados verticalmente -->
-                        <div class="d-flex flex-column align-items-start gap-1 justify-content-center border-start ps-3 ms-2 d-none d-lg-flex" style="height: 38px;">
+                        <!-- Ambiente & IP empilhados verticalmente com design moderno -->
+                        <div class="d-flex flex-column align-items-start gap-1 justify-content-center border-start ps-3 ms-2 d-none d-lg-flex" style="height: 38px; border-color: #e2e8f0 !important;">
                             @if (Auth::user()->empresa && !__isContador())
-                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-0.5" style="font-size: 10px; line-height: 1.2; font-weight: 700;">
-                                    AMBIENTE: {{ Auth::user()->empresa->empresa->ambiente == 2 ? 'HOMOLOGAÇÃO' : 'PRODUÇÃO' }}
-                                </span>
+                                @if(Auth::user()->empresa->empresa->ambiente == 2)
+                                    <span class="badge d-inline-flex align-items-center gap-1 px-2 py-0.5" style="background: rgba(245, 158, 11, 0.1); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.25); font-size: 10px; font-weight: 700; border-radius: 6px; letter-spacing: 0.3px;">
+                                        <span style="width: 5px; height: 5px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
+                                        HOMOLOGAÇÃO
+                                    </span>
+                                @else
+                                    <span class="badge d-inline-flex align-items-center gap-1 px-2 py-0.5" style="background: rgba(239, 68, 68, 0.08); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 10px; font-weight: 700; border-radius: 6px; letter-spacing: 0.3px;">
+                                        <span style="width: 5px; height: 5px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                                        PRODUÇÃO
+                                    </span>
+                                @endif
                             @endif
 
                             @if (sizeof(Auth::user()->acessos) > 0)
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0.5" style="font-size: 9px; line-height: 1.2; font-weight: 600;">
-                                    IP: {{ Auth::user()->acessos ? Auth::user()->acessos->first()->ip : '' }}
+                                <span class="badge d-inline-flex align-items-center gap-1 px-2 py-0.5" style="background: rgba(99, 102, 241, 0.08); color: #4f46e5; border: 1px solid rgba(99, 102, 241, 0.2); font-size: 9px; font-weight: 600; font-family: 'SF Mono', monospace; border-radius: 6px;">
+                                    <i class="ri-wifi-line" style="font-size: 9px;"></i> IP: {{ Auth::user()->acessos ? Auth::user()->acessos->first()->ip : '' }}
                                 </span>
                             @endif
                         </div>
@@ -150,31 +158,54 @@
                         <!-- Empresa Selecionada -->
                         @if (Auth::user()->empresa && Auth::user()->empresa->empresa->empresa_selecionada != null)
                             <div class="ms-2 d-none d-lg-block">
-                                <a href="{{ route('contador.show') }}" class="badge bg-success-subtle text-success border border-success-subtle p-2 fs-12">
+                                <a href="{{ route('contador.show') }}" class="badge bg-success-subtle text-success border border-success-subtle p-2 fs-12 rounded-3">
                                     <i class="ri-briefcase-line me-1 align-middle"></i> Empresa: {{ Auth::user()->empresa->empresa->empresaSelecionada->info }}
                                 </a>
                             </div>
                         @endif
 
-                        <!-- Plano & Ações de Upgrade/Tour -->
+                        <!-- Plano & Ações de Upgrade/PDV/Tour -->
                         @if (Auth::user()->empresa && Auth::user()->empresa->empresa->plano)
                             <div class="d-flex align-items-center gap-2 ms-3 d-none d-lg-flex video">
-                                <span class="badge bg-dark-subtle text-dark border px-2.5 py-1.5 fs-12">
-                                    <i class="ri-vip-crown-fill text-warning me-1 align-middle fs-14"></i>
-                                    Plano: <strong class="text-success">{{ Auth::user()->empresa->empresa->plano->plano->nome }}</strong> 
-                                    <span class="text-muted fw-normal ms-1 fs-11">
+                                <span class="badge bg-white text-dark border px-2.5 py-1.5 fs-12 shadow-sm d-inline-flex align-items-center gap-1" style="border-radius: 8px; border-color: #e2e8f0 !important;">
+                                    <i class="ri-vip-crown-2-fill text-warning fs-13"></i>
+                                    <span class="text-muted fw-semibold">Plano:</span>
+                                    <strong class="text-success fw-bold">{{ Auth::user()->empresa->empresa->plano->plano->nome }}</strong> 
+                                    <span class="text-muted fw-normal ms-1 fs-11" style="opacity: 0.75;">
                                         (Expira: {{ __data_pt(Auth::user()->empresa->empresa->plano->data_expiracao, 0) }})
                                     </span>
                                 </span>
-                                <a class="btn btn-warning btn-sm py-1 px-2.5 fs-11 rounded fw-bold text-dark" href="{{ route('upgrade.index') }}">
-                                    <i class="ri-arrow-up-circle-line align-middle me-0.5"></i> Upgrade
+
+                                @if (!__isContador())
+                                    @if (__isActivePlan(Auth::user()->empresa, 'PDV'))
+                                        @can('pdv_create')
+                                            <a class="btn btn-sm py-1 px-2.5 fs-11 rounded-3 fw-bold text-white shadow-sm d-flex align-items-center gap-1" 
+                                               href="{{ route('frontbox.create') }}" 
+                                               title="Abrir Frente de Caixa PDV"
+                                               style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; transition: all 0.2s ease;">
+                                                <i class="ri-shopping-cart-2-fill fs-13"></i> PDV
+                                            </a>
+                                        @endcan
+                                    @endif
+                                @endif
+
+                                <a class="btn btn-sm py-1 px-2.5 fs-11 rounded-3 fw-bold text-white shadow-sm d-flex align-items-center gap-1" 
+                                   href="{{ route('upgrade.index') }}"
+                                   style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none; transition: all 0.2s ease;">
+                                    <i class="ri-arrow-up-circle-line fs-13"></i> Upgrade
                                 </a>
-                                <button class="btn btn-sm py-1 px-2.5 fs-11 rounded-3 fw-bold text-white shadow-sm" id="click-tour" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: none; transition: all 0.2s ease;">
-                                    <i class="ri-compass-3-line align-middle me-0.5"></i> Tour
+
+                                <button class="btn btn-sm py-1 px-2.5 fs-11 rounded-3 fw-bold text-white shadow-sm d-flex align-items-center gap-1" 
+                                        id="click-tour" 
+                                        style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: none; transition: all 0.2s ease;">
+                                    <i class="ri-compass-3-line fs-13"></i> Tour
                                 </button>
+
                                 @if (env('APP_ENV') == 'demo')
-                                    <button class="btn btn-success btn-sm py-1 px-2.5 fs-11 rounded fw-bold" id="click-modal-dev">
-                                        <i class="ri-code-box-line align-middle me-0.5"></i> DEV
+                                    <button class="btn btn-sm py-1 px-2.5 fs-11 rounded-3 fw-bold text-white shadow-sm d-flex align-items-center gap-1" 
+                                            id="click-modal-dev"
+                                            style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border: none;">
+                                        <i class="ri-code-box-line fs-13"></i> DEV
                                     </button>
                                 @endif
                             </div>
@@ -253,18 +284,6 @@
 
                         </div>
                     </li>
-
-                    @if (!__isContador())
-                        @if (__isActivePlan(Auth::user()->empresa, 'PDV'))
-                            @can('pdv_create')
-                                <li class="d-none d-sm-inline-block">
-                                    <a title="PDV" class="nav-link" href="{{ route('frontbox.create') }}">
-                                        <i class="ri-shopping-basket-2-fill fs-22"></i>
-                                    </a>
-                                </li>
-                            @endcan
-                        @endif
-                    @endif
 
                     <li class="d-none d-sm-inline-block" id="step2">
                         <div class="nav-link" id="light-dark-mode">

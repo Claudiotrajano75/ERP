@@ -8,6 +8,112 @@
     .modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.85) !important; font-weight: 400; }
     
     .modulo-form-card { border: 1px solid #eef0f5; border-radius: 12px; overflow: hidden; background: #fff; }
+/* --- Novo Filtro de Pesquisa Premium --- */
+.modulo-glass-filter-premium {
+    background: #ffffff;
+    border: 1px solid #eef0f6 !important;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    padding: 20px !important;
+    margin-bottom: 24px;
+}
+
+/* Título e Header do Filtro */
+.filtro-premium-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #f1f3f9;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+.filtro-premium-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #3f3e6a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0;
+}
+.filtro-premium-title i {
+    color: #5572f5;
+    margin-right: 6px;
+}
+
+/* Customização dos Inputs dentro do Filtro */
+.modulo-glass-filter-premium label {
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #8c8ca6 !important;
+    margin-bottom: 6px !important;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.modulo-glass-filter-premium label i {
+    font-size: 12px;
+    color: #a8a8c0;
+}
+
+.modulo-glass-filter-premium .form-control,
+.modulo-glass-filter-premium .form-select {
+    height: 38px !important;
+    border-radius: 8px !important;
+    border: 1px solid #dcdce9 !important;
+    font-size: 13px !important;
+    padding: 6px 12px !important;
+    color: #374151 !important;
+    background-color: #fcfdfe !important;
+    transition: all 0.2s ease;
+}
+
+.modulo-glass-filter-premium .form-control:focus,
+.modulo-glass-filter-premium .form-select:focus {
+    border-color: #5572f5 !important;
+    background-color: #fff !important;
+    box-shadow: 0 0 0 3px rgba(85, 114, 245, 0.12) !important;
+}
+
+/* Botões do Filtro */
+.modulo-glass-filter-premium .btn-pesquisar {
+    background: linear-gradient(135deg, #5572f5 0%, #3d56d4 100%) !important;
+    border: none !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    height: 38px;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.modulo-glass-filter-premium .btn-pesquisar:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(85, 114, 245, 0.25) !important;
+}
+
+.modulo-glass-filter-premium .btn-limpar {
+    background: #f1f3f9 !important;
+    border: 1px solid #e2e5ec !important;
+    color: #5a5a7a !important;
+    font-weight: 600 !important;
+    height: 38px;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.modulo-glass-filter-premium .btn-limpar:hover {
+    background: #e8ebf3 !important;
+    color: #302b63 !important;
+}
 </style>
 @endsection
 
@@ -15,7 +121,7 @@
 <div class="mt-3">
     <div class="row">
         <div class="col-md-12">
-            <div class="card modulo-form-card shadow-sm">
+            <div class="card modulo-form-card border-0 shadow-sm">
                 <!-- Cabeçalho Gradient Premium -->
                 <div class="card-header modulo-header-gradient py-3 px-4">
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -39,19 +145,33 @@
                 </div>
 
                 <div class="card-body p-4">
-                    {!!Form::open()->fill(request()->all())
-                    ->get()
-                    !!}
-                    <div class="row g-2 mb-4">
-                        <div class="col-md-4">
-                            {!!Form::text('descricao', 'Pesquisar por nome')->attrs(['class' => 'form-control', 'placeholder' => 'Buscar por nome...'])!!}
+                    <!-- ═══ Filtros de Busca Premium ═══ -->
+                    <div class="modulo-glass-filter-premium">
+                        <div class="filtro-premium-header">
+                            <h5 class="filtro-premium-title">
+                                <i class="ri-search-line"></i> Filtrar Naturezas
+                            </h5>
                         </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <button class="btn btn-primary me-2" type="submit"> <i class="ri-search-line me-1"></i>Pesquisar</button>
-                            <a id="clear-filter" class="btn btn-danger" href="{{ route('natureza-operacao.index') }}"><i class="ri-eraser-fill me-1"></i>Limpar</a>
+
+                        {!!Form::open()->fill(request()->all())->get()!!}
+                        <div class="row g-3">
+                            <div class="col-md-8 col-12">
+                                <label class="form-label"><i class="ri-file-text-line"></i> Pesquisar por Descrição</label>
+                                {!!Form::text('descricao', '')->attrs(['class' => 'form-control', 'placeholder' => 'Buscar por descrição/nome...'])!!}
+                            </div>
+                            <div class="col-md-3 col-12 ms-auto d-flex align-items-end">
+                                <div class="d-flex gap-2 w-100">
+                                    <button class="btn btn-pesquisar flex-grow-1" type="submit">
+                                        <i class="ri-search-line"></i> Buscar
+                                    </button>
+                                    <a class="btn btn-limpar px-3" href="{{ route('natureza-operacao.index') }}" title="Limpar Filtros">
+                                        <i class="ri-eraser-line"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
+                        {!!Form::close()!!}
                     </div>
-                    {!!Form::close()!!}
                     
                     <div class="table-responsive-sm">
                         <table class="table table-centered">

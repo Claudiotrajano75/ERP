@@ -110,9 +110,18 @@
             toastr.warning('{{ session()->get('flash_warning') }}');
             @endif
 
-            window.addEventListener("load", () => {
-                document.querySelector(".loader").classList.add("loader--hidden")
-            })
+            function hideLoader() {
+                const loader = document.querySelector(".loader");
+                if (loader) {
+                    loader.classList.add("loader--hidden");
+                }
+            }
+            if (document.readyState === "complete" || document.readyState === "interactive") {
+                hideLoader();
+            } else {
+                document.addEventListener("DOMContentLoaded", hideLoader);
+                window.addEventListener("load", hideLoader);
+            }
         </script>
 
     </body>

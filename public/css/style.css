@@ -9,7 +9,7 @@
 	justify-content: center;
 	background: #fff;
 	z-index: 9999;
-	transition: opacity 0.75s, visibility 0.75s;
+	transition: opacity 0.15s ease-out, visibility 0.15s ease-out;
 }
 
 .sticky-col {
@@ -45,12 +45,12 @@ input[type=tel]:read-only {
 
 .loader::after{
 	content: " ";
-	width: 75px;
-	height: 75px;
-	border: 15px solid #ddd;
-	border-top-color: #49526B;
+	width: 60px;
+	height: 60px;
+	border: 8px solid #f1f3f9;
+	border-top-color: #5572f5;
 	border-radius: 50%;
-	animation: loading 0.75s ease infinite;
+	animation: loading 0.6s linear infinite;
 }
 
 @keyframes loading{
@@ -61,6 +61,7 @@ input[type=tel]:read-only {
 .loader--hidden{
 	opacity: 0;
 	visibility: hidden;
+	pointer-events: none;
 }
 
 .bg-light{

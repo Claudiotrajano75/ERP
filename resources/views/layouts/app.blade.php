@@ -2205,11 +2205,18 @@
                 $(html).attr('data-sidenav-size', 'condensed')
             @endif
 
-                window.addEventListener("load", () => {
-                    setTimeout(() => {
-                        document.querySelector(".loader").classList.add("loader--hidden")
-                    }, 100)
-                })
+                function hideLoader() {
+                    const loader = document.querySelector(".loader");
+                    if (loader) {
+                        loader.classList.add("loader--hidden");
+                    }
+                }
+                if (document.readyState === "complete" || document.readyState === "interactive") {
+                    hideLoader();
+                } else {
+                    document.addEventListener("DOMContentLoaded", hideLoader);
+                    window.addEventListener("load", hideLoader);
+                }
 
             function audioError() {
                 var audio = new Audio('/audio/error.mp3');

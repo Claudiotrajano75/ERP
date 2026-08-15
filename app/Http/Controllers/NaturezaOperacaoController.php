@@ -19,14 +19,28 @@ class NaturezaOperacaoController extends Controller
 
     public function index(Request $request)
     {
+        $descricao = $request->descricao;
+        $padrao = $request->padrao;
+
         $data = NaturezaOperacao::where('empresa_id', request()->empresa_id)
-        ->when(!empty($request->descricao), function ($q) use ($request) {
-            return  $q->where(function ($quer) use ($request) {
-                return $quer->where('descricao', 'LIKE', "%$request->descricao%");
-            });
+        ->when(!empty($descricao), function ($q) use ($descricao) {
+            return $q->where('descricao', 'LIKE', "%$descricao%");
         })
+        ->when($padrao !== null && $padrao !== '', function ($q) use ($padrao) {
+            return $q->where('padrao', $padrao);
+        })
+        ->orderBy('descricao', 'asc')
         ->paginate(env("PAGINACAO"));
-        return view('natureza_operacao.index', compact('data'));
+
+        $statsQuery = NaturezaOperacao::where('empresa_id', request()->empresa_id);
+
+        $stats = [
+            'total' => (clone $statsQuery)->count(),
+            'padrao' => (clone $statsQuery)->where('padrao', 1)->count(),
+            'sobrescreve' => (clone $statsQuery)->where('sobrescrever_cfop', 1)->count(),
+        ];
+
+        return view('natureza_operacao.index', compact('data', 'stats'));
     }
 
     public function create()

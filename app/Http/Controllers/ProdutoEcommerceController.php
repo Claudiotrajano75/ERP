@@ -36,17 +36,35 @@ class ProdutoEcommerceController extends Controller
     public function index(Request $request){
         $status = $request->status;
         $nome = $request->nome;
+        $categoria_id = $request->categoria_id;
 
         $data = Produto::where('empresa_id', $request->empresa_id)
+        ->with('categoria')
         ->when(!empty($nome), function ($q) use ($nome) {
             return $q->where('nome', 'LIKE', "%$nome%");
         })
-        ->when($status != '', function ($q) use ($status) {
+        ->when($status !== null && $status !== '', function ($q) use ($status) {
             return $q->where('status', $status);
         })
+        ->when(!empty($categoria_id), function ($q) use ($categoria_id) {
+            return $q->where('categoria_id', $categoria_id);
+        })
         ->where('ecommerce', 1)
+        ->orderBy('nome', 'asc')
         ->paginate(env("PAGINACAO"));
 
-        return view('ecommerce.produtos.index', compact('data'));
+        $categorias = CategoriaProduto::where('empresa_id', $request->empresa_id)
+            ->orderBy('nome', 'asc')
+            ->pluck('nome', 'id')
+            ->all();
+
+        $stats = [
+            'total' => Produto::where('empresa_id', $request->empresa_id)->where('ecommerce', 1)->count(),
+            'ativos' => Produto::where('empresa_id', $request->empresa_id)->where('ecommerce', 1)->where('status', 1)->count(),
+            'ocultos' => Produto::where('empresa_id', $request->empresa_id)->where('ecommerce', 1)->where('status', 0)->count(),
+            'categorias_count' => CategoriaProduto::where('empresa_id', $request->empresa_id)->where('ecommerce', 1)->count(),
+        ];
+
+        return view('ecommerce.produtos.index', compact('data', 'categorias', 'stats'));
     }
 }

@@ -190,8 +190,6 @@
                                     </span>
                                 </span>
 
-
-
                                 <a class="btn btn-sm py-1 px-2.5 fs-11 rounded-3 fw-bold text-white shadow-sm d-flex align-items-center gap-1"
                                     href="{{ route('upgrade.index') }}"
                                     style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none; transition: all 0.2s ease;">
@@ -208,7 +206,7 @@
                                 @if (!__isContador())
                                     @if (__isActivePlan(Auth::user()->empresa, 'PDV'))
                                         @can('pdv_create')
-                                            <a class="btn btn-sm py-1 px-5 fs-11 rounded-3 fw-bold text-white shadow-sm d-flex align-items-center gap-1"
+                                            <a class="btn btn-sm py-1 px-2.5 fs-11 rounded-3 fw-bold text-white shadow-sm d-flex align-items-center gap-1"
                                                 href="{{ route('frontbox.create') }}" title="Abrir Frente de Caixa PDV"
                                                 style="background: linear-gradient(135deg,  #3b82f6 0%, #1d4ed8 100%); border: none; transition: all 0.2s ease;">
                                                 <i class="ri-shopping-cart-2-fill fs-13"></i> PDV
@@ -1911,10 +1909,10 @@
                                     @endcan
 
                                     <!-- @can('localizacao_view')
-                                                    <li>
-                                                                                                                                                                                            <a href="{{ route('localizacao.index') }}">Localizações</a>
-                                                                                                                                                                                        </li>
-                                                @endcan -->
+                                                                <li>
+                                                                                                                                                                                                        <a href="{{ route('localizacao.index') }}">Localizações</a>
+                                                                                                                                                                                                    </li>
+                                                            @endcan -->
 
                                     @can('natureza_operacao_view')
                                         <li>
@@ -2205,18 +2203,18 @@
                 $(html).attr('data-sidenav-size', 'condensed')
             @endif
 
-                function hideLoader() {
-                    const loader = document.querySelector(".loader");
-                    if (loader) {
-                        loader.classList.add("loader--hidden");
-                    }
+            function hideLoader() {
+                const loader = document.querySelector(".loader");
+                if (loader) {
+                    loader.classList.add("loader--hidden");
                 }
-                if (document.readyState === "complete" || document.readyState === "interactive") {
-                    hideLoader();
-                } else {
-                    document.addEventListener("DOMContentLoaded", hideLoader);
-                    window.addEventListener("load", hideLoader);
-                }
+            }
+            if (document.readyState === "complete" || document.readyState === "interactive") {
+                hideLoader();
+            } else {
+                document.addEventListener("DOMContentLoaded", hideLoader);
+                window.addEventListener("load", hideLoader);
+            }
 
             function audioError() {
                 var audio = new Audio('/audio/error.mp3');

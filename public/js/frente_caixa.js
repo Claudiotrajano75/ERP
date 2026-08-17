@@ -333,6 +333,26 @@ function buscarPorReferencia(barcode) {
     });
 }
 
+function pdvAtualizarCardCliente(razaoSocial) {
+    if (razaoSocial && String(razaoSocial).trim() !== '') {
+        $('.cliente_selecionado').text(razaoSocial).removeClass('pdv-card-value-empty').addClass('pdv-card-value');
+        $('.pdv-badge-cliente').removeClass('pdv-badge-pending').addClass('pdv-badge-selected').html('✓ Selecionado');
+    } else {
+        $('.cliente_selecionado').html('<i class="ri-user-search-line"></i> Nenhum cliente selecionado').removeClass('pdv-card-value').addClass('pdv-card-value-empty');
+        $('.pdv-badge-cliente').removeClass('pdv-badge-selected').addClass('pdv-badge-pending').html('○ Pendente');
+    }
+}
+
+function pdvAtualizarCardFuncionario(nomeFuncionario) {
+    if (nomeFuncionario && String(nomeFuncionario).trim() !== '') {
+        $('.funcionario_selecionado').text(nomeFuncionario).removeClass('pdv-card-value-empty').addClass('pdv-card-value');
+        $('.pdv-badge-vendedor').removeClass('pdv-badge-pending').addClass('pdv-badge-selected').html('✓ Selecionado');
+    } else {
+        $('.funcionario_selecionado').html('<i class="ri-user-search-line"></i> Nenhum vendedor selecionado').removeClass('pdv-card-value').addClass('pdv-card-value-empty');
+        $('.pdv-badge-vendedor').removeClass('pdv-badge-selected').addClass('pdv-badge-pending').html('○ Pendente');
+    }
+}
+
 var CashBackConfig = null
 var valorCashBack = 0
 
@@ -341,29 +361,18 @@ $(document).on("change", "#inp-cliente_id", function () {
     $('#inp-valor_cashback').val('')
     $('#inp-permitir_credito').val('1').change()
     let cliente_id = $(this).val()
-    $.get(path_url + "api/clientes/cashback/" + cliente_id)
-    .done((e) => {
-        if(e){
-            CashBackConfig = e
-            valorCashBack = e.valor_cashback
+    
+    if (!cliente_id) {
+        pdvAtualizarCardCliente('')
+        return;
+    }
 
-            $('.cashback-div').removeClass('d-none')
-            $('.info_cash_back').text('*percentual de cashback para uso ' + e.percentual_maximo_venda + '%')
-
-        }
-        $('.valor-cashback-disponivel').text('R$ ' + convertFloatToMoeda(e.valor_cashback))
-    })
-    .fail((e) => {
-        $('.cashback-div').addClass('d-none')
-        // console.log(e);
-    });
-
-    console.clear()
     $.get(path_url + "api/clientes/find/" + cliente_id)
     .done((cliente) => {
-        console.log(cliente)
-        if(cliente.lista_preco){
-
+        if(cliente && cliente.razao_social) {
+            pdvAtualizarCardCliente(cliente.razao_social);
+        }
+        if(cliente && cliente.lista_preco){
             $('#lista_id').val(cliente.lista_preco.id)
             setTimeout(() => {
                 todos()
@@ -371,11 +380,27 @@ $(document).on("change", "#inp-cliente_id", function () {
             setTimeout(() => {
                 $("#codBarras").focus();
             }, 500)
-
         }
     })
     .fail((err) => {
         console.log(err);
+    });
+
+    $.get(path_url + "api/clientes/cashback/" + cliente_id)
+    .done((e) => {
+        if(e && e.percentual_maximo_venda > 0){
+            CashBackConfig = e
+            valorCashBack = e.valor_cashback
+
+            $('.cashback-div').removeClass('d-none')
+            $('.info_cash_back').text('*percentual de cashback para uso ' + e.percentual_maximo_venda + '%')
+            $('.valor-cashback-disponivel').text('R$ ' + convertFloatToMoeda(e.valor_cashback))
+        } else {
+            $('.cashback-div').addClass('d-none')
+        }
+    })
+    .fail((e) => {
+        $('.cashback-div').addClass('d-none')
     });
 })
 
@@ -1509,17 +1534,13 @@ $("#cliente select").each(function () {
                     return query;
                 },
                 processResults: function (response) {
-
                     var results = [];
                     $.each(response, function (i, v) {
                         var o = {};
                         o.id = v.id;
-
                         o.text = v.razao_social + " - " + v.cpf_cnpj;
                         o.value = v.id;
                         results.push(o);
-                        $('.cliente_selecionado').text(v.razao_social);
-
                     });
                     return {
                         results: results,
@@ -1680,11 +1701,9 @@ function selecionaLista(){
     if(funcionario_lista_id){
         $.get(path_url + "api/funcionarios/find", {id: funcionario_lista_id})
         .done((res) => {
-            console.log(res)
-            var newOption = new Option(res.nome, res.id, true, false);
+            var newOption = new Option(res.nome, res.id, true, true);
             $('#inp-funcionario_id').append(newOption);
-            $('.funcionario_selecionado').text(res.nome)
-
+            pdvAtualizarCardFuncionario(res.nome);
         })
         .fail((err) => {
             console.log(err);
@@ -1801,7 +1820,9 @@ $("body").on("click", "#btn-suspender", function () {
             console.log(json)
             $.post(path_url + 'api/frenteCaixa/suspender', json)
             .done((success) => {
-                console.log(success)
+                if (typeof PdvSession !== 'undefined') {
+                    PdvSession.clear();
+                }
                 swal("Sucesso", "Venda suspensa!", "success")
                 .then(() => {
                     location.reload()
@@ -1909,16 +1930,56 @@ $(function () {
 })
 
 
-$('.funcionario-venda').click(() => {
-    let funcionario_id = $('#inp-funcionario_id').val()
+$(document).on("change", "#inp-funcionario_id", function () {
+    let funcionario_id = $(this).val();
+    if (!funcionario_id) {
+        pdvAtualizarCardFuncionario('');
+        return;
+    }
     $.get(path_url + "api/funcionarios/find/", {id: funcionario_id})
     .done((e) => {
-        $('.funcionario_selecionado').text(e.nome)
+        if (e && e.nome) {
+            pdvAtualizarCardFuncionario(e.nome);
+        }
     })
     .fail((e) => {
         console.log(e);
     });
-})
+});
+
+$('.funcionario-venda').click(() => {
+    let funcionario_id = $('#inp-funcionario_id').val();
+    if (funcionario_id) {
+        $.get(path_url + "api/funcionarios/find/", {id: funcionario_id})
+        .done((e) => {
+            if (e && e.nome) {
+                pdvAtualizarCardFuncionario(e.nome);
+            }
+        })
+        .fail((e) => {
+            console.log(e);
+        });
+    } else {
+        pdvAtualizarCardFuncionario('');
+    }
+});
+
+$('.cliente-venda').click(() => {
+    let cliente_id = $('#inp-cliente_id').val();
+    if (cliente_id) {
+        $.get(path_url + "api/clientes/find/" + cliente_id)
+        .done((cliente) => {
+            if (cliente && cliente.razao_social) {
+                pdvAtualizarCardCliente(cliente.razao_social);
+            }
+        })
+        .fail((err) => {
+            console.log(err);
+        });
+    } else {
+        pdvAtualizarCardCliente('');
+    }
+});
 
 // ============================================================
 // CORES POR TIPO DE PAGAMENTO

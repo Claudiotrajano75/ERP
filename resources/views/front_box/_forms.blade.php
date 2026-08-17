@@ -58,9 +58,9 @@
                                 <div class="d-flex align-items-center">
                                     <h5 class="pdv-card-label text-muted mb-0">Cliente
                                         @isset($cliente)
-                                            <span class="pdv-badge-status pdv-badge-selected">✓ Selecionado</span>
+                                            <span class="pdv-badge-status pdv-badge-selected pdv-badge-cliente">✓ Selecionado</span>
                                         @else
-                                        <span class="pdv-badge-status pdv-badge-pending">○ Pendente</span>
+                                            <span class="pdv-badge-status pdv-badge-pending pdv-badge-cliente">○ Pendente</span>
                                         @endif
                                     </h5>
                                 </div>
@@ -89,9 +89,9 @@
                                 <div class="d-flex align-items-center">
                                     <h5 class="pdv-card-label text-muted mb-0">Vendedor
                                         @isset($funcionario)
-                                            <span class="pdv-badge-status pdv-badge-selected">✓ Selecionado</span>
+                                            <span class="pdv-badge-status pdv-badge-selected pdv-badge-vendedor">✓ Selecionado</span>
                                         @else
-                                        <span class="pdv-badge-status pdv-badge-pending">○ Pendente</span>
+                                            <span class="pdv-badge-status pdv-badge-pending pdv-badge-vendedor">○ Pendente</span>
                                         @endif
                                     </h5>
                                 </div>
@@ -148,8 +148,7 @@
             <div class="row align-items-center px-2 pb-2 g-2" style="margin-top: 0px">
                 <div class="col">
                     {{-- Botão liga/desliga do leitor de código de barras --}}
-                    <button type="button" id="btn-leitor-toggle"
-                        class="btn pdv-leitor-toggle leitor-on w-100"
+                    <button type="button" id="btn-leitor-toggle" class="btn pdv-leitor-toggle leitor-on w-100"
                         title="Clique para desativar o leitor de código de barras">
                         <span class="d-inline-flex align-items-center gap-2">
                             <i class="ri-barcode-line fs-5"></i>

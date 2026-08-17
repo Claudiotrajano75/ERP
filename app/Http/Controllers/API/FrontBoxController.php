@@ -111,20 +111,31 @@ class FrontBoxController extends Controller
     public function linhaProdutoVenda(Request $request)
     {
         try {
+            $qtdRaw = $request->qtd ?? '1';
+            $qtd = (float)__convert_value_bd(str_replace(',', '.', (string)$qtdRaw));
+            if ($qtd <= 0) $qtd = 1;
 
-            $qtd = $request->qtd;
-            $value_unit = __convert_value_bd($request->value_unit);
-            $sub_total = __convert_value_bd($request->sub_total);
             $product_id = $request->product_id;
             $variacao_id = $request->variacao_id;
-            $key = $request->key;
+            $key = $request->key ?? \Illuminate\Support\Str::random(10);
 
             $variacao = null;
             if($variacao_id){
-                $variacao = ProdutoVariacao::findOrfail($variacao_id);
+                $variacao = ProdutoVariacao::find($variacao_id);
             }
 
             $product = Produto::findOrFail($product_id);
+            
+            $value_unit = $request->value_unit ? __convert_value_bd($request->value_unit) : 0;
+            if ((float)$value_unit <= 0 && $product->valor_unitario > 0) {
+                $value_unit = $product->valor_unitario;
+            }
+            
+            $sub_total = $request->sub_total ? __convert_value_bd($request->sub_total) : 0;
+            if ((float)$sub_total <= 0) {
+                $sub_total = (float)$value_unit * (float)$qtd;
+            }
+
             if ($product->gerenciar_estoque == true) {
                 if($product->combo){
                     $estoqueMsg = $this->util->verificaEstoqueCombo($product, (float)$qtd);
@@ -134,7 +145,7 @@ class FrontBoxController extends Controller
                 }else{
                     if (!isset($product->estoque)) {
                         return response()->json("Produto com estoque insuficiente", 401);
-                    } else if ($product->estoque->quantidade < $qtd) {
+                    } else if ((float)$product->estoque->quantidade < (float)$qtd) {
                         return response()->json("Produto com estoque insuficiente", 401);
                     }
                 }

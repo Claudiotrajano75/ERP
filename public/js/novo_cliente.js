@@ -62,10 +62,14 @@ $(document).on("click", ".btn-store-cliente", function () {
                 // console.log(res)
                 swal("Sucesso", "Cliente cadastrado!", "success")
 
-                var newOption = new Option(res.info, res.id, false, false);
-                $('#inp-cliente_id').append(newOption);
+                var newOption = new Option(res.info || res.razao_social, res.id, true, true);
+                $('#inp-cliente_id').append(newOption).trigger('change');
 
-                $('.cliente_selecionado').text(res.razao_social);
+                if (typeof pdvAtualizarCardCliente === 'function') {
+                    pdvAtualizarCardCliente(res.razao_social);
+                } else {
+                    $('.cliente_selecionado').text(res.razao_social);
+                }
                 setTimeout(() => {
                     if(typeof getClient === 'function') {
                         getClient(res.id)

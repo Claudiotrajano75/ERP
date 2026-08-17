@@ -164,15 +164,20 @@ $(function () {
 
 function videoSuporte(){
     let currentUrl = window.location.href
-    $.get(path_url + 'api/video-suporte', {url : currentUrl})
-    .done((success) => {
-        if(success){
-            $('.video').append(success)
+    $.ajax({
+        url: path_url + 'api/video-suporte',
+        type: 'GET',
+        data: {url : currentUrl},
+        global: false,
+        success: (success) => {
+            if(success){
+                $('.video').append(success)
+            }
+        },
+        error: (err) => {
+            console.log(err)
         }
-    })
-    .fail((err) => {
-        console.log(err)
-    })
+    });
 }
 
 function convertMoedaToFloat(value) {
@@ -1140,33 +1145,40 @@ $(".multi-select").bootstrapDualListbox({
 function notifications(){
 
     if($('#empresa_id').val()){
-        $.get(path_url + "api/notificacoes-alertas", {empresa_id: $('#empresa_id').val()})
-        .done((success) => {
-            $('.spinner-border').addClass('d-none')
-            if(success.length > 0){
-                $('.noti-icon-badge').removeClass('d-none')
-            }
-            $('.alertas-main').html(success)
-        })
-        .fail((err) => {
-            $('.spinner-border').addClass('d-none')
-
-        })
-    }else{
-        if($('#usuario_id').val()){
-
-            $.get(path_url + "api/notificacoes-alertas-super", {usuario_id: $('#usuario_id').val()})
-            .done((success) => {
+        $.ajax({
+            url: path_url + "api/notificacoes-alertas",
+            type: "GET",
+            data: {empresa_id: $('#empresa_id').val()},
+            global: false,
+            success: (success) => {
                 $('.spinner-border').addClass('d-none')
                 if(success.length > 0){
                     $('.noti-icon-badge').removeClass('d-none')
                 }
                 $('.alertas-main').html(success)
-            })
-            .fail((err) => {
+            },
+            error: (err) => {
                 $('.spinner-border').addClass('d-none')
-
-            })
+            }
+        });
+    }else{
+        if($('#usuario_id').val()){
+            $.ajax({
+                url: path_url + "api/notificacoes-alertas-super",
+                type: "GET",
+                data: {usuario_id: $('#usuario_id').val()},
+                global: false,
+                success: (success) => {
+                    $('.spinner-border').addClass('d-none')
+                    if(success.length > 0){
+                        $('.noti-icon-badge').removeClass('d-none')
+                    }
+                    $('.alertas-main').html(success)
+                },
+                error: (err) => {
+                    $('.spinner-border').addClass('d-none')
+                }
+            });
             $('.spinner-border').addClass('d-none')
         }
     }

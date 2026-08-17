@@ -12,22 +12,27 @@ function notificacoesPedidoDelivery(){
 	if($('#modal-notificacao-delivery').is(':visible')){
 	}else{
 
-		$.get(path_url + "api/notificacoes-delivery", {empresa_id: $('#empresa_id').val()})
-		.done((success) => {
-			if(success){
-				var audio = new Audio('/audio/song3.wav');
-				audio.addEventListener('canplaythrough', function() {
-					audio.play();
-				});
-				$('#modal-notificacao-delivery').modal('show')
-				$('#modal-notificacao-delivery .modal-body').html(success)
+		$.ajax({
+			url: path_url + "api/notificacoes-delivery",
+			type: "GET",
+			data: {empresa_id: $('#empresa_id').val()},
+			global: false,
+			success: (success) => {
+				if(success){
+					var audio = new Audio('/audio/song3.wav');
+					audio.addEventListener('canplaythrough', function() {
+						audio.play();
+					});
+					$('#modal-notificacao-delivery').modal('show')
+					$('#modal-notificacao-delivery .modal-body').html(success)
+				}
+			},
+			error: (err) => {
+				if(err.status != 401){
+					// swal("erro", "erro ao buscar notificações", "error")
+				}
 			}
-		})
-		.fail((err) => {
-			if(err.status != 401){
-				// swal("erro", "erro ao buscar notificações", "error")
-			}
-		})
+		});
 	}
 	setTimeout(() => {
 		$('.control-loading').add('<div class="modal-loading loading-class"></div>')

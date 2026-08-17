@@ -67,6 +67,8 @@ $(document).on("click", ".btn-store-cliente", function () {
 
                 if (typeof pdvAtualizarCardCliente === 'function') {
                     pdvAtualizarCardCliente(res.razao_social);
+                } else if (typeof preVendaAtualizarCardCliente === 'function') {
+                    preVendaAtualizarCardCliente(res.razao_social);
                 } else {
                     $('.cliente_selecionado').text(res.razao_social);
                 }

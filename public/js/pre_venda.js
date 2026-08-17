@@ -2,10 +2,29 @@ var DESCONTO = 0;
 var VALORACRESCIMO = 0;
 var PERCENTUALMAXDESCONTO = false;
 
+function preVendaAtualizarCardCliente(razaoSocial) {
+    if (razaoSocial && String(razaoSocial).trim() !== '') {
+        $('.cliente_selecionado').text(razaoSocial).removeClass('pdv-card-value-empty').addClass('pdv-card-value');
+        $('.pdv-badge-cliente').removeClass('pdv-badge-pending').addClass('pdv-badge-selected').html('✓ Selecionado');
+    } else {
+        $('.cliente_selecionado').html('<i class="ri-user-search-line"></i> Nenhum').removeClass('pdv-card-value').addClass('pdv-card-value-empty');
+        $('.pdv-badge-cliente').removeClass('pdv-badge-selected').addClass('pdv-badge-pending').html('○ Pendente');
+    }
+}
+
+function preVendaAtualizarCardFuncionario(nomeFuncionario) {
+    if (nomeFuncionario && String(nomeFuncionario).trim() !== '') {
+        $('.vendedor_selecionado, .funcionario_selecionado').text(nomeFuncionario).removeClass('pdv-card-value-empty').addClass('pdv-card-value');
+        $('.pdv-badge-vendedor').removeClass('pdv-badge-pending').addClass('pdv-badge-selected').html('✓ Selecionado');
+    } else {
+        $('.vendedor_selecionado, .funcionario_selecionado').html('<i class="ri-user-search-line"></i> Nenhum').removeClass('pdv-card-value').addClass('pdv-card-value-empty');
+        $('.pdv-badge-vendedor').removeClass('pdv-badge-selected').addClass('pdv-badge-pending').html('○ Pendente');
+    }
+}
+
 $(function () {
     validaButtonSave()
     $("#lista_id").val('')
-
 })
 
 $(document).on('change', '#inp-tipo_pagamento', function() {
@@ -707,8 +726,7 @@ function selecionaLista(){
             console.log(res)
             var newOption = new Option(res.nome, res.id, true, false);
             $('#inp-funcionario_id').append(newOption);
-            $('.funcionario_selecionado').text(res.nome)
-
+            preVendaAtualizarCardFuncionario(res.nome);
         })
         .fail((err) => {
             console.log(err);
@@ -992,17 +1010,13 @@ $("#cliente select").each(function () {
                     return query;
                 },
                 processResults: function (response) {
-
                     var results = [];
                     $.each(response, function (i, v) {
                         var o = {};
                         o.id = v.id;
-
                         o.text = v.razao_social + " - " + v.cpf_cnpj;
                         o.value = v.id;
                         results.push(o);
-                        $('.cliente_selecionado').html(o.text);
-
                     });
                     return {
                         results: results,
@@ -1010,6 +1024,45 @@ $("#cliente select").each(function () {
                 },
             },
         });
+    }
+});
+
+$(document).on("change", "#inp-cliente_id", function () {
+    let cliente_id = $(this).val();
+    if (!cliente_id) {
+        preVendaAtualizarCardCliente('');
+        return;
+    }
+    $.get(path_url + "api/clientes/find/" + cliente_id)
+    .done((cliente) => {
+        if(cliente && cliente.razao_social) {
+            preVendaAtualizarCardCliente(cliente.razao_social);
+        }
+        if(cliente && cliente.lista_preco){
+            $('#lista_id').val(cliente.lista_preco.id);
+            setTimeout(() => { todos(); }, 10);
+            setTimeout(() => { $("#codBarras").focus(); }, 500);
+        }
+    })
+    .fail((err) => {
+        console.log(err);
+    });
+});
+
+$(document).on("click", ".cliente-venda", function () {
+    let cliente_id = $('#inp-cliente_id').val();
+    if (cliente_id) {
+        $.get(path_url + "api/clientes/find/" + cliente_id)
+        .done((cliente) => {
+            if (cliente && cliente.razao_social) {
+                preVendaAtualizarCardCliente(cliente.razao_social);
+            }
+        })
+        .fail((err) => {
+            console.log(err);
+        });
+    } else {
+        preVendaAtualizarCardCliente('');
     }
 });
 
@@ -1160,17 +1213,43 @@ $(document).delegate(".btn-delete-row", "click", function (e) {
     });
 });
 
-$(document).on('click', '.funcionario-venda', function() {
-    let funcionario_id = $('#inp-funcionario_id').val()
+$(document).on('change', '#inp-funcionario_id', function() {
+    let funcionario_id = $(this).val();
+    if (!funcionario_id) {
+        preVendaAtualizarCardFuncionario('');
+        validaButtonSave();
+        return;
+    }
     $.get(path_url + "api/funcionarios/find/", {id: funcionario_id})
     .done((e) => {
-        $('.vendedor_selecionado').text(e.nome)
-        validaButtonSave()
+        if (e && e.nome) {
+            preVendaAtualizarCardFuncionario(e.nome);
+        }
+        validaButtonSave();
     })
     .fail((e) => {
         console.log(e);
     });
-})
+});
+
+$(document).on('click', '.funcionario-venda', function() {
+    let funcionario_id = $('#inp-funcionario_id').val()
+    if (funcionario_id) {
+        $.get(path_url + "api/funcionarios/find/", {id: funcionario_id})
+        .done((e) => {
+            if (e && e.nome) {
+                preVendaAtualizarCardFuncionario(e.nome);
+            }
+            validaButtonSave();
+        })
+        .fail((e) => {
+            console.log(e);
+        });
+    } else {
+        preVendaAtualizarCardFuncionario('');
+        validaButtonSave();
+    }
+});
 
 $(".modal-funcioario select").each(function () {
 

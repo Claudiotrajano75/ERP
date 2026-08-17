@@ -11,21 +11,25 @@ function notificacoesPedido(){
 	if($('#modal-notificacao').is(':visible')){
 	}else{
 
-		$.get(path_url + "api/notificacoes-pedido", {empresa_id: $('#empresa_id').val()})
-		.done((success) => {
-
-			var audio = new Audio('/audio/song3.wav');
-			audio.addEventListener('canplaythrough', function() {
-				audio.play();
-			});
-			$('#modal-notificacao').modal('show')
-			$('#modal-notificacao .modal-body').html(success)
-		})
-		.fail((err) => {
-			if(err.status != 401){
-				// swal("erro", "erro ao buscar notificações", "error")
+		$.ajax({
+			url: path_url + "api/notificacoes-pedido",
+			type: "GET",
+			data: {empresa_id: $('#empresa_id').val()},
+			global: false,
+			success: (success) => {
+				var audio = new Audio('/audio/song3.wav');
+				audio.addEventListener('canplaythrough', function() {
+					audio.play();
+				});
+				$('#modal-notificacao').modal('show')
+				$('#modal-notificacao .modal-body').html(success)
+			},
+			error: (err) => {
+				if(err.status != 401){
+					// swal("erro", "erro ao buscar notificações", "error")
+				}
 			}
-		})
+		});
 	}
 	setTimeout(() => {
 		$('.control-loading').add('<div class="modal-loading loading-class"></div>')

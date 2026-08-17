@@ -2204,10 +2204,12 @@
             @endif
 
             function hideLoader() {
-                const loader = document.querySelector(".loader");
-                if (loader) {
-                    loader.classList.add("loader--hidden");
-                }
+                setTimeout(() => {
+                    const loader = document.querySelector(".loader");
+                    if (loader) {
+                        loader.classList.add("loader--hidden");
+                    }
+                }, 400);
             }
             if (document.readyState === "complete" || document.readyState === "interactive") {
                 hideLoader();

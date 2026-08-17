@@ -1,40 +1,8 @@
 @extends('layouts.app', ['title' => 'Gerenciar Planos'])
 
 @section('css')
-<style>
+<style type="text/css">
     /* Estilos Personalizados para a Página de Gerenciar Planos */
-    .page-title-box {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-
-    .page-title {
-        font-size: 22px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #1e293b, #475569);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin: 0;
-    }
-
-    .page-title i {
-        color: #4f46e5;
-    }
-
-    .page-title-box-buttons {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    /* Cards e Layout */
     .card {
         border: 1px solid rgba(0, 0, 0, 0.06) !important;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
@@ -180,6 +148,37 @@
         border-bottom: none !important;
     }
 
+    /* Badges / Pills */
+    .badge {
+        padding: 6px 12px !important;
+        border-radius: 9999px !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: none !important;
+        border: 1px solid transparent;
+    }
+
+    .bg-success-subtle {
+        background-color: #ecfdf5 !important;
+        color: #047857 !important;
+        border-color: #a7f3d0 !important;
+    }
+
+    .bg-danger-subtle {
+        background-color: #fef2f2 !important;
+        color: #b91c1c !important;
+        border-color: #fecaca !important;
+    }
+
+    .bg-primary-subtle {
+        background-color: #eef2ff !important;
+        color: #4338ca !important;
+        border-color: #c7d2fe !important;
+    }
+
     /* Modal Styling */
     .modal-content {
         border: none !important;
@@ -246,12 +245,6 @@
         margin-top: 4px !important;
         margin-bottom: 0 !important;
     }
-
-    hr {
-        border-color: rgba(0, 0, 0, 0.06) !important;
-        opacity: 1 !important;
-        margin: 20px 0 !important;
-    }
 </style>
 @endsection
 
@@ -264,10 +257,10 @@
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div>
                         <h4 class="modulo-title text-white">
-                            <i class="ri-exchange-funds-line"></i> Atribuição de Planos
+                            <i class="ri-exchange-funds-line"></i> Atribuição e Gestão de Planos
                         </h4>
                         <p class="modulo-subtitle">
-                            Gerencie e atribua planos diretamente às empresas do sistema.
+                            Gerencie assinaturas ativas, datas de expiração e atribua planos diretamente às empresas.
                         </p>
                     </div>
                     <div>
@@ -278,25 +271,108 @@
                 </div>
             </div>
             <div class="card-body">
-                <div class="col-lg-12">
-                    {!!Form::open()->fill(request()->all())
-                    ->get()
-                    !!}
 
-                    <div class="row mt-3">
-                        <div class="col-md-3">
-                            {!!Form::select('empresa', 'Pesquisar por empresa')
-                            ->options($empresa ? [$empresa->id => $empresa->info] : [])
+                <!-- ═══ KPI CARDS (RESUMO) ═══ -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3 col-6">
+                        <div class="card widget-icon-box text-bg-info mb-0 shadow-sm border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Total de Atribuições</h4>
+                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['total'] ?? 0 }}</h3>
+                                        <p class="mb-0 text-white-50 fs-11">Contratos registrados</p>
+                                    </div>
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+                                            <i class="ri-exchange-funds-line"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-6">
+                        <div class="card widget-icon-box text-bg-success mb-0 shadow-sm border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Planos Vigentes</h4>
+                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['ativas'] ?? 0 }}</h3>
+                                        <p class="mb-0 text-white-50 fs-11">Dentro do prazo</p>
+                                    </div>
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+                                            <i class="ri-checkbox-circle-line"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-6">
+                        <div class="card widget-icon-box text-bg-danger mb-0 shadow-sm border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Planos Expirados</h4>
+                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['expiradas'] ?? 0 }}</h3>
+                                        <p class="mb-0 text-white-50 fs-11">Necessitam renovação</p>
+                                    </div>
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+                                            <i class="ri-calendar-close-line"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-6">
+                        <div class="card widget-icon-box text-bg-primary mb-0 shadow-sm border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Valor Total</h4>
+                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ __moeda($stats['valor_total'] ?? 0) }}</h3>
+                                        <p class="mb-0 text-white-50 fs-11">Total contratado</p>
+                                    </div>
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+                                            <i class="ri-money-dollar-circle-line"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div class="col-lg-12 mb-3">
+                    {!!Form::open()->fill(request()->all())->get()!!}
+                    <div class="row align-items-end g-2">
+                        <div class="col-md-6 col-12">
+                            <label class="form-label"><i class="ri-building-line me-1"></i> Filtrar por Empresa</label>
+                            {!!Form::select('empresa', '', $empresa ? [$empresa->id => $empresa->info] : [])
+                            ->attrs(['class' => 'select2 form-select', 'id' => 'inp-empresa_filtro_id'])
                             !!}
                         </div>
-                        <div class="col-md-3 text-left">
-                            <br>
-                            <button class="btn btn-primary" type="submit"> <i class="ri-search-line"></i>Pesquisar</button>
-                            <a id="clear-filter" class="btn btn-danger" href="{{ route('gerenciar-planos.index') }}"><i class="ri-eraser-fill"></i>Limpar</a>
+                        <div class="col-md-6 col-12 d-flex gap-2">
+                            <button class="btn btn-primary flex-grow-1" type="submit">
+                                <i class="ri-search-line"></i> Pesquisar
+                            </button>
+                            <a id="clear-filter" class="btn btn-danger px-3" href="{{ route('gerenciar-planos.index') }}">
+                                <i class="ri-eraser-line me-1"></i> Limpar
+                            </a>
                         </div>
                     </div>
                     {!!Form::close()!!}
                 </div>
+
                 <div class="col-md-12 mt-3">
                     <div class="table-responsive-sm">
                         <table class="table table-centered">
@@ -305,42 +381,76 @@
                                     <th>Empresa</th>
                                     <th>Plano</th>
                                     <th>Valor</th>
-                                    <th>Forma de pagamento</th>
-                                    <th>Data de cadastro</th>
-                                    <th>Data de expiração</th>
-                                    <th>Ações</th>
+                                    <th>Forma de Pagamento</th>
+                                    <th>Data Cadastro</th>
+                                    <th>Data Expiração</th>
+                                    <th>Status</th>
+                                    <th class="text-end" style="width: 100px;">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($data as $item)
+                                @forelse($data as $item)
                                 <tr>
-
-                                    <td>{{ $item->empresa->info }}</td>
-                                    <td>{{ $item->plano->nome }}</td>
-                                    <td>{{ __moeda($item->valor) }}</td>
                                     <td>
-                                        <span class="badge badge-light text-dark">{{ $item->forma_pagamento }}</span>
+                                        <span class="fw-bold text-dark fs-13">
+                                            <i class="ri-building-line text-primary me-1"></i> {{ $item->empresa ? $item->empresa->info : '--' }}
+                                        </span>
                                     </td>
-
-                                    <td>{{ __data_pt($item->created_at, 1) }}</td>
-                                    <td>{{ __data_pt($item->data_expiracao, 0) }}</td>
                                     <td>
-
-                                        <form action="{{ route('gerenciar-planos.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="d-flex align-items-center gap-1" style="width: auto;">
+                                        <span class="badge bg-primary-subtle fs-12">
+                                            {{ $item->plano ? $item->plano->nome : '--' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <strong class="text-dark">{{ __moeda($item->valor) }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border fs-12">{{ $item->forma_pagamento }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted fs-12">{{ __data_pt($item->created_at, 1) }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-medium fs-12">{{ __data_pt($item->data_expiracao, 0) }}</span>
+                                    </td>
+                                    <td>
+                                        @if(strtotime($item->data_expiracao) >= strtotime(date('Y-m-d')))
+                                            <span class="badge bg-success-subtle"><i class="ri-checkbox-circle-line"></i> Vigente</span>
+                                        @else
+                                            <span class="badge bg-danger-subtle"><i class="ri-close-circle-line"></i> Expirado</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-end">
+                                        <form action="{{ route('gerenciar-planos.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="d-inline">
                                             @method('delete')
                                             @csrf
-                                            <button type="button" class="btn btn-delete btn-sm btn-danger" title="Excluir">
+                                            <button type="button" class="btn btn-delete btn-sm btn-danger" title="Excluir Atribuição">
                                                 <i class="ri-delete-bin-line"></i>
                                             </button>
                                         </form>
                                     </td>
                                 </tr>
-                                @endforeach
+                                @empty
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-4">
+                                        <i class="ri-inbox-line fs-24 d-block mb-1 text-muted"></i>
+                                        Nenhuma atribuição de plano encontrada.
+                                    </td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
                 </div>
-                {!! $data->appends(request()->all())->links() !!}
+
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
+                    <div>
+                        <span class="text-muted fs-12">Exibindo {{ $data->count() }} de {{ $data->total() }} registros</span>
+                    </div>
+                    <div>
+                        {!! $data->appends(request()->all())->links() !!}
+                    </div>
+                </div>
 
             </div>
         </div>
@@ -352,59 +462,68 @@
         <form class="modal-content" method="post" action="{{ route('gerenciar-planos.store') }}">
             @csrf
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel"><i class="ri-exchange-funds-line text-primary"></i> Atribuir plano</h5>
+                <h5 class="modal-title" id="exampleModalLabel"><i class="ri-exchange-funds-line text-primary"></i> Atribuir Plano à Empresa</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="row g-3">
-                    <div class="col-md-6">
-                        {!!Form::select('empresa_atribuir', 'Empresa')
+                    <div class="col-md-6 col-12">
+                        <label class="form-label required"><i class="ri-building-line me-1"></i> Empresa</label>
+                        {!!Form::select('empresa_atribuir', '')
                         ->required()
-                        ->attrs(['class' => 'select2 empresa'])
+                        ->attrs(['class' => 'select2 empresa', 'id' => 'inp-empresa_atribuir'])
                         !!}
                     </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label">Plano</label>
+                    <div class="col-md-6 col-12">
+                        <label class="form-label required"><i class="ri-vip-diamond-line me-1"></i> Plano</label>
                         <select required id="plano" name="plano_id" class="form-select select2">
-                            <option value="">Selecione</option>
+                            <option value="">Selecione o plano</option>
                             @foreach($planos as $p)
-                            <option value="{{ $p->id }}" data-valor="{{ $p->valor }}">{{ $p->nome }} R$ {{ __moeda($p->valor)}}</option>
+                            <option value="{{ $p->id }}" data-valor="{{ $p->valor }}">{{ $p->nome }} - R$ {{ __moeda($p->valor)}}</option>
                             @endforeach
                         </select>
                     </div>
 
-                    <div class="col-md-6">
-                        {!!Form::select('forma_pagamento', 'Tipo de pagamento', \App\Models\Plano::formasPagamento())
+                    <div class="col-md-6 col-12">
+                        <label class="form-label required"><i class="ri-bank-card-line me-1"></i> Forma de Pagamento</label>
+                        {!!Form::select('forma_pagamento', '', \App\Models\Plano::formasPagamento())
                         ->required()
-                        ->attrs(['class' => 'select2'])
+                        ->attrs(['class' => 'select2 form-select'])
                         !!}
                     </div>
 
-                    <div class="col-md-6">
-                        {!!Form::tel('valor', 'Valor')
+                    <div class="col-md-6 col-12">
+                        <label class="form-label required"><i class="ri-money-dollar-circle-line me-1"></i> Valor</label>
+                        {!!Form::tel('valor', '')
                         ->required()
-                        ->attrs(['class' => 'moeda'])
+                        ->attrs(['class' => 'form-control moeda', 'id' => 'inp-valor', 'placeholder' => '0,00'])
                         !!}
                     </div>
 
-                    <div class="col-md-6">
-                        {!!Form::select('status_pagamento', 'Status de pagamento', \App\Models\FinanceiroPlano::statusDePagamentos())
+                    <div class="col-md-6 col-12">
+                        <label class="form-label required"><i class="ri-checkbox-circle-line me-1"></i> Status de Pagamento</label>
+                        {!!Form::select('status_pagamento', '', \App\Models\FinanceiroPlano::statusDePagamentos())
                         ->required()
-                        ->attrs(['class' => 'select2'])
+                        ->attrs(['class' => 'select2 form-select'])
                         ->value('recebido')
                         !!}
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fechar</button>
-                <button type="submit" class="btn btn-success"><i class="ri-save-line"></i> Salvar</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="ri-close-line me-1"></i> Cancelar
+                </button>
+                <button type="submit" class="btn btn-success px-4">
+                    <i class="ri-save-line me-1"></i> Salvar Atribuição
+                </button>
             </div>
         </form>
     </div>
 </div>
 @endsection
+
 @section('js')
 <script type="text/javascript">
     $(function(){
@@ -414,57 +533,39 @@
                 language: "pt-BR",
                 placeholder: "Digite para buscar a empresa",
                 width: "100%",
-                theme: "bootstrap4",
                 dropdownParent: $('#modal-cad'),
                 ajax: {
                     cache: true,
                     url: path_url + "api/empresas/find-all",
                     dataType: "json",
                     data: function (params) {
-
-                        var query = {
-                            pesquisa: params.term,
-                        };
-                        return query;
+                        return { pesquisa: params.term };
                     },
                     processResults: function (response) {
                         var results = [];
-
                         $.each(response, function (i, v) {
-                            var o = {};
-                            o.id = v.id;
-
-                            o.text = v.info;
-                            o.value = v.id;
-                            results.push(o);
+                            results.push({ id: v.id, text: v.info, value: v.id });
                         });
-                        return {
-                            results: results,
-                        };
+                        return { results: results };
                     },
                 },
             });
-        }, 200)
-
+        }, 200);
     });
 
     $(document).on("change", "#plano", function () {
         if($(this).val()){
-            let empresa_id = $('#inp-empresa_atribuir').val()
-
+            let empresa_id = $('#inp-empresa_atribuir').val();
             $.get(path_url + 'api/planos/find', {empresa_id: empresa_id, plano_id: $(this).val()})
             .done((res) => {
-                console.log(res)
-                $('#inp-valor').val(convertFloatToMoeda(res.valor))
+                $('#inp-valor').val(convertFloatToMoeda(res.valor));
             })
             .fail((err) => {
-                console.log(err)
-                swal("Erro", "Algo deu errado", "error")
-            })
+                console.log(err);
+            });
         }else{
-            $('#inp-valor').val(convertFloatToMoeda(0))
+            $('#inp-valor').val(convertFloatToMoeda(0));
         }
     });
-
 </script>
 @endsection

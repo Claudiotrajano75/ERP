@@ -231,7 +231,7 @@ class HomeController extends Controller
         $end_date = $request->end_date;
         $estado = $request->estado;
 
-        $data = NFe::orderBy("id", "desc")
+        $query = NFe::orderBy("id", "desc")
         ->when(!empty($start_date), function ($query) use ($start_date) {
             return $query->whereDate('data_emissao', '>=', $start_date);
         })
@@ -243,15 +243,26 @@ class HomeController extends Controller
         })
         ->when(!empty($estado), function ($query) use ($estado) {
             return $query->where('estado', $estado);
-        })
-        ->paginate(30);
+        });
+
+        $stats = [
+            'total'       => (clone $query)->count(),
+            'aprovadas'   => (clone $query)->where('estado', 'aprovado')->count(),
+            'canceladas'  => (clone $query)->where('estado', 'cancelado')->count(),
+            'rejeitadas'  => (clone $query)->where('estado', 'rejeitado')->count(),
+            'valor_total' => (clone $query)->where('estado', 'aprovado')->sum('total'),
+        ];
+
+        $data = (clone $query)->with(['empresa', 'cliente'])->paginate(30);
 
         $empresa = null;
         if($empresa_id){
-            $empresa = Empresa::findOrFail($empresa_id);
+            $empresa = Empresa::find($empresa_id);
         }
 
-        return view('nfe.all', compact('data', 'empresa'));
+        $empresas = Empresa::orderBy('nome')->pluck('nome', 'id')->all();
+
+        return view('nfe.all', compact('data', 'empresa', 'empresas', 'stats'));
     }
 
     public function nfce(Request $request)
@@ -261,7 +272,7 @@ class HomeController extends Controller
         $end_date = $request->end_date;
         $estado = $request->estado;
 
-        $data = Nfce::orderBy("id", "desc")
+        $query = Nfce::orderBy("id", "desc")
         ->when(!empty($start_date), function ($query) use ($start_date) {
             return $query->whereDate('data_emissao', '>=', $start_date);
         })
@@ -273,15 +284,26 @@ class HomeController extends Controller
         })
         ->when(!empty($estado), function ($query) use ($estado) {
             return $query->where('estado', $estado);
-        })
-        ->paginate(30);
+        });
+
+        $stats = [
+            'total'       => (clone $query)->count(),
+            'aprovadas'   => (clone $query)->where('estado', 'aprovado')->count(),
+            'canceladas'  => (clone $query)->where('estado', 'cancelado')->count(),
+            'rejeitadas'  => (clone $query)->where('estado', 'rejeitado')->count(),
+            'valor_total' => (clone $query)->where('estado', 'aprovado')->sum('total'),
+        ];
+
+        $data = (clone $query)->with(['empresa', 'cliente'])->paginate(30);
 
         $empresa = null;
         if($empresa_id){
-            $empresa = Empresa::findOrFail($empresa_id);
+            $empresa = Empresa::find($empresa_id);
         }
 
-        return view('nfce.all', compact('data', 'empresa'));
+        $empresas = Empresa::orderBy('nome')->pluck('nome', 'id')->all();
+
+        return view('nfce.all', compact('data', 'empresa', 'empresas', 'stats'));
     }
 
     public function cte(Request $request)
@@ -291,7 +313,7 @@ class HomeController extends Controller
         $end_date = $request->end_date;
         $estado = $request->estado;
 
-        $data = Cte::orderBy("id", "desc")
+        $query = Cte::orderBy("id", "desc")
         ->when(!empty($start_date), function ($query) use ($start_date) {
             return $query->whereDate('created_at', '>=', $start_date);
         })
@@ -303,15 +325,26 @@ class HomeController extends Controller
         })
         ->when(!empty($estado), function ($query) use ($estado) {
             return $query->where('estado', $estado);
-        })
-        ->paginate(30);
+        });
+
+        $stats = [
+            'total'       => (clone $query)->count(),
+            'aprovadas'   => (clone $query)->where('estado', 'aprovado')->count(),
+            'canceladas'  => (clone $query)->where('estado', 'cancelado')->count(),
+            'rejeitadas'  => (clone $query)->where('estado', 'rejeitado')->count(),
+            'valor_total' => (clone $query)->where('estado', 'aprovado')->sum('valor_transporte'),
+        ];
+
+        $data = (clone $query)->with(['empresa', 'remetente', 'destinatario'])->paginate(30);
 
         $empresa = null;
         if($empresa_id){
-            $empresa = Empresa::findOrFail($empresa_id);
+            $empresa = Empresa::find($empresa_id);
         }
+
+        $empresas = Empresa::orderBy('nome')->pluck('nome', 'id')->all();
         
-        return view('cte.all', compact('data', 'empresa'));
+        return view('cte.all', compact('data', 'empresa', 'empresas', 'stats'));
     }
 
     public function mdfe(Request $request)
@@ -321,7 +354,7 @@ class HomeController extends Controller
         $end_date = $request->end_date;
         $estado = $request->estado;
 
-        $data = Mdfe::orderBy("id", "desc")
+        $query = Mdfe::orderBy("id", "desc")
         ->when(!empty($start_date), function ($query) use ($start_date) {
             return $query->whereDate('created_at', '>=', $start_date);
         })
@@ -332,15 +365,26 @@ class HomeController extends Controller
             return $query->where('empresa_id', $empresa_id);
         })
         ->when(!empty($estado), function ($query) use ($estado) {
-            return $query->where('estado', $estado);
-        })
-        ->paginate(30);
+            return $query->where('estado_emissao', $estado);
+        });
+
+        $stats = [
+            'total'       => (clone $query)->count(),
+            'aprovadas'   => (clone $query)->where('estado_emissao', 'aprovado')->count(),
+            'canceladas'  => (clone $query)->where('estado_emissao', 'cancelado')->count(),
+            'rejeitadas'  => (clone $query)->where('estado_emissao', 'rejeitado')->count(),
+            'valor_total' => (clone $query)->where('estado_emissao', 'aprovado')->sum('valor_carga'),
+        ];
+
+        $data = (clone $query)->with(['empresa'])->paginate(30);
 
         $empresa = null;
         if($empresa_id){
-            $empresa = Empresa::findOrFail($empresa_id);
+            $empresa = Empresa::find($empresa_id);
         }
+
+        $empresas = Empresa::orderBy('nome')->pluck('nome', 'id')->all();
         
-        return view('mdfe.all', compact('data', 'empresa'));
+        return view('mdfe.all', compact('data', 'empresa', 'empresas', 'stats'));
     }
 }

@@ -11,20 +11,27 @@ class BairroSuperController extends Controller
     public function index(Request $request)
     {
         $cidade_id = $request->cidade_id;
-        $data = BairroDeliveryMaster::
+        $query = BairroDeliveryMaster::
         when(!empty($request->nome), function ($q) use ($request) {
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
         ->when($cidade_id, function ($q) use ($cidade_id) {
             return $q->where('cidade_id', $cidade_id);
-        })
-        ->paginate(env("PAGINACAO"));
+        });
+
+        $stats = [
+            'total'   => (clone $query)->count(),
+            'cidades' => (clone $query)->distinct('cidade_id')->count('cidade_id'),
+        ];
+
+        $data = (clone $query)->with(['cidade'])->orderBy('nome', 'asc')
+                              ->paginate(env("PAGINACAO", 10));
 
         $cidade = null;
         if($cidade_id){
-            $cidade = Cidade::findOrFail($cidade_id);
+            $cidade = Cidade::find($cidade_id);
         }
-        return view('bairro_super.index', compact('data', 'cidade'));
+        return view('bairro_super.index', compact('data', 'cidade', 'stats'));
     }
 
     public function create()

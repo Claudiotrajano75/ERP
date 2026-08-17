@@ -12,8 +12,22 @@ class PlanoPendenteController extends Controller
     public function index(Request $request){
         $data = PlanoPendente::orderBy('id', 'desc')
         ->where('status', 0)
-        ->paginate(env("PAGINACAO"));
-        return view('planos_pendentes.index', compact('data'));
+        ->when($request->empresa, function($q) use ($request) {
+            $q->whereHas('empresa', function($query) use ($request) {
+                $query->where('nome', 'like', "%$request->empresa%")
+                      ->orWhere('nome_fantasia', 'like', "%$request->empresa%")
+                      ->orWhere('cpf_cnpj', 'like', "%$request->empresa%");
+            });
+        })
+        ->paginate(env("PAGINACAO", 10));
+
+        $stats = [
+            'total_pendentes' => PlanoPendente::where('status', 0)->count(),
+            'valor_pendente'  => PlanoPendente::where('status', 0)->sum('valor'),
+            'total_liberados' => PlanoPendente::where('status', 1)->count(),
+        ];
+
+        return view('planos_pendentes.index', compact('data', 'stats'));
     }
 
     public function edit($id){

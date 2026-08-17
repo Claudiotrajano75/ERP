@@ -1,62 +1,52 @@
-@section('css')
-<style type="text/css">
-    .input_container {
-        border: 1px solid #e5e5e5;
-    }
-
-    input[type=file]::file-selector-button {
-        background-color: #fff;
-        color: #000;
-        border: 0px;
-        border-right: 1px solid #e5e5e5;
-        padding: 10px 15px;
-        margin-right: 20px;
-        transition: .5s;
-    }
-
-    input[type=file]::file-selector-button:hover {
-        background-color: #eee;
-        border: 0px;
-        border-right: 1px solid #e5e5e5;
-    }
-</style>
-@endsection
-<div class="row g-2">
-
-    <div class="col-md-4">
-        {!!Form::select('empresa', 'Empresa')
-        ->attrs(['class' => 'form-select'])->required()
-        ->options(isset($item) ? [$item->empresa_id => $item->empresa->info] : [])
+<div class="row g-3">
+    <div class="col-md-4 col-12">
+        <label class="form-label required"><i class="ri-building-line me-1"></i> Empresa Solicitante</label>
+        {!!Form::select('empresa', '', ['' => 'Selecione a Empresa'] + ($empresas ?? []))
+        ->attrs(['class' => 'form-select select2', 'id' => 'inp-empresa'])
+        ->required()
+        ->value(isset($item) ? $item->empresa_id : null)
         !!}
     </div>
-    <div class="col-md-2">
-        {!!Form::select('departamento', 'Departamento', ['' => 'Selecione', 'financeiro' => 'Financeiro', 'suporte' => 'Suporte'])
-        ->attrs(['class' => 'form-select'])->required()
+
+    <div class="col-md-3 col-12">
+        <label class="form-label required"><i class="ri-folder-user-line me-1"></i> Departamento</label>
+        {!!Form::select('departamento', '', ['' => 'Selecione', 'financeiro' => 'Financeiro', 'suporte' => 'Suporte Técnico'])
+        ->attrs(['class' => 'form-select'])
+        ->required()
         !!}
     </div>
-    <div class="col-md-6">
-        {!!Form::text('assunto', 'Assunuto')->required()
+
+    <div class="col-md-5 col-12">
+        <label class="form-label required"><i class="ri-chat-voice-line me-1"></i> Assunto do Chamado</label>
+        {!!Form::text('assunto', '')
+        ->required()
+        ->attrs(['class' => 'form-control', 'placeholder' => 'Ex: Dúvida sobre emissão de NF-e'])
         !!}
     </div>
+
     @if(!isset($item))
-    <div class="col-md-12">
-        {!!Form::textarea('descricao', 'Descrição')
-        ->attrs(['rows' => '10', 'class' => 'tiny'])
+    <div class="col-md-12 col-12">
+        <label class="form-label required"><i class="ri-file-text-line me-1"></i> Mensagem / Descrição Inicial</label>
+        {!!Form::textarea('descricao', '')
+        ->attrs(['rows' => '8', 'class' => 'tiny form-control'])
         !!}
     </div>
 
-    <div class="col-md-6">
-        <label>Anexo</label>
-        <div class="input_container">
-            {!!Form::file('anexo', '')!!}
-        </div>
+    <div class="col-md-6 col-12">
+        <label class="form-label"><i class="ri-attachment-line me-1"></i> Anexo (Opcional)</label>
+        {!!Form::file('anexo', '')->attrs(['class' => 'form-control'])!!}
+        <small class="text-muted fs-11">Permitido imagens ou documentos complementares (.png, .jpg, .pdf).</small>
     </div>
     @endif
-
-    <hr class="mt-4">
-    <div class="col-12" style="text-align: right;">
-        <button type="submit" class="btn btn-success px-5" id="btn-store">Enviar</button>
-    </div>
 </div>
 
-
+<div class="modulo-actions mt-4">
+    <div class="d-flex gap-2 justify-content-end align-items-center">
+        <a href="{{ route('ticket-super.index') }}" class="btn btn-outline-secondary">
+            <i class="ri-close-line me-1"></i> Cancelar
+        </a>
+        <button type="submit" class="btn btn-success px-4" id="btn-store">
+            <i class="ri-save-3-line me-1"></i> Salvar Solicitação
+        </button>
+    </div>
+</div>

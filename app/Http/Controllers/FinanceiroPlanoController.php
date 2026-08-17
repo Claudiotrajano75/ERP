@@ -14,7 +14,8 @@ class FinanceiroPlanoController extends Controller
         $start_date = $request->get('start_date');
         $end_date = $request->get('end_date');
         $status_pagamento = $request->get('status_pagamento');
-        $data = FinanceiroPlano::when(!empty($empresa), function ($q) use ($empresa) {
+        $data = FinanceiroPlano::with(['empresa', 'plano'])
+        ->when(!empty($empresa), function ($q) use ($empresa) {
             return $q->where('empresa_id', $empresa);
         })
         ->when(!empty($end_date), function ($query) use ($end_date,) {
@@ -27,7 +28,7 @@ class FinanceiroPlanoController extends Controller
             return $q->where('status_pagamento', $status_pagamento);
         })
         ->orderBy('id', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate(env("PAGINACAO", 10));
 
         $somaPendente = FinanceiroPlano::where('status_pagamento', 'pendente')
         ->sum('valor');

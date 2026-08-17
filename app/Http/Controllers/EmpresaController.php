@@ -33,15 +33,22 @@ class EmpresaController extends Controller
     public function index(Request $request)
     {
         $this->empresaUtil->createPermissions();
-        $data = Empresa::when(!empty($request->nome), function ($q) use ($request) {
+        $query = Empresa::when(!empty($request->nome), function ($q) use ($request) {
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
         ->when(!empty($request->cpf_cnpj), function ($q) use ($request) {
             return $q->where('cpf_cnpj', 'LIKE', "%$request->cpf_cnpj%");
         })
-        ->where('tipo_contador', 0)
-        ->paginate(env("PAGINACAO"));
-        return view('empresas.index', compact('data'));
+        ->where('tipo_contador', 0);
+
+        $stats = [
+            'total'       => (clone $query)->count(),
+            'ativas'      => (clone $query)->where('status', 1)->count(),
+            'desativadas' => (clone $query)->where('status', 0)->count(),
+        ];
+
+        $data = (clone $query)->orderBy('id', 'desc')->paginate(env("PAGINACAO", 10));
+        return view('empresas.index', compact('data', 'stats'));
     }
 
     public function create()

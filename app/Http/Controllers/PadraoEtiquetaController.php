@@ -9,13 +9,24 @@ class PadraoEtiquetaController extends Controller
 {
     public function index(Request $request)
     {
-        $data = ModeloEtiqueta::where('empresa_id', null)
+        $query = ModeloEtiqueta::where('empresa_id', null)
         ->when(!empty($request->nome), function ($q) use ($request) {
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
-        ->orderBy('nome', 'asc')
-        ->paginate(env("PAGINACAO"));
-        return view('padrao_etiqueta.index', compact('data'));
+        ->when(!empty($request->tipo), function ($q) use ($request) {
+            return $q->where('tipo', $request->tipo);
+        });
+
+        $stats = [
+            'total'    => (clone $query)->count(),
+            'simples'  => (clone $query)->where('tipo', 'simples')->count(),
+            'gondola'  => (clone $query)->where('tipo', 'gondola')->count(),
+        ];
+
+        $data = (clone $query)->orderBy('nome', 'asc')
+                              ->paginate(env("PAGINACAO", 10));
+
+        return view('padrao_etiqueta.index', compact('data', 'stats'));
     }
 
     public function create()
@@ -55,7 +66,7 @@ class PadraoEtiquetaController extends Controller
             $item = ModeloEtiqueta::findOrFail($id);
 
             $request->merge([
-                'nome_produto' => $request->nome_produto ? 1 : 0,
+                'nome_empresa' => $request->nome_empresa ? 1 : 0,
                 'nome_produto' => $request->nome_produto ? 1 : 0,
                 'valor_produto' => $request->valor_produto ? 1 : 0,
                 'codigo_produto' => $request->codigo_produto ? 1 : 0,
@@ -64,7 +75,7 @@ class PadraoEtiquetaController extends Controller
             ]);
             
             $item->fill($request->all())->save();
-            session()->flash("flash_success", "Modelo criado com sucesso!");
+            session()->flash("flash_success", "Modelo alterado com sucesso!");
         } catch (\Exception $e) {
             session()->flash("flash_error", 'Algo deu errado: '. $e->getMessage());
         }

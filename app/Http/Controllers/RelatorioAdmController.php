@@ -13,7 +13,16 @@ class RelatorioAdmController extends Controller
 {
     public function index()
     {
-        return view('relatorios_adm.index');
+        $empresas = Empresa::orderBy('nome')->pluck('nome', 'id')->all();
+
+        $stats = [
+            'total_empresas'  => Empresa::count(),
+            'empresas_ativas' => Empresa::where('status', 1)->count(),
+            'total_planos'    => PlanoEmpresa::count(),
+            'total_acessos'   => AcessoLog::count(),
+        ];
+
+        return view('relatorios_adm.index', compact('empresas', 'stats'));
     }
 
     public function empresas(Request $request){

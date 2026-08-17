@@ -13,9 +13,15 @@ class NcmController extends Controller
         $this->validaNcm();
         $data = Ncm::
         when(!empty($request->descricao), function ($q) use ($request) {
-            return $q->where('descricao', 'LIKE', "%$request->descricao%");
-        })->paginate('50');
-        return view('ncm.index', compact('data'));
+            return $q->where('descricao', 'LIKE', "%$request->descricao%")
+                     ->orWhere('codigo', 'LIKE', "%$request->descricao%");
+        })->paginate(env("PAGINACAO", 10));
+
+        $stats = [
+            'total' => Ncm::count(),
+        ];
+
+        return view('ncm.index', compact('data', 'stats'));
     }
 
     public function create()

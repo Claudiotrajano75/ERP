@@ -21,13 +21,19 @@ class PlanoController extends Controller
 
     public function index(Request $request)
     {
-        $data = Plano::when(!empty($request->nome), function ($q) use ($request) {
-            return $q->where(function ($quer) use ($request) {
-                return $quer->where('nome', 'LIKE', "%$request->nome%");
-            });
-        })
-        ->paginate(env("PAGINACAO"));
-        return view('planos.index', compact('data'));
+        $query = Plano::when(!empty($request->nome), function ($q) use ($request) {
+            return $q->where('nome', 'LIKE', "%$request->nome%");
+        });
+
+        $stats = [
+            'total'         => (clone $query)->count(),
+            'ativos'        => (clone $query)->where('status', 1)->count(),
+            'fiscal'        => (clone $query)->where('fiscal', 1)->count(),
+            'auto_cadastro' => (clone $query)->where('auto_cadastro', 1)->count(),
+        ];
+
+        $data = (clone $query)->with(['segmento'])->orderBy('nome', 'asc')->paginate(env("PAGINACAO", 10));
+        return view('planos.index', compact('data', 'stats'));
     }
 
     public function create()

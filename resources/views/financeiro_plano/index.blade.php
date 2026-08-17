@@ -1,34 +1,8 @@
 @extends('layouts.app', ['title' => 'Financeiro Planos'])
 
 @section('css')
-<style>
+<style type="text/css">
     /* Estilos Personalizados para o Módulo Financeiro Planos */
-    .page-title-box {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-
-    .page-title {
-        font-size: 22px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #1e293b, #475569);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin: 0;
-    }
-
-    .page-title i {
-        color: #4f46e5;
-    }
-
-    /* Cards e Layout */
     .card {
         border: 1px solid rgba(0, 0, 0, 0.06) !important;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
@@ -39,69 +13,20 @@
         margin-bottom: 24px;
     }
 
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05) !important;
+    }
+
     .card-body {
         padding: 24px !important;
     }
-
-    /* KPI Cards Premium */
-    .modulo-kpi-card {
-        border: 1px solid rgba(0, 0, 0, 0.05) !important;
-        border-radius: 12px;
-        overflow: hidden;
-        transition: all 0.25s ease;
-        position: relative;
-        background: #fff;
-    }
-    
-    .modulo-kpi-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-    }
-    
-    .modulo-kpi-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05) !important;
-    }
-    
-    .modulo-kpi-card .kpi-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        flex-shrink: 0;
-    }
-    
-    .modulo-kpi-card .kpi-value {
-        font-size: 20px;
-        font-weight: 800;
-        letter-spacing: -0.5px;
-        line-height: 1.2;
-    }
-    
-    .modulo-kpi-card .kpi-label {
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        opacity: 0.7;
-    }
-    
-    .modulo-kpi-green::before { background: linear-gradient(90deg, #10b981, #34d399); }
-    .modulo-kpi-orange::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-    .modulo-kpi-red::before { background: linear-gradient(90deg, #ef4444, #f87171); }
 
     /* Formulários de Filtro */
     .form-control, .form-select, select, input[type="text"], input[type="date"] {
         border: 1px solid #e2e8f0 !important;
         border-radius: 10px !important;
-        padding: 8px 12px !important;
+        padding: 10px 14px !important;
         font-size: 13px !important;
         color: #334155 !important;
         transition: all 0.2s ease !important;
@@ -116,9 +41,7 @@
     .form-label, label {
         font-weight: 600 !important;
         color: #475569 !important;
-        font-size: 11px !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.05em !important;
+        font-size: 13px !important;
         margin-bottom: 6px !important;
     }
 
@@ -238,35 +161,28 @@
         border: 1px solid transparent;
     }
 
-    .badge-success {
+    .bg-success-subtle {
         background-color: #ecfdf5 !important;
         color: #047857 !important;
         border-color: #a7f3d0 !important;
     }
 
-    .badge-warning {
-        background-color: #fff3e0 !important;
-        color: #e65100 !important;
-        border-color: #ffe0b2 !important;
+    .bg-warning-subtle {
+        background-color: #fffbeb !important;
+        color: #b45309 !important;
+        border-color: #fef3c7 !important;
     }
 
-    .badge-danger {
+    .bg-danger-subtle {
         background-color: #fef2f2 !important;
         color: #b91c1c !important;
         border-color: #fecaca !important;
     }
 
-    .badge-light {
-        background-color: #f1f5f9 !important;
-        color: #475569 !important;
-        border-color: #e2e8f0 !important;
-    }
-
-    /* Glass Filters */
-    .modulo-glass-filter {
-        background-color: #f8fafc !important;
-        border: 1px solid rgba(0, 0, 0, 0.05) !important;
-        border-radius: 12px;
+    .bg-primary-subtle {
+        background-color: #eef2ff !important;
+        color: #4338ca !important;
+        border-color: #c7d2fe !important;
     }
 
     /* Cabeçalho de Gradiente Premium */
@@ -305,12 +221,6 @@
         margin-top: 4px !important;
         margin-bottom: 0 !important;
     }
-
-    hr {
-        border-color: rgba(0, 0, 0, 0.06) !important;
-        opacity: 1 !important;
-        margin: 20px 0 !important;
-    }
 </style>
 @endsection
 
@@ -323,95 +233,112 @@
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div>
                         <h4 class="modulo-title text-white">
-                            <i class="ri-vip-crown-2-line"></i>
-                            Financeiro Planos
+                            <i class="ri-vip-crown-2-line"></i> Financeiro de Planos & Assinaturas
                         </h4>
                         <p class="modulo-subtitle">
-                            Acompanhe os pagamentos de planos, recebimentos, pendências e cancelamentos.
+                            Acompanhe os pagamentos de planos, receitas recebidas, faturas pendentes e cancelamentos.
                         </p>
                     </div>
                 </div>
             </div>
             <div class="card-body">
  
-                <!-- ═══ KPI Cards Premium ═══ -->
+                <!-- ═══ KPI Cards (Resumo) ═══ -->
                 <div class="row g-3 mb-4">
-                    <div class="col-md-4 col-6">
-                        <div class="card modulo-kpi-card modulo-kpi-green shadow-sm h-100 p-3">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="kpi-icon" style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9);color:#2e7d32;">
-                                    <i class="ri-checkbox-circle-line"></i>
-                                </div>
-                                <div>
-                                    <div class="kpi-value text-success">R$ {{ __moeda($somaRecebido) }}</div>
-                                    <div class="kpi-label text-muted">Recebido</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-6">
-                        <div class="card modulo-kpi-card modulo-kpi-orange shadow-sm h-100 p-3">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="kpi-icon" style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);color:#e65100;">
-                                    <i class="ri-hourglass-line"></i>
-                                </div>
-                                <div>
-                                    <div class="kpi-value" style="color:#e65100;">R$ {{ __moeda($somaPendente) }}</div>
-                                    <div class="kpi-label text-muted">Pendente</div>
+                    <div class="col-md-4 col-12">
+                        <div class="card widget-icon-box text-bg-success mb-0 shadow-sm border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Total Recebido</h4>
+                                        <h3 class="my-1 text-white fs-20 fw-bold">R$ {{ __moeda($somaRecebido) }}</h3>
+                                        <p class="mb-0 text-white-50 fs-11">Pagamentos confirmados</p>
+                                    </div>
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+                                            <i class="ri-checkbox-circle-line"></i>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4 col-6">
-                        <div class="card modulo-kpi-card modulo-kpi-red shadow-sm h-100 p-3">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="kpi-icon" style="background:linear-gradient(135deg,#fbe9e7,#ffccbc);color:#c62828;">
-                                    <i class="ri-close-circle-line"></i>
+
+                    <div class="col-md-4 col-12">
+                        <div class="card widget-icon-box text-bg-warning mb-0 shadow-sm border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Total Pendente</h4>
+                                        <h3 class="my-1 text-white fs-20 fw-bold">R$ {{ __moeda($somaPendente) }}</h3>
+                                        <p class="mb-0 text-white-50 fs-11">Aguardando compensação</p>
+                                    </div>
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+                                            <i class="ri-hourglass-line"></i>
+                                        </span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div class="kpi-value text-danger">R$ {{ __moeda($somaCancelado) }}</div>
-                                    <div class="kpi-label text-muted">Cancelado</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 col-12">
+                        <div class="card widget-icon-box text-bg-danger mb-0 shadow-sm border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Total Cancelado</h4>
+                                        <h3 class="my-1 text-white fs-20 fw-bold">R$ {{ __moeda($somaCancelado) }}</h3>
+                                        <p class="mb-0 text-white-50 fs-11">Faturas estornadas</p>
+                                    </div>
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+                                            <i class="ri-close-circle-line"></i>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ═══ Filtros Glass ═══ -->
-                <div class="modulo-glass-filter p-3 mb-4">
+                <!-- ═══ Filtros ═══ -->
+                <div class="col-lg-12 mb-3">
                     {!!Form::open()->fill(request()->all())->get()!!}
                     <div class="row g-2 align-items-end">
                         <div class="col-md-3 col-12">
-                            {!!Form::select('empresa', 'Empresa')
-                            ->options($empresa ? [$empresa->id => $empresa->info] : [])
-                            ->attrs(['class' => 'select2 form-select form-select-sm'])!!}
+                            <label class="form-label"><i class="ri-building-line me-1"></i> Empresa</label>
+                            {!!Form::select('empresa', '', $empresa ? [$empresa->id => $empresa->info] : [])
+                            ->attrs(['class' => 'select2 form-select', 'id' => 'inp-empresa_id'])!!}
                         </div>
                         <div class="col-md-2 col-6">
-                            {!!Form::date('start_date', 'Data Inicial')->attrs(['class' => 'form-control form-control-sm'])!!}
+                            <label class="form-label"><i class="ri-calendar-line me-1"></i> Data Inicial</label>
+                            {!!Form::date('start_date', '')->attrs(['class' => 'form-control'])!!}
                         </div>
                         <div class="col-md-2 col-6">
-                            {!!Form::date('end_date', 'Data Final')->attrs(['class' => 'form-control form-control-sm'])!!}
+                            <label class="form-label"><i class="ri-calendar-line me-1"></i> Data Final</label>
+                            {!!Form::date('end_date', '')->attrs(['class' => 'form-control'])!!}
                         </div>
-                        <div class="col-md-3 col-12">
-                            {!!Form::select('status_pagamento', 'Status', ['' => 'Todos'] + \App\Models\FinanceiroPlano::statusDePagamentos())
-                            ->attrs(['class' => 'form-select form-select-sm'])!!}
+                        <div class="col-md-2 col-12">
+                            <label class="form-label"><i class="ri-filter-line me-1"></i> Status</label>
+                            {!!Form::select('status_pagamento', '', ['' => 'Todos'] + \App\Models\FinanceiroPlano::statusDePagamentos())
+                            ->attrs(['class' => 'form-select'])!!}
                         </div>
-                        <div class="col-md-2 col-12 ms-auto">
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-primary btn-sm flex-grow-1" type="submit">
-                                    <i class="ri-search-line me-1"></i> Filtrar
-                                </button>
-                                <a class="btn btn-outline-secondary btn-sm px-3" href="{{ route('financeiro-plano.index') }}">
-                                    <i class="ri-eraser-line me-1"></i> Limpar
-                                </a>
-                            </div>
+                        <div class="col-md-3 col-12 d-flex gap-2">
+                            <button class="btn btn-primary flex-grow-1" type="submit">
+                                <i class="ri-search-line"></i> Pesquisar
+                            </button>
+                            <a class="btn btn-danger px-3" href="{{ route('financeiro-plano.index') }}">
+                                <i class="ri-eraser-line me-1"></i> Limpar
+                            </a>
                         </div>
                     </div>
                     {!!Form::close()!!}
                 </div>
 
-                <!-- ═══ Tabela Premium ═══ -->
-                <div class="table-responsive-sm">
+                <!-- ═══ Tabela ═══ -->
+                <div class="table-responsive-sm mt-3">
                     <table class="table table-centered">
                         <thead>
                             <tr>
@@ -427,41 +354,55 @@
                         <tbody>
                             @forelse($data as $item)
                             <tr>
-                                <td><span class="fw-semibold text-dark">{{ $item->empresa->info }}</span></td>
-                                <td>{{ $item->plano->nome }}</td>
-                                <td class="fw-bold text-success">R$ {{ __moeda($item->valor) }}</td>
-                                <td><span class="badge badge-light">{{ $item->tipo_pagamento }}</span></td>
-                                <td class="text-muted fs-12">{{ __data_pt($item->created_at, 1) }}</td>
+                                <td>
+                                    <span class="fw-bold text-dark fs-13">
+                                        <i class="ri-building-line text-primary me-1"></i> {{ $item->empresa ? $item->empresa->info : '--' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary-subtle fs-12">
+                                        {{ $item->plano ? $item->plano->nome : '--' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong class="text-success fs-13">R$ {{ __moeda($item->valor) }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border fs-12">{{ $item->tipo_pagamento }}</span>
+                                </td>
+                                <td>
+                                    <span class="text-muted fs-12">{{ __data_pt($item->created_at, 1) }}</span>
+                                </td>
                                 <td>
                                     @php
                                     $status = strtolower($item->status_pagamento);
                                     @endphp
                                     @if($status == 'recebido' || $status == 'pago' || $status == 'aprovado')
-                                    <span class="badge badge-success">
+                                    <span class="badge bg-success-subtle">
                                         <i class="ri-check-line"></i> {{ strtoupper($item->status_pagamento) }}
                                     </span>
                                     @elseif($status == 'pendente' || $status == 'aguardando')
-                                    <span class="badge badge-warning">
+                                    <span class="badge bg-warning-subtle">
                                         <i class="ri-time-line"></i> {{ strtoupper($item->status_pagamento) }}
                                     </span>
                                     @elseif($status == 'cancelado' || $status == 'rejeitado')
-                                    <span class="badge badge-danger">
+                                    <span class="badge bg-danger-subtle">
                                         <i class="ri-close-line"></i> {{ strtoupper($item->status_pagamento) }}
                                     </span>
                                     @else
-                                    <span class="badge badge-info">
+                                    <span class="badge bg-light text-dark">
                                         <i class="ri-information-line"></i> {{ strtoupper($item->status_pagamento) }}
                                     </span>
                                     @endif
                                 </td>
                                 <td class="text-end">
-                                    <form action="{{ route('financeiro-plano.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="m-0 d-flex justify-content-end gap-1">
+                                    <form action="{{ route('financeiro-plano.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="m-0 d-inline">
                                         @method('delete')
                                         @csrf
-                                        <a class="btn btn-warning btn-sm text-white" href="{{ route('financeiro-plano.edit', [$item->id]) }}" title="Editar">
+                                        <a class="btn btn-warning btn-sm text-white" href="{{ route('financeiro-plano.edit', [$item->id]) }}" title="Editar Fatura">
                                             <i class="ri-pencil-line"></i>
                                         </a>
-                                        <button type="button" class="btn btn-danger btn-delete btn-sm" title="Excluir">
+                                        <button type="button" class="btn btn-danger btn-delete btn-sm" title="Excluir Fatura">
                                             <i class="ri-delete-bin-line"></i>
                                         </button>
                                     </form>
@@ -469,11 +410,9 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="7">
-                                    <div class="text-center py-4 text-muted">
-                                        <i class="ri-inbox-2-line fs-24 d-block mb-2 text-muted" style="opacity: 0.5;"></i>
-                                        <p class="m-0 fs-13">Nenhum registro financeiro de plano encontrado.</p>
-                                    </div>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="ri-inbox-line fs-24 d-block mb-1 text-muted"></i>
+                                    Nenhum registro financeiro de plano encontrado.
                                 </td>
                             </tr>
                             @endforelse
@@ -481,21 +420,9 @@
                     </table>
                 </div>
 
-                <!-- ═══ Footer ═══ -->
-                <div class="modulo-footer">
-                    <div class="d-flex gap-4 flex-wrap">
-                        <div>
-                            <span class="modulo-total-label text-success">Recebido:</span>
-                            <span class="modulo-total-value text-success">R$ {{ __moeda($somaRecebido) }}</span>
-                        </div>
-                        <div>
-                            <span class="modulo-total-label" style="color:#e65100;">Pendente:</span>
-                            <span class="modulo-total-value" style="color:#e65100;">R$ {{ __moeda($somaPendente) }}</span>
-                        </div>
-                        <div>
-                            <span class="modulo-total-label text-danger">Cancelado:</span>
-                            <span class="modulo-total-value text-danger">R$ {{ __moeda($somaCancelado) }}</span>
-                        </div>
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
+                    <div>
+                        <span class="text-muted fs-12">Exibindo {{ $data->count() }} de {{ $data->total() }} registros</span>
                     </div>
                     <div>
                         {!! $data->appends(request()->all())->links() !!}

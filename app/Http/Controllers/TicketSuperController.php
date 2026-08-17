@@ -24,33 +24,46 @@ class TicketSuperController extends Controller
     public function index(Request $request){
         $status = $request->get('status');
         $created_at = $request->get('created_at');
-        $empresa_id = $request->get('empresa');
+        $empresa_id = $request->get('empresa_id') ?? $request->get('empresa');
         $departamento = $request->get('departamento');
+
+        $query = Ticket::when(!empty($status), function ($q) use ($status) {
+            return $q->where('status', $status);
+        })
+        ->when(!empty($created_at), function ($q) use ($created_at) {
+            return $q->whereDate('created_at', "$created_at");
+        })
+        ->when($empresa_id, function ($q) use ($empresa_id) {
+            return $q->where('empresa_id', $empresa_id);
+        })
+        ->when($departamento, function ($q) use ($departamento) {
+            return $q->where('departamento', $departamento);
+        });
+
+        $stats = [
+            'total'       => (clone $query)->count(),
+            'abertos'     => (clone $query)->where('status', 'aberto')->count(),
+            'respondidas' => (clone $query)->where('status', 'respondida')->count(),
+            'aguardando'  => (clone $query)->where('status', 'aguardando')->count(),
+            'resolvidos'  => (clone $query)->where('status', 'resolvido')->count(),
+        ];
+
+        $data = (clone $query)->orderBy('updated_at', 'desc')
+                              ->paginate(env("PAGINACAO", 10));
 
         $empresa = null;
         if($empresa_id){
-            $empresa = Empresa::findOrFail($empresa_id);
+            $empresa = Empresa::find($empresa_id);
         }
-        $data = Ticket::when(!empty($status), function ($query) use ($status) {
-            return $query->where('status', $status);
-        })
-        ->when(!empty($created_at), function ($query) use ($created_at) {
-            return $query->whereDate('created_at', "$created_at");
-        })
-        ->when($empresa != null, function ($query) use ($empresa) {
-            return $query->where('empresa_id', $empresa->id);
-        })
-        ->when($departamento, function ($query) use ($departamento) {
-            return $query->where('departamento', $departamento);
-        })
-        ->orderBy('updated_at', 'desc')
-        ->paginate(env("PAGINACAO"));
 
-        return view('ticket_super.index', compact('data', 'empresa'));
+        $empresas = Empresa::orderBy('nome')->pluck('nome', 'id')->all();
+
+        return view('ticket_super.index', compact('data', 'empresa', 'empresas', 'stats'));
     }
 
     public function create(){
-        return view('ticket_super.create');
+        $empresas = Empresa::orderBy('nome')->pluck('nome', 'id')->all();
+        return view('ticket_super.create', compact('empresas'));
     }
 
     public function store(Request $request){
@@ -116,7 +129,8 @@ class TicketSuperController extends Controller
 
     public function edit($id){
         $item = Ticket::findOrFail($id);
-        return view('ticket_super.edit', compact('item'));
+        $empresas = Empresa::orderBy('nome')->pluck('nome', 'id')->all();
+        return view('ticket_super.edit', compact('item', 'empresas'));
     }
 
     public function update(Request $request, $id){

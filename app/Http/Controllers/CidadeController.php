@@ -9,14 +9,21 @@ class CidadeController extends Controller
 {
     public function index(Request $request)
     {
-        $data = Cidade::when(!empty($request->nome), function ($q) use ($request) {
-            return $q->where(function ($quer) use ($request) {
-                return $quer->where('nome', 'LIKE', "%$request->nome%");
-            });
+        $query = Cidade::when(!empty($request->nome), function ($q) use ($request) {
+            return $q->where('nome', 'LIKE', "%$request->nome%");
         })
-        ->paginate(env("PAGINACAO"));
+        ->when(!empty($request->uf), function ($q) use ($request) {
+            return $q->where('uf', $request->uf);
+        });
 
-        return view('cidades.index', compact('data'));
+        $stats = [
+            'total'   => (clone $query)->count(),
+            'estados' => (clone $query)->distinct('uf')->count('uf'),
+        ];
+
+        $data = (clone $query)->orderBy('nome', 'asc')->paginate(env("PAGINACAO", 10));
+
+        return view('cidades.index', compact('data', 'stats'));
     }
 
     public function create()

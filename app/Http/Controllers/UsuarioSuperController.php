@@ -13,20 +13,28 @@ class UsuarioSuperController extends Controller
 {
     public function index(Request $request)
     {
-        $data = User::when(!empty($request->name), function ($q) use ($request) {
+        $query = User::when(!empty($request->name), function ($q) use ($request) {
             return $q->where('name', 'LIKE', "%$request->name%");
         })
-            ->when(!empty($request->empresa), function ($q) use ($request) {
-                return $q->where('usuario_empresas.empresa_id', $request->empresa)
-                    ->join('usuario_empresas', 'usuario_empresas.usuario_id', '=', 'users.id');
-            })
-            ->paginate(env("PAGINACAO"));
+        ->when(!empty($request->empresa), function ($q) use ($request) {
+            return $q->whereHas('empresa', function ($queryEmpresa) use ($request) {
+                $queryEmpresa->where('empresa_id', $request->empresa);
+            });
+        });
+
+        $stats = [
+            'total'          => (clone $query)->count(),
+            'com_empresa'    => (clone $query)->has('empresa')->count(),
+            'sem_empresa'    => (clone $query)->doesntHave('empresa')->count(),
+        ];
+
+        $data = (clone $query)->with(['empresa.empresa', 'roles'])->orderBy('name', 'asc')->paginate(env("PAGINACAO", 10));
 
         $empresa = null;
         if ($request->empresa) {
-            $empresa = Empresa::findOrFail($request->empresa);
+            $empresa = Empresa::find($request->empresa);
         }
-        return view('usuarios_super.index', compact('data', 'empresa'));
+        return view('usuarios_super.index', compact('data', 'empresa', 'stats'));
     }
 
     public function edit($id)

@@ -10,45 +10,58 @@ class NotificacaoSuperController extends Controller
 {
     public function index(Request $request){
         $status = $request->get('status');
-        $empresa_id = $request->get('empresa');
+        $empresa_id = $request->get('empresa_id') ?? $request->get('empresa');
         $prioridade = $request->get('prioridade');
         $start_date = $request->get('start_date');
         $end_date = $request->get('end_date');
 
+        $query = Notificacao::
+        when(!empty($start_date), function ($q) use ($start_date) {
+            return $q->whereDate('created_at', '>=', $start_date);
+        })
+        ->when(!empty($end_date), function ($q) use ($end_date) {
+            return $q->whereDate('created_at', '<=', $end_date);
+        })
+        ->when(!empty($prioridade), function ($q) use ($prioridade) {
+            return $q->where('prioridade', $prioridade);
+        })
+        ->when($status !== null && $status !== '', function ($q) use ($status) {
+            return $q->where('status', $status);
+        })
+        ->when($empresa_id, function ($q) use ($empresa_id) {
+            return $q->where('empresa_id', $empresa_id);
+        });
+
+        $stats = [
+            'total'        => (clone $query)->count(),
+            'ativas'       => (clone $query)->where('status', 1)->count(),
+            'visualizadas' => (clone $query)->where('visualizada', 1)->count(),
+            'altas'        => (clone $query)->where('prioridade', 'alta')->count(),
+        ];
+
+        $data = (clone $query)->orderBy('id', 'desc')
+                              ->paginate(env("PAGINACAO", 10));
+
         $empresa = null;
         if($empresa_id){
-            $empresa = Empresa::findOrFail($empresa_id);
+            $empresa = Empresa::find($empresa_id);
         }
 
-        $data = Notificacao::orderBy('id', 'desc')
-        ->when(!empty($start_date), function ($query) use ($start_date) {
-            return $query->whereDate('created_at', '>=', $start_date);
-        })
-        ->when(!empty($end_date), function ($query) use ($end_date,) {
-            return $query->whereDate('created_at', '<=', $end_date);
-        })
-        ->when(!empty($prioridade), function ($query) use ($prioridade) {
-            return $query->where('prioridade', $prioridade);
-        })
-        ->when($status != '', function ($query) use ($status) {
-            return $query->where('status', $status);
-        })
-        ->when($empresa != null, function ($query) use ($empresa) {
-            return $query->where('empresa_id', $empresa->id);
-        })
-        ->paginate(60);
+        $empresas = Empresa::orderBy('nome')->pluck('nome', 'id')->all();
 
-        return view('notificacao_super.index', compact('data', 'empresa'));
+        return view('notificacao_super.index', compact('data', 'empresa', 'empresas', 'stats'));
     }
 
     public function create(){
-        return view('notificacao_super.create');
+        $empresas = Empresa::orderBy('nome')->pluck('nome', 'id')->all();
+        return view('notificacao_super.create', compact('empresas'));
     }
 
     public function edit($id)
     {
         $item = Notificacao::findOrFail($id);
-        return view('notificacao_super.edit', compact('item'));
+        $empresas = Empresa::orderBy('nome')->pluck('nome', 'id')->all();
+        return view('notificacao_super.edit', compact('item', 'empresas'));
     }
 
     public function show($id)

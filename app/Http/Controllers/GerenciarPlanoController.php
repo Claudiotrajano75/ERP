@@ -12,18 +12,27 @@ class GerenciarPlanoController extends Controller
 {
     public function index(Request $request)
     {
-        $empresa = $request->empresa;
+        $empresa_id = $request->empresa;
         $planos = Plano::orderBy('nome', 'asc')->get();
-        $data = PlanoEmpresa::orderBy('id', 'desc')
-        ->when(!empty($empresa), function ($query) use ($empresa) {
-            return $query->where('empresa_id', $empresa);
-        })
-        ->paginate(env("PAGINACAO"));
+        $query = PlanoEmpresa::when(!empty($empresa_id), function ($query) use ($empresa_id) {
+            return $query->where('empresa_id', $empresa_id);
+        });
 
-        if($empresa){
-            $empresa = Empresa::findOrFail($empresa);
+        $stats = [
+            'total'       => (clone $query)->count(),
+            'ativas'      => (clone $query)->whereDate('data_expiracao', '>=', date('Y-m-d'))->count(),
+            'expiradas'   => (clone $query)->whereDate('data_expiracao', '<', date('Y-m-d'))->count(),
+            'valor_total' => (clone $query)->sum('valor'),
+        ];
+
+        $data = (clone $query)->with(['empresa', 'plano'])->orderBy('id', 'desc')
+                              ->paginate(env("PAGINACAO", 10));
+
+        $empresa = null;
+        if($empresa_id){
+            $empresa = Empresa::find($empresa_id);
         }
-        return view('gerencia_planos.index', compact('data', 'planos', 'empresa'));
+        return view('gerencia_planos.index', compact('data', 'planos', 'empresa', 'stats'));
     }
 
     public function store(Request $request)

@@ -9,11 +9,22 @@ class VideoSuporteController extends Controller
 {
     public function index(Request $request)
     {
-        $data = VideoSuporte::orderBy('pagina', 'desc')
-        ->when(!empty($request->pagina), function ($q) use ($request) {
-            return $q->where('pagina', 'LIKE', "%$request->pagina%");
-        })->get();
-        return view('video_suporte.index', compact('data'));
+        $pagina = $request->pagina ?? $request->nome;
+        $query = VideoSuporte::
+        when(!empty($pagina), function ($q) use ($pagina) {
+            return $q->where('pagina', 'LIKE', "%$pagina%")
+                     ->orWhere('url_video', 'LIKE', "%$pagina%")
+                     ->orWhere('url_servidor', 'LIKE', "%$pagina%");
+        });
+
+        $stats = [
+            'total' => (clone $query)->count(),
+        ];
+
+        $data = (clone $query)->orderBy('pagina', 'asc')
+                              ->paginate(env("PAGINACAO", 10));
+
+        return view('video_suporte.index', compact('data', 'stats'));
     }
 
     public function create()

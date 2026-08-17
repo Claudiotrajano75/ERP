@@ -9,9 +9,19 @@ use App\Models\ItemIbpt;
 class IbptController extends Controller
 {
     public function index(Request $request){
-        $data = Ibpt::orderBy('uf', 'desc')->get();
+        $data = Ibpt::withCount('itens')
+        ->when($request->uf, function($q) use ($request) {
+            $q->where('uf', $request->uf);
+        })
+        ->orderBy('uf', 'asc')
+        ->paginate(env("PAGINACAO", 10));
 
-        return view('ibpt.index', compact('data'));
+        $stats = [
+            'total_estados' => Ibpt::count(),
+            'total_regras'  => ItemIbpt::count(),
+        ];
+
+        return view('ibpt.index', compact('data', 'stats'));
     }
 
     public function create(){
@@ -70,10 +80,15 @@ class IbptController extends Controller
         return redirect()->route('ibpt.index');
     }
 
-    public function show($id){
-        $item = Ibpt::findOrFail($id);
+    public function show(Request $request, $id){
+        $item = Ibpt::withCount('itens')->findOrFail($id);
         $data = ItemIbpt::where('ibpt_id', $id)
-        ->paginate(30);
+        ->when($request->descricao, function($q) use ($request) {
+            $q->where('descricao', 'like', "%$request->descricao%")
+              ->orWhere('codigo', 'like', "%$request->descricao%");
+        })
+        ->paginate(env("PAGINACAO", 10));
+
         return view('ibpt.show', compact('data', 'item'));
     }
 

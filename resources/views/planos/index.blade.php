@@ -243,16 +243,101 @@
                 </div>
             </div>
             <div class="card-body">
+
+                <!-- ═══ KPI CARDS (RESUMO) ═══ -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3 col-6">
+                        <div class="card widget-icon-box text-bg-info mb-0 shadow-sm border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Total de Planos</h4>
+                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['total'] ?? 0 }}</h3>
+                                        <p class="mb-0 text-white-50 fs-11">Disponíveis</p>
+                                    </div>
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+                                            <i class="ri-vip-diamond-line"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-6">
+                        <div class="card widget-icon-box text-bg-success mb-0 shadow-sm border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Planos Ativos</h4>
+                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['ativos'] ?? 0 }}</h3>
+                                        <p class="mb-0 text-white-50 fs-11">Habilitados para venda</p>
+                                    </div>
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+                                            <i class="ri-checkbox-circle-line"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-6">
+                        <div class="card widget-icon-box text-bg-primary mb-0 shadow-sm border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Módulos Fiscais</h4>
+                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['fiscal'] ?? 0 }}</h3>
+                                        <p class="mb-0 text-white-50 fs-11">Emissão fiscal inclusa</p>
+                                    </div>
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+                                            <i class="ri-file-text-line"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-6">
+                        <div class="card widget-icon-box text-bg-warning mb-0 shadow-sm border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Auto Cadastro</h4>
+                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['auto_cadastro'] ?? 0 }}</h3>
+                                        <p class="mb-0 text-white-50 fs-11">Padrão p/ novos clientes</p>
+                                    </div>
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+                                            <i class="ri-user-add-line"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Filtros -->
                 <div class="col-lg-12 mb-3">
                     {!!Form::open()->fill(request()->all())->get()!!}
-                    <div class="row align-items-end">
-                        <div class="col-md-4">
-                            {!!Form::text('nome', 'Pesquisar por nome')!!}
+                    <div class="row align-items-end g-2">
+                        <div class="col-md-6 col-12">
+                            <label class="form-label"><i class="ri-search-line me-1"></i> Pesquisar por Nome do Plano</label>
+                            {!!Form::text('nome', '')->attrs(['class' => 'form-control', 'placeholder' => 'Digite o nome do plano...'])!!}
                         </div>
-                        <div class="col-md-3">
-                            <button class="btn btn-primary" type="submit"> <i class="ri-search-line"></i> Pesquisar</button>
-                            <a id="clear-filter" class="btn btn-danger" href="{{ route('planos.index') }}"><i class="ri-eraser-fill"></i> Limpar</a>
+                        <div class="col-md-6 col-12 d-flex gap-2">
+                            <button class="btn btn-primary flex-grow-1" type="submit">
+                                <i class="ri-search-line"></i> Pesquisar
+                            </button>
+                            <a id="clear-filter" class="btn btn-danger px-3" href="{{ route('planos.index') }}">
+                                <i class="ri-eraser-line me-1"></i> Limpar
+                            </a>
                         </div>
                     </div>
                     {!!Form::close()!!}

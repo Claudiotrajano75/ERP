@@ -11,9 +11,18 @@ class SegmentoController extends Controller
 
     public function index(Request $request)
     {
-        $data = Segmento::orderBy('nome', 'asc')
-        ->paginate(env("PAGINACAO"));
-        return view('segmentos.index', compact('data'));
+        $query = Segmento::when(!empty($request->nome), function ($q) use ($request) {
+            return $q->where('nome', 'LIKE', "%$request->nome%");
+        });
+
+        $stats = [
+            'total'    => (clone $query)->count(),
+            'ativos'   => (clone $query)->where('status', 1)->count(),
+            'inativos' => (clone $query)->where('status', 0)->count(),
+        ];
+
+        $data = (clone $query)->orderBy('nome', 'asc')->paginate(env("PAGINACAO", 10));
+        return view('segmentos.index', compact('data', 'stats'));
     }
 
     public function create()

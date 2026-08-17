@@ -11,34 +11,46 @@ class LogController extends Controller
 
     public function index(Request $request){
 
-        $empresa = $request->empresa;
+        $empresa_id = $request->empresa_id ?? $request->empresa;
         $start_date = $request->get('start_date');
         $end_date = $request->get('end_date');
         $local = $request->get('local');
         $acao = $request->get('acao');
 
-        $data = AcaoLog::
-        when(!empty($empresa), function ($query) use ($empresa) {
-            return $query->where('empresa_id', $empresa);
+        $query = AcaoLog::
+        when(!empty($empresa_id), function ($q) use ($empresa_id) {
+            return $q->where('empresa_id', $empresa_id);
         })
-        ->when(!empty($start_date), function ($query) use ($start_date) {
-            return $query->whereDate('created_at', '>=', $start_date);
+        ->when(!empty($start_date), function ($q) use ($start_date) {
+            return $q->whereDate('created_at', '>=', $start_date);
         })
-        ->when(!empty($end_date), function ($query) use ($end_date) {
-            return $query->whereDate('created_at', '<=', $end_date);
+        ->when(!empty($end_date), function ($q) use ($end_date) {
+            return $q->whereDate('created_at', '<=', $end_date);
         })
-        ->when(!empty($local), function ($query) use ($local) {
-            return $query->where('local', $local);
+        ->when(!empty($local), function ($q) use ($local) {
+            return $q->where('local', $local);
         })
-        ->when(!empty($acao), function ($query) use ($acao) {
-            return $query->where('acao', $acao);
-        })
-        ->orderBy('created_at', 'desc')
-        ->paginate('50');
+        ->when(!empty($acao), function ($q) use ($acao) {
+            return $q->where('acao', $acao);
+        });
 
-        if($empresa){
-            $empresa = Empresa::findOrFail($empresa);
+        $stats = [
+            'total'     => (clone $query)->count(),
+            'cadastros' => (clone $query)->where('acao', 'cadastrar')->count(),
+            'edicoes'   => (clone $query)->where('acao', 'editar')->count(),
+            'exclusoes' => (clone $query)->where('acao', 'excluir')->count(),
+        ];
+
+        $data = (clone $query)->orderBy('created_at', 'desc')
+                              ->paginate(env("PAGINACAO", 10));
+
+        $empresa = null;
+        if($empresa_id){
+            $empresa = Empresa::find($empresa_id);
         }
-        return view('logs.index', compact('data', 'empresa'));
+
+        $empresas = Empresa::orderBy('nome')->pluck('nome', 'id')->all();
+
+        return view('logs.index', compact('data', 'empresa', 'empresas', 'stats'));
     }
 }

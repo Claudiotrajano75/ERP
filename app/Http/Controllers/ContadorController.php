@@ -17,16 +17,23 @@ class ContadorController extends Controller
 {
     public function index(Request $request)
     {
-        $data = Empresa::when(!empty($request->nome), function ($q) use ($request) {
+        $query = Empresa::when(!empty($request->nome), function ($q) use ($request) {
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
         ->when(!empty($request->cpf_cnpj), function ($q) use ($request) {
             return $q->where('cpf_cnpj', 'LIKE', "%$request->cpf_cnpj%");
         })
-        ->where('tipo_contador', 1)
-        ->paginate(env("PAGINACAO"));
+        ->where('tipo_contador', 1);
 
-        return view('contadores.index', compact('data'));
+        $stats = [
+            'total'    => (clone $query)->count(),
+            'ativos'   => (clone $query)->where('status', 1)->count(),
+            'inativos' => (clone $query)->where('status', 0)->count(),
+        ];
+
+        $data = (clone $query)->orderBy('id', 'desc')->paginate(env("PAGINACAO", 10));
+
+        return view('contadores.index', compact('data', 'stats'));
     }
 
     public function create()

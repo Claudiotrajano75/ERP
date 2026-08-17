@@ -13,38 +13,6 @@
         color: #4f46e5 !important;
     }
 
-    /* Estilos Personalizados para a Página de Usuários */
-    .page-title-box {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-
-    .page-title {
-        font-size: 22px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #1e293b, #475569);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin: 0;
-    }
-
-    .page-title i {
-        color: #4f46e5;
-    }
-
-    .page-title-box-buttons {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
     /* Cards e Layout */
     .card {
         border: 1px solid rgba(0, 0, 0, 0.06) !important;
@@ -63,6 +31,43 @@
 
     .card-body {
         padding: 24px !important;
+    }
+
+    /* Cabeçalho de Gradiente Premium */
+    .modulo-header-gradient {
+        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%) !important;
+        border-radius: 12px 12px 0 0 !important;
+        border-bottom: none !important;
+        padding: 20px 24px !important;
+    }
+
+    .modulo-header-gradient .modulo-title {
+        color: #fff !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.3px !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+    }
+
+    .modulo-header-gradient .modulo-title i {
+        background: rgba(255, 255, 255, 0.1) !important;
+        padding: 8px !important;
+        border-radius: 10px !important;
+        color: #a8b5ff !important;
+        font-size: 20px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .modulo-header-gradient .modulo-subtitle {
+        color: rgba(255, 255, 255, 0.6) !important;
+        font-weight: 400 !important;
+        font-size: 13px !important;
+        margin-top: 4px !important;
+        margin-bottom: 0 !important;
     }
 
     /* Formulários de Filtro */
@@ -105,19 +110,6 @@
         padding: 6px 12px !important;
         font-size: 12px !important;
         border-radius: 8px !important;
-    }
-
-    .btn-success {
-        background-color: #10b981 !important;
-        border-color: #10b981 !important;
-        color: #fff !important;
-    }
-
-    .btn-success:hover {
-        background-color: #059669 !important;
-        border-color: #059669 !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
     }
 
     .btn-primary {
@@ -217,59 +209,16 @@
         border: 1px solid transparent;
     }
 
-    .badge-info {
+    .bg-info-subtle {
         background-color: #f0f9ff !important;
         color: #0369a1 !important;
         border-color: #bae6fd !important;
     }
 
-    .badge-light {
-        background-color: #f1f5f9 !important;
-        color: #475569 !important;
-        border-color: #e2e8f0 !important;
-    }
-
-    /* Cabeçalho de Gradiente Premium */
-    .modulo-header-gradient {
-        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%) !important;
-        border-radius: 12px 12px 0 0 !important;
-        border-bottom: none !important;
-        padding: 20px 24px !important;
-    }
-
-    .modulo-header-gradient .modulo-title {
-        color: #fff !important;
-        font-weight: 700 !important;
-        letter-spacing: -0.3px !important;
-        margin: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 12px !important;
-    }
-
-    .modulo-header-gradient .modulo-title i {
-        background: rgba(255, 255, 255, 0.1) !important;
-        padding: 8px !important;
-        border-radius: 10px !important;
-        color: #a8b5ff !important;
-        font-size: 20px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-
-    .modulo-header-gradient .modulo-subtitle {
-        color: rgba(255, 255, 255, 0.6) !important;
-        font-weight: 400 !important;
-        font-size: 13px !important;
-        margin-top: 4px !important;
-        margin-bottom: 0 !important;
-    }
-
-    hr {
-        border-color: rgba(0, 0, 0, 0.06) !important;
-        opacity: 1 !important;
-        margin: 20px 0 !important;
+    .bg-primary-subtle {
+        background-color: #eef2ff !important;
+        color: #4338ca !important;
+        border-color: #c7d2fe !important;
     }
 </style>
 @endsection
@@ -283,37 +232,102 @@
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div>
                         <h4 class="modulo-title text-white">
-                            <i class="ri-user-settings-line"></i> Gestão de Usuários (Super)
+                            <i class="ri-user-settings-line"></i> Gestão de Usuários (Super Admin)
                         </h4>
                         <p class="modulo-subtitle">
-                            Gerencie os dados e permissões dos super usuários do sistema.
+                            Gerencie os dados cadastrais, empresas vinculadas e permissões de acesso dos usuários.
                         </p>
                     </div>
                 </div>
             </div>
             <div class="card-body">
-                <div class="col-lg-12">
-                    {!!Form::open()->fill(request()->all())
-                    ->get()
-                    !!}
-                    <div class="row mt-3">
-                        <div class="col-md-3">
-                            {!!Form::select('empresa', 'Pesquisar por empresa')
-                            ->options($empresa != null ? [$empresa->id => $empresa->info] : [])
+
+                <!-- ═══ KPI CARDS (RESUMO) ═══ -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4 col-12">
+                        <div class="card widget-icon-box text-bg-info mb-0 shadow-sm border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Total de Usuários</h4>
+                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['total'] ?? 0 }}</h3>
+                                        <p class="mb-0 text-white-50 fs-11">Contas cadastradas</p>
+                                    </div>
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+                                            <i class="ri-user-line"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 col-12">
+                        <div class="card widget-icon-box text-bg-success mb-0 shadow-sm border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Vinculados a Empresas</h4>
+                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['com_empresa'] ?? 0 }}</h3>
+                                        <p class="mb-0 text-white-50 fs-11">Com vínculo ativo</p>
+                                    </div>
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+                                            <i class="ri-building-line"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 col-12">
+                        <div class="card widget-icon-box text-bg-warning mb-0 shadow-sm border-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Sem Vínculo / Admin</h4>
+                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['sem_empresa'] ?? 0 }}</h3>
+                                        <p class="mb-0 text-white-50 fs-11">Acesso direto / Super</p>
+                                    </div>
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+                                            <i class="ri-shield-user-line"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div class="col-lg-12 mb-3">
+                    {!!Form::open()->fill(request()->all())->get()!!}
+                    <div class="row align-items-end g-2">
+                        <div class="col-md-4 col-12">
+                            <label class="form-label"><i class="ri-building-line me-1"></i> Filtrar por Empresa</label>
+                            {!!Form::select('empresa', '', $empresa != null ? [$empresa->id => $empresa->info] : [])
+                            ->attrs(['class' => 'select2 form-select', 'id' => 'inp-empresa_id'])
                             !!}
                         </div>
-                        <div class="col-md-3">
-                            {!!Form::text('name', 'Pesquisar por nome')
-                            !!}
+                        <div class="col-md-4 col-12">
+                            <label class="form-label"><i class="ri-search-line me-1"></i> Nome do Usuário</label>
+                            {!!Form::text('name', '')->attrs(['class' => 'form-control', 'placeholder' => 'Digite o nome do usuário...'])!!}
                         </div>
-                        <div class="col-md-3 text-left">
-                            <br>
-                            <button class="btn btn-primary" type="submit"> <i class="ri-search-line"></i>Pesquisar</button>
-                            <a id="clear-filter" class="btn btn-danger" href="{{ route('usuario-super.index') }}"><i class="ri-eraser-fill"></i>Limpar</a>
+                        <div class="col-md-4 col-12 d-flex gap-2">
+                            <button class="btn btn-primary flex-grow-1" type="submit">
+                                <i class="ri-search-line"></i> Pesquisar
+                            </button>
+                            <a id="clear-filter" class="btn btn-danger px-3" href="{{ route('usuario-super.index') }}">
+                                <i class="ri-eraser-line me-1"></i> Limpar
+                            </a>
                         </div>
                     </div>
                     {!!Form::close()!!}
                 </div>
+
                 <div class="col-md-12 mt-3">
                     <div class="table-responsive-sm">
                         <table class="table table-centered">
@@ -321,54 +335,80 @@
                                 <tr>
                                     <th>Nome</th>
                                     <th>Email</th>
-                                    <th>Empresa</th>
-                                    <th>Controle de Acesso</th>
-                                    <th width="10%">Ações</th>
+                                    <th>Empresa Vinculada</th>
+                                    <th>Controle de Acesso (Cargo)</th>
+                                    <th class="text-end" style="width: 120px;">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($data as $item)
+                                @forelse($data as $item)
                                 <tr class="@if($item->email == env('MAILMASTER')) super @endif">
-                                    <td>{{ $item->name }}</td>
-                                    <td>{{ $item->email }}</td>
                                     <td>
-                                        @if($item->empresa)
-                                            {{ $item->empresa->empresa->nome }}
+                                        <span class="fw-bold text-dark fs-13">
+                                            {{ $item->name }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted fs-12">
+                                            <i class="ri-mail-line me-1"></i> {{ $item->email }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if($item->empresa && $item->empresa->empresa)
+                                            <span class="badge bg-primary-subtle fs-12">
+                                                <i class="ri-building-line me-1"></i> {{ $item->empresa->empresa->nome }}
+                                            </span>
                                         @else
-                                            <span class="text-muted">-</span>
+                                            <span class="text-muted fs-12">-</span>
                                         @endif
                                         @if($item->email == env('MAILMASTER'))
-                                            <span class="badge badge-info ms-1"><i class="ri-vip-crown-line"></i> MASTER</span>
+                                            <span class="badge bg-info-subtle ms-1"><i class="ri-vip-crown-line"></i> MASTER</span>
                                         @endif
                                     </td>
                                     <td>
                                         @if(sizeof($item->roles) > 0)
-                                            <span class="badge badge-light text-dark">{{ $item->roles->first()->description }}</span>
+                                            <span class="badge bg-light text-dark fs-12 border">{{ $item->roles->first()->description }}</span>
                                         @else
-                                            <span class="text-muted">Nenhum</span>
+                                            <span class="text-muted fs-12">Nenhum</span>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         @if($item->email != env('MAILMASTER'))
-                                        <form action="{{ route('usuario-super.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="d-flex align-items-center gap-1" style="width: auto;">
+                                        <form action="{{ route('usuario-super.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="d-inline">
                                             @method('delete')
-                                            <a class="btn btn-warning btn-sm" href="{{ route('usuario-super.edit', [$item->id]) }}" title="Editar">
+                                            <a class="btn btn-warning btn-sm text-white" href="{{ route('usuario-super.edit', [$item->id]) }}" title="Editar Usuário">
                                                 <i class="ri-pencil-fill"></i>
                                             </a> 
                                             @csrf
-                                            <button type="button" class="btn btn-delete btn-sm btn-danger" title="Excluir">
+                                            <button type="button" class="btn btn-delete btn-sm btn-danger" title="Excluir Usuário">
                                                 <i class="ri-delete-bin-line"></i>
                                             </button>
                                         </form>
                                         @endif
                                     </td>
                                 </tr>
-                                @endforeach
+                                @empty
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        <i class="ri-inbox-line fs-24 d-block mb-1 text-muted"></i>
+                                        Nenhum usuário encontrado.
+                                    </td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
                 </div>
-                {!! $data->appends(request()->all())->links() !!}
+
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
+                    <div>
+                        <span class="text-muted fs-12">Exibindo {{ $data->count() }} de {{ $data->total() }} usuários</span>
+                    </div>
+                    <div>
+                        {!! $data->appends(request()->all())->links() !!}
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>

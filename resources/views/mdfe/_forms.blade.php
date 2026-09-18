@@ -14,7 +14,13 @@
             }
             $numDoc = (strlen($chave) === 44) ? (string) (int) substr($chave, 25, 9) : '';
             $serieDoc = (strlen($chave) === 44) ? (string) (int) substr($chave, 22, 3) : '1';
-            $pesoDoc = $info->quantidade_rateio ? floatval($info->quantidade_rateio) : ($qtdDocs > 0 ? ($pesoCargaNum / $qtdDocs) : 0);
+            
+            $pesoDoc = floatval($info->quantidade_rateio);
+            if ($qtdDocs === 1 && $pesoCargaNum > 0) {
+                $pesoDoc = $pesoCargaNum;
+            } elseif ($pesoDoc <= 0 && $qtdDocs > 0) {
+                $pesoDoc = $pesoCargaNum / $qtdDocs;
+            }
             
             $docsIniciais[] = [
                 'chave_nfe' => $chave,

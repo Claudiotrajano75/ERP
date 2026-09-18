@@ -10,9 +10,12 @@
     position: relative;
     overflow: hidden;
     box-shadow: 0 4px 18px rgba(0,0,0,.07);
-    transition: transform .2s ease;
+    transition: transform .2s ease, box-shadow .2s ease;
 }
-.stat-card:hover { transform: translateY(-2px); }
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.14);
+}
 .stat-card .stat-icon {
     position: absolute;
     right: 15px;

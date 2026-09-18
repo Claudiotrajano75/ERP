@@ -15,7 +15,7 @@
 .modulo-form-card .form-control,
 .modulo-form-card .form-select { border-radius: 8px; border-color: #e0e3eb; font-size: 13px; padding: 8px 12px; transition: all 0.15s ease; }
 .modulo-form-card .form-control:focus,
-.modulo-form-card .form-select:focus { border-color: #302b63; box-shadow: 0 0 0 3px rgba(48,43,99,0.08); }
+.modulo-form-card .form-select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.12); }
 @media (max-width: 768px) { .modulo-header-gradient .modulo-title { font-size: 18px; } }
 </style>
 @endsection
@@ -36,7 +36,7 @@
                             <p class="text-muted mb-0 modulo-subtitle fs-13">Altere dados pessoais, regras fiscais, limites de crédito ou localidade.</p>
                         </div>
                         <div>
-                            <a href="{{ route('clientes.index') }}" class="btn btn-light btn-sm px-3 text-dark">
+                            <a href="{{ route('clientes.index') }}" class="dash-btn dash-btn-light">
                                 <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
                             </a>
                         </div>

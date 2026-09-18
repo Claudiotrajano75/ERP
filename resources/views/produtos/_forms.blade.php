@@ -119,6 +119,15 @@
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
     }
+
+    /* ─── Premium override (padrão ERP) ─── */
+    .modulo-section-card { border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(16,24,40,.06); }
+    .modulo-section-card .card-header { background: #f8fafc; border-bottom: 1px solid #eef0f6; }
+    .modulo-section-card .card-header h4 { color: #4338ca !important; font-weight: 700; }
+    .form-control, .form-select, select, input[type="text"], input[type="number"], input[type="tel"], input[type="password"], input[type="date"] {
+        border-radius: 10px; border-color: #dcdce9 !important;
+    }
+    .form-control:focus, .form-select:focus { border-color: #4f46e5 !important; box-shadow: 0 0 0 3px rgba(79,70,229,.12) !important; }
 </style>
 
 <div id="basicwizard">
@@ -545,9 +554,12 @@
                         <input type="file" id="file-ip-1" name="image" accept="image/*" onchange="showPreview(event);" style="font-size:12px;color:#5a5a7a;">
 
                         @isset($item)
-                        <div class="mt-2 d-flex gap-2 justify-content-center">
-                            <button type="button" class="btn btn-info btn-sm px-3" id="btn-buscar-unsplash">
-                                <i class="ri-google-line align-middle me-1"></i> Buscar na Unsplash
+                        <div class="mt-2 d-flex flex-column gap-1">
+                            <button type="button" class="btn btn-primary btn-sm px-3 fw-semibold" id="btn-buscar-imagem-ia">
+                                <i class="ri-image-search-line align-middle me-1"></i> Buscar Imagem Web (Automático)
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 fs-11" id="btn-buscar-unsplash">
+                                <i class="ri-image-line align-middle me-1"></i> Buscar no Unsplash (Artístico)
                             </button>
                         </div>
                         @endif
@@ -1315,7 +1327,7 @@
 </div>
 @if(!isset($not_submit))
 <div class="col-12" style="text-align: right;">
-    <button type="submit" class="btn btn-success btn-action px-5">Salvar</button>
+    <button type="submit" class="dash-btn dash-btn-primary px-5">Salvar</button>
 </div>
 @endif
 </div>
@@ -1338,6 +1350,30 @@
 @endisset
 
 <script>
+    $(document).on('click', '#btn-buscar-imagem-ia', function() {
+        var btn = $(this);
+        var productId = btn.closest('form').attr('action').match(/\/produtos\/(\d+)/);
+        if (!productId) return;
+        
+        btn.prop('disabled', true).html('<i class="ri-loader-2-line align-middle me-1 spinner"></i> Buscando na Web...');
+        
+        $.get(path_url + 'produtos-buscar-imagem-ia/' + productId[1])
+        .done(function(res) {
+            if (res.success) {
+                $('#file-ip-1-preview').attr('src', res.imagem + '?t=' + Date.now());
+                swal('Sucesso', res.message, 'success');
+            } else {
+                swal('Atenção', res.message, 'warning');
+            }
+        })
+        .fail(function() {
+            swal('Erro', 'Erro ao buscar imagem do produto na web', 'error');
+        })
+        .always(function() {
+            btn.prop('disabled', false).html('<i class="ri-image-search-line align-middle me-1"></i> Buscar Imagem Web (Automático)');
+        });
+    });
+
     $(document).on('click', '#btn-buscar-unsplash', function() {
         var btn = $(this);
         var productId = btn.closest('form').attr('action').match(/\/produtos\/(\d+)/);
@@ -1358,7 +1394,7 @@
             swal('Erro', 'Erro ao buscar imagem no Unsplash', 'error');
         })
         .always(function() {
-            btn.prop('disabled', false).html('<i class="ri-google-line align-middle me-1"></i> Buscar na Unsplash');
+            btn.prop('disabled', false).html('<i class="ri-image-line align-middle me-1"></i> Buscar no Unsplash (Artístico)');
         });
     });
 </script>

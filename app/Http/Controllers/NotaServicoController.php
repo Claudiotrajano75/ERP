@@ -53,7 +53,17 @@ class NotaServicoController extends Controller
         ->orderBy('created_at', 'desc')
         ->paginate(env("PAGINACAO"));
 
-        return view('nota_servico.index', compact('data'));
+        $baseStats = NotaServico::where('empresa_id', $request->empresa_id);
+        $stats = [
+            'total' => (clone $baseStats)->count(),
+            'aprovadas' => (clone $baseStats)->where('estado', 'aprovado')->count(),
+            'canceladas' => (clone $baseStats)->where('estado', 'cancelado')->count(),
+            'rejeitadas' => (clone $baseStats)->where('estado', 'rejeitado')->count(),
+            'novas' => (clone $baseStats)->where('estado', 'novo')->count(),
+            'total_valor' => (clone $baseStats)->where('estado', 'aprovado')->sum('valor_total') ?? 0,
+        ];
+
+        return view('nota_servico.index', compact('data', 'stats'));
 
     }
 

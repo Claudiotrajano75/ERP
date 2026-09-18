@@ -47,8 +47,8 @@
     </div>
     <div class="col-md-2">
         {!! Form::tel('quantidade_carga', 'Quantidade da carga')
-        ->attrs(['class' => 'qtd_carga', 'data-mask' => '00000.000', 'data-mask-reverse' => 'true'])
-        ->value($nfe->quantidade_carga)->required() !!}
+        ->attrs(['class' => 'qtd_carga', 'data-mask' => '00000000,000', 'data-mask-reverse' => 'true'])
+        ->value(number_format((float) $nfe->quantidade_carga, 3, ',', '.'))->required() !!}
     </div>
     <div class="col-md-2">
         {!! Form::tel('valor_carga', 'Valor da carga')->attrs(['class' => 'moeda'])

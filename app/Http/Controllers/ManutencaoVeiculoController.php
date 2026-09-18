@@ -33,7 +33,7 @@ class ManutencaoVeiculoController extends Controller
         $estado = $request->get('estado');
 
         $veiculo = null;
-        $data = ManutencaoVeiculo::where('empresa_id', request()->empresa_id)
+        $query = ManutencaoVeiculo::where('empresa_id', request()->empresa_id)
         ->when(!empty($start_date), function ($query) use ($start_date) {
             return $query->whereDate('created_at', '>=', $start_date);
         })
@@ -48,15 +48,25 @@ class ManutencaoVeiculoController extends Controller
         })
         ->when(!empty($estado), function ($query) use ($estado) {
             return $query->where('estado', $estado);
-        })
-        ->orderBy('id', 'desc')
+        });
+
+        $stats = [
+            'total_manutencoes' => (clone $query)->count(),
+            'valor_total' => (clone $query)->sum('total'),
+            'total_desconto' => (clone $query)->sum('desconto'),
+            'aguardando' => (clone $query)->where('estado', 'aguardando')->count(),
+            'em_manutencao' => (clone $query)->where('estado', 'em_manutencao')->count(),
+            'finalizado' => (clone $query)->where('estado', 'finalizado')->count(),
+        ];
+
+        $data = $query->orderBy('id', 'desc')
         ->paginate(env("PAGINACAO"));
 
         if($veiculo_id){
             $veiculo = Veiculo::findOrFail($veiculo_id);
         }
 
-        return view('manutencao_veiculo.index', compact('data', 'veiculo'));
+        return view('manutencao_veiculo.index', compact('data', 'veiculo', 'stats'));
     }
 
     public function create()

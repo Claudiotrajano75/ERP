@@ -28,7 +28,7 @@
                             <p class="text-muted mb-0 modulo-subtitle fs-13">Acompanhe as vendas efetuadas, produtos comprados e faturas a prazo do cliente.</p>
                         </div>
                         <div>
-                            <a href="{{ route('clientes.index') }}" class="btn btn-light btn-sm px-3 text-dark">
+                            <a href="{{ route('clientes.index') }}" class="dash-btn dash-btn-light">
                                 <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
                             </a>
                         </div>

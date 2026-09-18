@@ -17,8 +17,8 @@
                     @endif
                 </div>
                 <div>
-                    <a href="{{ route('nfe.index') }}" class="btn btn-danger btn-sm px-3">
-                        <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
+                    <a href="{{ route('nfe.index') }}" class="dash-btn dash-btn-light">
+                        <i class="ri-arrow-left-line"></i> Voltar
                     </a>
                 </div>
             </div>
@@ -38,6 +38,6 @@
 </div>
 
 @section('js')
-<script src="/js/nfe.js"></script>
+<script src="/js/nfe.js?v={{ time() }}"></script>
 @endsection
 @endsection

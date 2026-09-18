@@ -36,6 +36,8 @@ class ProdutoController extends Controller
     public function pesquisa(Request $request)
     {
         $lista_id = $request->lista_id;
+        $pesquisa = $request->pesquisa;
+        $limit = 15; // Limita resultados para performance
 
         $local_id = null;
         if(isset($request->local_id) && $request->local_id != null){
@@ -52,19 +54,28 @@ class ProdutoController extends Controller
             }
         }
 
-        $data = Produto::orderBy('nome', 'desc')
-        ->select('produtos.*')
+        // Seleciona apenas colunas necessárias para o select2
+        $selectColumns = [
+            'produtos.id', 'produtos.nome', 'produtos.valor_unitario',
+            'produtos.valor_compra', 'produtos.codigo_barras', 'produtos.codigo_barras2',
+            'produtos.codigo_barras3', 'produtos.gerenciar_estoque', 'produtos.unidade',
+            'produtos.empresa_id', 'produtos.status'
+        ];
+
+        $data = Produto::orderBy('nome', 'asc')
+        ->select($selectColumns)
         ->where('empresa_id', $request->empresa_id)
         ->where('status', 1)
-        ->when(!is_numeric($request->pesquisa), function ($q) use ($request) {
-            return $q->where('nome', 'LIKE', "%$request->pesquisa%");
+        ->when(!is_numeric($pesquisa), function ($q) use ($pesquisa) {
+            return $q->where('nome', 'LIKE', "%$pesquisa%");
         })
-        ->when(is_numeric($request->pesquisa), function ($q) use ($request) {
-            return $q->where(function($query) use ($request)
+        ->when(is_numeric($pesquisa), function ($q) use ($pesquisa) {
+            return $q->where(function($query) use ($pesquisa)
             {
-                return $query->where('codigo_barras', 'LIKE', "%$request->pesquisa%")
-                ->orWhere('codigo_barras2', 'LIKE', "%$request->pesquisa%")
-                ->orWhere('codigo_barras3', 'LIKE', "%$request->pesquisa%");
+                return $query->where('codigo_barras', 'LIKE', "%$pesquisa%")
+                ->orWhere('codigo_barras2', 'LIKE', "%$pesquisa%")
+                ->orWhere('codigo_barras3', 'LIKE', "%$pesquisa%")
+                ->orWhere('nome', 'LIKE', "%$pesquisa%");
             });
         })
         ->when($local_id != null, function ($query) use ($local_id) {
@@ -72,58 +83,70 @@ class ProdutoController extends Controller
             ->where('produto_localizacaos.localizacao_id', $local_id);
         })
         ->distinct('produtos.id')
+        ->limit($limit)
         ->get();
 
-        if(is_numeric($request->pesquisa)){
-            $dataAppend = ProdutoVariacao::where('produtos.empresa_id', $request->empresa_id)
-            ->where('produto_variacaos.codigo_barras', 'LIKE', "%$request->pesquisa%")
-            ->join('produtos', 'produtos.id', '=', 'produto_variacaos.produto_id')
-            ->select('produto_variacaos.*')
-            ->get();
+        if(is_numeric($pesquisa)){
+            $remaining = $limit - $data->count();
+            if($remaining > 0){
+                $existingIds = $data->pluck('id')->toArray();
+                $dataAppend = ProdutoVariacao::where('produtos.empresa_id', $request->empresa_id)
+                ->where('produto_variacaos.codigo_barras', 'LIKE', "%$pesquisa%")
+                ->join('produtos', 'produtos.id', '=', 'produto_variacaos.produto_id')
+                ->whereNotIn('produtos.id', $existingIds)
+                ->select('produto_variacaos.*')
+                ->limit($remaining)
+                ->get();
 
-            foreach($dataAppend as $v){
-                $v->valor_unitario = $v->valor;
-                $v->valor_compra = $v->produto->valor_compra;
-                $v->nome = $v->produto->nome . " - " . $v->descricao;
-                $v->codigo_variacao = $v->id;
-                $v->id = $v->produto_id;
-                $data->push($v);
+                foreach($dataAppend as $v){
+                    $v->valor_unitario = $v->valor;
+                    $v->valor_compra = $v->produto->valor_compra;
+                    $v->nome = $v->produto->nome . " - " . $v->descricao;
+                    $v->codigo_variacao = $v->id;
+                    $v->id = $v->produto_id;
+                    $data->push($v);
+                }
             }
-
-            // $data->push($dataAppend);
         }
 
-        if($lista_id){
+        $produtoIds = $data->pluck('id')->toArray();
+
+        if($lista_id && count($produtoIds) > 0){
+            $itensLista = ItemListaPreco::where('lista_id', $lista_id)
+            ->whereIn('produto_id', $produtoIds)
+            ->get()
+            ->keyBy('produto_id');
 
             foreach($data as $i){
-                $itemLista = ItemListaPreco::where('lista_id', $lista_id)
-                ->where('produto_id', $i->id)
-                ->first();
+                $itemLista = $itensLista->get($i->id);
                 if($itemLista != null){
                     $i->valor_unitario = $itemLista->valor;
                 }
             }
         }
 
-        foreach($data as $p){
-            if($p->gerenciar_estoque){
+        if(count($produtoIds) > 0){
+            $estoques = Estoque::whereIn('produto_id', $produtoIds)
+            ->when($local_id != null, function ($query) use ($local_id) {
+                return $query->where('local_id', $local_id);
+            })
+            ->get()
+            ->keyBy('produto_id');
 
-                $estoque = Estoque::where('produto_id', $p->id)
-                ->when($local_id != null, function ($query) use ($local_id) {
-                    return $query->where('local_id', $local_id);
-                })
-                ->first();
-                if($estoque){
-                    $p->estoque_atual = number_format($estoque->quantidade, 3);
-                    if($p->unidade == 'UN' || $p->unidade == 'UNID'){
-                        $p->estoque_atual = number_format($estoque->quantidade, 0);
+            foreach($data as $p){
+                if($p->gerenciar_estoque){
+                    $estoque = $estoques->get($p->id);
+                    if($estoque){
+                        $p->estoque_atual = number_format($estoque->quantidade, 3);
+                        if($p->unidade == 'UN' || $p->unidade == 'UNID'){
+                            $p->estoque_atual = number_format($estoque->quantidade, 0);
+                        }
+                    }else{
+                        $p->estoque_atual = 0;
                     }
                 }else{
                     $p->estoque_atual = 0;
                 }
-                
-            }else{
-                $p->estoque_atual = 0;
             }
         }
 

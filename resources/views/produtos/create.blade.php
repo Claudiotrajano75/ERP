@@ -58,9 +58,9 @@
         color: #302b63;
     }
     .modulo-wizard .nav-link.active {
-        background: #302b63 !important;
+        background: #4f46e5 !important;
         color: #fff !important;
-        box-shadow: 0 4px 14px rgba(48,43,99,0.25);
+        box-shadow: 0 4px 14px rgba(79,70,229,0.25);
     }
     .modulo-wizard .nav-link i {
         font-size: 16px;
@@ -84,8 +84,8 @@
     }
     .modulo-form-card .form-control:focus,
     .modulo-form-card .form-select:focus {
-        border-color: #302b63;
-        box-shadow: 0 0 0 3px rgba(48,43,99,0.08);
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
     }
     .modulo-form-card .input-group-text {
         border-radius: 0 8px 8px 0;
@@ -139,7 +139,7 @@
                             </p>
                         </div>
                         <div>
-                            <a href="{{ route('produtos.index') }}" class="btn btn-light btn-sm px-3 text-dark">
+                            <a href="{{ route('produtos.index') }}" class="dash-btn dash-btn-light">
                                 <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
                             </a>
                         </div>
@@ -160,10 +160,10 @@
 
                     <div class="modulo-actions">
                         <div class="d-flex gap-2 justify-content-end">
-                            <a href="{{ route('produtos.index') }}" class="btn btn-outline-secondary">
+                            <a href="{{ route('produtos.index') }}" class="dash-btn dash-btn-light px-4">
                                 <i class="ri-close-line align-middle me-1"></i> Cancelar
                             </a>
-                            <button type="submit" class="btn btn-primary px-4" id="btn-store">
+                            <button type="submit" class="dash-btn dash-btn-primary px-4" id="btn-store">
                                 <i class="ri-save-line align-middle me-1"></i> Salvar Produto
                             </button>
                         </div>

@@ -44,14 +44,18 @@ class ControleAcessoController extends Controller
     public function index(Request $request)
     {
         $this->validaPermissoes($request->empresa_id);
-        $data = Role::orderBy('id', 'desc')
-        ->where('empresa_id', $request->empresa_id)
+        $base = Role::where('empresa_id', $request->empresa_id);
+        $data = (clone $base)->orderBy('id', 'desc')
         ->when(!empty($request->descricao), function ($q) use ($request) {
             return $q->where('description', 'LIKE', "%$request->descricao%");
         })
         ->paginate(30);
+        $stats = [
+            'total'      => (clone $base)->count(),
+            'permissoes' => Permission::count(),
+        ];
 
-        return view('controle_acesso.index', compact('data'));
+        return view('controle_acesso.index', compact('data', 'stats'));
     }
 
     public function create(){

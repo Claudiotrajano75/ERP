@@ -32,7 +32,14 @@ class FuncionarioController extends Controller
             });
         })
         ->paginate(env("PAGINACAO"));
-        return view('funcionario.index', compact('data'));
+
+        $stats = [
+            'total' => Funcionario::where('empresa_id', request()->empresa_id)->count(),
+            'ativos' => Funcionario::where('empresa_id', request()->empresa_id)->where('status', 1)->count(),
+            'folha_salarial' => Funcionario::where('empresa_id', request()->empresa_id)->where('status', 1)->sum('salario'),
+        ];
+
+        return view('funcionario.index', compact('data', 'stats'));
     }
 
     public function create()

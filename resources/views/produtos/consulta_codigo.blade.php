@@ -186,6 +186,36 @@
     font-weight: 600;
     display: inline-block;
 }
+
+    .stat-card { border:0; border-radius:16px; padding:18px 20px; height:100%; color:#fff; position:relative; overflow:hidden; transition:transform .18s ease, box-shadow .18s ease; }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-card::after { content:''; position:absolute; top:-44px; right:-44px; width:130px; height:130px; border-radius:50%; background:rgba(255,255,255,.12); }
+    .stat-indigo { background:linear-gradient(135deg,#6366f1,#4f46e5); box-shadow:0 6px 18px rgba(79,70,229,.32); }
+    .stat-blue   { background:linear-gradient(135deg,#4d94ff,#1d4ed8); box-shadow:0 6px 18px rgba(37,99,235,.32); }
+    .stat-card .st-label { font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:rgba(255,255,255,.85); }
+    .stat-card .st-value { font-size:26px; font-weight:800; color:#fff; margin-top:4px; line-height:1.1; }
+    .stat-card .st-sub { font-size:11.5px; color:rgba(255,255,255,.75); margin-top:4px; }
+    .stat-card .st-icon { width:46px; height:46px; border-radius:13px; background:rgba(255,255,255,.22); color:#fff; display:flex; align-items:center; justify-content:center; font-size:20px; }
+    .filter-wrap { background:#fff; border:1px solid #e9ecf3; border-radius:14px; box-shadow:0 1px 2px rgba(16,24,40,.04); padding:18px 20px; margin-bottom:18px; }
+    .filter-title { font-size:13px; font-weight:700; color:#3f3e6a; text-transform:uppercase; letter-spacing:.5px; }
+    .filter-title i { color:#4f46e5; margin-right:6px; }
+    .filter-wrap label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#8c8ca6; margin-bottom:6px; }
+    .filter-wrap label i { color:#a8a8c0; }
+    .filter-wrap .form-control, .filter-wrap .form-select { height:40px; border-radius:10px; border:1px solid #dcdce9; font-size:13.5px; color:#1f2937; background:#fcfdfe; transition:all .15s ease; }
+    .filter-wrap .form-control:focus, .filter-wrap .form-select:focus { border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79,70,229,.12); background:#fff; }
+    .tb-wrap { border-radius:14px; border:1px solid #eef0f5; overflow:hidden; background:#fff; }
+    .tb-wrap thead th { background:#f8f9fc; color:#5a5a7a; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:.4px; padding:13px 14px; border-bottom:1px solid #e8eaf6; white-space:nowrap; }
+    .tb-wrap tbody td { padding:13px 14px; vertical-align:middle; border-bottom:1px solid #f0f2f8; font-size:13.5px; color:#374151; }
+    .tb-wrap tbody tr:hover { background:#f5f6fe; }
+    .tb-wrap tbody tr:last-child td { border-bottom:none; }
+    .act-group { display:inline-flex; gap:6px; align-items:center; }
+    .act-btn { width:34px; height:34px; border-radius:10px; border:0; display:inline-flex; align-items:center; justify-content:center; font-size:15px; text-decoration:none; cursor:pointer; transition:transform .15s ease, box-shadow .15s ease; }
+    .act-btn:hover { transform:translateY(-2px); }
+    .act-view { background:#e0f2fe; color:#0284c7; }
+    .act-view:hover { box-shadow:0 4px 12px rgba(2,132,199,.3); }
+    .empty-state { padding:52px 20px; text-align:center; }
+    .empty-state i { font-size:52px; color:#c5cae9; display:block; margin-bottom:12px; }
+    .empty-state p { color:#9e9eb8; font-size:14px; margin:0; }
 </style>
 @endsection
 
@@ -211,10 +241,30 @@
 
             <div class="card-body p-4">
 
-                <!-- ═══ Filtros de Busca Premium ═══ -->
-                <div class="modulo-glass-filter-premium">
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-xl-6">
+                        <div class="stat-card stat-indigo">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Resultados</div><div class="st-value">{{ count($data) }}</div><div class="st-sub">registros encontrados</div></div>
+                                <div class="st-icon"><i class="ri-search-eye-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-6">
+                        <div class="stat-card stat-blue">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Consulta</div><div class="st-value">Código Único</div><div class="st-sub">busca por produto ou código</div></div>
+                                <div class="st-icon"><i class="ri-barcode-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                                <!-- ═══ Filtros de Busca Premium ═══ -->
+                <div class="filter-wrap">
                     <div class="filtro-premium-header">
-                        <h5 class="filtro-premium-title">
+                        <h5 class="filter-title mb-0">
                             <i class="ri-search-line"></i> Filtrar Códigos Únicos
                         </h5>
                     </div>
@@ -234,10 +284,10 @@
                         </div>
                         <div class="col-md-3 col-12 ms-auto d-flex align-items-end">
                             <div class="d-flex gap-2 w-100">
-                                <button class="btn btn-pesquisar flex-grow-1" type="submit">
+                                <button class="btn btn-primary flex-grow-1" style="border-radius:10px;" type="submit">
                                     <i class="ri-search-line"></i> Buscar
                                 </button>
-                                <a class="btn btn-limpar px-3" href="{{ route('produto-consulta-codigo.index') }}" title="Limpar Filtros">
+                                <a class="btn btn-light border px-3" style="border-radius:10px;" href="{{ route('produto-consulta-codigo.index') }}" title="Limpar Filtros">
                                     <i class="ri-eraser-line"></i>
                                 </a>
                             </div>
@@ -247,7 +297,7 @@
                 </div>
 
                 <!-- ═══ TABELA PREMIUM ═══ -->
-                <div class="modulo-table-wrap">
+                <div class="tb-wrap">
                     <div class="table-responsive">
                         <table class="table table-centered table-hover align-middle mb-0 text-dark">
                             <thead>
@@ -271,8 +321,8 @@
                                         <span class="text-muted fs-13">{{ $item->observacao ?? '--' }}</span>
                                     </td>
                                     <td class="text-end">
-                                        <div class="modulo-action-group">
-                                            <button type="button" class="btn btn-dark btn-sm" title="Ver Detalhes do Código" onclick="modalData('{{$item->id}}')">
+                                        <div class="act-group">
+                                            <button type="button" class="act-btn act-view" title="Ver Detalhes do Código" onclick="modalData('{{$item->id}}')">
                                                 <i class="ri-file-list-3-line"></i>
                                             </button>
                                         </div>
@@ -281,7 +331,7 @@
                                 @empty
                                 <tr>
                                     <td colspan="4" class="p-0">
-                                        <div class="modulo-empty">
+                                        <div class="empty-state">
                                             <i class="ri-inbox-2-line"></i>
                                             <p>Nenhum registro encontrado. Realize uma busca acima usando produto ou código.</p>
                                         </div>

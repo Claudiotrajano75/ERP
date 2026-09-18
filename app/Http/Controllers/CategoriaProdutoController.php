@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CategoriaProduto;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class CategoriaProdutoController extends Controller
 {
@@ -19,14 +20,26 @@ class CategoriaProdutoController extends Controller
 
     public function index(Request $request)
     {
-        $data = CategoriaProduto::where('empresa_id', request()->empresa_id)
+        $base = CategoriaProduto::where('empresa_id', request()->empresa_id);
+
+        $data = (clone $base)
         ->when(!empty($request->nome), function ($q) use ($request) {
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
         ->where('categoria_id', null)
         ->orderBy('nome', 'asc')
         ->paginate(env("PAGINACAO"));
-        return view('categoria_produtos.index', compact('data'));
+
+        $stats = [
+            'total'         => (clone $base)->where('categoria_id', null)->count(),
+            'subcategorias' => (clone $base)->where('categoria_id', '!=', null)->count(),
+        ];
+        if(__isActivePlan(Auth::user()->empresa, 'Cardapio'))  $stats['cardapio'] = (clone $base)->where('cardapio', 1)->count();
+        if(__isActivePlan(Auth::user()->empresa, 'Delivery'))  $stats['delivery'] = (clone $base)->where('delivery', 1)->count();
+        if(__isActivePlan(Auth::user()->empresa, 'Ecommerce')) $stats['ecommerce'] = (clone $base)->where('ecommerce', 1)->count();
+        if(__isActivePlan(Auth::user()->empresa, 'Reservas'))  $stats['reserva'] = (clone $base)->where('reserva', 1)->count();
+
+        return view('categoria_produtos.index', compact('data', 'stats'));
     }
 
     public function create(Request $request)

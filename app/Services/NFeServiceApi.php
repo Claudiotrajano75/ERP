@@ -67,7 +67,11 @@ class NFeServiceApi{
 		$stdIde->cDV = 0;
 		$stdIde->tpAmb = (int)$documento['ambiente'];
 		$stdIde->finNFe = 1;
-		$stdIde->indFinal = $documento['consumidor_final'];
+		if (isset($destinatario['contribuinte']) && $destinatario['contribuinte'] == 0) {
+			$stdIde->indFinal = 1;
+		} else {
+			$stdIde->indFinal = (int)($documento['consumidor_final'] ?? 1);
+		}
 		$stdIde->indPres = 1;
 		$stdIde->procEmi = '0';
 		$stdIde->verProc = '2.0';

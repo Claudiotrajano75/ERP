@@ -40,6 +40,10 @@ class Cliente extends Model
         return $this->hasMany(Nfe::class, 'cliente_id');
     }
 
+    public function creditos(){
+        return $this->hasMany(CreditoCliente::class, 'cliente_id');
+    }
+
     //delivery
 
     public function enderecos(){

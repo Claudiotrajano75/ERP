@@ -43,10 +43,22 @@ class ApuracaoMensalController extends Controller
 
         $funcionario = null;
         if($funcionario_id){
-            $funcionario = Funcionario::findOrFail($funcionario_id);
+            $funcionario = Funcionario::find($funcionario_id);
         }
 
-        return view('apuracao_mensal.index', compact('data', 'funcionario'));
+        $stats = [
+            'total' => ApuracaoMensal::whereHas('funcionario', function ($q) {
+                $q->where('empresa_id', request()->empresa_id);
+            })->count(),
+            'valor_total' => ApuracaoMensal::whereHas('funcionario', function ($q) {
+                $q->where('empresa_id', request()->empresa_id);
+            })->sum('valor_final'),
+            'pendentes_conta' => ApuracaoMensal::whereHas('funcionario', function ($q) {
+                $q->where('empresa_id', request()->empresa_id);
+            })->where('conta_pagar_id', 0)->count(),
+        ];
+
+        return view('apuracao_mensal.index', compact('data', 'funcionario', 'stats'));
     }
 
     public function create()

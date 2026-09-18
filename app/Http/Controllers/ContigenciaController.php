@@ -15,7 +15,13 @@ class ContigenciaController extends Controller
         ->orderBy('id', 'desc')
         ->get();
 
-        return view('contigencia.index', compact('data'));
+        $stats = [
+            'total' => $data->count(),
+            'ativas' => $data->where('status', 1)->count(),
+            'desativadas' => $data->where('status', 0)->count(),
+        ];
+
+        return view('contigencia.index', compact('data', 'stats'));
     }
 
     public function create(){

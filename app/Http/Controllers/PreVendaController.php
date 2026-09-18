@@ -13,6 +13,7 @@ use App\Models\PreVenda;
 use App\Models\PreVendaAuditoria;
 use App\Models\Produto;
 use App\Models\Nfce;
+use App\Models\ConfigGeral;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use StringBackedEnum;
@@ -43,16 +44,14 @@ class PreVendaController extends Controller
         $status = $request->get('status');
         $local_id = $request->get('local_id');
 
-        $item = PreVenda::first();
-
-        $data = PreVenda::where('empresa_id', request()->empresa_id)
+        $baseQuery = PreVenda::where('empresa_id', request()->empresa_id)
         ->when(!empty($cliente_id), function ($query) use ($cliente_id) {
             return $query->where('cliente_id', $cliente_id);
         })
         ->when(!empty($start_date), function ($query) use ($start_date) {
             return $query->whereDate('created_at', '>=', $start_date);
         })
-        ->when(!empty($end_date), function ($query) use ($end_date,) {
+        ->when(!empty($end_date), function ($query) use ($end_date) {
             return $query->whereDate('created_at', '<=', $end_date);
         })
         ->when(!empty($status), function ($query) use ($status) {
@@ -67,10 +66,20 @@ class PreVendaController extends Controller
         })
         ->when(!$local_id, function ($query) use ($locais) {
             return $query->whereIn('local_id', $locais);
-        })
+        });
+
+        $stats = [
+            'total_pedidos'   => (clone $baseQuery)->count(),
+            'total_recebidas' => (clone $baseQuery)->where('status', 0)->count(),
+            'total_pendentes' => (clone $baseQuery)->where('status', 1)->count(),
+            'total_faturamento'=> (clone $baseQuery)->sum('valor_total'),
+        ];
+
+        $data = (clone $baseQuery)
         ->orderBy('id', 'desc')
         ->paginate(env("PAGINACAO"));
-        return view('pre_venda.index', compact('data'));
+
+        return view('pre_venda.index', compact('data', 'stats'));
     }
 
 
@@ -111,7 +120,9 @@ class PreVendaController extends Controller
             }
         }
 
-        return view('pre_venda.create', compact('abertura', 'categorias', 'funcionarios', 'naturezas', 'caixa', 'tiposPagamento'));
+        $configGeral = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
+
+        return view('pre_venda.create', compact('abertura', 'categorias', 'funcionarios', 'naturezas', 'caixa', 'tiposPagamento', 'configGeral'));
     }
 
     public function store(Request $request)
@@ -265,7 +276,9 @@ class PreVendaController extends Controller
         $cliente = $item->cliente;
         $funcionario = $item->vendedor;
 
-        return view('pre_venda.edit', compact('item', 'itens', 'cliente', 'funcionario', 'abertura', 'categorias', 'funcionarios', 'naturezas', 'caixa', 'tiposPagamento'));
+        $configGeral = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
+
+        return view('pre_venda.edit', compact('item', 'itens', 'cliente', 'funcionario', 'abertura', 'categorias', 'funcionarios', 'naturezas', 'caixa', 'tiposPagamento', 'configGeral'));
     }
 
     public function update(Request $request, $id)

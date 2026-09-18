@@ -149,10 +149,10 @@
                         </div>
                     </div>
                     <div class="d-flex gap-2">
-                        <a href="{{ route('produtos.download-zip', [$item->id]) }}" class="btn btn-light btn-sm px-3 d-print-none text-dark" title="Baixar todas as imagens">
+                        <a href="{{ route('produtos.download-zip', [$item->id]) }}" class="dash-btn dash-btn-light d-print-none" title="Baixar todas as imagens">
                             <i class="ri-download-2-line align-middle me-1"></i> Imagens (ZIP)
                         </a>
-                        <a href="{{ route('produtos.index') }}" class="btn btn-danger btn-sm px-3 d-print-none">
+                        <a href="{{ route('produtos.index') }}" class="dash-btn dash-btn-light d-print-none">
                             <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
                         </a>
                     </div>
@@ -294,7 +294,7 @@
                                             </td>
                                             <td><span class="badge bg-light text-dark border">{{ $i->produtoVariacao ? $i->produtoVariacao->descricao : '--' }}</span></td>
                                             <td class="text-end d-print-none">
-                                                <a class="btn btn-outline-secondary btn-sm" href="{{ route('produtos.movimentacao', [$i->id]) }}">
+                                                <a class="dash-btn dash-btn-light btn-sm" href="{{ route('produtos.movimentacao', [$i->id]) }}">
                                                     <i class="ri-eye-line align-middle me-1"></i> Visualizar
                                                 </a>
                                             </td>
@@ -357,7 +357,7 @@
                 <!-- Rodapé de Ações do Card -->
                 <div class="card-footer bg-transparent border-top p-3 d-print-none px-4">
                     <div class="d-flex align-items-center justify-content-end">
-                        <a href="javascript:window.print()" class="btn btn-primary px-4">
+                        <a href="javascript:window.print()" class="dash-btn dash-btn-primary px-4">
                             <i class="ri-printer-line me-1 align-middle"></i> Imprimir Extrato
                         </a>
                     </div>

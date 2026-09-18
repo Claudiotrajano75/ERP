@@ -1,3 +1,12 @@
+<style>
+    .uf-section-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: #1f2937; border-bottom: 1px solid #eef0f6; padding-bottom: 10px; margin-bottom: 16px; }
+    .uf-section-title i { font-size: 16px; color: #4f46e5; }
+    .form-label, label { font-size: 12px; font-weight: 700; color: #64748b; letter-spacing: .04em; text-transform: uppercase; }
+    .form-control, .form-select, select { border-radius: 10px; border: 1px solid #dcdce9 !important; font-size: 13.5px; background: #fcfdfe; }
+    .form-control:focus, .form-select:focus { border-color: #4f46e5 !important; box-shadow: 0 0 0 3px rgba(79,70,229,.12) !important; background: #fff; }
+    .quantidade { font-weight: 700; }
+</style>
+
 <div class="row g-3 text-dark">
     
     <!-- Seção 1: Seleção de Produto -->
@@ -83,8 +92,8 @@
     <div class="col-12 mt-4">
         <hr class="text-muted opacity-25">
         <div class="d-flex align-items-center justify-content-end gap-2">
-            <a href="{{ route('estoque.index') }}" class="btn btn-light px-4">Cancelar</a>
-            <button type="submit" class="btn btn-success px-4" id="btn-store">
+            <a href="{{ route('estoque.index') }}" class="dash-btn dash-btn-light px-4">Cancelar</a>
+            <button type="submit" class="dash-btn dash-btn-primary px-4" id="btn-store">
                 <i class="ri-save-line align-middle me-1"></i> Salvar Estoque
             </button>
         </div>

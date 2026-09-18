@@ -12,9 +12,15 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $title }}</title>
-
     <link rel="shortcut icon" href="{{ $logoUrlGlobal }}">
+
+    <!-- PWA Settings -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ERP Web">
+    <link rel="apple-touch-icon" href="/icons/icon.svg">
     <link href="/assets/vendor/fullcalendar/main.min.css" rel="stylesheet" type="text/css" />
     <link href="/assets/vendor/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
     <link href="/assets/vendor/daterangepicker/daterangepicker.css" rel="stylesheet" type="text/css" />
@@ -28,8 +34,9 @@
     <link href="/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/toastr.min.css">
     <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <link rel="stylesheet" type="text/css" href="/css/dashboard-skin.css">
 
-    <link href="/bs5-tour/css/bs5-intro-tour.css" rel="stylesheet" />
+    {{-- <link href="/bs5-tour/css/bs5-intro-tour.css" rel="stylesheet" /> --}}
 
     <link rel='stylesheet' href='/css/bootstrap-duallistbox.min.css' />
 
@@ -78,6 +85,110 @@
             left: 50% !important;
             transform: translate(-50%, -50%) !important;
         }
+
+        /* ─── Efeito Moderno & Deslocamento nos Sub-menus da Sidebar ─── */
+        .side-nav .side-nav-second-level li a,
+        .side-nav .side-nav-third-level li a,
+        .side-nav .side-nav-forth-level li a {
+            position: relative;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 6px;
+        }
+
+        .side-nav .side-nav-second-level li a:hover,
+        .side-nav .side-nav-third-level li a:hover,
+        .side-nav .side-nav-forth-level li a:hover {
+            transform: translateX(6px);
+            color: #3b82f6 !important;
+            background-color: rgba(59, 130, 246, 0.07) !important;
+            font-weight: 600;
+        }
+
+        /* Animação suave para o marcador/dot do submenu */
+        .side-nav .side-nav-second-level li a::before,
+        .side-nav .side-nav-third-level li a::before,
+        .side-nav .side-nav-forth-level li a::before {
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ─── Botão PDV Elegante e Moderno ─── */
+        .btn-top-pdv-modern {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #2563eb 100%);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 10px;
+            padding: 5px 14px 5px 7px;
+            color: #ffffff !important;
+            font-size: 12.5px;
+            font-weight: 700;
+            text-decoration: none !important;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32);
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-top-pdv-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-top-pdv-modern:hover::before {
+            left: 140%;
+        }
+
+        .btn-top-pdv-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45);
+            color: #ffffff !important;
+        }
+
+        .btn-top-pdv-modern .pdv-icon-badge {
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.22);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #ffffff;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+            transition: transform 0.22s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-top-pdv-modern:hover .pdv-icon-badge {
+            transform: scale(1.1) rotate(-4deg);
+            background: rgba(255, 255, 255, 0.32);
+        }
+
+        .btn-top-pdv-modern .pdv-text {
+            letter-spacing: -0.2px;
+            font-weight: 700;
+        }
+
+        .btn-top-pdv-modern .pdv-arrow {
+            font-size: 15px;
+            opacity: 0.7;
+            margin-left: -2px;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .btn-top-pdv-modern:hover .pdv-arrow {
+            transform: translateX(3px);
+            opacity: 1;
+        }
     </style>
 </head>
 
@@ -122,7 +233,6 @@
                     <button class="button-toggle-menu">
                         <i class="ri-menu-2-fill"></i>
                     </button>
-
                     <!-- Horizontal Menu Toggle Button -->
                     <button class="navbar-toggle" data-bs-toggle="collapse" data-bs-target="#topnav-menu-content">
                         <div class="lines">
@@ -132,116 +242,43 @@
                         </div>
                     </button>
 
-                    <!-- Topbar Info Block (Ambiente, IP, Plano e Ações) -->
-                    <div class="d-flex align-items-center gap-2">
-                        <!-- Ambiente & IP empilhados verticalmente com design moderno -->
-                        <div class="d-flex flex-column align-items-start gap-1 justify-content-center border-start ps-3 ms-2 d-none d-lg-flex"
-                            style="height: 38px; border-color: #e2e8f0 !important;">
-                            @if (Auth::user()->empresa && !__isContador())
-                                @if(Auth::user()->empresa->empresa->ambiente == 2)
-                                    <span class="badge d-inline-flex align-items-center gap-1 px-2 py-0.5"
-                                        style="background: rgba(245, 158, 11, 0.1); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.25); font-size: 10px; font-weight: 700; border-radius: 6px; letter-spacing: 0.3px;">
-                                        <span
-                                            style="width: 5px; height: 5px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
-                                        HOMOLOGAÇÃO
-                                    </span>
-                                @else
-                                    <span class="badge d-inline-flex align-items-center gap-1 px-2 py-0.5"
-                                        style="background: rgba(239, 68, 68, 0.08); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 10px; font-weight: 700; border-radius: 6px; letter-spacing: 0.3px;">
-                                        <span
-                                            style="width: 5px; height: 5px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
-                                        PRODUÇÃO
-                                    </span>
-                                @endif
+                    <div class="d-flex align-items-center gap-2 ms-auto">
+                        @if (Auth::user()->empresa && !__isContador())
+                            @if(Auth::user()->empresa->empresa->ambiente == 2)
+                                <span class="env-chip env-homolog"><i class="ri-circle-fill"></i> HOMOLOGAÇÃO</span>
+                            @else
+                                <span class="env-chip env-prod"><i class="ri-circle-fill"></i> PRODUÇÃO</span>
                             @endif
-
-                            @if (sizeof(Auth::user()->acessos) > 0)
-                                <span class="badge d-inline-flex align-items-center gap-1 px-2 py-0.5"
-                                    style="background: rgba(99, 102, 241, 0.08); color: #4f46e5; border: 1px solid rgba(99, 102, 241, 0.2); font-size: 9px; font-weight: 600; font-family: 'SF Mono', monospace; border-radius: 6px;">
-                                    <i class="ri-wifi-line" style="font-size: 9px;"></i> IP:
-                                    {{ Auth::user()->acessos ? Auth::user()->acessos->first()->ip : '' }}
-                                </span>
-                            @endif
-                        </div>
-
-                        <!-- Empresa Selecionada -->
-                        @if (Auth::user()->empresa && Auth::user()->empresa->empresa->empresa_selecionada != null)
-                            <div class="ms-2 d-none d-lg-block">
-                                <a href="{{ route('contador.show') }}"
-                                    class="badge bg-success-subtle text-success border border-success-subtle p-2 fs-12 rounded-3">
-                                    <i class="ri-briefcase-line me-1 align-middle"></i> Empresa:
-                                    {{ Auth::user()->empresa->empresa->empresaSelecionada->info }}
-                                </a>
-                            </div>
                         @endif
 
-                        <!-- Plano & Ações de Upgrade/PDV/Tour -->
                         @if (Auth::user()->empresa && Auth::user()->empresa->empresa->plano)
-                            <div class="d-flex align-items-center gap-2 ms-3 d-none d-lg-flex video">
-                                <span
-                                    class="badge bg-white text-dark border px-2.5 py-1.5 fs-12 shadow-sm d-inline-flex align-items-center gap-1"
-                                    style="border-radius: 8px; border-color: #e2e8f0 !important;">
-                                    <i class="ri-vip-crown-2-fill text-warning fs-13"></i>
-                                    <span class="text-muted fw-semibold">Plano:</span>
-                                    <strong
-                                        class="text-success fw-bold">{{ Auth::user()->empresa->empresa->plano->plano->nome }}</strong>
-                                    <span class="text-muted fw-normal ms-1 fs-11" style="opacity: 0.75;">
-                                        (Expira: {{ __data_pt(Auth::user()->empresa->empresa->plano->data_expiracao, 0) }})
-                                    </span>
-                                </span>
+                            <span class="plan-chip">
+                                <i class="ri-vip-crown-2-fill"></i>
+                                <strong>{{ Auth::user()->empresa->empresa->plano->plano->nome }}</strong>
+                                <small>(Expira: {{ __data_pt(Auth::user()->empresa->empresa->plano->data_expiracao, 0) }})</small>
+                            </span>
 
-                                <a class="btn btn-sm py-1 px-2.5 fs-11 rounded-3 fw-bold text-white shadow-sm d-flex align-items-center gap-1"
-                                    href="{{ route('upgrade.index') }}"
-                                    style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none; transition: all 0.2s ease;">
-                                    <i class="ri-arrow-up-circle-line fs-13"></i> Upgrade
-                                </a>
+                            <a href="{{ route('upgrade.index') }}" class="btn-top top-upgrade"><i class="ri-arrow-up-circle-line"></i> Upgrade</a>
 
-                                <button
-                                    class="btn btn-sm py-1 px-2.5 fs-11 rounded-3 fw-bold text-white shadow-sm d-flex align-items-center gap-1"
-                                    id="click-tour"
-                                    style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; transition: all 0.2s ease;">
-                                    <i class="ri-compass-3-line fs-13"></i> Tour
-                                </button>
+                            <button type="button" class="btn-top top-tour d-none" id="click-tour" style="display: none !important;"><i class="ri-compass-3-line"></i> Tour</button>
 
-                                @if (!__isContador())
-                                    @if (__isActivePlan(Auth::user()->empresa, 'PDV'))
-                                        @can('pdv_create')
-                                            <a class="btn btn-sm py-1 px-2.5 fs-11 rounded-3 fw-bold text-white shadow-sm d-flex align-items-center gap-1"
-                                                href="{{ route('frontbox.create') }}" title="Abrir Frente de Caixa PDV"
-                                                style="background: linear-gradient(135deg,  #3b82f6 0%, #1d4ed8 100%); border: none; transition: all 0.2s ease;">
-                                                <i class="ri-shopping-cart-2-fill fs-13"></i> PDV
-                                            </a>
-                                        @endcan
-                                    @endif
-                                @endif
-
-                                @if (env('APP_ENV') == 'demo')
-                                    <button
-                                        class="btn btn-sm py-1 px-2.5 fs-11 rounded-3 fw-bold text-white shadow-sm d-flex align-items-center gap-1"
-                                        id="click-modal-dev"
-                                        style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border: none;">
-                                        <i class="ri-code-box-line fs-13"></i> DEV
-                                    </button>
-                                @endif
-                            </div>
+                            @if (!__isContador() && __isActivePlan(Auth::user()->empresa, 'PDV'))
+                                @can('pdv_create')
+                                    <a href="{{ route('frontbox.create') }}" class="btn-top-pdv-modern" title="Abrir Frente de Caixa PDV">
+                                        <span class="pdv-icon-badge"><i class="ri-shopping-cart-2-fill"></i></span>
+                                        <span class="pdv-text">PDV · Frente de Caixa</span>
+                                        <i class="ri-arrow-right-s-line pdv-arrow"></i>
+                                    </a>
+                                @endcan
+                            @endif
                         @endif
                     </div>
 
-                </div>
+                </div><!-- /step1 -->
 
 
-                <ul class="topbar-menu d-flex align-items-center gap-3">
-                    <li class="dropdown d-lg-none">
-                        <a class="nav-link dropdown-toggle arrow-none" data-bs-toggle="dropdown" href="#" role="button"
-                            aria-haspopup="false" aria-expanded="false">
-                            <i class="ri-search-line fs-22"></i>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated dropdown-lg p-0">
-
-                        </div>
-                    </li>
+                <ul class="topbar-menu d-flex align-items-center gap-2">
                     <!-- inicio alertas -->
-
                     <li class="dropdown notification-list">
                         <a class="nav-link dropdown-toggle arrow-none" data-bs-toggle="dropdown" href="#" role="button"
                             aria-haspopup="false" aria-expanded="false">
@@ -311,52 +348,86 @@
                         </a>
                     </li>
 
+                    <!-- Perfil do Usuário / Empresa -->
                     <li class="dropdown me-md-2" id="step3">
-                        <a class="nav-link dropdown-toggle arrow-none nav-user px-2" data-bs-toggle="dropdown" href="#"
+                        <a class="nav-link dropdown-toggle arrow-none nav-user custom-nav-user" data-bs-toggle="dropdown" href="#"
                             role="button" aria-haspopup="false" aria-expanded="false">
                             <span class="account-user-avatar">
                                 @if (Auth::user()->imagem != null)
-                                    <img src="{{ Auth::user()->img }}" height="32" class="rounded-circle">
+                                    <img src="{{ Auth::user()->img }}" class="rounded-circle user-avatar-img">
                                 @else
-                                    <img src="/assets/images/users/avatar-4.jpg" alt="user-image" width="32"
-                                        class="rounded-circle">
+                                    <img src="/assets/images/users/avatar-4.jpg" alt="user-image" class="rounded-circle user-avatar-img">
                                 @endif
                             </span>
-                            <span class="d-lg-flex flex-column gap-1 d-none">
-                                <h5 class="my-0"> {{ Auth::user()->name }}</h5>
-                                <h6 class="my-0 fw-normal">{{ Auth::user()->tipo }}</h6>
-
-                            </span>
+                            <div class="d-none d-lg-flex flex-column text-start">
+                                <span class="user-name-text">{{ Auth::user()->name }}</span>
+                                <span class="user-role-text">{{ Auth::user()->tipo ?? 'Usuário' }}</span>
+                            </div>
+                            <i class="ri-arrow-down-s-line d-none d-lg-inline-block user-chevron"></i>
                         </a>
-                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated profile-dropdown">
-                            <!-- item-->
-                            <div class=" dropdown-header noti-title">
-                                <h6 class="text-overflow m-0">Bem vindo!</h6>
+                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated profile-dropdown custom-profile-dropdown">
+                            <!-- Cabeçalho do Perfil -->
+                            <div class="profile-dropdown-header">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="account-user-avatar">
+                                        @if (Auth::user()->imagem != null)
+                                            <img src="{{ Auth::user()->img }}" width="38" height="38" class="rounded-circle">
+                                        @else
+                                            <img src="/assets/images/users/avatar-4.jpg" alt="user-image" width="38" height="38" class="rounded-circle">
+                                        @endif
+                                    </span>
+                                    <div class="overflow-hidden">
+                                        <h6 class="m-0 fw-bold text-dark text-truncate fs-13">{{ Auth::user()->name }}</h6>
+                                        <small class="text-muted text-truncate d-block fs-11">{{ Auth::user()->email ?? Auth::user()->tipo }}</small>
+                                    </div>
+                                </div>
                             </div>
 
+                            <div class="dropdown-divider my-1"></div>
+
                             @if (!__isContador())
-                                <a href="{{ route('usuarios.profile', Auth::user()->id) }}" class="dropdown-item">
-                                    <i class="ri-account-circle-fill align-middle me-1"></i>
-                                    <span>Minha Conta</span>
+                                <a href="{{ route('usuarios.profile', Auth::user()->id) }}" class="dropdown-item custom-dropdown-item">
+                                    <div class="dropdown-icon-box icon-blue">
+                                        <i class="ri-user-3-line"></i>
+                                    </div>
+                                    <div>
+                                        <span class="d-block fw-semibold text-dark fs-13">Minha Conta</span>
+                                        <small class="text-muted fs-11">Dados de perfil e senha</small>
+                                    </div>
                                 </a>
 
-                                <!-- item-->
-                                <a href="{{ route('config.index') }}" class="dropdown-item">
-                                    <i class="ri-settings-4-fill align-middle me-1"></i>
-                                    <span>Configuração</span>
+                                <a href="{{ route('config.index') }}" class="dropdown-item custom-dropdown-item">
+                                    <div class="dropdown-icon-box icon-indigo">
+                                        <i class="ri-settings-3-line"></i>
+                                    </div>
+                                    <div>
+                                        <span class="d-block fw-semibold text-dark fs-13">Configuração</span>
+                                        <small class="text-muted fs-11">Preferências do sistema</small>
+                                    </div>
                                 </a>
 
-                                <a href="{{ route('ticket.index') }}" class="dropdown-item">
-                                    <i class="ri-information-fill align-middle me-1"></i>
-                                    <span>Abrir chamado</span>
+                                <a href="{{ route('ticket.index') }}" class="dropdown-item custom-dropdown-item">
+                                    <div class="dropdown-icon-box icon-emerald">
+                                        <i class="ri-customer-service-2-line"></i>
+                                    </div>
+                                    <div>
+                                        <span class="d-block fw-semibold text-dark fs-13">Abrir chamado</span>
+                                        <small class="text-muted fs-11">Suporte e atendimento</small>
+                                    </div>
                                 </a>
                             @endif
 
-                            <!-- item-->
-                            <a class="dropdown-item" href="{{ route('logout') }}"
+                            <div class="dropdown-divider my-1"></div>
+
+                            <a class="dropdown-item custom-dropdown-item item-logout" href="{{ route('logout') }}"
                                 onclick="event.preventDefault();document.getElementById('logout-form').submit();">
-                                <i class="ri-logout-box-line  align-middle me-1"></i>
-                                Sair
+                                <div class="dropdown-icon-box icon-rose">
+                                    <i class="ri-logout-box-r-line"></i>
+                                </div>
+                                <div>
+                                    <span class="d-block fw-bold text-danger fs-13">Sair</span>
+                                    <small class="text-muted fs-11">Encerrar sessão com segurança</small>
+                                </div>
                             </a>
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                 @csrf
@@ -364,8 +435,6 @@
                         </div>
                     </li>
 
-                </ul>
-                </li>
                 </ul>
             </div>
         </div>
@@ -1057,6 +1126,10 @@
                                             </li>
                                         @endcan
 
+                                        <li>
+                                            <a href="{{ route('creditos-cliente.index') }}">Créditos de Clientes</a>
+                                        </li>
+
                                         @can('config_tef_view')
                                             <li>
                                                 <a href="{{ route('tef-registros.index') }}">Registros de TEF</a>
@@ -1081,6 +1154,9 @@
                                 <div class="collapse" id="sidebarNfe">
                                     <ul class="side-nav-second-level">
                                         @can('nfe_view')
+                                            <li>
+                                                <a href="{{ route('faturamento-nfe.index') }}">Faturamento (NF-e) <span class="badge bg-primary text-white rounded-pill ms-1" style="font-size: 9px;">NOVO</span></a>
+                                            </li>
                                             <li>
                                                 <a href="{{ route('nfe.index') }}">Listar</a>
                                             </li>
@@ -1118,6 +1194,12 @@
 
                                         <li>
                                             <a href="{{ route('nfe.import-zip') }}">Importar XML</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('crm.index') }}">
+                                                <span class="badge bg-danger rounded-pill float-end">Novo</span>
+                                                <span>CRM de Clientes</span>
+                                            </a>
                                         </li>
                                     </ul>
                                 </div>
@@ -1219,6 +1301,13 @@
                                                 </div>
                                             </li>
                                         @endcanany
+
+                                        <li>
+                                            <a href="{{ route('fluxo-caixa.index') }}">
+                                                <span class="badge bg-danger rounded-pill float-end">Novo</span>
+                                                <span>Fluxo de Caixa & DRE</span>
+                                            </a>
+                                        </li>
 
                                         @can('relatorio_view')
                                             <li>
@@ -2029,6 +2118,7 @@
                 </ul>
             </div>
         </div>
+
         <div class="content-page">
             <div class="content">
                 <div class="container-fluid">
@@ -2156,6 +2246,7 @@
         <script src='https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js'></script>
         <script src="/assets/js/app.js"></script>
         <script type="text/javascript" src="/js/main.js"></script>
+        <script type="text/javascript" src="/js/print_thermal.js"></script>
         <script src="/assets/vendor/flatpickr/flatpickr.min.js"></script>
         <script src="/assets/js/pages/demo.flatpickr.js"></script>
 
@@ -2231,8 +2322,19 @@
             })
         </script>
 
-        <script src="/bs5-tour/js/bs5-intro-tour.js"></script>
-        <script src="/js/tour.js"></script>
+        {{-- <script src="/bs5-tour/js/bs5-intro-tour.js"></script>
+        <script src="/js/tour.js"></script> --}}
+
+        <!-- PWA Service Worker Registration -->
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                        console.log('SW registration notice: ', err);
+                    });
+                });
+            }
+        </script>
 </body>
 
 </html>

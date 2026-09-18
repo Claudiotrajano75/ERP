@@ -137,9 +137,239 @@
 .modulo-empty i { font-size: 48px; color: #c5cae9; margin-bottom: 12px; display: block; }
 .modulo-empty p { color: #9e9eb8; font-size: 14px; margin: 0; }
 
-/* ─── Botões de Ação do Formulário / Grid ─── */
-.modulo-action-group { display: flex; align-items: center; justify-content: flex-end; gap: 4px; flex-wrap: wrap !important; }
-.modulo-action-group .btn { padding: 5px 8px; font-size: 12px; border-radius: 6px; }
+        /* ─── Botão Transmitir em Destaque Compacto ─── */
+        .btn-transmitir-destaque {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 6px !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            padding: 4px 10px !important;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25) !important;
+            transition: all 0.2s ease !important;
+            letter-spacing: 0.1px;
+            white-space: nowrap;
+            text-decoration: none !important;
+        }
+        .btn-transmitir-destaque:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35) !important;
+            background: linear-gradient(135deg, #047857 0%, #065f46 100%) !important;
+            color: #ffffff !important;
+        }
+        .btn-transmitir-destaque:active {
+            transform: translateY(0);
+        }
+        .btn-transmitir-destaque i {
+            font-size: 12px;
+        }
+
+        /* ─── Estilos Modais Premium NF-e ─── */
+        .modal-nfe-header-red {
+            background: #ef4444;
+            padding: 16px 20px;
+        }
+        .modal-nfe-header-red .modal-title {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .modal-nfe-header-red .modal-subtitle {
+            color: rgba(255,255,255,0.92);
+            font-size: 11.5px;
+            margin: 3px 0 0;
+        }
+        .modal-nfe-header-teal {
+            background: #0d9488;
+            padding: 16px 20px;
+        }
+        .modal-nfe-header-teal .modal-title {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .modal-nfe-header-teal .modal-subtitle {
+            color: rgba(255,255,255,0.92);
+            font-size: 11.5px;
+            margin: 3px 0 0;
+        }
+        .modal-nfe-dados-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .modal-nfe-dados-card .card-label {
+            font-size: 10.5px;
+            color: #94a3b8;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        .modal-nfe-dados-card .card-val {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .modal-nfe-dados-card .card-title {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .modal-alert-danger-soft {
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .modal-alert-info-soft {
+            background: #eef2ff;
+            border: 1px solid #e0e7ff;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .modal-alert-yellow {
+            background: #fefce8;
+            border: 1px solid #fef08a;
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+        .modal-alert-yellow ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .modal-alert-yellow ul li {
+            font-size: 11.5px;
+            color: #a16207;
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ─── Dropdown de Ações Moderno com Submenus ─── */
+        .btn-action-trigger {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+.btn-action-trigger:hover, 
+.btn-action-trigger:focus,
+.dropdown-action-menu.show .btn-action-trigger {
+    background: #f1f5f9;
+    color: #3b82f6;
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.action-dropdown-card {
+    min-width: 250px;
+    border-radius: 14px !important;
+    border: 1px solid rgba(0,0,0,0.06) !important;
+    padding: 8px !important;
+    background: #ffffff;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(15, 23, 42, 0.06) !important;
+    z-index: 1060;
+}
+
+.action-menu-item {
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px !important;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.18s ease;
+    background: transparent;
+    cursor: pointer;
+}
+.action-menu-item:hover {
+    background-color: #f8fafc !important;
+    transform: translateX(2px);
+}
+.action-menu-item:active {
+    background-color: #f1f5f9 !important;
+}
+
+.action-item-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+    transition: all 0.18s ease;
+}
+
+.action-item-icon.icon-primary { background: #eff6ff; color: #2563eb; }
+.action-item-icon.icon-info { background: #f0f9ff; color: #0284c7; }
+.action-item-icon.icon-purple { background: #faf5ff; color: #7c3aed; }
+.action-item-icon.icon-teal { background: #f0fdfa; color: #0d9488; }
+.action-item-icon.icon-success { background: #f0fdf4; color: #16a34a; }
+.action-item-icon.icon-cyan { background: #ecfeff; color: #0891b2; }
+.action-item-icon.icon-warning { background: #fffbeb; color: #d97706; }
+.action-item-icon.icon-danger { background: #fef2f2; color: #dc2626; }
+
+.action-menu-item:hover .action-item-icon {
+    transform: scale(1.08);
+}
+
+.action-item-content {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    line-height: 1.2;
+}
+.action-item-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.1px;
+}
+.action-item-desc {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+    font-weight: 400;
+}
+
+.action-menu-item:hover .action-item-title {
+    color: #0f172a;
+}
+
+.action-menu-item.text-danger:hover {
+    background-color: #fef2f2 !important;
+}
+.action-menu-item.text-danger:hover .action-item-title {
+    color: #b91c1c !important;
+}
 
 /* ─── Modal Premium ─── */
 .modal-content { border: none; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
@@ -155,13 +385,149 @@
 .modal-footer .btn { border-radius: 8px; font-weight: 600; font-size: 13px; padding: 8px 18px; transition: all 0.2s ease; }
 .modal-footer .btn-light { background: #f0f2f8; border-color: #f0f2f8; color: #5a5a7a; }
 .modal-footer .btn-light:hover { background: #e4e7f0; border-color: #e4e7f0; color: #43435c; }
+
+/* ─── Processing Overlay (SEFAZ Loading) ─── */
+.pdv-processing-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(15, 23, 42, 0.85) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    z-index: 99999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 20px !important;
+    animation: pdvOverlayFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.pdv-processing-overlay.d-none {
+    display: none !important;
+}
+
+@keyframes pdvOverlayFadeIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.pdv-processing-card {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(59, 130, 246, 0.25);
+    border-radius: 24px;
+    padding: 40px 32px 32px 32px;
+    width: 100%;
+    max-width: 440px;
+    text-align: center;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+}
+
+.pdv-processing-icon-wrapper {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 24px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pdv-processing-spinner-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 4px solid rgba(59, 130, 246, 0.18);
+    border-top-color: #3b82f6;
+    border-right-color: #60a5fa;
+    animation: pdvSpinRing 0.85s linear infinite;
+}
+
+@keyframes pdvSpinRing {
+    to { transform: rotate(360deg); }
+}
+
+.pdv-processing-icon-box {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    color: #ffffff;
+    box-shadow: 0 0 25px rgba(37, 99, 235, 0.6);
+    transition: all 0.3s ease;
+}
+
+.pdv-processing-icon-box.success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+}
+
+.pdv-processing-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+}
+
+.pdv-processing-msg {
+    font-size: 0.925rem;
+    color: #94a3b8;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.pdv-processing-progress {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.pdv-processing-progress-bar {
+    height: 100%;
+    width: 40%;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6);
+    border-radius: 10px;
+    animation: pdvProgressIndefinite 1.5s infinite ease-in-out;
+}
+
+@keyframes pdvProgressIndefinite {
+    0% { transform: translateX(-100%); width: 30%; }
+    50% { transform: translateX(100%); width: 60%; }
+    100% { transform: translateX(300%); width: 30%; }
+}
+
+.pdv-processing-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 0.775rem;
+    color: #cbd5e1;
+    font-weight: 500;
+}
 </style>
 @endsection
 
 @section('content')
 <div class="mt-3 text-dark">
     <div class="row">
-        <div class="card border-0 shadow-sm text-dark modulo-form-card">
+        <div class="card border-0 shadow-sm text-dark">
 
             <!-- CABEÇALHO PREMIUM -->
             <div class="card-header modulo-header-gradient py-3 px-4">
@@ -208,62 +574,68 @@
                         </h5>
                     </div>
 
-                    {!!Form::open()->fill(request()->all())->get()!!}
-                    <div class="row g-3">
-                        <!-- Cliente -->
-                        <div class="col-md-3 col-12">
-                            <label class="form-label"><i class="ri-user-line"></i> Cliente / Fornecedor</label>
-                            {!!Form::select('cliente_id', '')->attrs(['class' => 'select2 form-select'])!!}
-                        </div>
+                    <form method="get" action="{{ route('nfe.index') }}">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-3 col-12">
+                                <label class="form-label"><i class="ri-user-line"></i> Cliente / Fornecedor</label>
+                                <select class="select2 form-select" name="cliente_id">
+                                    @if(isset($cliente) && $cliente)
+                                        <option value="{{ $cliente->id }}" selected>{{ $cliente->info }}</option>
+                                    @endif
+                                </select>
+                            </div>
 
-                        <!-- Data Inicial -->
-                        <div class="col-md-2 col-6">
-                            <label class="form-label"><i class="ri-calendar-line"></i> Data Inicial</label>
-                            {!!Form::date('start_date', '')->attrs(['class' => 'form-control'])!!}
-                        </div>
+                            <!-- Data Inicial -->
+                            <div class="col-md-2 col-6">
+                                <label class="form-label"><i class="ri-calendar-line"></i> Data Inicial</label>
+                                <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control">
+                            </div>
 
-                        <!-- Data Final -->
-                        <div class="col-md-2 col-6">
-                            <label class="form-label"><i class="ri-calendar-line"></i> Data Final</label>
-                            {!!Form::date('end_date', '')->attrs(['class' => 'form-control'])!!}
-                        </div>
+                            <!-- Data Final -->
+                            <div class="col-md-2 col-6">
+                                <label class="form-label"><i class="ri-calendar-line"></i> Data Final</label>
+                                <input type="date" name="end_date" value="{{ request('end_date') }}" class="form-control">
+                            </div>
 
-                        @if(__isPlanoFiscal())
-                        <!-- Estado NFe -->
-                        <div class="col-md-2 col-6">
-                            <label class="form-label"><i class="ri-equalizer-line"></i> Estado NFe</label>
-                            {!!Form::select('estado', '', [
-                                'novo' => 'Novas',
-                                'rejeitado' => 'Rejeitadas',
-                                'cancelado' => 'Canceladas',
-                                'aprovado' => 'Aprovadas',
-                                '' => 'Todos'
-                            ])->attrs(['class' => 'form-select'])!!}
-                        </div>
+                            @if(__isPlanoFiscal())
+                            <!-- Estado NFe -->
+                            <div class="col-md-2 col-6">
+                                <label class="form-label"><i class="ri-equalizer-line"></i> Estado NFe</label>
+                                <select name="estado" class="form-select">
+                                    <option value="" @selected(request('estado') == '')>Todos</option>
+                                    <option value="novo" @selected(request('estado') == 'novo')>Novas</option>
+                                    <option value="rejeitado" @selected(request('estado') == 'rejeitado')>Rejeitadas</option>
+                                    <option value="cancelado" @selected(request('estado') == 'cancelado')>Canceladas</option>
+                                    <option value="aprovado" @selected(request('estado') == 'aprovado')>Aprovadas</option>
+                                </select>
+                            </div>
 
-                        <!-- Tipo (Saída / Entrada) -->
-                        <div class="col-md-1 col-6">
-                            <label class="form-label"><i class="ri-arrow-left-right-line"></i> Tipo</label>
-                            {!!Form::select('tpNF', '', [
-                                '1' => 'Saída',
-                                '0' => 'Entrada',
-                                '-' => 'Todos'
-                            ])->attrs(['class' => 'form-select'])!!}
-                        </div>
-                        @endif
+                            <!-- Tipo (Saída / Entrada) -->
+                            <div class="col-md-1 col-6">
+                                <label class="form-label"><i class="ri-arrow-left-right-line"></i> Tipo</label>
+                                <select name="tpNF" class="form-select">
+                                    <option value="-" @selected(request('tpNF') == '-' || request('tpNF') == '')>Todos</option>
+                                    <option value="1" @selected(request('tpNF') === '1')>Saída</option>
+                                    <option value="0" @selected(request('tpNF') === '0')>Entrada</option>
+                                </select>
+                            </div>
+                            @endif
 
-                        @if(__countLocalAtivo() > 1)
-                        <!-- Localização -->
-                        <div class="col-md-2 col-6">
-                            <label class="form-label"><i class="ri-store-2-line"></i> Local</label>
-                            {!!Form::select('local_id', '')->options(['' => 'Selecione'] + __getLocaisAtivoUsuario()->pluck('descricao', 'id')->all())
-                            ->attrs(['class' => 'select2 form-select'])!!}
-                        </div>
-                        @endif
+                            @if(__countLocalAtivo() > 1)
+                            <!-- Localização -->
+                            <div class="col-md-2 col-6">
+                                <label class="form-label"><i class="ri-store-2-line"></i> Local</label>
+                                <select name="local_id" class="select2 form-select">
+                                    <option value="">Selecione</option>
+                                    @foreach(__getLocaisAtivoUsuario() as $loc)
+                                    <option value="{{ $loc->id }}" @selected(request('local_id') == $loc->id)>{{ $loc->descricao }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @endif
 
-                        <!-- Botões de Ação -->
-                        <div class="col-md-2 col-12 ms-auto d-flex align-items-end">
-                            <div class="d-flex gap-2 w-100">
+                            <!-- Botões de Ação -->
+                            <div class="col-md-2 col-12 ms-auto d-flex gap-2">
                                 <button class="btn btn-pesquisar flex-grow-1" type="submit">
                                     <i class="ri-search-line"></i> Buscar
                                 </button>
@@ -272,17 +644,16 @@
                                 </a>
                             </div>
                         </div>
-                    </div>
-                    {!!Form::close()!!}
+                    </form>
                 </div>
 
                 <!-- TABELA PREMIUM -->
-                <div class="modulo-table-wrap">
-                    <div class="table-responsive">
+                <div class="modulo-table-wrap mb-4">
+                    <div class="table-responsive" style="min-height: 280px;">
                         <table class="table table-centered table-hover align-middle mb-0 text-dark">
                             <thead>
                                 <tr>
-                                    <th>#</th>
+                                    <th style="width: 70px;">Ações</th>
                                     <th>Cliente / Fornecedor</th>
                                     @if(__countLocalAtivo() > 1)
                                     <th>Local</th>
@@ -299,30 +670,350 @@
                                     <th>Origem</th>
                                     <th>Tipo</th>
                                     <th>Ref.</th>
-                                    <th class="text-end" style="min-width: 220px;">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td class="fw-bold text-muted">{{ $item->numero_sequencial }}</td>
-                                    @if($item->cliente)
-                                    <td>
-                                        <span class="fw-semibold text-dark d-block">{{ $item->cliente->razao_social }}</span>
-                                        <span class="text-muted fs-11">{{ $item->cliente->cpf_cnpj }}</span>
+                                    {{-- 1ª Coluna: Ações com Menu Dropdown --}}
+                                    <td style="white-space: nowrap; width: 70px;">
+                                        <form action="{{ route('nfe.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="m-0 d-inline">
+                                            @method('delete')
+                                            @csrf
+                                            <div class="dropdown dropdown-action-menu d-inline-block">
+                                                <button type="button" class="btn btn-action-trigger" data-bs-toggle="dropdown" aria-expanded="false" title="Opções da Venda">
+                                                    <i class="ri-more-2-fill"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-start action-dropdown-card shadow-lg">
+                                                
+                                                {{-- Imprimir NFe (DANFE Modal) --}}
+                                                @if($item->estado == 'aprovado')
+                                                <li>
+                                                    <a class="dropdown-item action-menu-item" href="javascript:void(0)" onclick="imprimir('{{$item->id}}', '{{$item->numero}}')">
+                                                        <div class="action-item-icon icon-primary">
+                                                            <i class="ri-printer-line"></i>
+                                                        </div>
+                                                        <div class="action-item-content">
+                                                            <span class="action-item-title">Imprimir NFe</span>
+                                                            <span class="action-item-desc">Escolher modelo DANFE</span>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                @endif
+
+                                                {{-- Imprimir Pedido de Venda --}}
+                                                <li>
+                                                    <a class="dropdown-item action-menu-item" target="_blank" href="{{ route('nfe.imprimirVenda', [$item->id]) }}">
+                                                        <div class="action-item-icon icon-info">
+                                                            <i class="ri-file-text-line"></i>
+                                                        </div>
+                                                        <div class="action-item-content">
+                                                            <span class="action-item-title">Imprimir Pedido</span>
+                                                            <span class="action-item-desc">Espelho do pedido de venda</span>
+                                                        </div>
+                                                    </a>
+                                                </li>
+
+                                                {{-- Transmitir ao SEFAZ --}}
+                                                @if(($item->estado == 'novo' || $item->estado == 'rejeitado') && __isPlanoFiscal())
+                                                    @can('nfe_transmitir')
+                                                    <li>
+                                                        <a class="dropdown-item action-menu-item" href="javascript:void(0)" onclick="transmitir('{{$item->id}}')">
+                                                            <div class="action-item-icon icon-success">
+                                                                <i class="ri-send-plane-fill"></i>
+                                                            </div>
+                                                            <div class="action-item-content">
+                                                                <span class="action-item-title">Transmitir SEFAZ</span>
+                                                                <span class="action-item-desc">Enviar nota para autorização</span>
+                                                            </div>
+                                                        </a>
+                                                    </li>
+                                                    @endcan
+                                                @endif
+
+                                                {{-- Editar Venda --}}
+                                                @if($item->estado == 'novo' || $item->estado == 'rejeitado')
+                                                    @can('nfe_edit')
+                                                    <li>
+                                                        <a class="dropdown-item action-menu-item" href="{{ route('nfe.edit', $item->id) }}">
+                                                            <div class="action-item-icon icon-warning">
+                                                                <i class="ri-pencil-line"></i>
+                                                            </div>
+                                                            <div class="action-item-content">
+                                                                <span class="action-item-title">Editar Venda</span>
+                                                                <span class="action-item-desc">Alterar produtos e valores</span>
+                                                            </div>
+                                                        </a>
+                                                    </li>
+                                                    @endcan
+                                                @endif
+
+                                                {{-- Carta de Correção (CC-e) --}}
+                                                @if($item->estado == 'aprovado')
+                                                    @can('nfe_transmitir')
+                                                    <li>
+                                                        <a class="dropdown-item action-menu-item" href="javascript:void(0)"
+                                                            onclick="corrigir(
+                                                                '{{$item->id}}',
+                                                                '{{$item->numero}}',
+                                                                '{{$item->serie ?? 1}}',
+                                                                '{{ $item->created_at ? \Carbon\Carbon::parse($item->created_at)->format('d/m/Y H:i') : '--' }}',
+                                                                '{{$item->cliente ? $item->cliente->razao_social : ($item->fornecedor ? $item->fornecedor->razao_social : '--')}}',
+                                                                '{{$item->chave ?? '--'}}'
+                                                            )">
+                                                            <div class="action-item-icon icon-warning">
+                                                                <i class="ri-file-warning-line"></i>
+                                                            </div>
+                                                            <div class="action-item-content">
+                                                                <span class="action-item-title">Carta de Correção</span>
+                                                                <span class="action-item-desc">Emitir CC-e para a NFe</span>
+                                                            </div>
+                                                        </a>
+                                                    </li>
+                                                    @endcan
+                                                @endif
+
+                                                {{-- Consultar Protocolo SEFAZ --}}
+                                                @if($item->estado == 'aprovado' || $item->estado == 'cancelado' || $item->estado == 'rejeitado')
+                                                <li>
+                                                    <a class="dropdown-item action-menu-item" href="javascript:void(0)" onclick="consultar('{{$item->id}}', '{{$item->numero}}')">
+                                                        <div class="action-item-icon icon-teal">
+                                                            <i class="ri-file-search-line"></i>
+                                                        </div>
+                                                        <div class="action-item-content">
+                                                            <span class="action-item-title">Consultar SEFAZ</span>
+                                                            <span class="action-item-desc">Verificar status do protocolo</span>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                @endif
+
+                                                {{-- Detalhes do Retorno SEFAZ --}}
+                                                @if($item->estado == 'aprovado' || $item->estado == 'cancelado' || $item->estado == 'rejeitado')
+                                                <li>
+                                                    <a class="dropdown-item action-menu-item" href="javascript:void(0)" onclick="info('{{$item->motivo_rejeicao}}', '{{$item->chave}}', '{{$item->estado}}', '{{$item->recibo}}')">
+                                                        <div class="action-item-icon icon-cyan">
+                                                            <i class="ri-information-line"></i>
+                                                        </div>
+                                                        <div class="action-item-content">
+                                                            <span class="action-item-title">Detalhes do Retorno</span>
+                                                            <span class="action-item-desc">Chave de acesso e recibo</span>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                @endif
+
+                                                {{-- Detalhes da Venda --}}
+                                                <li>
+                                                    <a class="dropdown-item action-menu-item" href="{{ route('nfe.show', $item->id) }}">
+                                                        <div class="action-item-icon icon-info">
+                                                            <i class="ri-eye-line"></i>
+                                                        </div>
+                                                        <div class="action-item-content">
+                                                            <span class="action-item-title">Detalhes da Venda</span>
+                                                            <span class="action-item-desc">Ver dados completos</span>
+                                                        </div>
+                                                    </a>
+                                                </li>
+
+                                                {{-- Duplicar Venda --}}
+                                                <li>
+                                                    <a class="dropdown-item action-menu-item" href="{{ route('nfe.duplicar', [$item->id]) }}">
+                                                        <div class="action-item-icon icon-purple">
+                                                            <i class="ri-file-copy-line"></i>
+                                                        </div>
+                                                        <div class="action-item-content">
+                                                            <span class="action-item-title">Duplicar Venda</span>
+                                                            <span class="action-item-desc">Criar cópia desta venda</span>
+                                                        </div>
+                                                    </a>
+                                                </li>
+
+                                                {{-- Enviar por E-mail (Aprovado) --}}
+                                                @if($item->estado == 'aprovado')
+                                                <li>
+                                                    <a class="dropdown-item action-menu-item" href="javascript:void(0)" onclick="enviarEmail('{{$item->id}}', '{{$item->numero}}')">
+                                                        <div class="action-item-icon icon-primary">
+                                                            <i class="ri-mail-send-line"></i>
+                                                        </div>
+                                                        <div class="action-item-content">
+                                                            <span class="action-item-title">Enviar por E-mail</span>
+                                                            <span class="action-item-desc">Enviar DANFE e XML</span>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                @endif
+
+                                                {{-- Download XML (Aprovado) --}}
+                                                @if($item->estado == 'aprovado')
+                                                <li>
+                                                    <a class="dropdown-item action-menu-item" href="{{ route('nfe.download-xml', [$item->id]) }}">
+                                                        <div class="action-item-icon icon-teal">
+                                                            <i class="ri-download-line"></i>
+                                                        </div>
+                                                        <div class="action-item-content">
+                                                            <span class="action-item-title">Download XML</span>
+                                                            <span class="action-item-desc">Baixar XML aprovado</span>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                @endif
+
+                                                {{-- Alterar Estado Fiscal --}}
+                                                @if(__isPlanoFiscal())
+                                                    @can('nfe_edit')
+                                                    <li>
+                                                        <a class="dropdown-item action-menu-item" href="{{ route('nfe.alterar-estado', $item->id) }}">
+                                                            <div class="action-item-icon icon-purple">
+                                                                <i class="ri-arrow-up-down-line"></i>
+                                                            </div>
+                                                            <div class="action-item-content">
+                                                                <span class="action-item-title">Alterar Estado</span>
+                                                                <span class="action-item-desc">Ajustar status fiscal</span>
+                                                            </div>
+                                                        </a>
+                                                    </li>
+                                                    @endcan
+                                                @endif
+
+                                                {{-- XML Temporário --}}
+                                                @if(($item->estado == 'novo' || $item->estado == 'rejeitado') && __isPlanoFiscal())
+                                                <li>
+                                                    <a class="dropdown-item action-menu-item" target="_blank" href="{{ route('nfe.xml-temp', $item->id) }}">
+                                                        <div class="action-item-icon icon-purple">
+                                                            <i class="ri-file-code-line"></i>
+                                                        </div>
+                                                        <div class="action-item-content">
+                                                            <span class="action-item-title">XML Temporário</span>
+                                                            <span class="action-item-desc">Visualizar XML gerado</span>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                @endif
+
+                                                {{-- DANFE Temporária --}}
+                                                @if($item->estado != 'aprovado')
+                                                <li>
+                                                    <a class="dropdown-item action-menu-item" target="_blank" href="{{ route('nfe.danfe-temporaria', [$item->id]) }}">
+                                                        <div class="action-item-icon icon-warning">
+                                                            <i class="ri-printer-fill"></i>
+                                                        </div>
+                                                        <div class="action-item-content">
+                                                            <span class="action-item-title">DANFE Temporária</span>
+                                                            <span class="action-item-desc">Pré-visualizar DANFE</span>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                @endif
+
+                                                {{-- Imprimir Cancelamento --}}
+                                                @if($item->estado == 'cancelado')
+                                                <li>
+                                                    <a class="dropdown-item action-menu-item" target="_blank" href="{{ route('nfe.imprimir-cancela', [$item->id]) }}">
+                                                        <div class="action-item-icon icon-danger">
+                                                            <i class="ri-printer-line"></i>
+                                                        </div>
+                                                        <div class="action-item-content">
+                                                            <span class="action-item-title">Imprimir Cancelamento</span>
+                                                            <span class="action-item-desc">Comprovante de cancelamento</span>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                @endif
+
+                                                {{-- Cancelar NFe SEFAZ --}}
+                                                @if($item->estado == 'aprovado')
+                                                    @can('nfe_transmitir')
+                                                    <li><hr class="dropdown-divider my-1"></li>
+                                                    <li>
+                                                        <button type="button" class="dropdown-item action-menu-item text-danger w-100 border-0 bg-transparent"
+                                                            onclick="cancelar(
+                                                                '{{$item->id}}',
+                                                                '{{$item->numero}}',
+                                                                '{{$item->serie ?? 1}}',
+                                                                '{{ $item->created_at ? \Carbon\Carbon::parse($item->created_at)->format('d/m/Y H:i') : '--' }}',
+                                                                '{{$item->cliente ? $item->cliente->razao_social : ($item->fornecedor ? $item->fornecedor->razao_social : '--')}}',
+                                                                '{{$item->chave ?? '--'}}'
+                                                            )">
+                                                            <div class="action-item-icon icon-danger">
+                                                                <i class="ri-close-circle-line"></i>
+                                                            </div>
+                                                            <div class="action-item-content">
+                                                                <span class="action-item-title text-danger">Cancelar NFe</span>
+                                                                <span class="action-item-desc text-danger-emphasis">Cancelar documento na SEFAZ</span>
+                                                            </div>
+                                                        </button>
+                                                    </li>
+                                                    @endcan
+                                                @endif
+
+                                                {{-- Excluir Venda --}}
+                                                @if($item->estado == 'novo' || $item->estado == 'rejeitado')
+                                                    @can('nfe_delete')
+                                                    <li><hr class="dropdown-divider my-1"></li>
+                                                    <li>
+                                                        <button type="button" class="dropdown-item action-menu-item btn-delete text-danger w-100 border-0 bg-transparent">
+                                                            <div class="action-item-icon icon-danger">
+                                                                <i class="ri-delete-bin-line"></i>
+                                                            </div>
+                                                            <div class="action-item-content">
+                                                                <span class="action-item-title text-danger">Excluir Venda</span>
+                                                                <span class="action-item-desc text-danger-emphasis">Remover registro de venda</span>
+                                                            </div>
+                                                        </button>
+                                                    </li>
+                                                    @endcan
+                                                @endif
+
+                                                </ul>
+                                            </div>
+                                        </form>
                                     </td>
-                                    @else
+
+                                    {{-- 2ª Coluna: Cliente / Fornecedor (Identificação Principal) --}}
                                     <td>
-                                        <span class="fw-semibold text-dark d-block">{{ $item->fornecedor ? $item->fornecedor->razao_social : '--' }}</span>
-                                        <span class="text-muted fs-11">{{ $item->fornecedor ? $item->fornecedor->cpf_cnpj : '--' }}</span>
+                                        <div class="d-flex flex-column">
+                                            @if($item->cliente)
+                                                <strong class="text-dark">{{ $item->cliente->razao_social }}</strong>
+                                                <div class="d-flex align-items-center gap-2 mt-1">
+                                                    <span class="badge bg-light text-muted border fs-11">#{{ $item->numero_sequencial }}</span>
+                                                    <span class="text-muted fs-11">{{ $item->cliente->cpf_cnpj }}</span>
+                                                </div>
+                                            @else
+                                                <strong class="text-dark">{{ $item->fornecedor ? $item->fornecedor->razao_social : '--' }}</strong>
+                                                <div class="d-flex align-items-center gap-2 mt-1">
+                                                    <span class="badge bg-light text-muted border fs-11">#{{ $item->numero_sequencial }}</span>
+                                                    @if($item->fornecedor && $item->fornecedor->cpf_cnpj)
+                                                        <span class="text-muted fs-11">{{ $item->fornecedor->cpf_cnpj }}</span>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
                                     </td>
-                                    @endif
+
+                                    {{-- Local (se multi-local) --}}
                                     @if(__countLocalAtivo() > 1)
-                                    <td class="text-danger fw-bold fs-12">{{ $item->localizacao->descricao ?? '' }}</td>
+                                    <td>
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 fs-12">
+                                            {{ $item->localizacao->descricao ?? '--' }}
+                                        </span>
+                                    </td>
                                     @endif
-                                    <td class="fs-12">{{ $item->user ? $item->user->name : '--' }}</td>
-                                    <td class="fw-bold">{{ $item->numero ?: '--' }}</td>
-                                    <td class="fw-bold text-success">R$ {{ __moeda($item->total) }}</td>
+
+                                    {{-- Usuário --}}
+                                    <td class="fs-12 text-dark">{{ $item->user ? $item->user->name : '--' }}</td>
+
+                                    {{-- Nº Nota --}}
+                                    <td>
+                                        <span class="fw-bold text-dark">{{ $item->numero ?: '--' }}</span>
+                                    </td>
+
+                                    {{-- Valor Total --}}
+                                    <td>
+                                        <strong class="text-success" style="font-size: 13.5px;">R$ {{ __moeda($item->total) }}</strong>
+                                    </td>
+
+                                    {{-- Estado e Ambiente Fiscal --}}
                                     @if(__isPlanoFiscal())
                                     <td>
                                         @if($item->estado == 'aprovado')
@@ -341,8 +1032,14 @@
                                         </span>
                                     </td>
                                     @endif
-                                    <td class="fs-12">{{ __data_pt($item->created_at) }}</td>
-                                    <td class="fs-12">{{ $item->data_emissao ? __data_pt($item->data_emissao, 1) : '--' }}</td>
+
+                                    {{-- Cadastro --}}
+                                    <td class="fs-12 text-muted">{{ __data_pt($item->created_at) }}</td>
+
+                                    {{-- Emissão --}}
+                                    <td class="fs-12 text-muted">{{ $item->data_emissao ? __data_pt($item->data_emissao, 1) : '--' }}</td>
+
+                                    {{-- Origem --}}
                                     <td>
                                         @if($item->api)
                                         <span class="badge bg-success-subtle text-success border border-success-subtle fs-11">API</span>
@@ -350,13 +1047,17 @@
                                         <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-11">Painel</span>
                                         @endif
                                     </td>
+
+                                    {{-- Tipo (Saída / Entrada) --}}
                                     <td>
                                         @if($item->tpNF)
-                                        <span class="fw-bold text-success fs-12">Saída</span>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle fs-11">Saída</span>
                                         @else
-                                        <span class="fw-bold text-primary fs-12">Entrada</span>
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle fs-11">Entrada</span>
                                         @endif
                                     </td>
+
+                                    {{-- Referência do Módulo Externo --}}
                                     <td>
                                         @if($item->pedidoEcommerce)
                                         <a title="Pedido E-commerce" class="badge bg-danger text-white text-decoration-none" href="{{ route('pedidos-ecommerce.show', [$item->pedidoEcommerce->id]) }}">EC</a>
@@ -373,107 +1074,6 @@
                                         @else
                                         <span class="text-muted">--</span>
                                         @endif
-                                    </td>
-                                    <td class="text-end">
-                                        <form action="{{ route('nfe.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="m-0">
-                                            @method('delete')
-                                            @csrf
-                                            <div class="modulo-action-group">
-
-                                                @if($item->estado == 'cancelado')
-                                                <a class="btn btn-danger btn-sm text-white" target="_blank" href="{{ route('nfe.imprimir-cancela', [$item->id]) }}" title="Imprimir Cancelamento">
-                                                    <i class="ri-printer-line"></i>
-                                                </a>
-                                                @endif
-
-                                                @if($item->estado == 'aprovado')
-                                                <button type="button" onclick="imprimir('{{$item->id}}', '{{$item->numero}}')" class="btn btn-primary btn-sm text-white" title="Imprimir NFe">
-                                                    <i class="ri-printer-line"></i>
-                                                </button>
-                                                @can('nfe_transmitir')
-                                                <button title="Cancelar NFe" type="button" class="btn btn-danger btn-sm text-white" onclick="cancelar('{{$item->id}}', '{{$item->numero}}')">
-                                                    <i class="ri-close-circle-line"></i>
-                                                </button>
-                                                <button title="Carta de Correção" type="button" class="btn btn-warning btn-sm text-white" onclick="corrigir('{{$item->id}}', '{{$item->numero}}')">
-                                                    <i class="ri-file-warning-line"></i>
-                                                </button>
-                                                @endcan
-                                                @endif
-
-                                                @if($item->estado == 'aprovado' || $item->estado == 'cancelado' || $item->estado == 'rejeitado')
-                                                <button title="Detalhes do Retorno SEFAZ" type="button" class="btn btn-dark btn-sm text-white" onclick="info('{{$item->motivo_rejeicao}}', '{{$item->chave}}', '{{$item->estado}}', '{{$item->recibo}}')">
-                                                    <i class="ri-file-line"></i>
-                                                </button>
-                                                @endif
-
-                                                @if($item->estado == 'novo' || $item->estado == 'rejeitado')
-                                                @can('nfe_edit')
-                                                <a class="btn btn-warning btn-sm text-white" href="{{ route('nfe.edit', $item->id) }}" title="Editar">
-                                                    <i class="ri-pencil-line"></i>
-                                                </a>
-                                                @endcan
-                                                @if(__isPlanoFiscal())
-                                                <a target="_blank" title="XML Temporário" class="btn btn-light btn-sm text-dark" href="{{ route('nfe.xml-temp', $item->id) }}">
-                                                    <i class="ri-file-code-line"></i>
-                                                </a>
-                                                @endif
-                                                @can('nfe_delete')
-                                                <button type="button" class="btn btn-danger btn-sm btn-delete" title="Excluir">
-                                                    <i class="ri-delete-bin-line"></i>
-                                                </button>
-                                                @endcan
-                                                @if(__isPlanoFiscal())
-                                                @can('nfe_transmitir')
-                                                <button title="Transmitir ao SEFAZ" type="button" class="btn btn-success btn-sm text-white" onclick="transmitir('{{$item->id}}')">
-                                                    <i class="ri-send-plane-fill"></i>
-                                                </button>
-                                                @endcan
-                                                @endif
-                                                @endif
-
-                                                <a class="btn btn-info btn-sm text-white" title="Imprimir Pedido" target="_blank" href="{{ route('nfe.imprimirVenda', [$item->id]) }}">
-                                                    <i class="ri-file-text-line"></i>
-                                                </a>
-
-                                                @if($item->estado == 'aprovado' || $item->estado == 'cancelado' || $item->estado == 'rejeitado')
-                                                <button title="Consultar Protocolo SEFAZ" type="button" class="btn btn-light btn-sm text-dark" onclick="consultar('{{$item->id}}', '{{$item->numero}}')">
-                                                    <i class="ri-file-search-line"></i>
-                                                </button>
-                                                @endif
-
-                                                @if(__isPlanoFiscal())
-                                                @can('nfe_edit')
-                                                <a title="Alterar Estado Fiscal" class="btn btn-secondary btn-sm text-white" href="{{ route('nfe.alterar-estado', $item->id) }}">
-                                                    <i class="ri-arrow-up-down-line"></i>
-                                                </a>
-                                                @endcan
-                                                @endif
-
-                                                <a class="btn btn-light btn-sm text-dark" title="Detalhes da Venda" href="{{ route('nfe.show', $item->id) }}">
-                                                    <i class="ri-eye-line"></i>
-                                                </a>
-
-                                                @if($item->estado != 'aprovado')
-                                                <a class="btn btn-danger btn-sm text-white" title="DANFE Temporária" target="_blank" href="{{ route('nfe.danfe-temporaria', [$item->id]) }}">
-                                                    <i class="ri-printer-fill"></i>
-                                                </a>
-                                                @endif
-
-                                                <a class="btn btn-primary btn-sm text-white" href="{{ route('nfe.duplicar', [$item->id]) }}" title="Duplicar Venda">
-                                                    <i class="ri-file-copy-line"></i>
-                                                </a>
-
-                                                @if($item->estado == 'aprovado')
-                                                <button title="Enviar por E-mail" type="button" class="btn btn-light btn-sm text-dark" onclick="enviarEmail('{{$item->id}}', '{{$item->numero}}')">
-                                                    <i class="ri-mail-send-line"></i>
-                                                </button>
-                                                <a title="Download XML" href="{{ route('nfe.download-xml', [$item->id]) }}" class="btn btn-dark btn-sm text-white">
-                                                    <i class="ri-download-line"></i>
-                                                </a>
-                                                @endif
-
-                                            </div>
-                                        </form>
                                     </td>
                                 </tr>
                                 @empty
@@ -542,86 +1142,257 @@
     </div>
 </div>
 
-<!-- Modal Cancelar NFe -->
+<!-- ============================================================ -->
+<!-- MODAL CANCELAR NFe — DESIGN PREMIUM IDÊNTICO AO MODELO      -->
+<!-- ============================================================ -->
 <div class="modal fade" id="modal-cancelar" tabindex="-1" aria-labelledby="modalCancelarLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content text-dark">
-            <div class="modal-header">
-                <h5 class="modal-title d-flex align-items-center gap-2" id="modalCancelarLabel">
-                    <i class="ri-close-circle-line"></i> Cancelar NFe <strong class="ref-numero text-white"></strong>
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content text-dark" style="border-radius:12px; border:none; overflow:hidden; box-shadow:0 20px 45px rgba(0,0,0,0.18);">
+
+            {{-- Cabeçalho Vermelho --}}
+            <div class="modal-nfe-header-red d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="modal-title mb-0" id="modalCancelarLabel">Cancelar NF-e</h5>
+                    <p class="modal-subtitle">O cancelamento da NF-e será transmitido para a SEFAZ</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="row g-2">
-                    <div class="col-12">
-                        {!!Form::text('motivo-cancela', 'Motivo da Justificativa (mín. 15 caracteres)')->required()!!}
+
+            <div class="modal-body p-4" style="background:#fff;">
+
+                {{-- Alerta de Atenção Vermelho --}}
+                <div class="modal-alert-danger-soft">
+                    <i class="ri-alert-line" style="color:#ef4444; font-size:18px; margin-top:1px; flex-shrink:0;"></i>
+                    <div>
+                        <div style="font-size:12px; font-weight:700; color:#dc2626; margin-bottom:2px;">Atenção ao cancelar esta NF-e</div>
+                        <p style="font-size:11px; color:#ef4444; margin:0; line-height:1.4;">Após o cancelamento autorizado pela SEFAZ, a nota fiscal ficará sem validade fiscal e não poderá ser utilizada novamente.</p>
                     </div>
                 </div>
+
+                {{-- Card Dados da NF-e --}}
+                <div class="modal-nfe-dados-card">
+                    <span class="card-title">Dados da NF-e</span>
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <div class="card-label">Número NF-e</div>
+                            <div class="card-val" id="cancela-card-numero">--</div>
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <div class="card-label">Série</div>
+                            <div class="card-val" id="cancela-card-serie">1</div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card-label">Data de Emissão</div>
+                            <div class="card-val" id="cancela-card-data">--</div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="card-label">Cliente</div>
+                            <div class="card-val" id="cancela-card-cliente">--</div>
+                        </div>
+                        <div class="col-12 mt-3">
+                            <div class="card-label">Chave de Acesso</div>
+                            <div style="font-size:12px; font-weight:700; color:#334155; word-break:break-all;" id="cancela-card-chave">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Campo Motivo --}}
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-dark mb-1" style="font-size:13px;">
+                        Motivo do Cancelamento <span class="text-danger">*</span>
+                    </label>
+                    <textarea
+                        id="inp-motivo-cancela"
+                        class="form-control"
+                        rows="3"
+                        maxlength="255"
+                        style="border-radius:8px; border-color:#cbd5e1; font-size:13px; resize:vertical;"
+                        placeholder="Descreva o motivo do cancelamento da NF-e"
+                        required
+                        minlength="15"
+                        oninput="nfeAtualizarContadorCancela(this)"></textarea>
+                    <div class="mt-1">
+                        <span style="font-size:11px; color:#94a3b8;"><span id="cancela-char-count">0</span> de 255 caracteres utilizados</span>
+                    </div>
+                </div>
+
+                {{-- Alerta Amarelo Importante --}}
+                <div class="modal-alert-yellow">
+                    <div style="font-size:12px; font-weight:700; color:#854d0e; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                        <i class="ri-information-line" style="color:#ca8a04;"></i> Importante
+                    </div>
+                    <ul>
+                        <li><span style="color:#eab308; font-weight:bold;">•</span> O cancelamento deve respeitar o prazo permitido pela SEFAZ;</li>
+                        <li><span style="color:#eab308; font-weight:bold;">•</span> Após autorizado, o cancelamento não poderá ser revertido;</li>
+                        <li><span style="color:#eab308; font-weight:bold;">•</span> Informe um motivo claro e objetivo.</li>
+                    </ul>
+                </div>
+
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Fechar</button>
-                <button type="button" id="btn-cancelar" class="btn btn-danger btn-sm">Confirmar Cancelamento</button>
+
+            <div class="modal-footer border-0 pt-0 px-4 pb-3 gap-2" style="background:#fff;">
+                <button type="button" class="btn btn-sm px-4 fw-medium" data-bs-dismiss="modal"
+                    style="background:#f1f5f9; border:none; border-radius:6px; color:#374151;">Fechar</button>
+                <button type="button" id="btn-cancelar" class="btn btn-danger btn-sm px-4 fw-bold"
+                    style="background:#ef4444; border:none; border-radius:6px; display:inline-flex; align-items:center; gap:6px;">
+                    <i class="ri-record-circle-line"></i> Transmitir Cancelamento
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal E-mail NFe -->
+<!-- ============================================================ -->
+<!-- MODAL E-MAIL NFe — DESIGN PREMIUM                           -->
+<!-- ============================================================ -->
 <div class="modal fade" id="modal-email" tabindex="-1" aria-labelledby="modalEmailLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content text-dark">
-            <div class="modal-header">
-                <h5 class="modal-title d-flex align-items-center gap-2" id="modalEmailLabel">
-                    <i class="ri-mail-send-line"></i> Enviar NFe por E-mail <strong class="ref-numero text-white"></strong>
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content text-dark" style="border-radius:12px; border:none; overflow:hidden; box-shadow:0 20px 45px rgba(0,0,0,0.15);">
+
+            <div style="background:#2563eb; padding:16px 20px;" class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="mb-0" id="modalEmailLabel" style="color:#fff; font-size:16px; font-weight:700;">
+                        <i class="ri-mail-send-line me-2"></i>Enviar NF-e por E-mail
+                    </h5>
+                    <p style="color:rgba(255,255,255,0.9); font-size:11.5px; margin:3px 0 0;">Nota Fiscal <strong class="ref-numero"></strong></p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="row g-2">
-                    <div class="col-md-12">
-                        {!!Form::text('email', 'Endereço de E-mail')->required()->type('email')!!}
-                    </div>
-                    <div class="col-md-6 mt-3">
-                        {!!Form::checkbox('danfe', 'Incluir DANFE')!!}
-                    </div>
-                    <div class="col-md-6 mt-3">
-                        {!!Form::checkbox('xml', 'Incluir XML')!!}
+
+            <div class="modal-body p-4" style="background:#fff;">
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-dark mb-1" style="font-size:13px;">Endereço de E-mail do Destinatário:</label>
+                    <input type="email" id="inp-email" class="form-control" placeholder="cliente@email.com"
+                        style="border-radius:8px; border-color:#cbd5e1; font-size:13px;" required>
+                </div>
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px;">
+                    <p style="font-size:11.5px; font-weight:700; color:#334155; margin-bottom:10px;">Anexos:</p>
+                    <div class="d-flex gap-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="inp-danfe" checked>
+                            <label class="form-check-label" for="inp-danfe" style="font-size:13px;">Incluir DANFE (PDF)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="inp-xml" checked>
+                            <label class="form-check-label" for="inp-xml" style="font-size:13px;">Incluir XML</label>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Fechar</button>
-                <button type="button" id="btn-enviar-email" class="btn btn-success btn-sm">Enviar E-mail</button>
+
+            <div class="modal-footer border-0 pt-0 px-4 pb-3 gap-2" style="background:#fff;">
+                <button type="button" class="btn btn-sm px-4" data-bs-dismiss="modal"
+                    style="background:#f1f5f9; border:none; border-radius:6px; color:#374151; font-weight:500;">Fechar</button>
+                <button type="button" id="btn-enviar-email" class="btn btn-primary btn-sm px-4 fw-bold"
+                    style="border:none; border-radius:6px; display:inline-flex; align-items:center; gap:6px;">
+                    <i class="ri-send-plane-fill"></i> Enviar E-mail
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Corrigir NFe (CC-e) -->
+<!-- ============================================================ -->
+<!-- MODAL CARTA DE CORREÇÃO (CC-e) — DESIGN PREMIUM             -->
+<!-- ============================================================ -->
 <div class="modal fade" id="modal-corrigir" tabindex="-1" aria-labelledby="modalCorrigirLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content text-dark">
-            <div class="modal-header">
-                <h5 class="modal-title d-flex align-items-center gap-2" id="modalCorrigirLabel">
-                    <i class="ri-file-warning-line"></i> Carta de Correção (CC-e) <strong class="ref-numero text-white"></strong>
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content text-dark" style="border-radius:12px; border:none; overflow:hidden; box-shadow:0 20px 45px rgba(0,0,0,0.18);">
+
+            {{-- Cabeçalho Teal --}}
+            <div class="modal-nfe-header-teal d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="modal-title mb-0" id="modalCorrigirLabel">Carta de Correção (CC-e)</h5>
+                    <p class="modal-subtitle">O evento CC-e será transmitido à SEFAZ para correção da NF-e</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="row g-2">
-                    <div class="col-12">
-                        {!!Form::text('motivo-corrigir', 'Texto de Correção (mín. 15 caracteres)')->required()!!}
+
+            <div class="modal-body p-4" style="background:#fff;">
+
+                {{-- Alerta Informativo Azul --}}
+                <div class="modal-alert-info-soft">
+                    <i class="ri-information-line" style="color:#4f46e5; font-size:18px; margin-top:1px; flex-shrink:0;"></i>
+                    <div>
+                        <div style="font-size:12px; font-weight:700; color:#312e81; margin-bottom:2px;">O que é a Carta de Correção?</div>
+                        <p style="font-size:11px; color:#6366f1; margin:0; line-height:1.4;">A CC-e permite corrigir informações acessórias da NF-e. Ela não pode alterar valores fiscais, impostos ou dados do destinatário.</p>
                     </div>
                 </div>
+
+                {{-- Card Dados da NF-e --}}
+                <div class="modal-nfe-dados-card">
+                    <span class="card-title">Dados da NF-e</span>
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <div class="card-label">Número NF-e</div>
+                            <div class="card-val" id="cce-card-numero">--</div>
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <div class="card-label">Série</div>
+                            <div class="card-val" id="cce-card-serie">1</div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card-label">Data de Emissão</div>
+                            <div class="card-val" id="cce-card-data">--</div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="card-label">Cliente</div>
+                            <div class="card-val" id="cce-card-cliente">--</div>
+                        </div>
+                        <div class="col-12 mt-3">
+                            <div class="card-label">Chave de Acesso</div>
+                            <div style="font-size:12px; font-weight:700; color:#334155; word-break:break-all;" id="cce-card-chave">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Campo Texto da Correção --}}
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-dark mb-1" style="font-size:13px;">
+                        Texto da Correção <span class="text-danger">*</span>
+                    </label>
+                    <textarea
+                        id="inp-motivo-corrigir"
+                        class="form-control"
+                        rows="4"
+                        maxlength="1000"
+                        style="border-radius:8px; border-color:#cbd5e1; font-size:13px; resize:vertical;"
+                        placeholder="Descreva aqui a correção a ser considerada.&#10;&#10;Exemplo: Onde se lê &quot;CFOP 5102&quot;, leia-se &quot;CFOP 5405&quot;."
+                        required
+                        minlength="15"
+                        oninput="nfeAtualizarContadorCce(this)"></textarea>
+                    <div class="mt-1">
+                        <span style="font-size:11px; color:#94a3b8;"><span id="cce-char-count">0</span> de 1000 caracteres utilizados</span>
+                    </div>
+                </div>
+
+                {{-- Alerta Amarelo Atenção --}}
+                <div class="modal-alert-yellow">
+                    <div style="font-size:12px; font-weight:700; color:#854d0e; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                        <i class="ri-alert-line" style="color:#ca8a04;"></i> Atenção — A CC-e <strong>NÃO</strong> pode ser usada para:
+                    </div>
+                    <ul>
+                        <li><span style="color:#eab308; font-weight:bold;">•</span> Alterar valores fiscais, impostos ou alíquotas;</li>
+                        <li><span style="color:#eab308; font-weight:bold;">•</span> Alterar dados do destinatário/remetente;</li>
+                        <li><span style="color:#eab308; font-weight:bold;">•</span> Alterar data de emissão da NF-e.</li>
+                    </ul>
+                </div>
+
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Fechar</button>
-                <button type="button" id="btn-corrigir" class="btn btn-warning btn-sm">Transmitir CC-e</button>
+
+            <div class="modal-footer border-0 pt-0 px-4 pb-3 gap-2" style="background:#fff;">
+                <button type="button" class="btn btn-sm px-4 fw-medium" data-bs-dismiss="modal"
+                    style="background:#f1f5f9; border:none; border-radius:6px; color:#374151;">Fechar</button>
+                <button type="button" id="btn-corrigir" class="btn btn-sm px-4 fw-bold text-white"
+                    style="background:#0d9488; border:none; border-radius:6px; display:inline-flex; align-items:center; gap:6px;">
+                    <i class="ri-send-plane-fill"></i> Transmitir CC-e
+                </button>
             </div>
         </div>
     </div>
 </div>
+
+@include('modals._processing_overlay')
 
 @endsection
 
@@ -640,11 +1411,13 @@
     }
 
     $('#btn-consulta-sefaz').click(() => {
+        nfeMostrarProcessingOverlay('Consultando SEFAZ', 'Verificando disponibilidade dos serviços da SEFAZ...', 'ri-pulse-line');
         $.post(path_url + 'api/nfe_painel/consulta-status-sefaz', {
             empresa_id: $('#empresa_id').val(),
             usuario_id: $('#usuario_id').val(),
         })
         .done((res) => {
+            nfeEsconderProcessingOverlay();
             let msg = "cStat: " + res.cStat
             msg += "\nMotivo: " + res.xMotivo
             msg += "\nAmbiente: " + (res.tpAmb == 2 ? "Homologação" : "Produção")
@@ -652,10 +1425,51 @@
             swal("Status SEFAZ", msg, "success")
         })
         .fail((err) => {
+            nfeEsconderProcessingOverlay();
             try { swal("Erro", err.responseText, "error") }
             catch { swal("Erro", "Algo deu errado", "error") }
         })
     })
 </script>
+
+{{-- Carregar nfe_transmitir.js PRIMEIRO para depois sobrescrever com as funções premium --}}
 <script type="text/javascript" src="/js/nfe_transmitir.js"></script>
+
+<script type="text/javascript">
+    // ─── Sobrescreve cancelar() do nfe_transmitir.js com versão premium (card de dados) ───
+    function cancelar(id, numero, serie, data, cliente, chave) {
+        IDNFE = id;
+        $('.ref-numero').text(numero || '');
+        $('#cancela-card-numero').text(numero || '--');
+        $('#cancela-card-serie').text(serie || '1');
+        $('#cancela-card-data').text(data || '--');
+        $('#cancela-card-cliente').text(cliente || '--');
+        $('#cancela-card-chave').text(chave || '--');
+        $('#inp-motivo-cancela').val('');
+        $('#cancela-char-count').text('0');
+        $('#modal-cancelar').modal('show');
+    }
+
+    // ─── Sobrescreve corrigir() do nfe_transmitir.js com versão premium (card de dados) ───
+    function corrigir(id, numero, serie, data, cliente, chave) {
+        IDNFE = id;
+        $('.ref-numero').text(numero || '');
+        $('#cce-card-numero').text(numero || '--');
+        $('#cce-card-serie').text(serie || '1');
+        $('#cce-card-data').text(data || '--');
+        $('#cce-card-cliente').text(cliente || '--');
+        $('#cce-card-chave').text(chave || '--');
+        $('#inp-motivo-corrigir').val('');
+        $('#cce-char-count').text('0');
+        $('#modal-corrigir').modal('show');
+    }
+
+    function nfeAtualizarContadorCancela(el) {
+        $('#cancela-char-count').text(el.value.length);
+    }
+
+    function nfeAtualizarContadorCce(el) {
+        $('#cce-char-count').text(el.value.length);
+    }
+</script>
 @endsection

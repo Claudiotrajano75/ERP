@@ -82,35 +82,33 @@ $('body').on('change', '.cliente_id', function () {
         });
     })
 
-    $("#inp-produto_id").select2({
+function initSelect2Produto($el) {
+    $el.select2({
         minimumInputLength: 2,
         language: "pt-BR",
         placeholder: "Digite para buscar o produto",
         width: "100%",
+        theme: "bootstrap4",
         ajax: {
             cache: true,
             url: path_url + "api/produtos",
             dataType: "json",
             data: function (params) {
                 let empresa_id = $('#empresa_id').val()
-
                 let local_id = null
                 if($('#inp-local_id').length){
-                    let local_id = $('#inp-local_id').val()
+                    local_id = $('#inp-local_id').val()
                     if(!local_id){
                         swal("Alerta", "Selecione primeiramente o local", "warning")
                         return;
                     }
                 }
-                console.clear();
-
                 var query = {
                     pesquisa: params.term,
                     empresa_id: empresa_id,
                     usuario_id: $('#usuario_id').val(),
                     local_id: $('#inp-local_id').length ? $('#inp-local_id').val() : null
                 };
-                console.log(query)
                 return query;
             },
             processResults: function (response) {
@@ -133,7 +131,9 @@ $('body').on('change', '.cliente_id', function () {
                             o.text += ' R$ ' + convertFloatToMoeda(v.valor_unitario);
                         }
                     }else{
-                        o.text += ' R$ ' + convertFloatToMoeda(v.valor_compra);
+                        if(parseFloat(v.valor_compra) > 0){
+                            o.text += ' R$ ' + convertFloatToMoeda(v.valor_compra);
+                        }
                     }
                     if(v.codigo_barras){
                         o.text += ' [' + v.codigo_barras  + ']';
@@ -147,101 +147,127 @@ $('body').on('change', '.cliente_id', function () {
             },
         },
     });
+}
 
-    $('.btn-add-tr-nfe').on("click", function () {
-        console.clear()
-        var $table = $(this)
-        .closest(".row")
-        .prev()
-        .find(".table-dynamic");
-
-        var hasEmpty = false;
-
-        $table.find("input, select").each(function () {
-            if (($(this).val() == "" || $(this).val() == null) && $(this).attr("type") != "hidden" && $(this).attr("type") != "file" && !$(this).hasClass("ignore")) {
-                hasEmpty = true;
-            }
-        });
-
-        if (hasEmpty) {
-            swal(
-                "Atenção",
-                "Preencha todos os campos antes de adicionar novos.",
-                "warning"
-                );
-            return;
+$(function () {
+    $('.table-produtos tbody .produto_id, #inp-produto_id').each(function () {
+        if (!$(this).data('select2')) {
+            initSelect2Produto($(this));
         }
-    // $table.find("select.select2").select2("destroy");
-    var $tr = $table.find(".dynamic-form").first();
-    $tr.find("select.select2").select2("destroy");
+    });
+});
+
+$(document).on("click", ".btn-add-tr-nfe", function (e) {
+    e.preventDefault();
+    var $table = $('.table-produtos');
+    if ($table.length === 0) {
+        $table = $(this).closest(".card-secao-fiscal").find(".table-dynamic");
+    }
+    if ($table.length === 0) {
+        $table = $(".table-dynamic").first();
+    }
+
+    var $tbody = $table.find("tbody");
+    var $tr = $tbody.find(".dynamic-form").first();
+    if ($tr.length === 0) {
+        $tr = $tbody.find("tr").first();
+    }
+    if ($tr.length === 0) return;
+
     var $clone = $tr.clone();
     $clone.show();
 
-    $clone.find("input,select").val("");
-    $clone.find("span").html("");
-    
-    $table.append($clone);
-    setTimeout(function () {
-        $("tbody select.select2").select2({
-            language: "pt-BR",
-            width: "100%",
-            theme: "bootstrap4"
+    // Remove wrappers do Select2 gerados na linha clonada
+    $clone.find(".select2-container").remove();
+
+    // Limpa estado de Select2 nos selects clonados
+    $clone.find("select").each(function () {
+        $(this).removeClass("select2-hidden-accessible");
+        $(this).removeAttr("data-select2-id");
+        $(this).removeAttr("tabindex");
+        $(this).removeAttr("aria-hidden");
+    });
+
+    // Limpa o select do produto na linha clonada
+    var $prodSelect = $clone.find(".produto_id");
+    $prodSelect.empty();
+    $prodSelect.val(null);
+    $prodSelect.removeAttr("data-select2-id");
+    $prodSelect.removeAttr("aria-labelledby");
+
+    // Limpa todos os inputs de valor para não duplicar dados da linha clonada
+    $clone.find("input").val("");
+    $clone.find("input[name='variacao_id[]']").val("");
+
+    // Remove spans de variação que possam ter sido clonados
+    $clone.find("span").remove();
+
+    $tbody.append($clone);
+
+    // Inicializa Select2 normais na nova linha
+    $clone.find("select.select2").not(".produto_id").select2({
+        language: "pt-BR",
+        width: "100%",
+        theme: "bootstrap4"
+    });
+
+    // Inicializa Select2 com AJAX do produto exclusivamente na nova linha
+    initSelect2Produto($prodSelect);
+});
+
+// Garante que linhas vazias sem produto não poluam o submit se houver produtos válidos
+$(document).on("submit", "#form-nfe", function () {
+    var $trs = $('.table-produtos tbody tr');
+    var filledCount = 0;
+    $trs.each(function () {
+        var prodId = $(this).find('.produto_id').val();
+        if (prodId && prodId !== '' && prodId !== 'null') {
+            filledCount++;
+        }
+    });
+
+    if (filledCount > 0) {
+        $trs.each(function () {
+            var prodId = $(this).find('.produto_id').val();
+            if (!prodId || prodId === '' || prodId === 'null') {
+                $(this).find("input, select, textarea").prop("disabled", true);
+            }
         });
+    }
+});
 
-        $("tbody #inp-produto_id").select2({
-            minimumInputLength: 2,
-            language: "pt-BR",
-            placeholder: "Digite para buscar o produto",
-            width: "100%",
-            theme: "bootstrap4",
-            ajax: {
-                cache: true,
-                url: path_url + "api/produtos",
-                dataType: "json",
-                data: function (params) {
-                    let empresa_id = $('#empresa_id').val()
-                    console.clear();
-                    var query = {
-                        pesquisa: params.term,
-                        empresa_id: empresa_id,
-                        local_id: $('#inp-local_id').length ? $('#inp-local_id').val() : null
-                    };
-                    return query;
-                },
-                processResults: function (response) {
-                    var results = [];
-                    let compra = 0
-                    if($('#is_compra') && $('#is_compra').val() == 1){
-                        compra = 1
-                    }
-                    $.each(response, function (i, v) {
-                        var o = {};
-                        o.id = v.id;
-                        if(v.codigo_variacao){
-                            o.codigo_variacao = v.codigo_variacao
-                        }
+$(document).on("click", ".btn-add-tr-fatura, .table-fatura ~ .row .btn-add-tr", function (e) {
+    e.preventDefault();
+    var $table = $('.table-fatura');
+    if ($table.length === 0) return;
 
-                        o.text = v.nome;
-                        if(compra == 0){
-                            o.text += ' R$ ' + convertFloatToMoeda(v.valor_unitario);
-                        }else{
-                            o.text += ' R$ ' + convertFloatToMoeda(v.valor_compra);
-                        }
-                        if(v.codigo_barras){
-                            o.text += ' [' + v.codigo_barras  + ']';
-                        }
-                        o.value = v.id;
-                        results.push(o);
-                    });
-                    return {
-                        results: results,
-                    };
-                },
-            },
-        });
-    }, 100);
+    var $tbody = $table.find("tbody");
+    var $tr = $tbody.find(".dynamic-form").first();
+    if ($tr.length === 0) return;
 
-})
+    var $clone = $tr.clone();
+    $clone.show();
+    $clone.find(".select2-container").remove();
+    $clone.find("select").each(function () {
+        $(this).removeClass("select2-hidden-accessible");
+        $(this).removeAttr("data-select2-id");
+        $(this).removeAttr("tabindex");
+        $(this).removeAttr("aria-hidden");
+    });
+    $clone.find("input, select").val("");
+
+    let data = new Date();
+    let dataFormatada = (data.getFullYear() + "-" + adicionaZero((data.getMonth() + 1)) + "-" + adicionaZero(data.getDate()));
+    $clone.find("input[type=date]").val(dataFormatada);
+
+    $tbody.append($clone);
+
+    $clone.find("select.select2").select2({
+        language: "pt-BR",
+        width: "100%",
+        theme: "bootstrap4"
+    });
+});
 
     $('body').on('change', '#inp-tpNF', function () {
         let tpNF = $('#inp-tpNF').val()
@@ -360,7 +386,7 @@ $('body').on('change', '.cliente_id', function () {
             let value_unit = 0
             let compra = $('#is_compra').val()
             if (compra == '1') {
-                if (e.valor_compra) {
+                if (parseFloat(e.valor_compra) > 0) {
                     value_unit = e.valor_compra
                 } else {
                     value_unit = 0
@@ -504,41 +530,7 @@ $('body').on('change', '.cliente_id', function () {
         $sub.val(convertFloatToMoeda(qtd * value_unit))
     })
 
-    $('.btn-add-tr').on("click", function () {
 
-        var $table = $(this)
-        .closest(".row")
-        .prev()
-        .find(".table-dynamic");
-        var hasEmpty = false;
-        $table.find("input, select").each(function () {
-            if (($(this).val() == "" || $(this).val() == null) && $(this).attr("type") != "hidden" && $(this).attr("type") != "file" && !$(this).hasClass("ignore")) {
-                hasEmpty = true;
-            }
-        });
-        if (hasEmpty) {
-            swal(
-                "Atenção",
-                "Preencha todos os campos antes de adicionar novos.",
-                "warning"
-                );
-            return;
-        }
-    // $table.find("select.select2").select2("destroy");
-    var $tr = $table.find(".dynamic-form").first();
-    $tr.find("select.select2").select2("destroy");
-    var $clone = $tr.clone();
-    $clone.show();
-    $clone.find("input,select").val("");
-    $table.append($clone);
-    setTimeout(function () {
-        $("tbody select.select2").select2({
-            language: "pt-BR",
-            width: "100%",
-            theme: "bootstrap4"
-        });
-    }, 100);
-})
 
     $(document).delegate(".btn-remove-tr", "click", function (e) {
         e.preventDefault();
@@ -735,13 +727,24 @@ $('.btn-salvar-nfe').click(() => {
 
 function addClassRequired() {
     let infMsg = ""
+    let tabSwitched = false
     $("body #form-nfe").find('input, select').each(function () {
         if ($(this).prop('required')) {
-            if ($(this).val() == "") {
+            if ($(this).val() == "" || $(this).val() == null) {
                 try {
                     infMsg += $(this).prev()[0].textContent + "\n"
-                } catch { }
+                } catch {
+                    infMsg += ($(this).attr('name') || 'Campo') + "\n"
+                }
                 $(this).addClass('is-invalid')
+                // Leva o usuário para a aba que contém o primeiro campo pendente
+                if (!tabSwitched) {
+                    let $pane = $(this).closest('.tab-pane')
+                    if ($pane.length && $pane.attr('id')) {
+                        $('a.nav-link[href="#' + $pane.attr('id') + '"]').trigger('click')
+                        tabSwitched = true
+                    }
+                }
             } else {
                 $(this).removeClass('is-invalid')
             }
@@ -749,11 +752,22 @@ function addClassRequired() {
             $(this).removeClass('is-invalid')
         }
     })
-    if (!$('.produto_id').val()) {
-        infMsg += "Produto\n"
+    // Valida se há pelo menos um produto selecionado em qualquer linha
+    let hasProduct = false;
+    $('.table-produtos tbody tr').each(function () {
+        let pVal = $(this).find('.produto_id').val();
+        if (pVal && pVal !== '' && pVal !== 'null') {
+            hasProduct = true;
+        }
+    });
+
+    if (!hasProduct) {
+        infMsg += "Produto\n";
     }
     if (infMsg != "") {
         swal("Campos pendentes", infMsg, "warning")
+        return false
     }
+    return true
 }
 

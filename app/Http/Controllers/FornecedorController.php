@@ -36,7 +36,14 @@ class FornecedorController extends Controller
             });
         })
         ->paginate(env("PAGINACAO"));
-        return view('fornecedores.index', compact('data'));
+
+        $stats = [
+            'total' => Fornecedor::where('empresa_id', request()->empresa_id)->count(),
+            'total_compras' => Fornecedor::where('empresa_id', request()->empresa_id)->has('compras')->count(),
+            'total_cidades' => Fornecedor::where('empresa_id', request()->empresa_id)->whereNotNull('cidade_id')->distinct('cidade_id')->count('cidade_id'),
+        ];
+
+        return view('fornecedores.index', compact('data', 'stats'));
     }
 
     public function create()

@@ -923,29 +923,54 @@ $("#form-pdv-update").on("submit", function (e) {
 
 function gerarNfce(venda) {
 	let empresa_id = $("#empresa_id").val();
+	if (typeof pdvMostrarProcessingOverlay === 'function') {
+		pdvMostrarProcessingOverlay(
+			'Transmitindo NFCe para a SEFAZ',
+			'Aguardando resposta da Secretaria da Fazenda...',
+			'ri-cloud-upload-line'
+		);
+	}
 	$('#btn_fiscal, #btn_nao_fiscal').addClass('pdv-btn-loading').prop('disabled', true);
 
 	$.post(path_url + "api/nfce_painel/emitir", {
 		id: venda.id,
 	})
 	.done((success) => {
+		if (typeof pdvAtualizarProcessingOverlay === 'function') {
+			pdvAtualizarProcessingOverlay(
+				'NFCe Emitida com Sucesso!',
+				'Autorização recebida. Abrindo impressão do cupom...',
+				'ri-checkbox-circle-fill',
+				true
+			);
+		}
 		$('#btn_fiscal, #btn_nao_fiscal').removeClass('pdv-btn-loading').prop('disabled', false);
-		swal("Sucesso", "NFCe emitida " + success.recibo + " - chave: [" + success.chave + "]", "success")
-		.then(() => {
-			window.open(path_url + 'nfce/imprimir/' + venda.id, "_blank")
-			setTimeout(() => {
-				if(!update){
-					location.reload()
-				}else{
-					location.href = path_url+'frontbox'
-				}
-			}, 100)
-		})
+		
+		setTimeout(function() {
+			if (typeof pdvEsconderProcessingOverlay === 'function') {
+				pdvEsconderProcessingOverlay();
+			}
+			swal("Sucesso", "NFCe emitida " + (success.recibo || '') + " - chave: [" + (success.chave || '') + "]", "success")
+			.then(() => {
+				window.open(path_url + 'nfce/imprimir/' + venda.id, "_blank")
+				setTimeout(() => {
+					if(!update){
+						location.reload()
+					}else{
+						location.href = path_url+'frontbox'
+					}
+				}, 100)
+			})
+		}, 500);
 	})
 	.fail((err) => {
+		if (typeof pdvEsconderProcessingOverlay === 'function') {
+			pdvEsconderProcessingOverlay();
+		}
 		$('#btn_fiscal, #btn_nao_fiscal').removeClass('pdv-btn-loading').prop('disabled', false);
 		console.log(err)
-		swal("Algo deu errado", err.responseJSON, "error")
+		var msgErro = (err.responseJSON && err.responseJSON.message) ? err.responseJSON.message : (err.responseJSON || "Erro ao comunicar com a SEFAZ");
+		swal("Algo deu errado na emissão da NFCe", msgErro, "error")
 	})
 }
 

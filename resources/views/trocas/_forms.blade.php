@@ -1,20 +1,13 @@
 @section('css')
 <style>
-    .active {
-        background: rgb(85, 114, 245) !important;
-        color: #fff !important;
-    }
-
+    /* Estilos mínimos essenciais - maior parte está em pdv.css */
     #salvar_venda:hover {
         cursor: pointer;
     }
 
-    .btn-cat{
-        height: 30px;
-        display: block;
-        min-width: 150px;
+    .table-responsive {
+        overflow-x: auto;
     }
-
 </style>
 @endsection
 
@@ -50,423 +43,392 @@
 
 <input type="hidden" id="estoque_view" value="@can('estoque_view') 1 @else 0 @endif">
 
-<div class="row">
+<div class="row align-items-stretch">
+    <!-- COLUNA DA ESQUERDA (Categorias e Leitores) -->
     <div class="col-lg-4">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="card widget-icon-box">
-                    <div class="card-body" style="height: 89px;">
-
-                        @isset($cliente)
-                        <h5 class="cliente_selecionado">Cliente: <strong class="text-primary">{{ $cliente->razao_social }}</strong></h5>
-                        @else
-                        <h5 class="cliente_selecionado">
-                            Cliente: <strong class="text-primary">Consumidor final</strong>
-                        </h5>
-                        @endif
-
-                        @isset($funcionario)
-                        <h5 class="funcionario_selecionado">Vendedor: <strong class="text-primary">{{ $funcionario->nome }}</strong></h5>
-                        @else
-                        <h5 class="funcionario_selecionado">Vendedor: <strong class="text-primary">--</strong></h5>
-                        @endif
+        <div class="row g-2">
+            <!-- Cliente da Venda -->
+            <div class="col-lg-6">
+                <div class="card pdv-card-client">
+                    <div class="card-body pdv-fin-card-body">
+                        <div class="d-flex justify-content-between">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="d-flex align-items-center">
+                                    <h5 class="pdv-card-label text-muted mb-0">Cliente Original
+                                        @isset($cliente)
+                                            <span class="pdv-badge-status pdv-badge-selected pdv-badge-cliente">✓</span>
+                                        @else
+                                            <span class="pdv-badge-status pdv-badge-pending pdv-badge-cliente">Pendente</span>
+                                        @endif
+                                    </h5>
+                                </div>
+                                @isset($cliente)
+                                    <h6 class="pdv-card-value cliente_selecionado mt-1">{{ $cliente->razao_social }}</h6>
+                                @else
+                                    <h6 class="pdv-card-value-empty cliente_selecionado mt-1"><i class="ri-user-search-line"></i> Consumidor Final</h6>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             
+            <!-- Vendedor Original -->
+            <div class="col-lg-6">
+                <div class="card pdv-card-seller">
+                    <div class="card-body pdv-fin-card-body">
+                        <div class="d-flex justify-content-between">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="d-flex align-items-center">
+                                    <h5 class="pdv-card-label text-muted mb-0">Vendedor Original
+                                        @isset($funcionario)
+                                            <span class="pdv-badge-status pdv-badge-selected pdv-badge-vendedor">✓</span>
+                                        @else
+                                            <span class="pdv-badge-status pdv-badge-pending pdv-badge-vendedor">Pendente</span>
+                                        @endif
+                                    </h5>
+                                </div>
+                                @isset($funcionario)
+                                    <h6 class="pdv-card-value funcionario_selecionado mt-1">{{ $funcionario->nome }}</h6>
+                                @else
+                                    <h6 class="pdv-card-value-empty funcionario_selecionado mt-1"><i class="ri-user-search-line"></i> Sem Vendedor</h6>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card" style="height: 750px">
 
-            <hr>
-            <h5 class="text-center">Categorias</h5>
-            <div class="card categorias m-1" data-simplebar data-simplebar-lg style="max-height: 100px;">
-                <div class="d-flex g m-2">
-                    <button type="button" id="cat_todos" onclick="todos()" class="btn btn-cat">Todos</button>
-                    @foreach ($categorias as $cat)
-                    <button type="button" class="btn btn_cat_{{ $cat->id }} btn-cat" onclick="selectCat('{{ $cat->id }}')">{{$cat->nome}}</button>
-                    @endforeach
+        <div class="card" style="min-height: calc(100vh - 190px); display: flex; flex-direction: column;">
+            <div class="card pdv-categories-wrapper m-1 border-0 shadow-none">
+                <div class="pdv-categories-header">
+                    <h6 class="pdv-categories-title"><i class="ri-grid-fill me-1"></i>Categorias</h6>
+                </div>
+                <hr class="m-0 mb-1" style="border-top: 1px solid #e0e0e0;">
+                <div class="pdv-categories-scroll">
+                    <button type="button" class="pdv-nav-arrow" id="cat-scroll-left"
+                        onclick="document.querySelector('.pdv-categories-container').scrollBy({left: -200, behavior: 'smooth'})">
+                        <i class="ri-arrow-left-s-line"></i>
+                    </button>
+                    <div class="pdv-categories-container" id="cat-container">
+                        <button type="button" id="cat_todos" onclick="todos()"
+                            class="btn-pdv-cat btn-cat active">Todos</button>
+                        @foreach ($categorias as $cat)
+                            <button type="button" class="btn-pdv-cat btn-cat btn_cat_{{ $cat->id }}"
+                                onclick="selectCat('{{ $cat->id }}')">{{$cat->nome}}</button>
+                        @endforeach
+                    </div>
+                    <button type="button" class="pdv-nav-arrow" id="cat-scroll-right"
+                        onclick="document.querySelector('.pdv-categories-container').scrollBy({left: 200, behavior: 'smooth'})">
+                        <i class="ri-arrow-right-s-line"></i>
+                    </button>
                 </div>
             </div>
-            <h4 class="text-center mt-3">Produtos</h4>
-            <div class="card-body lista_produtos m-1" data-simplebar data-simplebar-lg style="max-height: 522px;">
-                <div class="row cards-categorias">
-
-                </div>
+            <div class="card-body lista_produtos m-1" data-simplebar data-simplebar-lg
+                style="flex: 1 1 auto; min-height: 0; height: calc(100vh - 340px); overflow-y: auto;">
+                <div class="row cards-categorias"></div>
             </div>
-            <div class="row" style="margin-top: 0px">
-                <div class="col-1 text-center">
-                    <input class="mousetrap" type="" autofocus style="border: none; width: 10px; height: 10px; background-color:black" id="codBarras" name="">
-                </div>
-                <div class="col-6 leitor_ativado text-info">
-                    Leitor Ativado
-                </div>
-                <div class="col-6 leitor_desativado d-none">
-                    Leitor Desativado
+            
+            <div class="row align-items-center px-2 pb-2 g-2" style="margin-top: 0px">
+                <div class="col">
+                    <button type="button" id="btn-leitor-toggle" class="btn pdv-leitor-toggle leitor-on w-100"
+                        title="Clique para desativar o leitor de código de barras">
+                        <span class="d-inline-flex align-items-center gap-2">
+                            <i class="ri-barcode-line fs-5"></i>
+                            <span class="pdv-leitor-label leitor_ativado">Leitor Ativado</span>
+                            <span class="pdv-leitor-label leitor_desativado d-none">Leitor Desativado</span>
+                        </span>
+                        <span class="pdv-leitor-switch"><i class="ri-toggle-fill"></i></span>
+                    </button>
+                    <input type="text" class="mousetrap pdv-barcode-input" autofocus id="codBarras" name=""
+                        autocomplete="off">
                 </div>
                 @if(__countLocalAtivo() > 1 && $caixa->localizacao)
-                <div class="col-5 text-end">
-                    <strong class="text-danger" style="margin-right: 5px;">{{ $caixa->localizacao->descricao }}</strong>
-                </div>
+                    <div class="col-auto ms-auto text-end">
+                        <strong class="text-danger">{{ $caixa->localizacao->descricao }}</strong>
+                    </div>
                 @endif
-
             </div>
 
         </div>
     </div>
+    
+    <!-- COLUNA DA DIREITA (Carrinho e Finalização) -->
     <div class="col-lg-8 produtos">
-        <div class="card" style="height: 850px">
-            <div class="row m-2">
+        <div class="card" style="min-height: calc(100vh - 190px);">
+            <!-- Adicionar Item Row -->
+            <div class="row m-2 align-items-end pdv-add-row g-2">
                 <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="inp-produto_id" class="">Produto</label>
+                    <div class="form-group mb-0">
+                        <label for="inp-produto_id" class="pdv-add-label">
+                            <i class="ri-search-line me-1"></i>Produto <span class="pdv-shortcut pdv-shortcut-sm">F1</span>
+                        </label>
                         <div class="input-group">
                             <select class="form-control produto_id" name="produto_id" id="inp-produto_id"></select>
                         </div>
                         <input name="variacao_id" id="inp-variacao_id" type="hidden" value="">
-
                     </div>
                 </div>
                 <div class="col-md-2">
-                    {!! Form::tel('quantidade', 'Quantidade')->attrs(['data-mask' => '00000,000', 'data-mask-reverse' => "true"]) !!}
-                </div>
-                <div class="col-md-2">
-                    {!! Form::tel('valor_unitario', 'Valor Unitário')->attrs(['class' => 'moeda value_unit']) !!}
-                </div>
-                <div class="col-md-2">
-                    <div class="row">
-                        <div class="col-12">
-                            <br>
-                            <button class="btn btn-primary btn-add-item w-100" type="button" style="margin-left: 0px">Adicionar</button>
-                        </div>
-
+                    <div class="form-group mb-0">
+                        <label class="pdv-add-label"><i class="ri-numbers-line me-1"></i>Qtd.</label>
+                        {!! Form::tel('quantidade', false)->attrs(['data-mask' => '00000,000', 'data-mask-reverse' => "true", 'class' => 'form-control text-center pdv-add-input']) !!}
                     </div>
                 </div>
-                <div class="col-md-1">
-                    {!! Form::hidden('subtotal', '')->attrs(['class' => 'moeda']) !!}
-                    {!! Form::hidden('valor_total', '')->attrs(['class' => 'moeda']) !!}
+                <div class="col-md-2">
+                    <div class="form-group mb-0">
+                        <label class="pdv-add-label"><i class="ri-price-tag-2-line me-1"></i>Valor Unit.</label>
+                        {!! Form::tel('valor_unitario', false)->attrs(['class' => 'moeda value_unit form-control text-end pdv-add-input']) !!}
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary btn-add-item w-100" type="button">
+                        <i class="ri-add-circle-line me-1"></i>Adicionar
+                    </button>
+                </div>
+                <div class="col-md-1 d-none">
+                    {!! Form::hidden('subtotal', 'SubTotal')->attrs(['class' => 'moeda']) !!}
+                    {!! Form::hidden('valor_total', 'valor Total')->attrs(['class' => 'moeda']) !!}
                     {!! Form::hidden('valor_pagar', '')->attrs(['class' => '']) !!}
                     {!! Form::hidden('valor_credito', '')->attrs(['class' => '']) !!}
                 </div>
             </div>
+
             <div class="card m-1">
-                <div data-bs-target="#navbar-example2" class="scrollspy-example" style="height: 440px">
-                    <table class="table table-striped dt-responsive nowrap table-itens">
+                <div data-bs-target="#navbar-example2" class="scrollspy-example table-responsive"
+                    style="height: calc(100vh - 395px)">
+                    <table class="table table-striped dt-responsive nowrap table-itens pdv-table-items">
                         <thead>
                             <tr>
-                                <th></th>
+                                <th style="width:44px"></th>
                                 <th>Produto</th>
-                                <th>Quantidade</th>
-                                <th>Valor</th>
-                                <th>Subtotal</th>
-                                <th>#</th>
+                                <th style="width:130px">Quantidade</th>
+                                <th style="width:100px">Valor</th>
+                                <th style="width:100px">Subtotal</th>
+                                <th style="width:40px">#</th>
                             </tr>
                         </thead>
                         <tbody>
                             @if (isset($item))
-                            @foreach ($item->itens as $key => $product)
-                            <tr class="line-product">
-                                <input readonly type="hidden" name="key" class="form-control" value="{{ $product->key }}">
-                                <input readonly type="hidden" name="produto_id[]" class="produto_row" value="{{ $product->produto->id }}">
-                                <input name="variacao_id[]" type="hidden" value="{{ $product->variacao_id }}">
+                                @foreach ($item->itens as $key => $product)
+                                    <tr class="line-product">
+                                        <input readonly type="hidden" name="key" class="form-control"
+                                            value="{{ $product->key }}">
+                                        <input readonly type="hidden" name="produto_id[]" class="produto_row"
+                                            value="{{ $product->produto->id }}">
+                                        <input name="variacao_id[]" type="hidden" value="{{ $product->variacao_id }}">
 
-                                <td>
-                                    <img src="{{ $product->produto->img }}" style="width: 30px; height: 40px; border-radius: 10px;">
-                                </td>
-                                <td>
-                                    <input style="width: 350px" readonly type="text" name="produto_nome[]" class="form-control" value="{{ $product->produto->nome }} @if($product->produtoVariacao != null) - {{ $product->produtoVariacao->descricao }} @endif">
-                                </td>
+                                        <td>
+                                            <img src="{{ $product->produto->img }}" class="pdv-item-img"
+                                                alt="{{ $product->produto->nome }}">
+                                        </td>
+                                        <td>
+                                            <input style="width: 100%" readonly type="text" name="produto_nome[]"
+                                                class="pdv-item-name"
+                                                value="{{ $product->produto->nome }} @if($product->produtoVariacao != null) - {{ $product->produtoVariacao->descricao }} @endif">
+                                        </td>
 
-                                <td class="datatable-cell">
-                                    <div class="form-group mb-2" style="width: 200px">
-                                        <div class="input-group">
-                                            <div class="input-group-prepend">
-                                                <button id="btn-subtrai" class="btn btn-danger btn-qtd" type="button">-</button>
+                                        <td class="datatable-cell">
+                                            <div class="pdv-qty-group">
+                                                <button class="pdv-qty-btn pdv-qty-btn-minus btn-qtd" id="btn-subtrai"
+                                                    type="button">-</button>
+                                                <input type="tel" readonly class="pdv-qty-input qtd qtd_row" name="quantidade[]"
+                                                    value="{{ number_format($product->quantidade, 2, ',', '') }}">
+                                                <button class="pdv-qty-btn pdv-qty-btn-plus btn-qtd" id="btn-incrementa"
+                                                    type="button">+</button>
                                             </div>
-                                            <input type="tel" readonly class="form-control qtd qtd_row" name="quantidade[]" value="{{ number_format($product->quantidade, 2, ',', '') }}">
-                                            <div class="input-group-append">
-                                                <button class="btn btn-success btn-qtd" id="btn-incrementa" type="button">+</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <input style="width: 100px" readonly type="tel" name="valor_unitario[]" class="form-control value-unit" value="{{ __moeda($product->valor_unitario) }}">
-                                </td>
-                                <td>
-                                    <input style="width: 100px" readonly type="tel" name="subtotal_item[]" class="form-control subtotal-item" value="{{ __moeda($product->valor_unitario * $product->quantidade) }}">
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-danger btn-sm btn-delete-row"><i class="ri-delete-bin-line"></i></button>
-                                </td>
-                            </tr>
-                            @endforeach
+                                        </td>
+                                        <td>
+                                            <input style="width: 100%" readonly type="tel" name="valor_unitario[]"
+                                                class="pdv-item-value value-unit"
+                                                value="{{ __moeda($product->valor_unitario) }}">
+                                        </td>
+                                        <td>
+                                            <input style="width: 100%" readonly type="tel" name="subtotal_item[]"
+                                                class="pdv-item-subtotal subtotal-item"
+                                                value="{{ __moeda($product->valor_unitario * $product->quantidade) }}">
+                                        </td>
+                                        <td>
+                                            <button type="button" class="pdv-btn-delete btn-delete-row">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
                             @endif
 
                             @if (isset($servicos))
-                            @foreach ($servicos as $key => $servico)
-                            <tr>
-                                <input readonly type="hidden" name="servico_id[]" class="form-control" value="{{ $servico->servico->id }}">
+                                @foreach ($servicos as $key => $servico)
+                                    <tr>
+                                        <input readonly type="hidden" name="servico_id[]" class="form-control"
+                                            value="{{ $servico->servico->id }}">
 
-                                <td>
-                                    <img src="{{ $servico->servico->img }}" style="width: 30px; height: 40px; border-radius: 10px;">
-                                </td>
-                                <td style="width: 500px">
-                                    <input readonly type="text" name="servico_nome[]" class="form-control" value="{{ $servico->servico->nome }} [serviço]" style="color: darkred;">
-                                </td>
-                                <td>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <button disabled id="btn-subtrai" class="btn btn-danger" type="button">-</button>
-                                        </div>
-                                        <input readonly type="tel" name="quantidade_servico[]" class="form-control qtd-item" value="{{ number_format($servico->quantidade,0) }}">
-                                        <div class="input-group-append">
-                                            <button disabled class="btn btn-success" id="btn-incrementa" type="button">+</button>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <input readonly type="tel" name="valor_unitario_servico[]" class="form-control" value="{{ __moeda($servico->valor) }}">
-                                </td>
-                                <td>
-                                    <input readonly type="tel" name="subtotal_servico[]" class="form-control subtotal-item" value="{{ __moeda($servico->valor * $servico->quantidade) }}">
-                                </td>
-                                <td>
-                                    <button disabled type="button" class="btn btn-danger btn-sm btn-delete-row"><i class="ri-delete-bin-line"></i></button>
-                                </td>
-                            </tr>
-                            @endforeach
-                            @endif
-
-                            @if (isset($pedido) && isset($itens))
-                            @foreach ($itens as $key => $product)
-                            <tr class="line-product">
-                                <input readonly type="hidden" name="key" class="form-control" value="{{ $product->key }}">
-                                <input readonly type="hidden" name="produto_id[]" class="produto_row" value="{{ $product->produto->id }}">
-                                <input name="variacao_id[]" type="hidden" value="{{ $product->variacao_id }}">
-
-                                <td>
-                                    <img src="{{ $product->produto->img }}" style="width: 30px; height: 40px; border-radius: 10px;">
-                                </td>
-                                <td>
-                                    <input style="width: 350px" readonly type="text" name="produto_nome[]" class="form-control" value="{{ $product->produto->nome }} @if($product->produtoVariacao != null) - {{ $product->produtoVariacao->descricao }} @endif">
-                                </td>
-
-                                <td class="datatable-cell">
-                                    <div class="form-group mb-2" style="width: 200px">
-                                        <div class="input-group">
-                                            <div class="input-group-prepend">
-                                                <button id="btn-subtrai" class="btn btn-danger" type="button">-</button>
+                                        <td>
+                                            <img src="{{ $servico->servico->img }}" class="pdv-item-img"
+                                                alt="{{ $servico->servico->nome }}">
+                                        </td>
+                                        <td style="width: 100%">
+                                            <input readonly type="text" name="servico_nome[]" class="pdv-item-name text-danger"
+                                                value="{{ $servico->servico->nome }} [serviço]">
+                                        </td>
+                                        <td>
+                                            <div class="pdv-qty-group opacity-75">
+                                                <button disabled id="btn-subtrai" class="pdv-qty-btn pdv-qty-btn-minus"
+                                                    type="button">-</button>
+                                                <input readonly type="tel" name="quantidade_servico[]"
+                                                    class="pdv-qty-input qtd-item"
+                                                    value="{{ number_format($servico->quantidade, 0) }}">
+                                                <button disabled id="btn-incrementa" class="pdv-qty-btn pdv-qty-btn-plus"
+                                                    type="button">+</button>
                                             </div>
-                                            <input type="tel" readonly class="form-control qtd qtd_row" name="quantidade[]" value="{{ number_format($product->quantidade, 2, ',', '') }}">
-                                            <div class="input-group-append">
-                                                <button class="btn btn-success" id="btn-incrementa" type="button">+</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <input style="width: 100px" readonly type="tel" name="valor_unitario[]" class="form-control value-unit" value="{{ __moeda($product->valor_unitario) }}">
-                                </td>
-                                <td>
-                                    <input style="width: 100px" readonly type="tel" name="subtotal_item[]" class="form-control subtotal-item" value="{{ __moeda($product->valor_unitario * $product->quantidade) }}">
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-danger btn-sm btn-delete-row"><i class="ri-delete-bin-line"></i></button>
-                                </td>
-                            </tr>
-                            @endforeach
+                                        </td>
+                                        <td>
+                                            <input readonly type="tel" name="valor_unitario_servico[]" class="pdv-item-value"
+                                                value="{{ __moeda($servico->valor) }}">
+                                        </td>
+                                        <td>
+                                            <input readonly type="tel" name="subtotal_servico[]"
+                                                class="pdv-item-subtotal subtotal-item"
+                                                value="{{ __moeda($servico->valor * $servico->quantidade) }}">
+                                        </td>
+                                        <td>
+                                            <button disabled type="button" class="pdv-btn-delete btn-delete-row">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
                             @endif
-                        </tr>
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-        <div class="">
-            <h4 class="text-center">Finalização da Troca</h4>
-            <div class="row">
-                <div class="col-lg-3 col-6">
-                    <div class="card widget-icon-box div-pagamento">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div class="flex-grow-1 overflow-hidden">
-                                    <h5 class="text-muted text-uppercase fs-13 mt-0" title="Number of Customers">Desconto</h5>
-                                </div>
-                                <div class="avatar-sm flex-shrink-0">
-                                    <button type="button" onclick="setaDesconto()" class="avatar-title text-bg-primary rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+
+            <!-- Finalização -->
+            <div class="mt-1 px-3 pb-2">
+                <div class="row">
+                    <div class="col-lg-3 col-6">
+                        <div class="card pdv-fin-card">
+                            <div class="card-body pdv-fin-card-body">
+                                <div class="pdv-fin-header">
+                                    <h5 class="pdv-fin-label">Desconto <span class="pdv-shortcut">F2</span></h5>
+                                    <button type="button" onclick="setaDesconto()"
+                                        class="pdv-fin-icon-box text-bg-primary shadow-sm">
                                         <i class="ri-checkbox-indeterminate-line"></i>
                                     </button>
                                 </div>
+                                <h4 class="pdv-fin-value" id="valor_desconto">R$ 0,00</h4>
                             </div>
-                            <h3 id="valor_desconto">R$ 0,00</h3>
-                        </div> <!-- end card-body-->
-                    </div> <!-- end card-->
-                </div> <!-- end col-->
-                <div class="col-lg-3 col-6">
-                    <div class="card widget-icon-box div-pagamento">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div class="flex-grow-1 overflow-hidden">
-                                    <h5 class="text-muted text-uppercase fs-13 mt-0" title="Number of Customers">Acréscimo</h5>
-                                </div>
-                                <div class="avatar-sm flex-shrink-0">
-                                    <button type="button" onclick="setaAcrescimo()" class="avatar-title text-bg-warning rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="card pdv-fin-card">
+                            <div class="card-body pdv-fin-card-body">
+                                <div class="pdv-fin-header">
+                                    <h5 class="pdv-fin-label">Acréscimo <span class="pdv-shortcut">F3</span></h5>
+                                    <button type="button" onclick="setaAcrescimo()"
+                                        class="pdv-fin-icon-box text-bg-warning shadow-sm" title="F3 - Abrir Acréscimo">
                                         <i class="ri-add-box-line"></i>
                                     </button>
                                 </div>
+                                <h4 class="pdv-fin-value" id="valor_acrescimo">R$ 0,00</h4>
                             </div>
-                            <h3 id="valor_acrescimo">R$ 0,00</h3>
-                        </div> <!-- end card-body-->
-                    </div> <!-- end card-->
-                </div> <!-- end col-->
+                        </div>
+                    </div>
 
-                <div class="col-lg-3 col-6">
-                    <div class="card widget-icon-box div-pagamento">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="row">
-                                        <h5 class="text-center">SUPRIMENTO</h5>
-                                    </div>
-                                    <div class="avatar-sm m-1">
-                                        <button type="button" style="margin-left: 35px" data-bs-toggle="modal" data-bs-target="#suprimento_caixa" class="avatar-title text-bg-info rounded rounded-3 fs-3 widget-icon-box-avatar">
+                    <div class="col-lg-3 col-6">
+                        <div class="card pdv-fin-card">
+                            <div class="card-body pdv-fin-card-body">
+                                <div class="row g-0">
+                                    <div class="col-6 text-center">
+                                        <h6 class="pdv-fin-label mb-1">SUPRIM.</h6>
+                                        <button type="button" data-bs-toggle="modal" data-bs-target="#suprimento_caixa"
+                                            class="pdv-fin-icon-box text-bg-info shadow-sm mx-auto">
                                             <i class="ri-add-box-line"></i>
                                         </button>
                                     </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="row">
-                                        <h5 class="text-center">SANGRIA</h5>
-                                    </div>
-                                    <div class="avatar-sm m-1">
-                                        <button type="button" style="margin-left: 35px" data-bs-toggle="modal" data-bs-target="#sangria_caixa" class="avatar-title text-bg-danger rounded rounded-3 fs-3 widget-icon-box-avatar">
+                                    <div class="col-6 text-center">
+                                        <h6 class="pdv-fin-label mb-1">SANGRIA</h6>
+                                        <button type="button" data-bs-toggle="modal" data-bs-target="#sangria_caixa"
+                                            class="pdv-fin-icon-box text-bg-danger shadow-sm mx-auto">
                                             <i class="ri-checkbox-indeterminate-line"></i>
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                        </div> <!-- end card-body-->
-                    </div> <!-- end card-->
-                </div> <!-- end col-->
+                        </div>
+                    </div>
 
-                <div class="col-lg-3 col-6">
-                    <div class="card widget-icon-box div-pagamento">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div class="flex-grow-1 overflow-hidden">
-                                    <h5 class="text-muted text-uppercase fs-13 mt-0" title="Number of Customers">TOTAL</h5>
-                                </div>
-                                <div class="avatar-sm flex-shrink-0">
-                                    <span class="avatar-title text-bg-dark rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
+                    <div class="col-lg-3 col-6">
+                        <div class="card pdv-fin-card pdv-fin-total">
+                            <div class="card-body pdv-fin-card-body">
+                                <div class="pdv-fin-header">
+                                    <h5 class="pdv-fin-label">NOVA VENDA <span class="badge bg-primary rounded-pill pdv-cart-count" style="font-size: 0.75rem; margin-left: 5px; vertical-align: middle;">0</span></h5>
+                                    <span class="pdv-fin-icon-box text-bg-light shadow-sm" style="color:#333;">
                                         <i class="ri-shopping-cart-fill"></i>
                                     </span>
                                 </div>
+                                <h4 class="pdv-fin-value">
+                                    @isset($item)
+                                        <strong class="total-venda">{{ __moeda($item->valor_total) }}</strong>
+                                    @else
+                                    <strong class="total-venda">0,00</strong>
+                                    @endif
+                                </h4>
                             </div>
-                            <h3 class="">
-                                @isset($item)
-                                <strong class="total-venda">{{ __moeda($item->valor_total) }}</strong>
-                                @else
-                                <strong class="total-venda">0,00</strong>
-                                @endif
-                            </h3>
-                        </div> <!-- end card-body-->
-                    </div> <!-- end card-->
-                </div> <!-- end col-->
-            </div>
-            <div class="row">
-                <div class="col-lg-3 col-6">
-                    <div class="card widget-icon-box div-pagamento" style="height: 93%">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div class="flex-grow-1 overflow-hidden">
-                                    <h5 class="text-muted text-uppercase fs-13 mt-0" title="Number of Orders">Tipo de Pagamento</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Valores Fixos de Referência da Troca -->
+                    <div class="col-lg-6">
+                        <div class="card pdv-fin-card border-0 mb-0">
+                            <div class="card-body pdv-fin-card-body p-2 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="pdv-fin-label text-muted mb-0"><i class="ri-history-line"></i> Valor Original</h6>
+                                    <h5 class="mb-0 text-primary">R$ {{ __moeda($item->total) }}</h5>
+                                    <p class="text-danger mt-1 mb-0" style="font-size: 0.85rem;">Data da venda: <strong>{{ \Carbon\Carbon::parse($item->created_at)->format('d/m/Y H:i') }}</strong></p>
                                 </div>
-                                <div class="avatar-sm flex-shrink-0">
-                                    <span class="avatar-title text-bg-success rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                                        <i class=" ri-money-dollar-circle-line"></i>
-                                    </span>
+                                
+                                <div class="text-end">
+                                    <h6 class="pdv-fin-label text-muted mb-0 h-valor_pagar">Diferença a Pagar</h6>
+                                    <h6 class="pdv-fin-label text-muted mb-0 h-valor_restante d-none">Crédito Gerado</h6>
+                                    
+                                    <h5 class="mb-0 text-success valor_pagar">R$ {{ __moeda(0) }}</h5>
+                                    <h5 class="mb-0 text-warning valor_restante d-none">R$ {{ __moeda(0) }}</h5>
                                 </div>
                             </div>
-
-                            {!! Form::select('tipo_pagamento', '', ['' => 'Selecione'] + $tiposPagamento)->attrs(['class' => 'form-select'])->value(isset($item) ? $item->tipo_pagamento : '') !!}
-
-                        </div> <!-- end card-body-->
-                    </div> <!-- end card-->
-                </div> <!-- end col-->
-                <div class="col-lg-3 col-6 div-troco d-none">
-                    <div class="card div-pagamento" style="height: 93%">
-                        <div class="row m-2">
-                            <div class="col-lg-5 mt-4">
-                                <h5>Valor Recebido</h5>
-                            </div>
-                            <div class="col-lg-7">
-                                {!! Form::tel('valor_recebido', '')->attrs(['class' => 'moeda']) !!}
-                            </div>
                         </div>
-                        <div class="row m-1">
-                            <div class="card text-bg-danger">
-                                <h3 class="m-1">TROCO = <strong class="" id="valor-troco"></strong></h3>
-                                <input type="hidden" name="troco" id="inp-troco">
-                            </div>
-                        </div>
-                    </div> <!-- end card-->
-                </div> <!-- end col-->
-                <div class="col-lg-2 col-6 div-vencimento d-none">
-                    <div class="card div-pagamento" style="height: 93%">
-                        <div class="row m-2">
-                            <div class="text-center">
-                                <h5>Data dde vencimento</h5>
-                            </div>
-                            <div>
-                                {!! Form::date('data_vencimento', '')->attrs(['class' => 'data_atual']) !!}
-                            </div>
-                        </div>
-                    </div> <!-- end card-->
-                </div> <!-- end col-->
-                <div class="col">
-                    <div class="card widget-icon-box div-pagamento" style="height: 93%">
-                        <div class="card-body">
-                            <div class="">
-                                <h4>VALOR DA VENDA: <strong class="text-primary">R$ {{ __moeda($item->total) }}</strong></h4>
-                                <h4 class="h-valor_pagar">VALOR À PAGAR: <strong class="text-success valor_pagar">R$ {{ __moeda(0) }}</strong></h4>
-                                <h4 class="h-valor_restante d-none">VALOR RESTANTE: <strong class="text-warning valor_restante">R$ {{ __moeda(0) }}</strong></h4>
-                                <h5>Data da venda: <strong class="text-danger">{{ __data_pt($item->created_at) }}</strong></h5>
-                                <!-- <h4>VALOR DE DIFERENÇA: <strong class="text-danger valor_diferenca">R$ {{ __moeda(0) }}</strong></h4> -->
-                            </div>
-                        </div> <!-- end card-body-->
-                    </div> <!-- end card-->
-                </div> <!-- end col-->
-                <div class="col">
-                    <div class="card widget-icon-box div-pagamento" style="height: 93%">
-                        <div class="card-body">
-                            <div class="row">
+                    </div>
 
-                                <a class="btn btn-danger btn-sm w-50 mt-2" href="{{ route('frontbox.index')}}" style="margin-top: -20px">
-                                    <i class="ri-arrow-left-s-line"></i>
-                                    Sair do PDV
+                    <div class="col-lg-3 col-6">
+                        <div class="card widget-icon-box div-pagamento mb-0 h-100">
+                            <div class="card-body p-2 d-flex align-items-center justify-content-center">
+                                <a class="btn pdv-action-btn btn-outline-danger w-100"
+                                    href="{{ route('frontbox.index')}}">
+                                    <i class="ri-arrow-left-s-line"></i> Sair do PDV
                                 </a>
-                               
+                            </div>
+                        </div>
+                    </div>
 
-                                <button type="button" class="btn btn-success w-100 mt-4" disabled id="salvar_venda" data-bs-toggle="modal" data-bs-target="#finalizar_troca">
-                                    <i class="ri-checkbox-line"></i>
-                                    Finalizar Troca
+                    <div class="col-lg-3 col-6">
+                        <div class="card widget-icon-box div-pagamento mb-0 h-100">
+                            <div class="card-body p-2 d-flex align-items-center justify-content-center">
+                                <button type="button"
+                                    class="pdv-btn-finalizar w-100 pdv-animate-pulse-finalizar"
+                                    id="salvar_venda" data-bs-toggle="modal" data-bs-target="#finalizar_troca">
+                                    <i class="ri-checkbox-circle-line"></i> Finalizar Troca
                                 </button>
                             </div>
-                        </div> <!-- end card-body-->
-                    </div> <!-- end card-->
-                </div> <!-- end col-->
+                        </div>
+                    </div>
+                </div>
             </div>
-            {{-- <div class="row">
-                <div class="col-sm-6 col-lg-3">
-                    {!! Form::select('forma_pagamento', 'Forma de Pagamento')->attrs(['class' => 'form-select']) !!}
-                </div>
-                <div class="col-sm-6 col-lg-3">
-                    {!! Form::select('tipo_pagamento', 'Tipo de Pagamento')->attrs(['class' => 'form-select']) !!}
-                </div>
-            </div> --}}
-
         </div>
     </div>
-</div>
 </div>
 
 @include('modals._pagamento_multiplo', ['not_submit' => true])
@@ -492,12 +454,17 @@
 <script src="/js/novo_cliente.js"></script>
 
 <script type="text/javascript">
+    // Na tela de troca o botão Finalizar Troca nunca deve ser bloqueado pela validação do frente_caixa.js, 
+    // pois a lógica de pagamento ou geração de crédito/cobrança só ocorre após o modal
+    function validateButtonSave() {
+        $('#salvar_venda').removeAttr('disabled');
+    }
 
     @if(Session::has('sangria_id'))
-    window.open(path_url + 'sangria-print/' + {{ Session::get('sangria_id') }}, "_blank")
+    PrintThermal.imprimir('sangria', {{ Session::get('sangria_id') }}, path_url + 'sangria-print/' + {{ Session::get('sangria_id') }})
     @endif
     @if(Session::has('suprimento_id'))
-    window.open(path_url + 'suprimento-print/' + {{ Session::get('suprimento_id') }}, "_blank")
+    PrintThermal.imprimir('suprimento', {{ Session::get('suprimento_id') }}, path_url + 'suprimento-print/' + {{ Session::get('suprimento_id') }})
     @endif
 
     $('.btn-novo-cliente').click(() => {

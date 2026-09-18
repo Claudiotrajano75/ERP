@@ -55,26 +55,34 @@ class ServicoController extends Controller
 
         $status = $request->status;
         $nome = $request->nome;
-        $data = Servico::where('empresa_id', $request->empresa_id)
+        $categoria_id = $request->categoria_id;
+
+        $base = Servico::where('empresa_id', $request->empresa_id);
+
+        $data = (clone $base)
         ->when(!empty($nome), function ($q) use ($nome) {
             return $q->where('nome', 'LIKE', "%$nome%");
         })
         ->when($status != '', function ($q) use ($status) {
             return $q->where('status', $status);
         })
+        ->when(!empty($categoria_id), function ($q) use ($categoria_id) {
+            return $q->where('categoria_id', $categoria_id);
+        })
         ->paginate(env("PAGINACAO"));
 
-        $totalAtivos = Servico::where('empresa_id', $request->empresa_id)
-            ->where('status', 1)
-            ->count();
-        $totalInativos = Servico::where('empresa_id', $request->empresa_id)
-            ->where('status', 0)
-            ->count();
-        $totalMarketplace = Servico::where('empresa_id', $request->empresa_id)
-            ->where('marketplace', 1)
-            ->count();
+        $categorias = CategoriaServico::where('empresa_id', request()->empresa_id)
+        ->orderBy('nome', 'asc')
+        ->get();
 
-        return view('servicos.index', compact('data', 'totalAtivos', 'totalInativos', 'totalMarketplace'));
+        $stats = [
+            'total'       => (clone $base)->count(),
+            'ativos'      => (clone $base)->where('status', 1)->count(),
+            'inativos'    => (clone $base)->where('status', 0)->count(),
+            'marketplace' => (clone $base)->where('marketplace', 1)->count(),
+        ];
+
+        return view('servicos.index', compact('data', 'stats', 'categorias'));
     }
 
     public function show($id)

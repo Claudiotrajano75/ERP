@@ -314,10 +314,10 @@
 	<script type="text/javascript">
 
 		@if(Session::has('sangria_id'))
-			window.open(path_url + 'sangria-print/' + {{ Session::get('sangria_id') }}, "_blank")
+			PrintThermal.imprimir('sangria', {{ Session::get('sangria_id') }}, path_url + 'sangria-print/' + {{ Session::get('sangria_id') }})
 		@endif
 		@if(Session::has('suprimento_id'))
-			window.open(path_url + 'suprimento-print/' + {{ Session::get('suprimento_id') }}, "_blank")
+			PrintThermal.imprimir('suprimento', {{ Session::get('suprimento_id') }}, path_url + 'suprimento-print/' + {{ Session::get('suprimento_id') }})
 		@endif
 
 		$('.btn-novo-cliente').click(() => {

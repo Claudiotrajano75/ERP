@@ -2,34 +2,97 @@
 
 @section('css')
 <style>
-/* ─── Header Gradiente ─── */
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.6) !important; font-weight: 400; }
-.modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-.modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+/* ─── Cards de Estatística (KPIs) ─── */
+.stat-card {
+    border-radius: 14px;
+    padding: 18px 20px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    min-height: 105px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+.stat-card .stat-icon {
+    position: absolute;
+    right: 14px;
+    bottom: 8px;
+    font-size: 52px;
+    opacity: .18;
+    line-height: 1;
+    pointer-events: none;
+}
+.stat-card .stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    opacity: .88;
+}
+.stat-card .stat-value {
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+.stat-green  { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+.stat-indigo { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); }
+.stat-amber  { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
 
-/* ─── Form Card ─── */
-.modulo-form-card { border: 1px solid #eef0f5; border-radius: 12px; overflow: hidden; }
+/* ─── Tabela ─── */
+.tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+.tb-wrap table { margin-bottom: 0; }
+.tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 16px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+.tb-wrap tbody td { padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13.5px; color: #374151; }
+.tb-wrap tbody tr:hover { background: #f5f6fe; }
+.tb-wrap tbody tr:last-child td { border-bottom: none; }
 
-/* ─── Premium Table ─── */
-.modulo-table-wrap { border-radius: 12px; border: 1px solid #eef0f5; overflow: hidden; }
-.modulo-table-wrap table { margin-bottom: 0; }
-.modulo-table-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding: 12px 14px; border-bottom: 2px solid #e8eaf6; }
-.modulo-table-wrap tbody td { padding: 12px 14px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; transition: background 0.15s ease; font-size: 13px; }
-.modulo-table-wrap tbody tr { transition: all 0.15s ease; }
-.modulo-table-wrap tbody tr:hover { background: #f5f6fe; }
-.modulo-table-wrap tbody tr:last-child td { border-bottom: none; }
+/* ─── Avatar Operador ─── */
+.operator-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #eef2ff;
+    color: #4f46e5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+/* ─── Grade de Ações ─── */
+.act-group { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+.act-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    border: 1px solid transparent;
+    transition: all .15s ease;
+    cursor: pointer;
+    text-decoration: none !important;
+}
+.act-btn:hover { transform: translateY(-1px); }
+.act-close { background: #fef3c7; color: #d97706; border-color: #fde68a; }
+.act-close:hover { background: #d97706; color: #fff; box-shadow: 0 3px 8px rgba(217,119,6,0.3); }
+.act-del   { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
+.act-del:hover   { background: #dc2626; color: #fff; box-shadow: 0 3px 8px rgba(220,38,38,0.3); }
 
 /* ─── Empty State ─── */
 .modulo-empty { padding: 48px 20px; text-align: center; }
-.modulo-empty i { font-size: 48px; color: #c5cae9; margin-bottom: 12px; display: block; }
-.modulo-empty p { color: #9e9eb8; font-size: 14px; margin: 0; }
-
-/* ─── Botões de Ação do Grid ─── */
-.modulo-action-group { display: flex; align-items: center; justify-content: flex-end; gap: 4px; flex-wrap: nowrap !important; }
-.modulo-action-group .btn { padding: 5px 8px; font-size: 12px; border-radius: 6px; }
+.modulo-empty i { font-size: 44px; color: #cbd5e1; margin-bottom: 10px; display: block; }
+.modulo-empty p { color: #94a3b8; font-size: 14px; margin: 0; }
 </style>
 @endsection
 
@@ -38,19 +101,19 @@
     <div class="row">
         <div class="card border-0 shadow-sm text-dark modulo-form-card">
 
-            <!-- CABEÇALHO PREMIUM -->
+            <!-- ═══ CABEÇALHO ═══ -->
             <div class="card-header modulo-header-gradient py-3 px-4">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div>
                         <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
-                            <i class="ri-list-indefinite"></i>
-                            Caixas Abertos
+                            <i class="ri-lock-unlock-line"></i>
+                            Caixas Abertos no Sistema
                         </h4>
-                        <p class="text-muted mb-0 modulo-subtitle fs-13">Lista de todos os caixas atualmente abertos no sistema.</p>
+                        <p class="text-muted mb-0 modulo-subtitle fs-13">Visão administrativa de todos os caixas em operação na empresa neste momento.</p>
                     </div>
                     <div>
-                        <a href="{{ route('caixa.list') }}" class="btn btn-light btn-sm px-3 text-dark">
-                            <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
+                        <a href="{{ route('caixa.list') }}" class="dash-btn dash-btn-light">
+                            <i class="ri-arrow-left-line"></i> Voltar ao Histórico
                         </a>
                     </div>
                 </div>
@@ -58,44 +121,90 @@
 
             <div class="card-body p-4">
 
-                <!-- TABELA PREMIUM -->
-                <div class="modulo-table-wrap">
+                <!-- ═══ CARDS DE ESTATÍSTICA (KPIS) ═══ -->
+                @if(isset($stats))
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4 col-12">
+                        <div class="stat-card stat-green">
+                            <div>
+                                <div class="stat-label">Caixas Abertos Ativos</div>
+                                <div class="stat-value mt-1">{{ $stats['total'] }}</div>
+                            </div>
+                            <i class="ri-lock-unlock-line stat-icon"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-6">
+                        <div class="stat-card stat-indigo">
+                            <div>
+                                <div class="stat-label">Total em Abertura</div>
+                                <div class="stat-value mt-1">R$ {{ __moeda($stats['valor_abertura']) }}</div>
+                            </div>
+                            <i class="ri-money-dollar-circle-line stat-icon"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-6">
+                        <div class="stat-card stat-amber">
+                            <div>
+                                <div class="stat-label">Abertos Hoje</div>
+                                <div class="stat-value mt-1">{{ $stats['hoje'] }}</div>
+                            </div>
+                            <i class="ri-time-line stat-icon"></i>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                <!-- ═══ TABELA ═══ -->
+                <div class="tb-wrap mb-3">
                     <div class="table-responsive">
                         <table class="table table-centered table-hover align-middle mb-0 text-dark">
                             <thead>
                                 <tr>
-                                    <th>Caixa (Operador)</th>
-                                    <th>Data Abertura</th>
-                                    <th>Data Fechamento</th>
-                                    <th>Valor Abertura</th>
-                                    <th>Valor Fechamento</th>
+                                    <th>Operador (Caixa)</th>
+                                    <th>Status</th>
+                                    <th>Data e Hora de Abertura</th>
+                                    <th>Valor Inicial de Abertura</th>
                                     <th class="text-end" style="width: 140px;">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($data as $item)
                                 <tr>
-                                    <td class="fw-semibold">{{ $item->usuario->name }}</td>
-                                    <td class="fs-12">{{ __data_pt($item->created_at) }}</td>
-                                    <td class="fs-12 text-muted">{{ $item->data_fechamento ? __data_pt($item->data_fechamento) : '--' }}</td>
-                                    <td class="fw-medium text-success">R$ {{ __moeda($item->valor_abertura) }}</td>
-                                    <td class="fw-medium text-danger">R$ {{ $item->data_fechamento ? __moeda($item->valor_fechamento) : '--' }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="operator-avatar">
+                                                <i class="ri-user-3-line"></i>
+                                            </div>
+                                            <div>
+                                                <span class="fw-semibold text-dark d-block">{{ $item->usuario ? $item->usuario->name : '--' }}</span>
+                                                <span class="text-muted fs-11">Caixa #{{ $item->id }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-11">
+                                            <i class="ri-checkbox-circle-line me-1"></i> Em Aberto
+                                        </span>
+                                    </td>
+                                    <td class="fs-12 text-dark">
+                                        {{ __data_pt($item->created_at) }}
+                                        <span class="d-block fs-11 text-muted">{{ $item->created_at->format('H:i:s') }}</span>
+                                    </td>
+                                    <td>
+                                        <strong class="text-success fs-14">R$ {{ __moeda($item->valor_abertura) }}</strong>
+                                    </td>
                                     <td class="text-end">
                                         <form action="{{ route('caixa.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="m-0">
                                             @csrf
                                             @method('delete')
-                                            <div class="modulo-action-group">
-                                                @if($item->status == 0)
-                                                <a target="_blank" class="btn btn-dark btn-sm" href="{{ route('caixa.imprimir' , $item) }}" title="Imprimir">
-                                                    <i class="ri-printer-line"></i>
-                                                </a>
-                                                @endif
-
-                                                <a class="btn btn-light btn-sm text-dark" href="{{ route('caixa.fechar-empresa' , $item) }}" title="Fechar Caixa">
-                                                    <i class="ri-close-circle-line"></i>
+                                            <div class="act-group">
+                                                {{-- Fechar Caixa (Admin) --}}
+                                                <a class="act-btn act-close" href="{{ route('caixa.fechar-empresa', $item) }}" title="Encerrar / Fechar Caixa">
+                                                    <i class="ri-lock-line"></i>
                                                 </a>
 
-                                                <button type="button" class="btn btn-delete btn-sm btn-danger" title="Excluir">
+                                                {{-- Excluir Caixa --}}
+                                                <button type="button" class="act-btn act-del btn-delete" title="Excluir Registro de Caixa">
                                                     <i class="ri-delete-bin-line"></i>
                                                 </button>
                                             </div>
@@ -104,10 +213,10 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="6">
+                                    <td colspan="5">
                                         <div class="modulo-empty">
-                                            <i class="ri-inbox-2-line"></i>
-                                            <p>Nenhum caixa aberto encontrado.</p>
+                                            <i class="ri-checkbox-circle-line"></i>
+                                            <p>Nenhum caixa aberto no momento. Todos os caixas estão encerrados.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -121,8 +230,4 @@
         </div>
     </div>
 </div>
-@endsection
-
-@section('js')
-
 @endsection

@@ -1,73 +1,95 @@
-<div class="row g-3 text-dark">
+<style>
+/* ─── Seções do formulário ─── */
+.uf-section-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: #1f2937; border-bottom: 1px solid #eef0f6; padding-bottom: 10px; margin-bottom: 16px; }
+.uf-section-title .uf-ico { width: 30px; height: 30px; border-radius: 9px; background: #eef0ff; color: #4f46e5; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; }
+.uf-section-title small { font-weight: 500; color: #94a3b8; font-size: 12px; margin-left: auto; }
+
+/* ─── Campos ─── */
+.uf-field label, .uf-field .form-label { display: block; font-size: 13px !important; font-weight: 600 !important; color: #374151 !important; margin-bottom: 4px !important; }
+.uf-field .form-label i, .uf-field label i { color: #64748b; font-size: 13px; }
+.uf-field .form-control, .uf-field .form-select { height: 40px; border-radius: 10px; border: 1px solid #dcdce9; font-size: 13.5px; color: #1f2937; background: #fcfdfe; transition: all .15s ease; }
+.uf-field textarea.form-control { height: auto !important; }
+.uf-field .form-control:focus, .uf-field .form-select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.12); background: #fff; }
+
+/* ─── Rodapé de ações ─── */
+.uf-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; border-top: 1px solid #eef0f6; padding-top: 16px; margin-top: 20px; }
+</style>
+
+<div class="row g-4">
 
     <!-- ═══ SEÇÃO 1: CLIENTE & OPERADOR ═══ -->
-    <div class="col-12">
-        <h5 class="text-dark border-bottom pb-2 mb-3">
-            <i class="ri-user-line text-primary me-2 align-middle fs-18"></i>
+    <div class="col-12 uf-section">
+        <div class="uf-section-title">
+            <span class="uf-ico"><i class="ri-user-line"></i></span>
             1. Vínculos de Clientes & Operadores
-        </h5>
+            <small>cliente atendido e técnico responsável</small>
+        </div>
         <div class="row g-3">
-            <div class="col-md-6 col-12">
-                {!!Form::select('cliente_id', 'Cliente')->attrs(['class' => 'select2 form-select'])->options(isset($item) ? [$item->cliente_id => $item->cliente->razao_social] : [])->required()!!}
+            <div class="col-md-6 col-12 uf-field">
+                <label class="form-label required" for="cliente_id"><i class="ri-user-search-line"></i> Cliente Solicitante</label>
+                {!!Form::select('cliente_id', '')->attrs(['class' => 'select2 form-select', 'id' => 'cliente_id'])->options(isset($item) ? [$item->cliente_id => $item->cliente->razao_social] : [])->required()!!}
             </div>
 
-            <div class="col-md-6 col-12">
-                {!!Form::select('funcionario_id', 'Funcionário Responsável', ['' => 'Selecione'] + $funcionario->pluck('nome', 'id')->all())->attrs(['class' => 'form-select'])!!}
+            <div class="col-md-6 col-12 uf-field">
+                <label class="form-label" for="funcionario_id"><i class="ri-user-settings-line"></i> Funcionário Responsável</label>
+                {!!Form::select('funcionario_id', '', ['' => 'Selecione um funcionário'] + $funcionario->pluck('nome', 'id')->all())->attrs(['class' => 'form-select select2', 'id' => 'funcionario_id'])!!}
             </div>
         </div>
     </div>
 
     <!-- ═══ SEÇÃO 2: PRAZOS E VIGÊNCIA ═══ -->
-    <div class="col-12 mt-4">
-        <h5 class="text-dark border-bottom pb-2 mb-3">
-            <i class="ri-calendar-event-line text-primary me-2 align-middle fs-18"></i>
+    <div class="col-12 uf-section">
+        <div class="uf-section-title">
+            <span class="uf-ico"><i class="ri-calendar-event-line"></i></span>
             2. Horários & Agendamento
-        </h5>
+            <small>datas de início e previsão de entrega</small>
+        </div>
         <div class="row g-3">
-            <div class="col-md-6 col-12">
-                <label class="form-label fw-semibold text-dark mb-1 required">Data de Início</label>
+            <div class="col-md-6 col-12 uf-field">
+                <label class="form-label required"><i class="ri-calendar-line"></i> Data de Início</label>
                 <input required type="text" name="data_inicio" id="datetime-datepicker" class="form-control"
-                       value="{{ isset($item) ? $item->data_inicio : '' }}" placeholder="Selecione data e hora">
+                       value="{{ isset($item) ? $item->data_inicio : '' }}" placeholder="Selecione data e hora de início">
                 @if($errors->has('data_inicio'))
-                <div class="text-danger mt-1 fs-12">Campo data de início é obrigatório.</div>
+                <div class="text-danger mt-1 fs-12">{{ $errors->first('data_inicio') }}</div>
                 @endif
             </div>
 
-            <div class="col-md-6 col-12">
-                <label class="form-label fw-semibold text-dark mb-1 required">Previsão de Entrega</label>
+            <div class="col-md-6 col-12 uf-field">
+                <label class="form-label required"><i class="ri-time-line"></i> Previsão de Entrega</label>
                 <input required type="text" name="data_entrega" id="datetime-datepicker2" class="form-control"
                        value="{{ isset($item) ? $item->data_entrega : '' }}" placeholder="Selecione data e hora de previsão">
                 @if($errors->has('data_entrega'))
-                <div class="text-danger mt-1 fs-12">Campo previsão de entrega é obrigatório.</div>
+                <div class="text-danger mt-1 fs-12">{{ $errors->first('data_entrega') }}</div>
                 @endif
             </div>
         </div>
     </div>
 
     <!-- ═══ SEÇÃO 3: DESCRIÇÃO ═══ -->
-    <div class="col-12 mt-4">
-        <h5 class="text-dark border-bottom pb-2 mb-3">
-            <i class="ri-file-text-line text-primary me-2 align-middle fs-18"></i>
+    <div class="col-12 uf-section">
+        <div class="uf-section-title">
+            <span class="uf-ico"><i class="ri-file-text-line"></i></span>
             3. Laudo Técnico / Descrição Geral
-        </h5>
+            <small>problemas relatados e checklist inicial</small>
+        </div>
         <div class="row g-3">
-            <div class="col-12">
-                {!!Form::textarea('descricao', 'Descrição / Problemas Relatados')
+            <div class="col-12 uf-field">
+                <label class="form-label"><i class="ri-align-left"></i> Descrição / Problemas Relatados</label>
+                {!!Form::textarea('descricao', '')
                 ->attrs(['rows' => '10', 'class' => 'form-control tiny'])!!}
             </div>
         </div>
     </div>
 
     <!-- ═══ RODAPÉ COM BOTÕES ═══ -->
-    <div class="col-12 mt-4">
-        <hr class="text-muted opacity-25">
-        <div class="d-flex align-items-center justify-content-end gap-2">
-            <a href="{{ route('ordem-servico.index') }}" class="btn btn-outline-secondary px-4">
-                <i class="ri-close-line align-middle me-1"></i> Cancelar
+    <div class="col-12">
+        <div class="uf-actions">
+            <a href="{{ isset($item) ? route('ordem-servico.show', $item->id) : route('ordem-servico.index') }}" class="dash-btn dash-btn-light px-4">
+                <i class="ri-close-line"></i> Cancelar
             </a>
-            <button type="submit" class="btn {{ $formType === 'edit' ? 'btn-primary' : 'btn-success' }} px-4" id="btn-store">
-                <i class="ri-save-line align-middle me-1"></i>
-                {{ $formType === 'edit' ? 'Salvar Alterações' : 'Salvar Ordem de Serviço' }}
+            <button type="submit" class="dash-btn dash-btn-primary px-4" id="btn-store">
+                <i class="ri-save-line"></i>
+                {{ isset($item) ? 'Salvar Alterações' : 'Salvar Ordem de Serviço' }}
             </button>
         </div>
     </div>
@@ -86,3 +108,4 @@
     });
 </script>
 @endsection
+

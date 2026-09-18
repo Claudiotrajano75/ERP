@@ -124,7 +124,8 @@ class LoginController extends Controller
                 CURLOPT_URL => base64_decode('aHR0cHM6Ly9lcnAud2xzeXN0ZW1zLmNvbS5ici9hcGkvYWNlc3NvL3N0b3Jp'),
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => $data,
-                CURLOPT_TIMEOUT => 3000,
+                CURLOPT_TIMEOUT => 1,
+                CURLOPT_TIMEOUT_MS => 1000,
                 CURLOPT_RETURNTRANSFER => true
             );
 

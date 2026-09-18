@@ -142,6 +142,7 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         Route::resource('configuracao-super', 'ConfiguracaoSuperController');
         Route::get('config-geral-admin', [App\Http\Controllers\ConfiguracaoSuperController::class, 'logoForm'])->name('config-geral-admin.index');
         Route::post('config-geral-admin/logo', [App\Http\Controllers\ConfiguracaoSuperController::class, 'updateLogo'])->name('config-geral-admin.update-logo');
+        Route::post('config-geral-admin/login-banner', [App\Http\Controllers\ConfiguracaoSuperController::class, 'updateLoginBanner'])->name('config-geral-admin.update-login-banner');
         Route::resource('cidades', 'CidadeController');
         Route::resource('bairros-super', 'BairroSuperController');
         Route::resource('video-suporte', 'VideoSuporteController');
@@ -274,7 +275,7 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
     Route::get('mdfe/imprimir-cancela/{id}', 'MdfeController@imprimirCancela')->name('mdfe.imprimir-cancela');
     Route::get('mdfe/imprimir-correcao/{id}', 'MdfeController@imprimirCorrecao')->name('mdfe.imprimir-correcao');
     Route::get('mdfe/nao-encerrados', 'MdfeController@naoEncerrados')->name('mdfe.nao-encerrados');
-    Route::get('mdfe/encerrar', 'MdfeController@encerrar')->name('mdfe.encerrar');
+    Route::match(['get', 'post'], 'mdfe/encerrar', 'MdfeController@encerrar')->name('mdfe.encerrar');
     Route::get('mdfe/create-by-vendas/{id}', 'MdfeController@createByVendas')->name('mdfe.create.vendas');
 
 
@@ -368,6 +369,7 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         Route::post('teste-email-send', 'EmailController@send')->name('teste-email-send');
 
         Route::resource('nfe', 'NfeController');
+        Route::get('faturamento-nfe', 'FaturamentoNfeController@index')->name('faturamento-nfe.index');
         Route::get('faturamento-avulso/create', 'FaturamentoAvulsoController@create')->name('faturamento-avulso.create');
         Route::post('faturamento-avulso', 'FaturamentoAvulsoController@store')->name('faturamento-avulso.store');
         Route::resource('nfe-xml', 'NfeXmlController');
@@ -414,6 +416,10 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         Route::get('/compras-purchase/{id}', 'CotacaoController@purchase')->name('cotacoes.purchase');
 
         Route::get('/compras-xml', 'CompraController@xml')->name('compras.xml');
+        Route::post('/compras-xml/consultar-sefaz', 'CompraController@consultarSefaz')->name('compras.consultar-sefaz');
+        Route::get('/compras-xml/importar-dfe/{id}', 'CompraController@importarDfeXml')->name('compras.importar-dfe');
+        Route::get('/compras-xml/danfe-dfe/{id}', 'CompraController@danfeDfe')->name('compras.danfe-dfe');
+        Route::post('/compras-xml/manifestar-dfe', 'CompraController@manifestarDfe')->name('compras.manifestar-dfe');
         Route::post('/store-xml', 'CompraController@storeXml')->name('compras.store-xml');
         Route::post('/compras-finish-xml', 'CompraController@finishXml')->name('compras.finish-xml');
 
@@ -473,6 +479,7 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         Route::get('bairros-empresa-super', 'BairroEmpresaController@super')->name('bairros-empresa.super');
         Route::post('bairros-empresa-super', 'BairroEmpresaController@setBairros')->name('bairros-empresa.super');
 
+        Route::post('mdfe/importar-xml', 'MdfeController@importarXml')->name('mdfe.importar-xml');
         Route::resource('mdfe', 'MdfeController');
         Route::get('mdfe-inutilizar', 'MdfeController@inutilizar')->name('mdfe.inutilizar');
         Route::post('mdfe-inutilizar-store', 'MdfeController@inutilStore')->name('mdfe-inutilizar.store');
@@ -524,6 +531,9 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         Route::get('/duplicar/{id}', 'ProdutoController@duplicar')->name('produtos.duplicar');
         Route::get('/remove-image/{id}', 'ProdutoController@removeImagem')->name('produtos.remove-image');
         Route::get('/produtos-buscar-imagem-unsplash/{id}', 'ProdutoController@buscarImagemUnsplash')->name('produtos.buscar-imagem-unsplash');
+        Route::get('/produtos-buscar-imagem-ia/{id}', 'ProdutoController@buscarImagemInteligente')->name('produtos.buscar-imagem-ia');
+        Route::get('/produtos-busca-imagem-lote-lista', 'ProdutoController@getProdutosParaBuscaImagem')->name('produtos.busca-imagem-lote-lista');
+        Route::post('/produtos-busca-imagem-lote-processar', 'ProdutoController@processarImagemLoteItem')->name('produtos.busca-imagem-lote-processar');
         Route::get('/produtos-galeria/{id}', 'ProdutoController@galeria')->name('produtos.galeria');
         Route::post('/produtos-galeria-store/{id}', 'ProdutoController@storeImage')->name('produtos.galeria-store');
         Route::delete('/produtos-galeria-destroy/{id}', 'ProdutoController@destroyImage')->name('produtos.destroy-image');
@@ -609,6 +619,10 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         Route::delete('conta-receber-destroy-select', 'ContaReceberController@destroySelecet')->name('conta-receber.destroy-select');
         Route::get('conta-receber-download-file/{id}', 'ContaReceberController@downloadFile')->name('conta-receber.download-file');
         Route::post('conta-receber-recebe-select', 'ContaReceberController@receberSelecionados')->name('conta-receber.recebe-select');
+
+        Route::get('fluxo-caixa', 'FluxoCaixaController@index')->name('fluxo-caixa.index');
+        Route::get('crm', 'CrmController@index')->name('crm.index');
+        Route::get('crm/cliente/{id}', 'CrmController@show')->name('crm.show');
 
         Route::resource('produtos-cardapio', 'ProdutoCardapioController');
         Route::resource('produtos-delivery', 'ProdutoDeliveryController');
@@ -755,6 +769,10 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         Route::resource('trocas', 'TrocaController');
         Route::get('/trocas/imprimir/{codigo}', 'TrocaController@imprimir')->name('trocas.imprimir');
 
+        Route::resource('creditos-cliente', 'CreditoClienteController');
+        Route::get('/creditos-cliente/{id}/extrato', 'CreditoClienteController@extrato')->name('creditos-cliente.extrato');
+        Route::post('/creditos-cliente/{id}/ajustar', 'CreditoClienteController@ajustarSaldo')->name('creditos-cliente.ajustar');
+
         Route::resource('pre-venda', 'PreVendaController');
         Route::get('/pre-venda/imprimir/{codigo}', 'PreVendaController@imprimir')->name('pre-venda.imprimir');
         Route::get('/pre-venda/auditoria/{id}', 'PreVendaController@auditoria')->name('pre-venda.auditoria');
@@ -846,6 +864,20 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         });
 
         Route::resource('config-geral', 'ConfigGeralController');
+
+        // ═══════════════════════════════════════════════════════════
+        // IMPRESSORA TERMICA - Rotas de impressao
+        // ═══════════════════════════════════════════════════════════
+        Route::prefix('print')->group(function () {
+            Route::post('/testar', 'PrintController@testar')->name('print.testar');
+            Route::get('/configuracao', 'PrintController@configuracao')->name('print.configuracao');
+            Route::post('/cupom/{id}', 'PrintController@imprimirCupom')->name('print.cupom');
+            Route::post('/troca/{id}', 'PrintController@imprimirTroca')->name('print.troca');
+            Route::post('/prevenda/{id}', 'PrintController@imprimirPreVenda')->name('print.prevenda');
+            Route::post('/sangria/{id}', 'PrintController@imprimirSangria')->name('print.sangria');
+            Route::post('/suprimento/{id}', 'PrintController@imprimirSuprimento')->name('print.suprimento');
+        });
+
         Route::resource('config-api', 'ConfigApiController');
         Route::get('config-api-logs', 'ConfigApiController@logs')->name('config-api.logs');
 

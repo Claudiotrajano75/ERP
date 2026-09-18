@@ -9,12 +9,14 @@ class ModeloEtiquetaController extends Controller
 {
     public function index(Request $request)
     {
-        $data = ModeloEtiqueta::where('empresa_id', $request->empresa_id)
+        $query = ModeloEtiqueta::where('empresa_id', $request->empresa_id);
+        $data = (clone $query)
         ->when(!empty($request->nome), function ($q) use ($request) {
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
         ->orderBy('nome', 'asc')
         ->paginate(env("PAGINACAO"));
+        $stats = ['total' => (clone $query)->count()];
 
         $super = ModeloEtiqueta::where('empresa_id', null)->count();
         $importar = false;
@@ -25,7 +27,7 @@ class ModeloEtiquetaController extends Controller
                 $importar = true;
             }
         }
-        return view('modelo_etiqueta.index', compact('data', 'importar'));
+        return view('modelo_etiqueta.index', compact('data', 'importar', 'stats'));
     }
 
     public function importar(){

@@ -476,9 +476,9 @@
                                                                             @endif
                                                                         </td>
                                                                         <td class="text-end">
-                                                                            <a target="_blank" href="{{ route('suprimento.print', [$s->id]) }}" class="btn btn-light btn-xs px-1.5 py-0.5" title="Imprimir Suprimento">
+                                                                            <button type="button" onclick="PrintThermal.imprimir('suprimento', {{$s->id}}, '{{ route('suprimento.print', [$s->id]) }}')" class="btn btn-light btn-xs px-1.5 py-0.5" title="Imprimir Suprimento">
                                                                                 <i class="ri-printer-line text-dark"></i>
-                                                                            </a>
+                                                                            </button>
                                                                         </td>
                                                                     </tr>
                                                                     @empty
@@ -523,9 +523,9 @@
                                                                             @endif
                                                                         </td>
                                                                         <td class="text-end">
-                                                                            <a target="_blank" href="{{ route('sangria.print', [$s->id]) }}" class="btn btn-light btn-xs px-1.5 py-0.5" title="Imprimir Sangria">
+                                                                            <button type="button" onclick="PrintThermal.imprimir('sangria', {{$s->id}}, '{{ route('sangria.print', [$s->id]) }}')" class="btn btn-light btn-xs px-1.5 py-0.5" title="Imprimir Sangria">
                                                                                 <i class="ri-printer-line text-dark"></i>
-                                                                            </a>
+                                                                            </button>
                                                                         </td>
                                                                     </tr>
                                                                     @empty

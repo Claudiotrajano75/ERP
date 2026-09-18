@@ -22,13 +22,23 @@ class AtendimentoController extends Controller
 
         $funcionario_id = $request->get('funcionario_id');
         
-        $data = DiaSemana::where('empresa_id', $request->empresa_id)
+        $base = DiaSemana::where('empresa_id', $request->empresa_id);
+
+        $data = (clone $base)
         ->when(!empty($funcionario_id), function ($query) use ($funcionario_id) {
             return $query->where('funcionario_id', $funcionario_id);
         })
         ->get();
+        
         $funcionarios = Funcionario::where('empresa_id', request()->empresa_id)->get();
-        return view('atendimentos.index', compact('data', 'funcionarios'));
+
+        $stats = [
+            'total'                   => (clone $base)->count(),
+            'total_funcionarios'      => $funcionarios->count(),
+            'funcionarios_sem_escala' => max(0, $funcionarios->count() - (clone $base)->distinct('funcionario_id')->count('funcionario_id')),
+        ];
+
+        return view('atendimentos.index', compact('data', 'funcionarios', 'stats'));
     }
 
     public function create()

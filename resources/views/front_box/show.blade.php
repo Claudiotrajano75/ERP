@@ -81,9 +81,10 @@
                 </div>
 
                 <div class="d-flex align-items-center gap-2 mb-4">
-                    <a class="btn btn-dark btn-sm" title="Imprimir não fiscal" target="_blank" href="{{ route('frontbox.imprimir-nao-fiscal', [$data->id]) }}">
+                    <button type="button" class="btn btn-dark btn-sm" title="Imprimir não fiscal"
+                        onclick="PrintThermal.imprimir('cupom', {{$data->id}}, '{{ route('frontbox.imprimir-nao-fiscal', [$data->id]) }}')">
                         <i class="ri-printer-line me-1"></i> Imprimir Cupom
-                    </a>
+                    </button>
                 </div>
 
                 <!-- Produtos -->

@@ -58,14 +58,21 @@
                                 <div class="d-flex align-items-center">
                                     <h5 class="pdv-card-label text-muted mb-0">Cliente
                                         @isset($cliente)
-                                            <span class="pdv-badge-status pdv-badge-selected pdv-badge-cliente">✓ Selecionado</span>
+                                            <span class="pdv-badge-status pdv-badge-selected pdv-badge-cliente">✓
+                                                Selecionado</span>
                                         @else
-                                            <span class="pdv-badge-status pdv-badge-pending pdv-badge-cliente">○ Pendente</span>
+                                        <span class="pdv-badge-status pdv-badge-pending pdv-badge-cliente">○
+                                            Pendente</span>
                                         @endif
                                     </h5>
                                 </div>
                                 @isset($cliente)
-                                    <h6 class="pdv-card-value cliente_selecionado mt-1">{{ $cliente->razao_social }}</h6>
+                                    <h6 class="pdv-card-value cliente_selecionado mt-1">
+                                        {{ $cliente->razao_social }}
+                                        @if($cliente->valor_credito > 0)
+                                            <span class="badge bg-success" style="font-size: 11px; vertical-align: middle;" title="Saldo de crédito disponível para compras">Crédito: R$ {{ __moeda($cliente->valor_credito) }}</span>
+                                        @endif
+                                    </h6>
                                 @else
                                 <h6 class="pdv-card-value-empty cliente_selecionado mt-1"><i
                                         class="ri-user-search-line"></i> Nenhum cliente selecionado</h6>
@@ -89,9 +96,11 @@
                                 <div class="d-flex align-items-center">
                                     <h5 class="pdv-card-label text-muted mb-0">Vendedor
                                         @isset($funcionario)
-                                            <span class="pdv-badge-status pdv-badge-selected pdv-badge-vendedor">✓ Selecionado</span>
+                                            <span class="pdv-badge-status pdv-badge-selected pdv-badge-vendedor">✓
+                                                Selecionado</span>
                                         @else
-                                            <span class="pdv-badge-status pdv-badge-pending pdv-badge-vendedor">○ Pendente</span>
+                                        <span class="pdv-badge-status pdv-badge-pending pdv-badge-vendedor">○
+                                            Pendente</span>
                                         @endif
                                     </h5>
                                 </div>
@@ -512,18 +521,18 @@
                                     <div class="row g-1">
                                         <div class="col-6">
                                             <button type="button"
-                                                class="btn pdv-action-btn btn-outline-info w-100 btn-pagamento-multi"
+                                                class="btn pdv-action-btn btn-info w-100 btn-pagamento-multi"
                                                 data-bs-toggle="modal" data-bs-target="#pagamento_multiplo"
                                                 title="F4 - Pagamento Múltiplo"><i class="ri-list-check-3"></i> Pag.
                                                 Multiplos <span class="pdv-shortcut pdv-shortcut-sm">F4</span></button>
                                         </div>
                                         <div class="col-6">
-                                            <button type="button" class="btn pdv-action-btn btn-outline-secondary w-100"
+                                            <button type="button" class="btn pdv-action-btn btn-secondary w-100"
                                                 data-bs-toggle="modal" data-bs-target="#lista_precos"
                                                 title="Lista de Preços"><i class="ri-cash-line"></i> Preços</button>
                                         </div>
                                         <div class="col-6">
-                                            <button type="button" class="btn pdv-action-btn btn-outline-primary w-100"
+                                            <button type="button" class="btn pdv-action-btn btn-primary w-100"
                                                 data-bs-toggle="modal" data-bs-target="#observacao_pdv"
                                                 title="Observação"><i class="ri-file-edit-fill"></i>
                                                 Observações</button>
@@ -531,7 +540,7 @@
                                         <div class="col-6">
                                             @if(!isset($item))
                                                 <button type="button"
-                                                    class="btn pdv-action-btn btn-outline-dark w-100 btn-vendas-suspensas"
+                                                    class="btn pdv-action-btn btn-dark w-100 btn-vendas-suspensas"
                                                     data-bs-toggle="modal" data-bs-target="#vendas_suspensas"
                                                     title="Histórico de Vendas Suspensas"><i class="ri-time-fill"></i>
                                                     Históricos</button>
@@ -548,7 +557,7 @@
                                 <div class="card-body p-2">
                                     <div class="row g-1">
                                         <div class="col-6">
-                                            <a class="btn pdv-action-btn btn-outline-danger w-100"
+                                            <a class="btn pdv-action-btn btn-danger w-100"
                                                 href="{{ route('frontbox.index')}}">
                                                 <i class="ri-arrow-left-s-line"></i> Sair
                                             </a>
@@ -556,7 +565,7 @@
                                         <div class="col-6">
                                             @if($isVendaSuspensa == 0)
                                                 <button type="button" id="btn-suspender"
-                                                    class="btn pdv-action-btn btn-outline-warning w-100">
+                                                    class="btn pdv-action-btn btn-warning w-100">
                                                     <i class="ri-timer-line"></i> Susp.
                                                 </button>
                                             @else
@@ -623,10 +632,10 @@
     <script type="text/javascript">
 
         @if(Session::has('sangria_id'))
-            window.open(path_url + 'sangria-print/' + {{ Session::get('sangria_id') }}, "_blank")
+            PrintThermal.imprimir('sangria', {{ Session::get('sangria_id') }}, path_url + 'sangria-print/' + {{ Session::get('sangria_id') }})
         @endif
         @if(Session::has('suprimento_id'))
-            window.open(path_url + 'suprimento-print/' + {{ Session::get('suprimento_id') }}, "_blank")
+            PrintThermal.imprimir('suprimento', {{ Session::get('suprimento_id') }}, path_url + 'suprimento-print/' + {{ Session::get('suprimento_id') }})
         @endif
 
         $('.btn-novo-cliente').click(() => {

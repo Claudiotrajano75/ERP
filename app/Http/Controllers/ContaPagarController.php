@@ -41,7 +41,23 @@ class ContaPagarController extends Controller
         $ordem = $request->ordem;
         $local_id = $request->get('local_id');
 
-        $data = ContaPagar::where('empresa_id', request()->empresa_id)
+        $baseQuery = ContaPagar::where('empresa_id', request()->empresa_id)
+        ->when($local_id, function ($query) use ($local_id) {
+            return $query->where('local_id', $local_id);
+        })
+        ->when(!$local_id, function ($query) use ($locais) {
+            return $query->whereIn('local_id', $locais);
+        });
+
+        $stats = [
+            'total_contas'   => (clone $baseQuery)->count(),
+            'total_integral' => (clone $baseQuery)->sum('valor_integral'),
+            'total_pago'     => (clone $baseQuery)->where('status', 1)->sum('valor_pago'),
+            'total_pendente' => (clone $baseQuery)->where('status', 0)->sum('valor_integral'),
+            'total_atrasadas'=> (clone $baseQuery)->where('status', 0)->whereDate('data_vencimento', '<', date('Y-m-d'))->count(),
+        ];
+
+        $data = (clone $baseQuery)
         ->when(!empty($fornecedor_id), function ($query) use ($fornecedor_id) {
             return $query->where('fornecedor_id', $fornecedor_id);
         })
@@ -51,12 +67,6 @@ class ContaPagarController extends Controller
         ->when(!empty($end_date), function ($query) use ($end_date) {
             return $query->whereDate('data_vencimento', '<=', $end_date);
         })
-        ->when($local_id, function ($query) use ($local_id) {
-            return $query->where('local_id', $local_id);
-        })
-        ->when(!$local_id, function ($query) use ($locais) {
-            return $query->whereIn('local_id', $locais);
-        })
         ->when($status != '', function ($query) use ($status) {
             return $query->where('status', $status);
         })
@@ -64,7 +74,7 @@ class ContaPagarController extends Controller
             return $query->orderBy('data_vencimento', 'asc');
         })
         ->when($ordem == '', function ($query) use ($ordem) {
-            return $query->orderBy('created_at', 'asc');
+            return $query->orderBy('created_at', 'desc');
         })
         ->paginate(env("PAGINACAO"));
 
@@ -72,7 +82,7 @@ class ContaPagarController extends Controller
         if($fornecedor_id){
             $fornecedor = Cliente::findOrFail($fornecedor_id);
         }
-        return view('conta-pagar.index', compact('data', 'fornecedor'));
+        return view('conta-pagar.index', compact('data', 'fornecedor', 'stats'));
     }
 
     public function create()

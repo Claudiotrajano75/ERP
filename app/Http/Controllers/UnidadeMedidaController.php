@@ -33,13 +33,15 @@ class UnidadeMedidaController extends Controller
     public function index(Request $request)
     {
         $this->insertUnidadesMedida(request()->empresa_id);
-        $data = UnidadeMedida::where('empresa_id', request()->empresa_id)
+        $query = UnidadeMedida::where('empresa_id', request()->empresa_id);
+        $data = (clone $query)
         ->when(!empty($request->nome), function ($q) use ($request) {
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
         ->paginate(env("PAGINACAO"));
+        $stats = ['total' => (clone $query)->count(), 'ativas' => (clone $query)->where('status', 1)->count()];
 
-        return view('unidades_medida.index', compact('data'));
+        return view('unidades_medida.index', compact('data', 'stats'));
     }
 
     public function create()

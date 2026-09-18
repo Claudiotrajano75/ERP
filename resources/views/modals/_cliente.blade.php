@@ -1,5 +1,5 @@
 <div class="modal fade modal-pdv modal-pdv-modern modal-select-cliente" id="cliente" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="clienteLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header modulo-header-gradient">
                 <div>
@@ -10,7 +10,7 @@
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="min-height: 280px; padding: 24px;">
                 <div class="row g-3">
                     <div class="col-12">
                         <label class="form-label"><i class="ri-user-search-line me-1"></i>Cliente</label>

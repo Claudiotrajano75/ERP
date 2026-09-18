@@ -181,7 +181,7 @@
                     </div>
                     <div class="product-actions">
                         <a href="{{ route('loja.produto-detalhe', [$p->hash_ecommerce, 'link='.$config->loja_id]) }}" class="btn-buy">
-                            Ver Detalhes
+                            <i class="ri-shopping-bag-3-line"></i> Ver Detalhes
                         </a>
                     </div>
                 </div>

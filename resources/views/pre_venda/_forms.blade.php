@@ -15,7 +15,7 @@
 @endsection
 
 <input type="hidden" id="lista_id" value="" name="lista_id">
-
+<input type="hidden" id="alerta_sonoro" value="{{ isset($configGeral) && $configGeral ? $configGeral->alerta_sonoro : 1 }}">
 <input type="hidden" id="abertura" value="{{ $abertura }}" name="">
 @isset($pedido)
 <input name="pedido_id" id="pedido_id" value="{{ $pedido->id }}" class="d-none">
@@ -137,8 +137,8 @@
                     Leitor Desativado
                 </div>
                 <div class="col-6 text-end mx-3">
-                    <a href="{{ route('pre-venda.create') }}" class="btn pdv-action-btn btn-outline-primary btn-sm">
-                        <i class="ri-refresh-line"></i> Nova Prevenda
+                    <a href="{{ route('pre-venda.create') }}" class="btn pdv-action-btn btn-primary btn-sm">
+                        <i class="ri-refresh-line me-1"></i> Nova Prevenda
                     </a>
                 </div>
             </div>
@@ -329,21 +329,21 @@
                             <div class="card-body p-2">
                                 <div class="row g-1">
                                     <div class="col-4">
-                                        <button type="button" class="btn pdv-action-btn btn-outline-info w-100"
+                                        <button type="button" class="btn pdv-action-btn btn-info w-100"
                                             data-bs-toggle="modal" data-bs-target="#pagamento_multiplo">
                                             <i class="ri-list-check-3"></i> Pag. Multi <span
                                                 class="pdv-shortcut pdv-shortcut-sm">F4</span>
                                         </button>
                                     </div>
                                     <div class="col-4">
-                                        <button type="button" class="btn pdv-action-btn btn-outline-primary w-100"
+                                        <button type="button" class="btn pdv-action-btn btn-primary w-100"
                                             data-bs-toggle="modal" data-bs-target="#observacao_pdv"
                                             title="Observação"><i class="ri-file-edit-fill"></i> Observ.
                                         </button>
                                     </div>
                                     <br>
                                     <div class="col-4">
-                                        <a class="btn pdv-action-btn btn-outline-danger w-100"
+                                        <a class="btn pdv-action-btn btn-danger w-100"
                                             href="{{ route('pre-venda.index') }}">
                                             <i class="ri-arrow-left-s-line"></i> Sair
                                         </a>
@@ -408,68 +408,100 @@
     </script>
 
     @if(session()->has('codigo'))
-        <!-- Notificação de impressão -->
-        <div id="print-notification" style="
-                                position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
-                                background: #155724; color: #fff;
-                                padding: 16px 24px;
-                                display: flex; align-items: center; justify-content: center; gap: 20px;
-                                font-size: 16px; font-family: inherit;
-                                box-shadow: 0 -4px 20px rgba(0,0,0,0.25);
-                                animation: slideUpPrint 0.4s ease;
-                            ">
-            <span>✅ &nbsp;Pré-venda finalizada! Deseja imprimir o comprovante?</span>
-            <div style="display: flex; gap: 10px;">
-                <button onclick="imprimirComprovante()" style="
-                                        background: #fff; color: #155724; border: none;
-                                        padding: 8px 24px; border-radius: 6px;
-                                        font-weight: bold; cursor: pointer;
-                                        font-size: 15px;
-                                    ">Sim, Imprimir</button>
-                <button onclick="fecharNotificacao()" style="
-                                        background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.5);
-                                        padding: 8px 20px; border-radius: 6px;
-                                        cursor: pointer; font-size: 15px;
-                                    ">Não</button>
-            </div>
-        </div>
         <style>
-            @keyframes slideUpPrint {
-                from {
-                    transform: translateY(100%);
-                    opacity: 0;
-                }
-
-                to {
-                    transform: translateY(0);
-                    opacity: 1;
-                }
+            .swal-modal {
+                border-radius: 20px !important;
+                padding: 28px 24px !important;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+                background: #ffffff !important;
+            }
+            .swal-icon--success {
+                border-color: #10b981 !important;
+            }
+            .swal-icon--success__line {
+                background-color: #10b981 !important;
+            }
+            .swal-icon--success__ring {
+                border: 4px solid rgba(16, 185, 129, 0.2) !important;
+            }
+            .swal-title {
+                font-size: 22px !important;
+                font-weight: 700 !important;
+                color: #0f172a !important;
+                margin-top: 15px !important;
+                padding: 0 !important;
+            }
+            .swal-text {
+                font-size: 15px !important;
+                color: #64748b !important;
+                text-align: center !important;
+                margin-top: 8px !important;
+            }
+            .swal-footer {
+                text-align: center !important;
+                margin-top: 24px !important;
+                padding: 0 !important;
+            }
+            .swal-button {
+                border-radius: 10px !important;
+                font-size: 14px !important;
+                font-weight: 600 !important;
+                padding: 10px 24px !important;
+                transition: all 0.2s ease !important;
+            }
+            .swal-button--cancel {
+                background-color: #f1f5f9 !important;
+                color: #64748b !important;
+            }
+            .swal-button--cancel:hover {
+                background-color: #e2e8f0 !important;
+                color: #334155 !important;
+            }
+            .swal-button--confirm {
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+                color: #fff !important;
+                box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+            }
+            .swal-button--confirm:hover {
+                box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45) !important;
+                transform: translateY(-1px);
             }
         </style>
         <script type="text/javascript">
-            var codigo = @json(session('codigo'));
-            var imprimirUrl = path_url + 'pre-venda/imprimir/' + codigo;
+            $(function () {
+                var codigo = @json(session('codigo'));
+                var imprimirUrl = path_url + 'pre-venda/imprimir/' + codigo;
 
-            function imprimirComprovante() {
-                var win = window.open('', '_blank');
-                if (win) {
-                    win.location.href = imprimirUrl;
-                } else {
-                    window.location.href = imprimirUrl;
-                    return;
+                if (typeof swal !== 'undefined') {
+                    swal({
+                        title: "Pré-venda Finalizada!",
+                        text: "Deseja imprimir o comprovante da pré-venda?",
+                        icon: "success",
+                        buttons: {
+                            cancel: {
+                                text: "Não",
+                                value: false,
+                                visible: true,
+                                closeModal: true
+                            },
+                            confirm: {
+                                text: "Sim, Imprimir",
+                                value: true,
+                                visible: true,
+                                closeModal: true
+                            }
+                        },
+                        dangerMode: false
+                    }).then((isConfirm) => {
+                        if (isConfirm) {
+                            var win = window.open(imprimirUrl, '_blank');
+                            if (!win) {
+                                window.location.href = imprimirUrl;
+                            }
+                        }
+                    });
                 }
-                fecharNotificacao();
-            }
-
-            function fecharNotificacao() {
-                var el = document.getElementById('print-notification');
-                if (el) {
-                    el.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-                    el.style.transform = 'translateY(100%)';
-                    el.style.opacity = '0';
-                    setTimeout(function () { el.remove(); }, 300);
-                }
-            }
+            });
         </script>
     @endif
 @endsection

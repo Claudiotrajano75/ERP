@@ -93,11 +93,11 @@ class NfceController extends Controller
 
         $this->setNumeroSequencial();
 
-        $data = Nfce::where('empresa_id', request()->empresa_id)
+        $baseQuery = Nfce::where('empresa_id', request()->empresa_id)
         ->when(!empty($start_date), function ($query) use ($start_date) {
             return $query->whereDate('created_at', '>=', $start_date);
         })
-        ->when(!empty($end_date), function ($query) use ($end_date,) {
+        ->when(!empty($end_date), function ($query) use ($end_date) {
             return $query->whereDate('created_at', '<=', $end_date);
         })
         ->when(!empty($cliente_id), function ($query) use ($cliente_id) {
@@ -111,12 +111,21 @@ class NfceController extends Controller
         })
         ->when(!$local_id, function ($query) use ($locais) {
             return $query->whereIn('local_id', $locais);
-        })
+        });
+
+        $stats = [
+            'total_vendas'    => (clone $baseQuery)->sum('total'),
+            'total_aprovadas' => (clone $baseQuery)->where('estado', 'aprovado')->count(),
+            'total_novas'     => (clone $baseQuery)->where('estado', 'novo')->count(),
+            'total_canceladas'=> (clone $baseQuery)->whereIn('estado', ['cancelado', 'rejeitado'])->count(),
+        ];
+
+        $data = (clone $baseQuery)
         ->orderBy('created_at', 'desc')
         ->paginate(env("PAGINACAO"));
         $contigencia = $this->getContigencia(request()->empresa_id);
 
-        return View('nfce.index', compact('data', 'contigencia'));
+        return View('nfce.index', compact('data', 'contigencia', 'stats'));
     }
 
     public function create()
@@ -422,8 +431,11 @@ public function imprimir($id)
             $danfe = new Danfce($xml, $item);
             $empresa = $item->empresa;
             if($empresa->logo){
-                $logo = 'data://text/plain;base64,'. base64_encode(file_get_contents(public_path('/uploads/logos/') . $empresa->logo));
-                $danfe->logoParameters($logo, 'L');
+                $logoPath = public_path('/uploads/logos/') . $empresa->logo;
+                if(file_exists($logoPath)){
+                    $logo = 'data://text/plain;base64,'. base64_encode(file_get_contents($logoPath));
+                    $danfe->logoParameters($logo, 'L');
+                }
             }
             $pdf = $danfe->render();
             return response($pdf)
@@ -439,8 +451,11 @@ public function imprimir($id)
             $danfe = new Danfce($xml, $item);
             $empresa = $item->empresa;
             if($empresa->logo){
-                $logo = 'data://text/plain;base64,'. base64_encode(file_get_contents(public_path('/uploads/logos/') . $empresa->logo));
-                $danfe->logoParameters($logo, 'L');
+                $logoPath = public_path('/uploads/logos/') . $empresa->logo;
+                if(file_exists($logoPath)){
+                    $logo = 'data://text/plain;base64,'. base64_encode(file_get_contents($logoPath));
+                    $danfe->logoParameters($logo, 'L');
+                }
             }
             $pdf = $danfe->render();
             header("Content-Disposition: ; filename=DANFCE $item->numero.pdf");
@@ -577,8 +592,11 @@ public function danfceTemporaria($id)
         $danfce = new Danfce($signed);
 
         if($empresa->logo){
-            $logo = 'data://text/plain;base64,'. base64_encode(file_get_contents(public_path('/uploads/logos/') . $empresa->logo));
-            $danfce->logoParameters($logo, 'L');
+            $logoPath = public_path('/uploads/logos/') . $empresa->logo;
+            if(file_exists($logoPath)){
+                $logo = 'data://text/plain;base64,'. base64_encode(file_get_contents($logoPath));
+                $danfce->logoParameters($logo, 'L');
+            }
         }
         $pdf = $danfce->render();
 
@@ -619,17 +637,26 @@ public function inutilizar(Request $request)
 {
     $start_date = $request->get('start_date');
     $end_date = $request->get('end_date');
-    $data = Inutilizacao::where('empresa_id', request()->empresa_id)
-    ->where('modelo', '65')->orderBy('id', 'desc')
+    $query = Inutilizacao::where('empresa_id', request()->empresa_id)
+        ->where('modelo', '65');
+
+    $stats = [
+        'total'     => (clone $query)->count(),
+        'aprovados' => (clone $query)->where('estado', 'aprovado')->count(),
+        'rejeitados'=> (clone $query)->where('estado', 'rejeitado')->count(),
+        'novos'     => (clone $query)->where('estado', 'novo')->count(),
+    ];
+
+    $data = $query->orderBy('id', 'desc')
     ->when(!empty($start_date), function ($query) use ($start_date) {
         return $query->whereDate('created_at', '>=', $start_date);
     })
-    ->when(!empty($end_date), function ($query) use ($end_date,) {
+    ->when(!empty($end_date), function ($query) use ($end_date) {
         return $query->whereDate('created_at', '<=', $end_date);
     })
     ->get();
     $modelo = '65';
-    return view('inutilizacao.index', compact('data', 'modelo'));
+    return view('inutilizacao.index', compact('data', 'modelo', 'stats'));
 }
 
 public function inutilStore(Request $request)

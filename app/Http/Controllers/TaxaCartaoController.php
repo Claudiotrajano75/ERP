@@ -16,12 +16,22 @@ class TaxaCartaoController extends Controller
         $this->middleware('permission:taxa_pagamento_delete', ['only' => ['destroy']]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = TaxaPagamento::where('empresa_id', request()->empresa_id)
+        $baseQuery = TaxaPagamento::where('empresa_id', request()->empresa_id);
+
+        $stats = [
+            'total'      => (clone $baseQuery)->count(),
+            'taxa_media' => (clone $baseQuery)->avg('taxa') ?? 0,
+            'credito'    => (clone $baseQuery)->where('tipo_pagamento', '03')->count(),
+            'debito'     => (clone $baseQuery)->where('tipo_pagamento', '04')->count(),
+        ];
+
+        $data = (clone $baseQuery)
+        ->orderBy('tipo_pagamento', 'asc')
         ->paginate(env("PAGINACAO"));
 
-        return view('taxa_cartao.index', compact('data'));
+        return view('taxa_cartao.index', compact('data', 'stats'));
     }
 
     public function create()

@@ -14,8 +14,11 @@ use App\Models\FuncionamentoDelivery;
 
 class ClienteController extends Controller
 {
-    public function __construct(){
-        session_start();
+    public function __construct()
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
     }
 
     private function getFuncionamento($config){

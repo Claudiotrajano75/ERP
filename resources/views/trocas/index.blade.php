@@ -1,17 +1,21 @@
-@extends('layouts.app', ['title' => 'Lista de trocas'])
+@extends('layouts.app', ['title' => 'Trocas'])
 
-@section('content')
 @section('css')
 <style>
-/* ─── Header Gradiente ─── */
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.6) !important; font-weight: 400; }
-.modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-.modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+/* ─── Cards de Estatísticas ─── */
+.stat-card { border: 0; border-radius: 16px; padding: 18px 20px; height: 100%; color: #fff; position: relative; overflow: hidden; transition: transform .18s ease, box-shadow .18s ease; }
+.stat-card:hover { transform: translateY(-3px); }
+.stat-card::after { content: ''; position: absolute; top: -44px; right: -44px; width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,.12); }
+.stat-indigo { background: linear-gradient(135deg,#6366f1,#4f46e5); box-shadow: 0 6px 18px rgba(79,70,229,.32); }
+.stat-green  { background: linear-gradient(135deg,#24c98a,#109f61); box-shadow: 0 6px 18px rgba(16,185,129,.32); }
+.stat-blue   { background: linear-gradient(135deg,#4d94ff,#1d4ed8); box-shadow: 0 6px 18px rgba(37,99,235,.32); }
+.stat-amber  { background: linear-gradient(135deg,#fb7185,#dc2626); box-shadow: 0 6px 18px rgba(220,38,38,.32); }
+.stat-card .st-label { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: rgba(255,255,255,.85); }
+.stat-card .st-value { font-size: 24px; font-weight: 800; color: #fff; margin-top: 4px; line-height: 1.1; }
+.stat-card .st-sub { font-size: 11.5px; color: rgba(255,255,255,.75); margin-top: 4px; }
+.stat-card .st-icon { width: 46px; height: 46px; border-radius: 13px; background: rgba(255,255,255,.22); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
-/* --- Novo Filtro de Pesquisa Premium --- */
+/* ─── Filtro de Pesquisa Premium ─── */
 .modulo-glass-filter-premium {
     background: #ffffff;
     border: 1px solid #eef0f6 !important;
@@ -21,7 +25,6 @@
     margin-bottom: 24px;
 }
 
-/* Título e Header do Filtro */
 .filtro-premium-header {
     display: flex;
     align-items: center;
@@ -43,7 +46,6 @@
     margin-right: 6px;
 }
 
-/* Customização dos Inputs dentro do Filtro */
 .modulo-glass-filter-premium label {
     font-size: 10px !important;
     font-weight: 700 !important;
@@ -79,7 +81,6 @@
     box-shadow: 0 0 0 3px rgba(85, 114, 245, 0.12) !important;
 }
 
-/* Botões do Filtro */
 .modulo-glass-filter-premium .btn-pesquisar {
     background: linear-gradient(135deg, #5572f5 0%, #3d56d4 100%) !important;
     border: none !important;
@@ -117,64 +118,72 @@
     background: #e8ebf3 !important;
     color: #302b63 !important;
 }
-.modulo-table-wrap { border-radius: 12px; border: 1px solid #eef0f5; overflow: hidden; }
-.modulo-table-wrap table { margin-bottom: 0; }
-.modulo-table-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding: 12px 14px; border-bottom: 2px solid #e8eaf6; }
-.modulo-table-wrap tbody td { padding: 12px 14px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; transition: background 0.15s ease; font-size: 13px; }
-.modulo-table-wrap tbody tr { transition: all 0.15s ease; }
-.modulo-table-wrap tbody tr:hover { background: #f5f6fe; }
-.modulo-table-wrap tbody tr:last-child td { border-bottom: none; }
+
+/* ─── Tabela ─── */
+.tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+.tb-wrap table { margin-bottom: 0; }
+.tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 16px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+.tb-wrap tbody td { padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13.5px; color: #374151; }
+.tb-wrap tbody tr:hover { background: #f5f6fe; }
+.tb-wrap tbody tr:last-child td { border-bottom: none; }
+
+/* ─── Grade de botões de ação ─── */
+.act-group { display: inline-flex; gap: 6px; align-items: center; }
+.act-btn { width: 34px; height: 34px; border-radius: 10px; border: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; text-decoration: none; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+.act-btn:hover { transform: translateY(-2px); text-decoration: none; }
+.act-view { background: #e0f2fe; color: #0284c7; }
+.act-view:hover { box-shadow: 0 4px 12px rgba(2,132,199,.3); }
+.act-print { background: #f1f5f9; color: #334155; }
+.act-print:hover { background: #e2e8f0; color: #0f172a; box-shadow: 0 4px 12px rgba(51,65,85,.2); }
+.act-del { background: #fee2e2; color: #dc2626; }
+.act-del:hover { box-shadow: 0 4px 12px rgba(220,38,38,.3); }
+
+/* ─── Badges (pills) ─── */
+.pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 8px; padding: 4px 10px; font-size: 11.5px; font-weight: 700; }
+.pill-ok { background: #dcfce7; color: #15803d; }
+.pill-no { background: #fee2e2; color: #b91c1c; }
 
 /* ─── Empty State ─── */
-.modulo-empty { padding: 48px 20px; text-align: center; }
-.modulo-empty i { font-size: 48px; color: #c5cae9; margin-bottom: 12px; display: block; }
-.modulo-empty p { color: #9e9eb8; font-size: 14px; margin: 0; }
-
-/* ─── Botões de Ação do Formulário / Grid ─── */
-.modulo-action-group { display: flex; align-items: center; justify-content: flex-end; gap: 4px; flex-wrap: nowrap !important; }
-.modulo-action-group .btn { padding: 5px 8px; font-size: 12px; border-radius: 6px; }
+.empty-state { padding: 52px 20px; text-align: center; }
+.empty-state i { font-size: 52px; color: #c5cae9; display: block; margin-bottom: 12px; }
+.empty-state p { color: #9e9eb8; font-size: 14px; margin: 0; }
 
 /* ─── Modal Premium ─── */
-.modal-content { border: none; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-.modal-header { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border: none; padding: 16px 20px; }
-.modal-header .modal-title { color: #fff; font-weight: 700; font-size: 15px; letter-spacing: -0.2px; }
-.modal-header .modal-title i { color: #a8b5ff; }
-.modal-header .btn-close { filter: invert(1) grayscale(1) brightness(2); opacity: 0.8; }
-.modal-body { padding: 24px 20px; background: #fafbfe; }
-.modal-body label { font-weight: 600; font-size: 12px; color: #5a5a7a; margin-bottom: 6px; }
-.modal-body .form-control { border-radius: 8px; border: 1px solid #e0e3eb; font-size: 13px; padding: 10px 14px; background: #fff; transition: all 0.15s ease; }
-.modal-body .form-control:focus { border-color: #302b63; box-shadow: 0 0 0 3px rgba(48,43,99,0.08); }
-.modal-divider-ou { display: flex; align-items: center; justify-content: center; margin: 16px 0; color: #8e94a6; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.modal-content { border: none; border-radius: 16px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.18); }
+.modal-header { background: #f8fafc; border-bottom: 1px solid #eef0f6; padding: 18px 24px; }
+.modal-header .modal-title { color: #1e293b; font-weight: 700; font-size: 16px; }
+.modal-header .modal-title i { color: #4f46e5; }
+.modal-body { padding: 24px; background: #ffffff; }
+.modal-body label { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: #64748b; margin-bottom: 6px; }
+.modal-body .form-control { border-radius: 10px; border: 1px solid #dcdce9; font-size: 13.5px; padding: 10px 14px; background: #fcfdfe; transition: all 0.15s ease; }
+.modal-body .form-control:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.12); background: #fff; }
+.modal-divider-ou { display: flex; align-items: center; justify-content: center; margin: 16px 0; color: #94a3b8; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
 .modal-divider-ou::before,
-.modal-divider-ou::after { content: ""; flex: 1; border-bottom: 1px solid #e8eaee; margin: 0 10px; }
-.modal-footer { background: #fff; border-top: 1px solid #f0f2f8; padding: 14px 20px; }
-.modal-footer .btn { border-radius: 8px; font-weight: 600; font-size: 13px; padding: 8px 18px; transition: all 0.2s ease; }
-.modal-footer .btn-primary { background: #302b63; border-color: #302b63; }
-.modal-footer .btn-primary:hover { background: #24204d; border-color: #24204d; transform: translateY(-1px); }
-.modal-footer .btn-light { background: #f0f2f8; border-color: #f0f2f8; color: #5a5a7a; }
-.modal-footer .btn-light:hover { background: #e4e7f0; border-color: #e4e7f0; color: #43435c; }
+.modal-divider-ou::after { content: ""; flex: 1; border-bottom: 1px solid #e2e8f0; margin: 0 12px; }
+.modal-footer { background: #f8fafc; border-top: 1px solid #eef0f6; padding: 16px 24px; }
 </style>
 @endsection
 
 @section('content')
-<div class="mt-3 text-dark">
+<div class="mt-3">
     <div class="row">
-        <div class="card border-0 shadow-sm text-dark modulo-form-card">
+        <div class="card border-0 shadow-sm">
 
-            <!-- CABEÇALHO PREMIUM -->
+            <!-- ═══ CABEÇALHO ═══ -->
             <div class="card-header modulo-header-gradient py-3 px-4">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div>
                         <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
-                            <i class="ri-arrow-go-back-fill"></i>
-                            Trocas
+                            <i class="ri-arrow-go-back-line"></i>
+                            Trocas de Mercadorias
                         </h4>
                         <p class="text-muted mb-0 modulo-subtitle fs-13">Gerencie as trocas de mercadorias realizadas nas vendas PDV.</p>
                     </div>
-                    <div class="d-inline-flex gap-1">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ route('trocas.index') }}" class="dash-btn dash-btn-light"><i class="ri-refresh-line"></i> Atualizar</a>
                         @can('troca_create')
-                        <button class="btn btn-light btn-sm px-3 text-dark" data-bs-toggle="modal" data-bs-target="#modal-nova-troca">
-                            <i class="ri-add-circle-line align-middle me-1"></i> Nova Troca
+                        <button type="button" class="dash-btn dash-btn-primary" data-bs-toggle="modal" data-bs-target="#modal-nova-troca">
+                            <i class="ri-add-circle-line"></i> Nova Troca
                         </button>
                         @endcan
                     </div>
@@ -183,7 +192,59 @@
 
             <div class="card-body p-4">
 
-                <!-- ═══ Filtros de Busca Premium ═══ -->
+                <!-- ═══ CARDS DE ESTATÍSTICA ═══ -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-indigo">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Total de Trocas</div>
+                                    <div class="st-value">{{ $stats['total'] ?? 0 }}</div>
+                                    <div class="st-sub">registros efetuados</div>
+                                </div>
+                                <div class="st-icon"><i class="ri-arrow-go-back-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-amber">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Total Trocado</div>
+                                    <div class="st-value">R$ {{ __moeda($stats['valor_trocas'] ?? 0) }}</div>
+                                    <div class="st-sub">em mercadorias trocadas</div>
+                                </div>
+                                <div class="st-icon"><i class="ri-money-dollar-circle-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-green">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Vendas Originais</div>
+                                    <div class="st-value">R$ {{ __moeda($stats['valor_vendas'] ?? 0) }}</div>
+                                    <div class="st-sub">valor original das vendas</div>
+                                </div>
+                                <div class="st-icon"><i class="ri-shopping-bag-3-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-blue">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Trocas Hoje</div>
+                                    <div class="st-value">{{ $stats['hoje'] ?? 0 }}</div>
+                                    <div class="st-sub">realizadas no dia</div>
+                                </div>
+                                <div class="st-icon"><i class="ri-calendar-check-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ FILTROS DE BUSCA PREMIUM ═══ -->
                 <div class="modulo-glass-filter-premium">
                     <div class="filtro-premium-header">
                         <h5 class="filtro-premium-title">
@@ -218,54 +279,60 @@
                     </div>
                     {!!Form::close()!!}
                 </div>
-                    {!!Form::close()!!}
-                </div>
 
-                <!-- TABELA PREMIUM -->
-                <div class="modulo-table-wrap mb-4">
+                <!-- ═══ TABELA ═══ -->
+                <div class="tb-wrap mb-3">
                     <div class="table-responsive">
-                        <table class="table table-centered table-hover align-middle mb-0 text-dark">
+                        <table class="table table-centered table-hover align-middle mb-0">
                             <thead>
                                 <tr>
-                                    <th>#</th>
+                                    <th style="width: 70px;">#</th>
                                     <th>Cliente</th>
-                                    <th>Código</th>
-                                    <th>Valor Troca (R$)</th>
-                                    <th>Valor Venda (R$)</th>
+                                    <th>Código Troca</th>
+                                    <th>Valor Troca</th>
+                                    <th>Valor Venda</th>
                                     <th>Data Troca</th>
                                     <th>Venda #</th>
-                                    <th class="text-end">Ações</th>
+                                    <th class="text-end" style="width: 140px;">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td class="fw-bold text-muted">{{ $item->numero_sequencial }}</td>
+                                    <td class="fw-bold" style="color:#64748b;">#{{ $item->numero_sequencial }}</td>
                                     <td>
-                                        <span class="fw-semibold text-dark d-block">{{ $item->nfce->cliente ? $item->nfce->cliente->razao_social : '--' }}</span>
-                                        <span class="text-muted fs-11">{{ $item->nfce->cliente ? $item->nfce->cliente->cpf_cnpj : '--' }}</span>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle border bg-light me-2 d-flex align-items-center justify-content-center text-primary fw-bold" style="width: 36px; height: 36px; font-size: 14px;">
+                                                <i class="ri-user-3-line"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold" style="color:#1f2937;">{{ $item->nfce->cliente ? $item->nfce->cliente->razao_social : 'Consumidor Final' }}</div>
+                                                <div class="fs-12" style="color:#94a3b8;">{{ $item->nfce->cliente ? $item->nfce->cliente->cpf_cnpj : '--' }}</div>
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td class="fw-bold">{{ $item->codigo }}</td>
-                                    <td class="fw-bold text-danger">R$ {{ __moeda($item->valor_troca) }}</td>
-                                    <td class="fw-bold text-success">R$ {{ __moeda($item->valor_original) }}</td>
-                                    <td class="fs-12">{{ __data_pt($item->created_at) }}</td>
-                                    <td class="fw-bold">{{ $item->nfce ? $item->nfce->numero_sequencial : '' }}</td>
+                                    <td><span class="badge bg-light text-dark border px-2 py-1 fs-12 fw-bold">{{ $item->codigo }}</span></td>
+                                    <td><span class="fw-bold" style="color:#dc2626;">R$ {{ __moeda($item->valor_troca) }}</span></td>
+                                    <td><span class="fw-bold" style="color:#16a34a;">R$ {{ __moeda($item->valor_original) }}</span></td>
+                                    <td><span class="fs-12" style="color:#64748b;">{{ __data_pt($item->created_at) }}</span></td>
+                                    <td><span class="fw-semibold" style="color:#4f46e5;">#{{ $item->nfce ? $item->nfce->numero_sequencial : '' }}</span></td>
                                     <td class="text-end">
                                         <form action="{{ route('trocas.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="m-0">
                                             @method('delete')
                                             @csrf
-                                            <div class="modulo-action-group">
+                                            <div class="act-group">
+                                                <a class="act-btn act-view" title="Detalhes" href="{{ route('trocas.show', $item->id) }}">
+                                                    <i class="ri-eye-line"></i>
+                                                </a>
+                                                <button type="button" class="act-btn act-print" title="Imprimir Cupom Térmico"
+                                                    onclick="PrintThermal.imprimir('troca', {{$item->id}}, '{{ route('trocas.imprimir', $item->id) }}')">
+                                                    <i class="ri-printer-line"></i>
+                                                </button>
                                                 @can('troca_delete')
-                                                <button type="button" class="btn btn-danger btn-sm btn-delete" title="Excluir">
+                                                <button type="button" class="act-btn act-del btn-delete" title="Excluir">
                                                     <i class="ri-delete-bin-line"></i>
                                                 </button>
                                                 @endcan
-                                                <a class="btn btn-light btn-sm text-dark" title="Detalhes" href="{{ route('trocas.show', $item->id) }}">
-                                                    <i class="ri-eye-line"></i>
-                                                </a>
-                                                <a target="_blank" class="btn btn-dark btn-sm text-white" title="Imprimir" href="{{ route('trocas.imprimir', $item->id) }}">
-                                                    <i class="ri-printer-line"></i>
-                                                </a>
                                             </div>
                                         </form>
                                     </td>
@@ -273,7 +340,7 @@
                                 @empty
                                 <tr>
                                     <td colspan="8">
-                                        <div class="modulo-empty">
+                                        <div class="empty-state">
                                             <i class="ri-inbox-2-line"></i>
                                             <p>Nenhuma troca encontrada.</p>
                                         </div>
@@ -285,8 +352,12 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-end mt-4">
-                    {!! $data->appends(request()->all())->links() !!}
+                <!-- ═══ FOOTER ═══ -->
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
+                    <div class="fs-12" style="color:#94a3b8;">
+                        Exibindo <strong>{{ $data->count() }}</strong> de <strong>{{ $data->total() }}</strong> trocas
+                    </div>
+                    <div>{!! $data->appends(request()->all())->links() !!}</div>
                 </div>
 
             </div>
@@ -294,33 +365,37 @@
     </div>
 </div>
 
-<!-- Modal Nova Troca -->
+<!-- ═══ MODAL NOVA TROCA ═══ -->
 <div class="modal fade" id="modal-nova-troca" tabindex="-1" aria-labelledby="modalNovaTrocaLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <form method="get" action="{{ route('trocas.create') }}" class="w-100">
-            <div class="modal-content text-dark">
+            <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title d-flex align-items-center gap-2" id="modalNovaTrocaLabel">
-                        <i class="ri-arrow-go-back-line"></i> Nova Troca
+                        <i class="ri-arrow-go-back-line"></i> Iniciar Nova Troca
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
-                        <div class="col-md-12">
-                            {!!Form::text('codigo', 'Código da venda')!!}
+                        <div class="col-12">
+                            <label class="form-label"><i class="ri-hashtag"></i> Código da Venda / Sequencial</label>
+                            {!!Form::text('codigo', '')->attrs(['class' => 'form-control', 'placeholder' => 'Ex: 12345'])->placeholder('Digite o código sequencial da venda')!!}
                         </div>
-                        <div class="col-md-12 text-center p-0">
+                        <div class="col-12 text-center p-0">
                             <div class="modal-divider-ou">OU</div>
                         </div>
-                        <div class="col-md-12">
-                            {!!Form::text('numero_nfce', 'Número NFCe')!!}
+                        <div class="col-12">
+                            <label class="form-label"><i class="ri-file-text-line"></i> Número da NFCe</label>
+                            {!!Form::text('numero_nfce', '')->attrs(['class' => 'form-control', 'placeholder' => 'Ex: 987654'])->placeholder('Digite o número fiscal da NFCe')!!}
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Fechar</button>
-                    <button type="submit" class="btn btn-primary btn-sm px-4">Procurar</button>
+                    <button type="button" class="dash-btn dash-btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="dash-btn dash-btn-primary px-4">
+                        <i class="ri-search-line"></i> Localizar Venda
+                    </button>
                 </div>
             </div>
         </form>

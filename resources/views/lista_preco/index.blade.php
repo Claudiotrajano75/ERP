@@ -2,157 +2,58 @@
 
 @section('css')
 <style>
-/* ─── Header Gradiente ─── */
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.6) !important; font-weight: 400; }
-.modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-.modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
-.modulo-header-gradient .text-muted { color: rgba(255,255,255,0.7) !important; }
-.modulo-header-gradient .text-muted strong { color: #4ade80 !important; }
+    .modulo-footer { padding: 16px 0 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 
-/* ─── Glass Filters ─── */
-.modulo-glass-filter { background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8) !important; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.04); }
-.modulo-glass-filter label { font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #5a5a7a; margin-bottom: 2px; }
-.modulo-glass-filter .form-control, .modulo-glass-filter .form-select { height: 38px; } .modulo-glass-filter .btn { border-radius: 8px; font-weight: 600; font-size: 13px; height: 38px; padding-top: 0; padding-bottom: 0; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
-.modulo-glass-filter .btn:hover { transform: translateY(-1px); }
+    /* ─── Cards de Estatísticas ─── */
+    .stat-card { border: 0; border-radius: 16px; padding: 18px 20px; height: 100%; color: #fff; position: relative; overflow: hidden; transition: transform .18s ease, box-shadow .18s ease; }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-card::after { content: ''; position: absolute; top: -44px; right: -44px; width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,.12); }
+    .stat-indigo { background: linear-gradient(135deg,#6366f1,#4f46e5); box-shadow: 0 6px 18px rgba(79,70,229,.32); }
+    .stat-green  { background: linear-gradient(135deg,#24c98a,#109f61); box-shadow: 0 6px 18px rgba(16,185,129,.32); }
+    .stat-blue   { background: linear-gradient(135deg,#4d94ff,#1d4ed8); box-shadow: 0 6px 18px rgba(37,99,235,.32); }
+    .stat-card .st-label { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: rgba(255,255,255,.85); }
+    .stat-card .st-value { font-size: 26px; font-weight: 800; color: #fff; margin-top: 4px; line-height: 1.1; }
+    .stat-card .st-sub { font-size: 11.5px; color: rgba(255,255,255,.75); margin-top: 4px; }
+    .stat-card .st-icon { width: 46px; height: 46px; border-radius: 13px; background: rgba(255,255,255,.22); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
-/* --- Novo Filtro de Pesquisa Premium --- */
-.modulo-glass-filter-premium {
-    background: #ffffff;
-    border: 1px solid #eef0f6 !important;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-    padding: 20px !important;
-    margin-bottom: 24px;
-}
+    /* ─── Filtro ─── */
+    .filter-wrap { background: #fff; border: 1px solid #e9ecf3; border-radius: 14px; box-shadow: 0 1px 2px rgba(16,24,40,.04); padding: 18px 20px; margin-bottom: 18px; }
+    .filter-title { font-size: 13px; font-weight: 700; color: #3f3e6a; text-transform: uppercase; letter-spacing: .5px; }
+    .filter-title i { color: #4f46e5; margin-right: 6px; }
+    .filter-wrap label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #8c8ca6; margin-bottom: 6px; }
+    .filter-wrap label i { color: #a8a8c0; }
+    .filter-wrap .form-control, .filter-wrap .form-select { height: 40px; border-radius: 10px; border: 1px solid #dcdce9; font-size: 13.5px; color: #1f2937; background: #fcfdfe; transition: all .15s ease; }
+    .filter-wrap .form-control:focus, .filter-wrap .form-select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.12); background: #fff; }
 
-/* Título e Header do Filtro */
-.filtro-premium-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #f1f3f9;
-    padding-bottom: 12px;
-    margin-bottom: 16px;
-}
-.filtro-premium-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: #3f3e6a;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0;
-}
-.filtro-premium-title i {
-    color: #5572f5;
-    margin-right: 6px;
-}
+    /* ─── Tabela ─── */
+    .tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+    .tb-wrap table { margin-bottom: 0; }
+    .tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 14px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+    .tb-wrap tbody td { padding: 13px 14px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13.5px; color: #374151; }
+    .tb-wrap tbody tr:hover { background: #f5f6fe; }
+    .tb-wrap tbody tr:last-child td { border-bottom: none; }
 
-/* Customização dos Inputs dentro do Filtro */
-.modulo-glass-filter-premium label {
-    font-size: 10px !important;
-    font-weight: 700 !important;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #8c8ca6 !important;
-    margin-bottom: 6px !important;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-.modulo-glass-filter-premium label i {
-    font-size: 12px;
-    color: #a8a8c0;
-}
+    /* ─── Ações ─── */
+    .act-group { display: inline-flex; gap: 6px; align-items: center; }
+    .act-btn { width: 34px; height: 34px; border-radius: 10px; border: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; text-decoration: none; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+    .act-btn:hover { transform: translateY(-2px); text-decoration: none; }
+    .act-edit { background: #eef0ff; color: #4f46e5; }
+    .act-edit:hover { box-shadow: 0 4px 12px rgba(79,70,229,.3); }
+    .act-view { background: #e0f2fe; color: #0284c7; }
+    .act-view:hover { box-shadow: 0 4px 12px rgba(2,132,199,.3); }
+    .act-del { background: #fee2e2; color: #dc2626; }
+    .act-del:hover { box-shadow: 0 4px 12px rgba(220,38,38,.3); }
 
-.modulo-glass-filter-premium .form-control,
-.modulo-glass-filter-premium .form-select {
-    height: 38px !important;
-    border-radius: 8px !important;
-    border: 1px solid #dcdce9 !important;
-    font-size: 13px !important;
-    padding: 6px 12px !important;
-    color: #374151 !important;
-    background-color: #fcfdfe !important;
-    transition: all 0.2s ease;
-}
+    /* ─── Pills ─── */
+    .pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 8px; padding: 4px 10px; font-size: 11.5px; font-weight: 700; }
+    .pill-info { background: #eef0ff; color: #4f46e5; }
+    .pill-up { background: #dcfce7; color: #15803d; }
+    .pill-down { background: #fee2e2; color: #b91c1c; }
+    .pill-blue { background: #e0f2fe; color: #0284c7; }
 
-.modulo-glass-filter-premium .form-control:focus,
-.modulo-glass-filter-premium .form-select:focus {
-    border-color: #5572f5 !important;
-    background-color: #fff !important;
-    box-shadow: 0 0 0 3px rgba(85, 114, 245, 0.12) !important;
-}
-
-/* Botões do Filtro */
-.modulo-glass-filter-premium .btn-pesquisar {
-    background: linear-gradient(135deg, #5572f5 0%, #3d56d4 100%) !important;
-    border: none !important;
-    color: #fff !important;
-    font-weight: 600 !important;
-    height: 38px;
-    border-radius: 8px !important;
-    font-size: 13px !important;
-    transition: all 0.2s ease !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-.modulo-glass-filter-premium .btn-pesquisar:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(85, 114, 245, 0.25) !important;
-}
-
-.modulo-glass-filter-premium .btn-limpar {
-    background: #f1f3f9 !important;
-    border: 1px solid #e2e5ec !important;
-    color: #5a5a7a !important;
-    font-weight: 600 !important;
-    height: 38px;
-    border-radius: 8px !important;
-    font-size: 13px !important;
-    transition: all 0.2s ease !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-.modulo-glass-filter-premium .btn-limpar:hover {
-    background: #e8ebf3 !important;
-    color: #302b63 !important;
-}
-
-/* ─── Premium Table ─── */
-.modulo-table-wrap { border-radius: 12px; border: 1px solid #eef0f5; overflow: hidden; }
-.modulo-table-wrap table { margin-bottom: 0; }
-.modulo-table-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding: 12px 14px; border-bottom: 2px solid #e8eaf6; }
-.modulo-table-wrap tbody td { padding: 12px 14px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; transition: background 0.15s ease; font-size: 13px; }
-.modulo-table-wrap tbody tr { transition: all 0.15s ease; }
-.modulo-table-wrap tbody tr:hover { background: #f5f6fe; }
-.modulo-table-wrap tbody tr:last-child td { border-bottom: none; }
-
-/* ─── Action Buttons ─── */
-.modulo-action-group { display: inline-flex; gap: 4px; flex-wrap: nowrap; align-items: center; }
-.modulo-action-group .btn { border-radius: 8px; padding: 4px 10px; font-size: 13px; transition: all 0.15s ease; }
-.modulo-action-group .btn:hover { transform: translateY(-1px); }
-
-/* ─── Empty State ─── */
-.modulo-empty { padding: 48px 20px; text-align: center; }
-.modulo-empty i { font-size: 48px; color: #c5cae9; margin-bottom: 12px; display: block; }
-.modulo-empty p { color: #9e9eb8; font-size: 14px; margin: 0; }
-
-/* ─── Footer ─── */
-.modulo-footer { padding: 16px 0 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-
-/* ─── Badges ─── */
-.badge { font-weight: 500; font-size: 11px; }
-
-@media (max-width: 768px) {
-    .modulo-header-gradient .modulo-title { font-size: 18px; }
-}
+    .empty-state { padding: 52px 20px; text-align: center; }
+    .empty-state i { font-size: 52px; color: #c5cae9; display: block; margin-bottom: 12px; }
+    .empty-state p { color: #9e9eb8; font-size: 14px; margin: 0; }
 </style>
 @endsection
 
@@ -173,14 +74,15 @@
                             Defina tabelas de preços alternativas por meios de pagamento, clientes, usuários ou datas promocionais.
                         </p>
                     </div>
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="text-muted fs-13 d-none d-sm-inline">
-                            <i class="ri-store-2-line me-1"></i>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="d-none d-sm-inline fs-12" style="background:#fff;border:1px solid #e9ecf3;border-radius:10px;padding:6px 12px;">
+                            <i class="ri-store-2-line me-1" style="color:#4f46e5;"></i>
                             Total: <strong>{{ $totalDeProdutos }}</strong> produtos
                         </span>
+                        <a href="{{ route('lista-preco.index') }}" class="dash-btn dash-btn-light"><i class="ri-refresh-line"></i> Atualizar</a>
                         @can('lista_preco_create')
-                        <a href="{{ route('lista-preco.create') }}" class="btn btn-light btn-sm px-3 text-dark">
-                            <i class="ri-add-circle-line align-middle me-1"></i> Nova Lista
+                        <a href="{{ route('lista-preco.create') }}" class="dash-btn dash-btn-primary">
+                            <i class="ri-add-line"></i> Nova Lista
                         </a>
                         @endcan
                     </div>
@@ -189,10 +91,46 @@
 
             <div class="card-body p-4">
 
-                <!-- ═══ Filtros de Busca Premium ═══ -->
-                <div class="modulo-glass-filter-premium">
+                {{-- ═══ CARDS DE ESTATÍSTICA ═══ --}}
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-indigo">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Listas de Preço</div><div class="st-value">{{ $stats['total'] }}</div><div class="st-sub">tabelas ativas</div></div>
+                                <div class="st-icon"><i class="ri-price-tag-3-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-green">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Produtos</div><div class="st-value">{{ $stats['produtos'] }}</div><div class="st-sub">disponíveis no catálogo</div></div>
+                                <div class="st-icon"><i class="ri-box-3-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-blue">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Com Restrição</div><div class="st-value">{{ $stats['com_pagamento'] }}</div><div class="st-sub">por meio de pagamento</div></div>
+                                <div class="st-icon"><i class="ri-bank-card-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-blue">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Sem Restrição</div><div class="st-value">{{ $stats['total'] - $stats['com_pagamento'] }}</div><div class="st-sub">qualquer pagamento</div></div>
+                                <div class="st-icon"><i class="ri-checkbox-blank-circle-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                                <!-- ═══ Filtros de Busca Premium ═══ -->
+                <div class="filter-wrap">
                     <div class="filtro-premium-header">
-                        <h5 class="filtro-premium-title">
+                        <h5 class="filter-title mb-0">
                             <i class="ri-search-line"></i> Filtrar Listas de Preços
                         </h5>
                     </div>
@@ -213,10 +151,10 @@
                         </div>
                         <div class="col-md-2 col-12 ms-auto d-flex align-items-end">
                             <div class="d-flex gap-2 w-100">
-                                <button class="btn btn-pesquisar flex-grow-1" type="submit">
+                                <button class="btn btn-primary flex-grow-1" style="border-radius:10px;" type="submit">
                                     <i class="ri-search-line"></i> Buscar
                                 </button>
-                                <a class="btn btn-limpar px-3" href="{{ route('lista-preco.index') }}" title="Limpar Filtros">
+                                <a class="btn btn-light border px-3" style="border-radius:10px;" href="{{ route('lista-preco.index') }}" title="Limpar Filtros">
                                     <i class="ri-eraser-line"></i>
                                 </a>
                             </div>
@@ -226,7 +164,7 @@
                 </div>
 
                 <!-- ═══ TABELA PREMIUM ═══ -->
-                <div class="modulo-table-wrap">
+                <div class="tb-wrap">
                     <div class="table-responsive">
                         <table class="table table-centered table-hover align-middle mb-0 text-dark">
                             <thead>
@@ -263,28 +201,20 @@
                                         <span class="fw-semibold text-dark d-block">{{ $item->nome }}</span>
                                     </td>
                                     <td>
-                                        <span class="badge bg-light text-dark border px-2 py-1 fs-11">
-                                            {{ $item->ajuste_sobre == 'valor_venda' ? 'Valor de venda' : 'Valor de compra' }}
-                                        </span>
+                                        <span class="pill pill-info">{{ $item->ajuste_sobre == 'valor_venda' ? 'Valor de venda' : 'Valor de compra' }}</span>
                                     </td>
                                     <td>
                                         @if($item->tipo == 'incremento')
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-11">
-                                            <i class="ri-arrow-up-line me-1"></i>Incremento
-                                        </span>
+                                        <span class="pill pill-up"><i class="ri-arrow-up-line"></i> Incremento</span>
                                         @else
-                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fs-11">
-                                            <i class="ri-arrow-down-line me-1"></i>Redução
-                                        </span>
+                                        <span class="pill pill-down"><i class="ri-arrow-down-line"></i> Redução</span>
                                         @endif
                                     </td>
                                     <td class="fw-bold fs-14">{{ $item->percentual_alteracao }}%</td>
                                     <td class="text-muted fs-12">{{ __data_pt($item->created_at) }}</td>
                                     <td>
                                         @if($item->tipo_pagamento)
-                                        <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1 fs-11">
-                                            <i class="ri-bank-card-line me-1"></i>{{ $item->getTipoPagamento() }}
-                                        </span>
+                                        <span class="pill pill-blue"><i class="ri-bank-card-line"></i> {{ $item->getTipoPagamento() }}</span>
                                         @else
                                         <span class="text-muted fs-12">Qualquer</span>
                                         @endif
@@ -295,22 +225,14 @@
                                               id="form-{{$item->id}}" class="m-0">
                                             @method('delete')
                                             @csrf
-                                            <div class="modulo-action-group">
+                                            <div class="act-group">
                                                 @can('lista_preco_edit')
-                                                <a class="btn btn-warning btn-sm text-white"
-                                                   href="{{ route('lista-preco.edit', [$item->id]) }}" title="Editar Lista">
-                                                    <i class="ri-pencil-line"></i>
-                                                </a>
+                                                <a class="act-btn act-edit" href="{{ route('lista-preco.edit', [$item->id]) }}" title="Editar Lista"><i class="ri-pencil-line"></i></a>
                                                 @endcan
+                                                <a class="act-btn act-view" href="{{ route('lista-preco.show', [$item->id]) }}" title="Ver produtos vinculados"><i class="ri-file-list-2-line"></i></a>
                                                 @can('lista_preco_delete')
-                                                <button type="button" class="btn btn-danger btn-sm btn-delete" title="Excluir Lista">
-                                                    <i class="ri-delete-bin-line"></i>
-                                                </button>
+                                                <button type="button" class="act-btn act-del btn-delete" title="Excluir Lista"><i class="ri-delete-bin-line"></i></button>
                                                 @endcan
-                                                <a class="btn btn-dark btn-sm text-white"
-                                                   href="{{ route('lista-preco.show', [$item->id]) }}" title="Ver produtos vinculados">
-                                                    <i class="ri-file-list-2-line"></i>
-                                                </a>
                                             </div>
                                         </form>
                                     </td>
@@ -318,7 +240,7 @@
                                 @empty
                                 <tr>
                                     <td colspan="{{ (Auth::user()->can('lista_preco_delete') ? 9 : 8) }}">
-                                        <div class="modulo-empty">
+                                        <div class="empty-state">
                                             <i class="ri-inbox-2-line"></i>
                                             <p>Nenhuma lista de preços cadastrada.</p>
                                         </div>
@@ -332,17 +254,16 @@
 
                 <!-- ═══ FOOTER (Lote) ═══ -->
                 <div class="modulo-footer">
-                    <div>
+                    <div class="d-flex gap-2 flex-wrap">
                         @can('lista_preco_delete')
                         <form action="{{ route('lista-preco.destroy-select') }}" method="post" id="form-delete-select" class="m-0">
                             @method('delete')
                             @csrf
-                            <button type="button" class="btn btn-outline-danger btn-sm btn-delete-all" disabled>
-                                <i class="ri-delete-bin-line align-middle me-1"></i> Remover Selecionadas
-                            </button>
+                            <button type="button" class="dash-btn dash-btn-light btn-delete-all" style="color:#dc2626;" disabled><i class="ri-delete-bin-2-line"></i> Remover Selecionadas</button>
                         </form>
                         @endcan
                     </div>
+                    <div class="fs-12" style="color:#94a3b8;">Exibindo <strong>{{ $data->count() }}</strong> listas</div>
                 </div>
 
             </div>

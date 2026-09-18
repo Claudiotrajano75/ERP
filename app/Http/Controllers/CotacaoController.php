@@ -62,7 +62,15 @@ class CotacaoController extends Controller
         if(!empty($fornecedor_id)){
             $fornecedor = Fornecedor::findOrFail($fornecedor_id);
         }
-        return view('cotacoes.index', compact('data', 'fornecedor'));
+
+        $stats = [
+            'total' => Cotacao::where('empresa_id', request()->empresa_id)->count(),
+            'respondidas' => Cotacao::where('empresa_id', request()->empresa_id)->whereIn('estado', ['respondida', 'aprovada'])->count(),
+            'compradas' => Cotacao::where('empresa_id', request()->empresa_id)->where('nfe_id', '>', 0)->count(),
+            'valor_total' => Cotacao::where('empresa_id', request()->empresa_id)->sum('valor_total'),
+        ];
+
+        return view('cotacoes.index', compact('data', 'fornecedor', 'stats'));
     }
 
     public function create()

@@ -207,3 +207,41 @@ Liberdade Fiscal: É possível abrir o modal de cada item e mudar qualquer detal
 Flexibilidade Operacional: Você tem as chaves liga/desliga para escolher se a emissão deve ou não abaixar estoque, e se deve ou não gerar financeiro no contas a receber (na tela de vendas comum, você não tem essa flexibilidade).
 Organização em etapas: É muito mais simples e limpa para notas complexas, evitando a tabela gigante e confusa de rolagem horizontal da tela padrão.
 Resumo: A de /nfe/create serve para registrar Vendas normais com Nota, enquanto a nova de /faturamento-avulso/create serve para Faturamentos/Notas avulsas de qualquer tipo (Devolução, Remessa, Ajustes, etc.) sem prender-se a uma venda comercial.
+
+
+
+
+Para garantir que o AUTO_INCREMENT e as chaves primárias (PRIMARY KEY) não sejam perdidos em futuras restaurações do banco de dados, o segredo está no método de exportação (backup) e no modo de importação (restauração).
+
+1. 💡 Por que isso aconteceu?
+Ao exportar o banco de dados anteriormente, pode ter ocorrido uma das seguintes situações:
+
+O backup foi gerado apenas com os dados (INSERT INTO), sem incluir a estrutura completa da tabela (CREATE TABLE).
+A ferramenta de backup (como o phpMyAdmin) foi configurada para remover chaves/índices ou estava marcada para não incluir AUTO_INCREMENT.
+O dump foi restaurado em tabelas pré-existentes sem limpar o banco antes.
+2. 🛡️ Como fazer a Exportação Correta (Backup)
+🔹 No phpMyAdmin:
+Vá na aba Exportar.
+Escolha Método de exportação: Personalizado (Custom).
+Na seção Tabelas, certifique-se de marcar a opção Estrutura e dados.
+Na seção Opções de criação de objetos, garanta que estão marcadas:
+Adicionar instrução DROP TABLE (para recriar as tabelas do zero ao importar).
+AUTO_INCREMENT.
+Chaves primárias e índices.
+Clique em Exportar.
+🔹 Pela linha de comando (mysqldump):
+O comando padrão do MySQL já preserva todas as chaves e auto-incrementos:
+
+bash
+mysqldump -u root -p --add-drop-table --routines --triggers u544033777_erp > backup_completo.sql
+🔹 No HeidiSQL / DBeaver:
+Ao exportar como SQL, certifique-se de selecionar a opção "Estrutura + Dados" (Create Table + Inserts) e incluir "Chaves/Índices" (Keys and Indexes).
+3. 📥 Como fazer a Restauração Correta (Import)
+Limpe ou Crie um Banco Limpo: Antes de importar, é recomendável excluir o banco antigo ou dropar todas as tabelas (DROP DATABASE u544033777_erp; CREATE DATABASE u544033777_erp;).
+Importe o arquivo .sql completo gerado no passo anterior.
+🚀 Dica de Segurança (Script de Diagnóstico Rápido)
+Deixamos no seu projeto o script de auditoria e correção automática. Se algum dia você restaurar o banco de um backup antigo e notar qualquer comportamento estranho, basta rodar o comando abaixo no terminal do projeto para verificar e corrigir todas as tabelas instantaneamente:
+
+bash
+php scratch/audit_and_fix_db.php
+Isso varrerá todas as tabelas e corrigirá automaticamente qualquer falta de PRIMARY KEY ou AUTO_INCREMENT.

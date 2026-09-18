@@ -1,102 +1,163 @@
-﻿@extends('layouts.app', ['title' => 'Agendamentos'])
+@extends('layouts.app', ['title' => 'Agendamentos'])
 
 @section('css')
 <style>
-/* ─── Header Gradiente ─── */
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.6) !important; font-weight: 400; }
-.modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-.modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+/* ─── Cards de Estatísticas ─── */
+.stat-card { border-radius: 14px; padding: 18px 20px; color: #fff; position: relative; overflow: hidden; box-shadow: 0 4px 18px rgba(0,0,0,.07); transition: transform .2s ease; }
+.stat-card:hover { transform: translateY(-2px); }
+.stat-card .stat-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 42px; opacity: .22; }
+.stat-card.c-blue   { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.stat-card.c-teal   { background: linear-gradient(135deg, #06b6d4, #0e7490); }
+.stat-card.c-amber  { background: linear-gradient(135deg, #f59e0b, #b45309); }
+.stat-card.c-green  { background: linear-gradient(135deg, #10b981, #047857); }
+.stat-card.c-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.stat-card .stat-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; opacity: .85; margin-bottom: 4px; }
+.stat-card .stat-val   { font-size: 22px; font-weight: 800; line-height: 1; }
 
-/* ─── Glass Filters ─── */
-.modulo-glass-filter { background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8) !important; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.04); }
-.modulo-glass-filter label { font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #5a5a7a; margin-bottom: 2px; }
-.modulo-glass-filter .form-control, .modulo-glass-filter .form-select { height: 38px; } .modulo-glass-filter .btn { border-radius: 8px; font-weight: 600; font-size: 13px; height: 38px; padding-top: 0; padding-bottom: 0; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
-.modulo-glass-filter .btn:hover { transform: translateY(-1px); }
+/* ─── Filtro Padronizado ─── */
+.modulo-glass-filter-premium { background: #ffffff; border: 1px solid #e8ecf4; border-radius: 14px; padding: 18px 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02); margin-bottom: 22px; }
+.modulo-glass-filter-premium label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 6px; }
+.modulo-glass-filter-premium .form-control, .modulo-glass-filter-premium .form-select { height: 40px; border-radius: 10px; border: 1px solid #dcdce9; font-size: 13.5px; color: #1f2937; background: #fcfdfe; }
+.modulo-glass-filter-premium .form-control:focus, .modulo-glass-filter-premium .form-select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.12); background: #fff; }
 
-@media (max-width: 768px) {
-    .modulo-header-gradient .modulo-title { font-size: 18px; }
-}
+/* ─── Container Calendário ─── */
+.calendar-box { border-radius: 14px; border: 1px solid #eef0f5; background: #fff; padding: 18px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02); }
+.fc .fc-toolbar-title { font-size: 18px !important; font-weight: 700 !important; color: #1e293b !important; }
+.fc .fc-button-primary { background-color: #4f46e5 !important; border-color: #4f46e5 !important; border-radius: 8px !important; font-weight: 600 !important; }
+.fc .fc-button-primary:hover { background-color: #4338ca !important; border-color: #4338ca !important; }
+.fc .fc-button-primary:disabled { background-color: #a5b4fc !important; border-color: #a5b4fc !important; }
+.fc .fc-daygrid-day.fc-day-today { background-color: #f5f6fe !important; }
+
+/* ─── Badges (Pills) ─── */
+.pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 8px; padding: 5px 12px; font-size: 12px; font-weight: 700; }
+.pill-ok { background: #dcfce7; color: #15803d; }
+.pill-no { background: #fee2e2; color: #b91c1c; }
+.pill-info { background: #e0f2fe; color: #0369a1; }
+.pill-amber { background: #fef3c7; color: #b45309; }
+.pill-purple { background: #f3e8ff; color: #6b21a8; }
 </style>
 @endsection
 
 @section('content')
-<div class="mt-3 text-dark">
+<div class="mt-3">
     <input type="hidden" id="agendamentos" value="{{ json_encode($agendamentos) }}">
     <div class="row">
-        <div class="card border-0 shadow-sm">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
 
-            <!-- ═══ CABEÇALHO PREMIUM ═══ -->
-            <div class="card-header modulo-header-gradient py-3 px-4">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div>
-                        <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
-                            <i class="ri-calendar-todo-line"></i>
-                            Calendário de Agendamentos
-                        </h4>
-                        <p class="text-muted mb-0 modulo-subtitle fs-13">
-                            Acompanhe as escalas de atendimento, agende novos horários e gerencie a fila de prioridades.
-                        </p>
+                <!-- ═══ CABEÇALHO PREMIUM ═══ -->
+                <div class="card-header modulo-header-gradient py-3 px-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div>
+                            <span class="fs-11 text-uppercase fw-bold text-primary d-block mb-1"
+                                  style="letter-spacing: 0.5px;">Gestão de Atendimentos & Escalas</span>
+                            <h4 class="mb-0 modulo-title d-flex align-items-center gap-2">
+                                <i class="ri-calendar-todo-line"></i>
+                                Calendário de Agendamentos
+                            </h4>
+                        </div>
+                        <div class="d-inline-flex gap-2">
+                            @if(request()->has('funcionario_id') && request()->funcionario_id)
+                            <a class="dash-btn dash-btn-light" href="{{ route('agendamentos.index') }}">
+                                <i class="ri-filter-off-line"></i> Ver Todos
+                            </a>
+                            @endif
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="card-body p-4">
+                <div class="card-body p-4">
 
-                <!-- ═══ FILTROS GLASS ═══ -->
-                <div class="modulo-glass-filter p-3 mb-4">
-                    {!!Form::open()->fill(request()->all())->get()!!}
-                    <div class="row g-2 align-items-end">
-                        <div class="col-md-8 col-12">
-                            {!!Form::select('funcionario_id', 'Filtrar por Atendente / Profissional', ['' => 'Todos'] + $funcionarios->pluck('nome', 'id')->all())
-                            ->id('funcionario')
-                            ->attrs(['class' => 'select2 form-select form-select-sm'])!!}
+                    <!-- ═══ CARDS KPI (ÍNDICE) ═══ -->
+                    @if(isset($stats))
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-md-3">
+                            <div class="stat-card c-blue">
+                                <i class="ri-calendar-check-line stat-icon"></i>
+                                <div class="stat-title">Total Registrados</div>
+                                <div class="stat-val">{{ $stats['total'] }}</div>
+                            </div>
                         </div>
-                        <div class="col-md-4 col-12 ms-auto">
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-primary btn-sm flex-grow-1" type="submit">
-                                    <i class="ri-search-line me-1"></i> Pesquisar
-                                </button>
-                                <a class="btn btn-danger btn-sm px-3" href="{{ route('agendamentos.index') }}">
-                                    <i class="ri-eraser-line me-1"></i> Limpar
-                                </a>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-card c-teal">
+                                <i class="ri-time-line stat-icon"></i>
+                                <div class="stat-title">Agendados Hoje</div>
+                                <div class="stat-val">{{ $stats['hoje'] }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-card c-amber">
+                                <i class="ri-hourglass-fill stat-icon"></i>
+                                <div class="stat-title">Pendentes</div>
+                                <div class="stat-val">{{ $stats['pendentes'] }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-card c-green">
+                                <i class="ri-checkbox-circle-line stat-icon"></i>
+                                <div class="stat-title">Finalizados</div>
+                                <div class="stat-val">{{ $stats['finalizados'] }}</div>
                             </div>
                         </div>
                     </div>
-                    {!!Form::close()!!}
-                </div>
+                    @endif
 
-                <!-- ═══ CALENDÁRIO ═══ -->
-                <div class="row">
-                    <div class="col-12">
-                        <div id="external-events"></div>
-                        <div class="border rounded p-2 bg-white shadow-sm">
-                            <div id="calendar" class="calendario" style="min-height: 550px;"></div>
+                    <!-- ═══ FILTRO DE ATENDENTE ═══ -->
+                    <div class="modulo-glass-filter-premium">
+                        {!!Form::open()->fill(request()->all())->get()!!}
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-7 col-12">
+                                <label for="funcionario"><i class="ri-user-star-line me-1"></i> Filtrar por Atendente / Profissional</label>
+                                {!!Form::select('funcionario_id', '', ['' => 'Todos os Atendentes'] + $funcionarios->pluck('nome', 'id')->all())
+                                ->id('funcionario')
+                                ->attrs(['class' => 'select2 form-select'])!!}
+                            </div>
+                            <div class="col-md-5 col-12 text-end">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button class="dash-btn dash-btn-primary flex-grow-1" type="submit">
+                                        <i class="ri-search-line"></i> Filtrar Agenda
+                                    </button>
+                                    <a class="dash-btn dash-btn-light px-3" href="{{ route('agendamentos.index') }}">
+                                        <i class="ri-eraser-line"></i> Limpar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {!!Form::close()!!}
+                    </div>
+
+                    <!-- ═══ CALENDÁRIO ═══ -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div id="external-events"></div>
+                            <div class="calendar-box">
+                                <div id="calendar" class="calendario" style="min-height: 560px;"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- ═══ LEGENDA ═══ -->
-                <div class="mt-4 border-top pt-3">
-                    <h5 class="fs-12 text-muted text-uppercase fw-semibold mb-2">Legendas de Prioridade & Status</h5>
-                    <div class="d-flex flex-wrap gap-2">
-                        <div class="px-3 py-1 rounded bg-success-subtle text-success border border-success-subtle fs-12">
-                            <i class="ri-checkbox-circle-fill me-1 align-middle"></i> Agendamento Finalizado
-                        </div>
-                        <div class="px-3 py-1 rounded bg-primary-subtle text-primary border border-primary-subtle fs-12">
-                            <i class="ri-information-line me-1 align-middle"></i> Prioridade Baixa
-                        </div>
-                        <div class="px-3 py-1 rounded bg-warning-subtle text-warning border border-warning-subtle fs-12">
-                            <i class="ri-alert-line me-1 align-middle"></i> Prioridade Média
-                        </div>
-                        <div class="px-3 py-1 rounded bg-danger-subtle text-danger border border-danger-subtle fs-12">
-                            <i class="ri-alarm-warning-line me-1 align-middle"></i> Prioridade Alta
+                    <!-- ═══ LEGENDA ═══ -->
+                    <div class="mt-4 border-top pt-3">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <span class="fs-12 text-muted text-uppercase fw-bold"><i class="ri-bookmark-line me-1"></i> Legenda de Cores & Prioridades:</span>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="pill pill-ok">
+                                    <i class="ri-checkbox-circle-fill"></i> Finalizado
+                                </span>
+                                <span class="pill pill-info">
+                                    <i class="ri-information-line"></i> Prioridade Baixa
+                                </span>
+                                <span class="pill pill-amber">
+                                    <i class="ri-alert-line"></i> Prioridade Média
+                                </span>
+                                <span class="pill pill-no">
+                                    <i class="ri-alarm-warning-line"></i> Prioridade Alta
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
+                </div>
             </div>
         </div>
     </div>
@@ -113,3 +174,4 @@
 <script src="/js/calendar.js"></script>
 <script src="/js/agendamento.js"></script>
 @endsection
+

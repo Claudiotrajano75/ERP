@@ -2,67 +2,79 @@
 
 @section('css')
 <style>
-/* ─── Header Gradiente ─── */
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.6) !important; font-weight: 400; }
-.modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-.modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+/* ─── Cards de Detalhes ─── */
+.detail-card { background: #ffffff; border: 1px solid #eef0f5; border-radius: 12px; padding: 18px 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); }
+.detail-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 4px; }
+.detail-value { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 0; }
 
-/* ─── Form Card ─── */
-.modulo-form-card { border: 1px solid #eef0f5; border-radius: 12px; overflow: hidden; }
-.modulo-form-card .card-body { background: #fff; }
+/* ─── Tabela ─── */
+.tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+.tb-wrap table { margin-bottom: 0; }
+.tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 16px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+.tb-wrap tbody td { padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13.5px; color: #374151; }
+.tb-wrap tbody tr:hover { background: #f5f6fe; }
+.tb-wrap tbody tr:last-child td { border-bottom: none; }
 
-/* ─── Detail Label ─── */
-.detail-label { font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #5a5a7a; margin-bottom: 2px; }
-.detail-value { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+/* ─── Grade de Ações ─── */
+.act-group { display: inline-flex; gap: 6px; align-items: center; }
+.act-btn { width: 34px; height: 34px; border-radius: 10px; border: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; text-decoration: none; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+.act-btn:hover { transform: translateY(-2px); text-decoration: none; }
+.act-view { background: #e0f2fe; color: #0284c7; }
+.act-view:hover { box-shadow: 0 4px 12px rgba(2,132,199,.3); }
+.act-edit { background: #eef0ff; color: #4f46e5; }
+.act-edit:hover { box-shadow: 0 4px 12px rgba(79,70,229,.3); }
+.act-del { background: #fee2e2; color: #dc2626; }
+.act-del:hover { box-shadow: 0 4px 12px rgba(220,38,38,.3); }
 
-/* ─── Inner Cards ─── */
-.modulo-inner-card { border: 1px solid #eef0f5; border-radius: 12px; overflow: hidden; }
-.modulo-inner-card .card-header { background: #f8f9fc; border-bottom: 1px solid #eef0f5; padding: 10px 16px; }
-.modulo-inner-card .card-body { padding: 16px; }
+/* ─── Badges (Pills) ─── */
+.pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 8px; padding: 4px 10px; font-size: 11.5px; font-weight: 700; }
+.pill-ok { background: #dcfce7; color: #15803d; }
+.pill-no { background: #fee2e2; color: #b91c1c; }
+.pill-info { background: #e0f2fe; color: #0369a1; }
+.pill-amber { background: #fef3c7; color: #b45309; }
 
-@media (max-width: 768px) {
-    .modulo-header-gradient .modulo-title { font-size: 18px; }
-}
+/* ─── Inner Box ─── */
+.inner-block-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eef0f6; padding: 14px 20px; background: #fafbfe; }
+.inner-block-header h5 { font-size: 14px; font-weight: 700; color: #1f2937; margin-bottom: 0; }
+.inner-block-header h5 i { color: #4f46e5; margin-right: 6px; }
+.inner-block-body { padding: 20px; }
 </style>
 @endsection
 
 @section('content')
-<div class="mt-3 text-dark">
+<div class="mt-3">
     <div class="row">
         <div class="col-12">
-            <div class="card border-0 shadow-sm modulo-form-card">
+            <div class="card border-0 shadow-sm">
 
                 <!-- ═══ CABEÇALHO PREMIUM ═══ -->
                 <div class="card-header modulo-header-gradient py-3 px-4">
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <div>
-                            <span class="fs-12 text-white-50 text-uppercase fw-semibold d-block mb-1"
-                                  style="color: rgba(255,255,255,0.5) !important;">Painel de Acompanhamento</span>
+                            <span class="fs-11 text-uppercase fw-bold text-primary d-block mb-1"
+                                  style="letter-spacing: 0.5px;">Painel de Acompanhamento</span>
                             <h4 class="mb-0 modulo-title d-flex align-items-center gap-2">
                                 <i class="ri-survey-line"></i>
-                                Ordem de Serviço <strong style="color:#f8bbd0;">#{{ $ordem->codigo_sequencial }}</strong>
+                                Ordem de Serviço #{{ $ordem->codigo_sequencial }}
                             </h4>
                         </div>
-                        <div class="d-inline-flex gap-1 flex-wrap">
+                        <div class="d-inline-flex gap-2 flex-wrap">
                             <a href="{{ route('ordem-servico.alterar-estado', [$ordem->id]) }}"
-                               class="btn btn-info btn-sm text-white">
-                                <i class="ri-refresh-line align-middle me-1"></i> Alterar Estado
+                               class="dash-btn dash-btn-light">
+                                <i class="ri-refresh-line"></i> Alterar Estado
                             </a>
-                            <a target="_blank" class="btn btn-primary btn-sm"
+                            <a target="_blank" class="dash-btn dash-btn-primary"
                                href="{{ route('ordem-servico.imprimir', $ordem->id) }}">
-                                <i class="ri-printer-line align-middle me-1"></i> Imprimir OS
+                                <i class="ri-printer-line"></i> Imprimir OS
                             </a>
                             @if($ordem->nfe_id == 0)
-                            <a class="btn btn-success btn-sm"
+                            <a class="dash-btn dash-btn-success"
                                href="{{ route('ordem-servico.gerar-nfe', $ordem->id) }}">
-                                <i class="ri-file-text-line align-middle me-1"></i> Gerar NF-e
+                                <i class="ri-file-text-line"></i> Gerar NF-e
                             </a>
                             @endif
-                            <a href="{{ route('ordem-servico.index') }}" class="btn btn-light btn-sm px-3 ms-1 text-dark">
-                                <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
+                            <a href="{{ route('ordem-servico.index') }}" class="dash-btn dash-btn-light">
+                                <i class="ri-arrow-left-line"></i> Voltar
                             </a>
                         </div>
                     </div>
@@ -71,89 +83,99 @@
                 <div class="card-body p-4">
 
                     <!-- ═══ RESUMO SUPERIOR ═══ -->
-                    <div class="modulo-glass-filter p-3 mb-4" style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8) !important; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.04);">
-                        <div class="row g-3 text-center text-md-start">
-                            <div class="col-md-3 col-6">
-                                <div class="detail-label">Data de Início</div>
-                                <strong class="text-dark fs-14">{{ __data_pt($ordem->data_inicio) }}</strong>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3 col-6">
+                            <div class="detail-card h-100">
+                                <div class="detail-label"><i class="ri-user-line me-1"></i> Cliente Solicitante</div>
+                                <p class="detail-value text-primary fs-16">{{ $ordem->cliente->razao_social }}</p>
                             </div>
-                            <div class="col-md-3 col-6">
-                                <div class="detail-label">Previsão de Entrega</div>
-                                <strong class="text-dark fs-14">{{ __data_pt($ordem->data_entrega) }}</strong>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="detail-card h-100">
+                                <div class="detail-label"><i class="ri-calendar-line me-1"></i> Data Início / Previsão</div>
+                                <p class="detail-value">{{ __data_pt($ordem->data_inicio, 1) }}</p>
+                                <div class="text-muted fs-12 mt-1">Previsão: <strong>{{ __data_pt($ordem->data_entrega, 1) }}</strong></div>
                             </div>
-                            <div class="col-md-3 col-6">
-                                <div class="detail-label">Valor Total Geral</div>
-                                <strong class="text-success fs-16">R$ {{ __moeda($ordem->valor) }}</strong>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="detail-card h-100">
+                                <div class="detail-label"><i class="ri-money-dollar-circle-line me-1"></i> Valor Total da OS</div>
+                                <p class="detail-value text-success fs-18">R$ {{ __moeda($ordem->valor) }}</p>
+                                <div class="text-muted fs-12 mt-1">Operador: {{ $ordem->usuario->name }}</div>
                             </div>
-                            <div class="col-md-3 col-6">
-                                <div class="detail-label">Operador / Responsável</div>
-                                <strong class="text-dark fs-14">{{ $ordem->usuario->name }}</strong>
-                            </div>
-                            <div class="col-12 mt-2">
-                                <span class="detail-label d-inline-block me-2 align-middle">Estado Atual:</span>
-                                @if($ordem->estado == 'pd')
-                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-1 fs-11">
-                                    <i class="ri-time-line me-1"></i>PENDENTE
-                                </span>
-                                @elseif($ordem->estado == 'ap')
-                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 fs-11">
-                                    <i class="ri-check-line me-1"></i>APROVADA
-                                </span>
-                                @elseif($ordem->estado == 'rp')
-                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1 fs-11">
-                                    <i class="ri-close-line me-1"></i>REPROVADA
-                                </span>
-                                @elseif($ordem->estado == 'fz')
-                                <span class="badge bg-info-subtle text-info border border-info-subtle px-3 py-1 fs-11">
-                                    <i class="ri-check-double-line me-1"></i>FINALIZADA
-                                </span>
-                                @endif
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="detail-card h-100">
+                                <div class="detail-label"><i class="ri-toggle-line me-1"></i> Estado da OS</div>
+                                <div class="mt-1">
+                                    @if($ordem->estado == 'pd')
+                                    <span class="pill pill-amber">
+                                        <i class="ri-time-line"></i> Pendente
+                                    </span>
+                                    @elseif($ordem->estado == 'ap')
+                                    <span class="pill pill-ok">
+                                        <i class="ri-check-line"></i> Aprovada
+                                    </span>
+                                    @elseif($ordem->estado == 'rp')
+                                    <span class="pill pill-no">
+                                        <i class="ri-close-line"></i> Reprovada
+                                    </span>
+                                    @elseif($ordem->estado == 'fz')
+                                    <span class="pill pill-info">
+                                        <i class="ri-check-double-line"></i> Finalizada
+                                    </span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- ═══ BLOCO DE SERVIÇOS ═══ -->
-                    <div class="card modulo-inner-card shadow-sm mb-4">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <h5 class="mb-0 text-dark d-flex align-items-center">
-                                <i class="ri-tools-line text-primary me-2 fs-18"></i>
+                    <div class="tb-wrap mb-4">
+                        <div class="inner-block-header">
+                            <h5>
+                                <i class="ri-tools-line"></i>
                                 Serviços Prestados
                             </h5>
                         </div>
-                        <div class="card-body">
+                        <div class="inner-block-body">
                             {!! Form::open()->post()->route('ordem-servico.store-servico') !!}
                             <input type="hidden" value="{{$ordem->id}}" name="ordem_servico_id">
                             <div class="row g-2 align-items-end mb-3">
                                 <div class="col-md-4 col-12">
-                                    {!! Form::select('servico_id', 'Serviço', [null => 'Selecione'] + $servicos->pluck('nome', 'id')->all())->attrs(['class' => 'form-select select2', 'id' => 'inp-servico_id'])->required() !!}
+                                    <label class="form-label fs-12 fw-semibold text-muted mb-1"><i class="ri-briefcase-line me-1"></i>Serviço</label>
+                                    {!! Form::select('servico_id', '', [null => 'Selecione um serviço'] + $servicos->pluck('nome', 'id')->all())->attrs(['class' => 'form-select select2', 'id' => 'inp-servico_id'])->required() !!}
                                 </div>
                                 <div class="col-md-2 col-6">
-                                    {!! Form::tel('quantidade', 'Quantidade')->attrs(['class' => 'form-control moeda', 'id' => 'inp-quantidade'])->required() !!}
+                                    <label class="form-label fs-12 fw-semibold text-muted mb-1"><i class="ri-calculator-line me-1"></i>Quantidade</label>
+                                    {!! Form::tel('quantidade', '')->attrs(['class' => 'form-control moeda', 'id' => 'inp-quantidade'])->required() !!}
                                 </div>
                                 <div class="col-md-2 col-6">
-                                    {!! Form::text('valor', 'Valor Unitário (R$)')->attrs(['class' => 'form-control moeda', 'id' => 'inp-valor'])->required() !!}
+                                    <label class="form-label fs-12 fw-semibold text-muted mb-1"><i class="ri-money-dollar-circle-line me-1"></i>Valor Unit. (R$)</label>
+                                    {!! Form::text('valor', '')->attrs(['class' => 'form-control moeda', 'id' => 'inp-valor'])->required() !!}
                                 </div>
                                 <div class="col-md-2 col-6">
-                                    {!! Form::select('status', 'Status Inicial', [0 => 'Pendente', 1 => 'Finalizado'])->attrs(['class' => 'form-select', 'id' => 'inp-status'])->required() !!}
+                                    <label class="form-label fs-12 fw-semibold text-muted mb-1"><i class="ri-toggle-line me-1"></i>Status</label>
+                                    {!! Form::select('status', '', [0 => 'Pendente', 1 => 'Finalizado'])->attrs(['class' => 'form-select', 'id' => 'inp-status'])->required() !!}
                                 </div>
                                 <input type="hidden" id="inp-nome" name="nome">
                                 <div class="col-md-2 col-6 text-end">
-                                    <button type="submit" class="btn btn-success btn-sm w-100 py-2 btn-add-servico">
-                                        <i class="ri-add-line align-middle me-1"></i> Adicionar
+                                    <button type="submit" class="dash-btn dash-btn-primary w-100 py-2 btn-add-servico">
+                                        <i class="ri-add-line"></i> Adicionar
                                     </button>
                                 </div>
                             </div>
                             {!! Form::close() !!}
 
                             <div class="table-responsive">
-                                <table class="table table-centered table-hover align-middle mb-0 text-dark table-servico">
-                                    <thead class="table-light">
+                                <table class="table table-centered table-hover align-middle mb-0 table-servico">
+                                    <thead>
                                         <tr>
                                             <th>Nome do Serviço</th>
-                                            <th style="width: 150px;">Quantidade</th>
-                                            <th style="width: 150px;">Status</th>
-                                            <th style="width: 180px;">Subtotal</th>
-                                            <th class="text-end" style="width: 120px;">Ações</th>
+                                            <th style="width: 130px;">Quantidade</th>
+                                            <th style="width: 140px;">Status</th>
+                                            <th style="width: 160px;">Subtotal</th>
+                                            <th class="text-end" style="width: 100px;">Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -168,23 +190,23 @@
                                             </td>
                                             <td>
                                                 @if($item->status)
-                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-11">Finalizado</span>
+                                                <span class="pill pill-ok">Finalizado</span>
                                                 @else
-                                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 fs-11">Pendente</span>
+                                                <span class="pill pill-amber">Pendente</span>
                                                 @endif
                                             </td>
-                                            <td class="fw-bold text-dark">
-                                                <input readonly type="tel" name="valor[]" class="form-control-plaintext text-dark py-0 fw-bold" value="R$ {{ __moeda($item->subtotal) }}">
+                                            <td>
+                                                <input readonly type="tel" name="valor[]" class="form-control-plaintext py-0 fw-bold fs-14 text-success" value="R$ {{ __moeda($item->subtotal) }}">
                                             </td>
                                             <td class="text-end">
                                                 <form action="{{ route('ordem-servico.deletar-servico', $item->id) }}" method="post" id="form-servico-{{$item->id}}" class="m-0">
                                                     @method('delete')
                                                     @csrf
-                                                    <div class="modulo-action-group" style="display: inline-flex; gap: 4px; flex-wrap: nowrap; align-items: center;">
-                                                        <a title="Alterar Estado do Serviço" href="{{ route('ordem-servico.alterar-status-servico', $item->id) }}" class="btn btn-sm btn-light">
+                                                    <div class="act-group">
+                                                        <a title="Alterar Estado do Serviço" href="{{ route('ordem-servico.alterar-status-servico', $item->id) }}" class="act-btn act-view">
                                                             <i class="ri-refresh-line"></i>
                                                         </a>
-                                                        <button type="button" class="btn btn-delete btn-sm btn-danger" title="Excluir Serviço">
+                                                        <button type="button" class="act-btn act-del btn-delete" title="Excluir Serviço">
                                                             <i class="ri-delete-bin-line"></i>
                                                         </button>
                                                     </div>
@@ -204,31 +226,34 @@
                     </div>
 
                     <!-- ═══ BLOCO DE PRODUTOS ═══ -->
-                    <div class="card modulo-inner-card shadow-sm mb-4">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <h5 class="mb-0 text-dark d-flex align-items-center">
-                                <i class="ri-shopping-basket-line text-primary me-2 fs-18"></i>
+                    <div class="tb-wrap mb-4">
+                        <div class="inner-block-header">
+                            <h5>
+                                <i class="ri-shopping-basket-line"></i>
                                 Peças & Produtos Utilizados
                             </h5>
                         </div>
-                        <div class="card-body">
+                        <div class="inner-block-body">
                             {!! Form::open()->post()->route('ordem-servico.store-produto') !!}
                             <input type="hidden" value="{{$ordem->id}}" name="ordem_servico_id">
                             <div class="row g-2 align-items-end mb-3">
                                 <div class="col-md-5 col-12">
-                                    {!! Form::select('produto_id', 'Produto')->attrs(['class' => 'form-select select2', 'id' => 'inp-produto_id'])->required() !!}
+                                    <label class="form-label fs-12 fw-semibold text-muted mb-1"><i class="ri-box-3-line me-1"></i>Produto / Peça</label>
+                                    {!! Form::select('produto_id', '')->attrs(['class' => 'form-select select2', 'id' => 'inp-produto_id'])->required() !!}
                                 </div>
                                 <div class="col-md-2 col-6">
-                                    {!! Form::tel('quantidade_produto', 'Quantidade')->attrs(['class' => 'form-control moeda', 'id' => 'inp-quantidade_produto'])->required() !!}
+                                    <label class="form-label fs-12 fw-semibold text-muted mb-1"><i class="ri-calculator-line me-1"></i>Quantidade</label>
+                                    {!! Form::tel('quantidade_produto', '')->attrs(['class' => 'form-control moeda', 'id' => 'inp-quantidade_produto'])->required() !!}
                                 </div>
                                 <div class="col-md-3 col-6">
-                                    {!! Form::tel('valor_produto', 'Valor Unitário (R$)')->attrs(['class' => 'form-control moeda', 'id' => 'inp-valor_produto'])->required() !!}
+                                    <label class="form-label fs-12 fw-semibold text-muted mb-1"><i class="ri-money-dollar-circle-line me-1"></i>Valor Unit. (R$)</label>
+                                    {!! Form::tel('valor_produto', '')->attrs(['class' => 'form-control moeda', 'id' => 'inp-valor_produto'])->required() !!}
                                 </div>
                                 <input type="hidden" id="inp-nome_produto" name="nome_produto">
                                 <div class="col-md-2 col-12 text-end">
                                     @if(!isset($not_submit))
-                                    <button type="submit" class="btn btn-success btn-sm w-100 py-2 btn-add-produto">
-                                        <i class="ri-add-line align-middle me-1"></i> Adicionar
+                                    <button type="submit" class="dash-btn dash-btn-primary w-100 py-2 btn-add-produto">
+                                        <i class="ri-add-line"></i> Adicionar
                                     </button>
                                     @endif
                                 </div>
@@ -236,14 +261,14 @@
                             {!! Form::close() !!}
 
                             <div class="table-responsive">
-                                <table class="table table-centered table-hover align-middle mb-0 text-dark table-produto">
-                                    <thead class="table-light">
+                                <table class="table table-centered table-hover align-middle mb-0 table-produto">
+                                    <thead>
                                         <tr>
                                             <th>Nome do Produto</th>
-                                            <th style="width: 150px;">Quantidade</th>
-                                            <th style="width: 180px;">Valor Unitário</th>
-                                            <th style="width: 180px;">Subtotal</th>
-                                            <th class="text-end" style="width: 120px;">Ações</th>
+                                            <th style="width: 130px;">Quantidade</th>
+                                            <th style="width: 160px;">Valor Unitário</th>
+                                            <th style="width: 160px;">Subtotal</th>
+                                            <th class="text-end" style="width: 100px;">Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -259,16 +284,18 @@
                                             <td>
                                                 <input readonly type="tel" name="total[]" class="form-control-plaintext text-dark py-0" value="R$ {{ __moeda($item->produto->valor_unitario) }}">
                                             </td>
-                                            <td class="fw-bold text-dark">
-                                                <input readonly type="tel" name="subtotal[]" class="form-control-plaintext text-dark py-0 fw-bold" value="R$ {{ __moeda($item->subtotal) }}">
+                                            <td>
+                                                <input readonly type="tel" name="subtotal[]" class="form-control-plaintext py-0 fw-bold fs-14 text-success" value="R$ {{ __moeda($item->subtotal) }}">
                                             </td>
                                             <td class="text-end">
                                                 <form action="{{ route('ordem-servico.deletar-produto', $item->id) }}" method="post" id="form-{{$item->id}}" class="m-0">
                                                     @method('delete')
                                                     @csrf
-                                                    <button type="button" class="btn btn-delete btn-sm btn-danger" title="Excluir Produto">
-                                                        <i class="ri-delete-bin-line"></i>
-                                                    </button>
+                                                    <div class="act-group">
+                                                        <button type="button" class="act-btn act-del btn-delete" title="Excluir Produto">
+                                                            <i class="ri-delete-bin-line"></i>
+                                                        </button>
+                                                    </div>
                                                 </form>
                                             </td>
                                         </tr>
@@ -285,20 +312,20 @@
                     </div>
 
                     <!-- ═══ BLOCO DE RELATÓRIOS ═══ -->
-                    <div class="card modulo-inner-card shadow-sm mb-4">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <h5 class="mb-0 text-dark d-flex align-items-center">
-                                <i class="ri-file-list-3-line text-primary me-2 fs-18"></i>
+                    <div class="tb-wrap mb-4">
+                        <div class="inner-block-header">
+                            <h5>
+                                <i class="ri-file-list-3-line"></i>
                                 Relatórios de Evolução Técnica
                             </h5>
-                            <a href="{{ route('ordem-servico.add-relatorio', $ordem->id) }}" class="btn btn-success btn-sm">
-                                <i class="ri-add-line me-1"></i> Adicionar Relatório
+                            <a href="{{ route('ordem-servico.add-relatorio', $ordem->id) }}" class="dash-btn dash-btn-primary btn-sm">
+                                <i class="ri-add-line"></i> Adicionar Relatório
                             </a>
                         </div>
-                        <div class="card-body">
+                        <div class="inner-block-body p-0">
                             <div class="table-responsive">
-                                <table class="table table-centered table-hover align-middle mb-0 text-dark">
-                                    <thead class="table-light">
+                                <table class="table table-centered table-hover align-middle mb-0">
+                                    <thead>
                                         <tr>
                                             <th>Data de Registro</th>
                                             <th>Usuário Técnico</th>
@@ -308,17 +335,17 @@
                                     <tbody>
                                         @forelse($ordem->relatorios as $item)
                                         <tr>
-                                            <td class="fw-semibold text-dark">{{ __data_pt($item->created_at) }}</td>
-                                            <td>{{ $item->usuario->name }}</td>
+                                            <td class="fw-semibold text-dark"><i class="ri-calendar-line me-1 text-muted"></i>{{ __data_pt($item->created_at) }}</td>
+                                            <td><i class="ri-user-line me-1 text-muted"></i>{{ $item->usuario->name }}</td>
                                             <td class="text-end">
                                                 <form action="{{ route('ordem-servico.delete-relatorio', $item->id) }}" method="post" id="form-relatorio-{{$item->id}}" class="m-0">
                                                     @method('delete')
                                                     @csrf
-                                                    <div class="modulo-action-group" style="display: inline-flex; gap: 4px; flex-wrap: nowrap; align-items: center;">
-                                                        <a href="{{ route('ordem-servico.edit-relatorio', $item->id) }}" title="Editar Relatório" class="btn btn-warning btn-sm text-white">
+                                                    <div class="act-group">
+                                                        <a href="{{ route('ordem-servico.edit-relatorio', $item->id) }}" title="Editar Relatório" class="act-btn act-edit">
                                                             <i class="ri-pencil-line"></i>
                                                         </a>
-                                                        <button type="button" class="btn btn-delete btn-sm btn-danger" title="Excluir Relatório">
+                                                        <button type="button" class="act-btn act-del btn-delete" title="Excluir Relatório">
                                                             <i class="ri-delete-bin-line"></i>
                                                         </button>
                                                     </div>
@@ -337,19 +364,21 @@
                     </div>
 
                     <!-- ═══ BLOCO DE DESCRIÇÃO ═══ -->
-                    <div class="card modulo-inner-card shadow-sm">
-                        <div class="card-header">
-                            <h5 class="mb-0 text-dark d-flex align-items-center">
-                                <i class="ri-align-left text-primary me-2 fs-18"></i>
+                    @if($ordem->descricao)
+                    <div class="tb-wrap">
+                        <div class="inner-block-header">
+                            <h5>
+                                <i class="ri-align-left"></i>
                                 Descrição / Problema Relatado Geral
                             </h5>
                         </div>
-                        <div class="card-body">
-                            <div class="bg-light p-3 rounded border text-dark fs-14" style="line-height: 1.6;">
+                        <div class="inner-block-body">
+                            <div class="p-3 bg-light rounded border text-dark fs-14" style="line-height: 1.6;">
                                 {!! $ordem->descricao !!}
                             </div>
                         </div>
                     </div>
+                    @endif
 
                 </div>
             </div>
@@ -361,3 +390,4 @@
 @section('js')
 <script type="text/javascript" src="/js/ordem_servico.js"></script>
 @endsection
+

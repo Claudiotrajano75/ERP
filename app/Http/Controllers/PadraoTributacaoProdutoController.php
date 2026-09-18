@@ -9,10 +9,14 @@ use App\Models\Produto;
 class PadraoTributacaoProdutoController extends Controller
 {
     public function index(){
-        $data = PadraoTributacaoProduto::where('empresa_id', request()->empresa_id)
-        ->paginate(env("PAGINACAO"));
+        $base = PadraoTributacaoProduto::where('empresa_id', request()->empresa_id);
+        $data = (clone $base)->paginate(env("PAGINACAO"));
+        $stats = [
+            'total'   => (clone $base)->count(),
+            'padrao'  => (clone $base)->where('padrao', 1)->count(),
+        ];
 
-        return view('padrao_tributacao.index', compact('data'));
+        return view('padrao_tributacao.index', compact('data', 'stats'));
     }
 
     public function create(){

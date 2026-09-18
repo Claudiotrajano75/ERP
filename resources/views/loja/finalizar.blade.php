@@ -21,7 +21,7 @@
                     <p class="text-muted fs-13 mb-4">Número do Pedido: <strong>#{{ $pedido->hash_pedido }}</strong></p>
 
                     <div class="summary-info-box mb-4">
-                        <span class="d-block mb-1" style="font-size:12px;color:var(--luxe-tan)0.6)">Valor Total do Pedido:</span>
+                        <span class="d-block mb-1" style="font-size:12px;color:color-mix(in srgb, var(--luxe-tan) 60%, transparent)">Valor Total do Pedido:</span>
                         <strong style="font-size:24px;color:#17a497">R$ {{ __moeda($pedido->valor_total) }}</strong>
                     </div>
 

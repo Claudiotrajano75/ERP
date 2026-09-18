@@ -20,13 +20,15 @@ class MarcaController extends Controller
 
     public function index(Request $request)
     {
-        $data = Marca::where('empresa_id', request()->empresa_id)
+        $query = Marca::where('empresa_id', request()->empresa_id);
+        $data = (clone $query)
         ->when(!empty($request->nome), function ($q) use ($request) {
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
         ->orderBy('nome', 'asc')
         ->paginate(env("PAGINACAO"));
-        return view('marcas.index', compact('data'));
+        $stats = ['total' => (clone $query)->count()];
+        return view('marcas.index', compact('data', 'stats'));
     }
 
     public function create()

@@ -70,7 +70,7 @@
                             </p>
                         </div>
                         <div>
-                            <a href="{{ route('lista-preco.index') }}" class="btn btn-light btn-sm px-3 text-dark">
+                            <a href="{{ route('lista-preco.index') }}" class="dash-btn dash-btn-light">
                                 <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
                             </a>
                         </div>

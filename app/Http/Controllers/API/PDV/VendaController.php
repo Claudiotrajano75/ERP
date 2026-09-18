@@ -20,6 +20,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\Utils\EstoqueUtil;
 use App\Utils\ContaEmpresaUtil;
+use App\Models\CreditoCliente;
 
 class VendaController extends Controller
 {
@@ -168,6 +169,11 @@ class VendaController extends Controller
                 return $nfce;
             });
 
+            // ═══════════════════════════════════════════════════════════
+            // CRÉDITO LOJA (tipo_pagamento = 05) - Débito do saldo
+            // ═══════════════════════════════════════════════════════════
+            $this->processarCreditoLoja($request, $nfce);
+
 $nfce = Nfce::where('id', $nfce->id)
 ->with(['itens', 'fatura', 'cliente'])
 ->first();
@@ -183,6 +189,56 @@ return response()->json($nfce, 200);
 }catch(\Exception $e){
     return response()->json($e->getMessage(), 403);
 }
+}
+
+/**
+ * Processa débito de crédito loja (tipo_pagamento = 05)
+ */
+private function processarCreditoLoja($request, $nfce)
+{
+    if (!$nfce->cliente_id) {
+        return;
+    }
+
+    $valorCreditoUsado = 0;
+
+    // Pagamento único com Crédito Loja
+    if ($request->tipo_pagamento == '05') {
+        $valorCreditoUsado = $request->total;
+    }
+
+    // Pagamento múltiplo via fatura
+    if ($request->fatura && sizeof($request->fatura) > 0) {
+        foreach ($request->fatura as $fat) {
+            if ($fat['tipo'] == '05') {
+                $valorCreditoUsado += $fat['valor'];
+            }
+        }
+    }
+
+    if ($valorCreditoUsado > 0) {
+        $cliente = Cliente::findOrFail($nfce->cliente_id);
+
+        // Verificar saldo
+        if ($cliente->valor_credito < $valorCreditoUsado) {
+            throw new \Exception('Saldo de crédito insuficiente! Saldo: R$ ' . 
+                number_format($cliente->valor_credito, 2, ',', '.') . 
+                ' - Necessário: R$ ' . number_format($valorCreditoUsado, 2, ',', '.'));
+        }
+
+        // Debitar
+        $cliente->valor_credito -= $valorCreditoUsado;
+        $cliente->save();
+
+        // Registrar movimentação
+        CreditoCliente::create([
+            'cliente_id' => $nfce->cliente_id,
+            'valor' => -$valorCreditoUsado
+        ]);
+
+        __createLog($request->empresa_id ?? $nfce->empresa_id, 'PDV Crédito', 'débito', 
+            'Cliente: ' . $cliente->razao_social . ' | Valor: R$ ' . number_format($valorCreditoUsado, 2, ',', '.'));
+    }
 }
 
 public function bandeirasCartao(){

@@ -2,292 +2,192 @@
 
 @section('css')
 <style>
-    /* ─── Padrão Oficial ERP Layout Modernization ─── */
-    .card {
-        border: 1px solid rgba(0, 0, 0, 0.06) !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
-        border-radius: 16px !important;
-        overflow: hidden;
-        background: #fff;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        margin-bottom: 24px;
-    }
+/* ─── Cards de Estatística (KPIs) ─── */
+.stat-card {
+    border-radius: 14px;
+    padding: 18px 20px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    min-height: 105px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+.stat-card .stat-icon {
+    position: absolute;
+    right: 14px;
+    bottom: 8px;
+    font-size: 52px;
+    opacity: .18;
+    line-height: 1;
+    pointer-events: none;
+}
+.stat-card .stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    opacity: .88;
+}
+.stat-card .stat-value {
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+.stat-indigo { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); }
+.stat-green  { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+.stat-amber  { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
 
-    .card-body {
-        padding: 24px !important;
-    }
+/* ─── Filtro de Pesquisa Premium ─── */
+.modulo-glass-filter-premium {
+    background: #ffffff;
+    border: 1px solid #eef0f6 !important;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02);
+    padding: 20px !important;
+    margin-bottom: 24px;
+}
+.filtro-premium-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #f1f3f9;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+.filtro-premium-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #3f3e6a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0;
+}
+.filtro-premium-title i {
+    color: #4f46e5;
+    margin-right: 6px;
+}
+.modulo-glass-filter-premium label {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #64748b !important;
+    margin-bottom: 6px !important;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.modulo-glass-filter-premium .form-control,
+.modulo-glass-filter-premium .form-select {
+    height: 40px !important;
+    border-radius: 9px !important;
+    border: 1px solid #e2e8f0 !important;
+    font-size: 13px !important;
+    padding: 6px 12px !important;
+    color: #334155 !important;
+    background-color: #fcfdfe !important;
+    transition: all 0.2s ease;
+}
+.modulo-glass-filter-premium .form-control:focus,
+.modulo-glass-filter-premium .form-select:focus {
+    border-color: #4f46e5 !important;
+    background-color: #fff !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12) !important;
+}
+.modulo-glass-filter-premium .btn-pesquisar {
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%) !important;
+    border: none !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    height: 40px;
+    border-radius: 9px !important;
+    font-size: 13px !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.modulo-glass-filter-premium .btn-pesquisar:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25) !important;
+}
+.modulo-glass-filter-premium .btn-limpar {
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #64748b !important;
+    font-weight: 600 !important;
+    height: 40px;
+    border-radius: 9px !important;
+    font-size: 13px !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.modulo-glass-filter-premium .btn-limpar:hover {
+    background: #e2e8f0 !important;
+    color: #334155 !important;
+}
 
-    /* ─── Cabeçalho de Gradiente Premium ─── */
-    .modulo-header-gradient {
-        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%) !important;
-        border-radius: 12px 12px 0 0 !important;
-        border-bottom: none !important;
-        padding: 20px 24px !important;
-    }
+/* ─── Tabela ─── */
+.tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+.tb-wrap table { margin-bottom: 0; }
+.tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 16px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+.tb-wrap tbody td { padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13.5px; color: #374151; }
+.tb-wrap tbody tr:hover { background: #f5f6fe; }
+.tb-wrap tbody tr:last-child td { border-bottom: none; }
 
-    .modulo-header-gradient .modulo-title {
-        color: #fff !important;
-        font-weight: 700 !important;
-        letter-spacing: -0.3px !important;
-        margin: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 12px !important;
-    }
+/* ─── Avatar da Natureza ─── */
+.natureza-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #f0f4ff;
+    color: #4f46e5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
 
-    .modulo-header-gradient .modulo-title i {
-        background: rgba(255, 255, 255, 0.1) !important;
-        padding: 8px !important;
-        border-radius: 10px !important;
-        color: #a8b5ff !important;
-        font-size: 20px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
+/* ─── Botões de Ação Squircle (Edit e Delete) ─── */
+.act-group { display: inline-flex; gap: 6px; align-items: center; justify-content: flex-end; }
+.act-btn { 
+    width: 34px; 
+    height: 34px; 
+    border-radius: 10px; 
+    border: 1px solid transparent; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 15px; 
+    text-decoration: none; 
+    cursor: pointer; 
+    transition: all .2s ease; 
+    padding: 0;
+}
+.act-btn:hover { transform: translateY(-2px); text-decoration: none; }
+.act-edit { background: #eef2ff; color: #4f46e5; border-color: #c7d2fe; }
+.act-edit:hover { background: #e0e7ff; color: #3730a3; box-shadow: 0 4px 12px rgba(79,70,229,.2); }
+.act-add { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+.act-add:hover { background: #dcfce7; color: #15803d; box-shadow: 0 4px 12px rgba(22,163,74,.2); }
+.act-del { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+.act-del:hover { background: #fee2e2; color: #b91c1c; box-shadow: 0 4px 12px rgba(220,38,38,.2); }
 
-    .modulo-header-gradient .modulo-subtitle {
-        color: rgba(255, 255, 255, 0.6) !important;
-        font-weight: 400 !important;
-        font-size: 13px !important;
-        margin-top: 4px !important;
-        margin-bottom: 0 !important;
-    }
-
-    /* ─── Filtro de Pesquisa Premium ─── */
-    .modulo-glass-filter-premium {
-        background: #ffffff;
-        border: 1px solid #eef0f6 !important;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-        padding: 20px !important;
-        margin-bottom: 24px;
-    }
-
-    .filtro-premium-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        border-bottom: 1px solid #f1f3f9;
-        padding-bottom: 12px;
-        margin-bottom: 16px;
-    }
-
-    .filtro-premium-title {
-        font-size: 13px;
-        font-weight: 700;
-        color: #3f3e6a;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 0;
-    }
-
-    .filtro-premium-title i {
-        color: #5572f5;
-        margin-right: 6px;
-    }
-
-    .modulo-glass-filter-premium label {
-        font-size: 11px !important;
-        font-weight: 700 !important;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: #8c8ca6 !important;
-        margin-bottom: 6px !important;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .modulo-glass-filter-premium .form-control,
-    .modulo-glass-filter-premium .form-select {
-        height: 38px !important;
-        border-radius: 8px !important;
-        border: 1px solid #dcdce9 !important;
-        font-size: 13px !important;
-        padding: 6px 12px !important;
-        color: #374151 !important;
-        background-color: #fcfdfe !important;
-        transition: all 0.2s ease;
-    }
-
-    .modulo-glass-filter-premium .form-control:focus,
-    .modulo-glass-filter-premium .form-select:focus {
-        border-color: #5572f5 !important;
-        background-color: #fff !important;
-        box-shadow: 0 0 0 3px rgba(85, 114, 245, 0.12) !important;
-    }
-
-    .modulo-glass-filter-premium .btn-pesquisar {
-        background: linear-gradient(135deg, #5572f5 0%, #3d56d4 100%) !important;
-        border: none !important;
-        color: #fff !important;
-        font-weight: 600 !important;
-        height: 38px;
-        border-radius: 8px !important;
-        font-size: 13px !important;
-        transition: all 0.2s ease !important;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-    }
-
-    .modulo-glass-filter-premium .btn-pesquisar:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(85, 114, 245, 0.25) !important;
-    }
-
-    .modulo-glass-filter-premium .btn-limpar {
-        background: #f1f3f9 !important;
-        border: 1px solid #e2e5ec !important;
-        color: #5a5a7a !important;
-        font-weight: 600 !important;
-        height: 38px;
-        border-radius: 8px !important;
-        font-size: 13px !important;
-        transition: all 0.2s ease !important;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-    }
-
-    .modulo-glass-filter-premium .btn-limpar:hover {
-        background: #e8ebf3 !important;
-        color: #302b63 !important;
-    }
-
-    /* ─── Tabela Premium ─── */
-    .modulo-table-wrap {
-        border-radius: 12px;
-        border: 1px solid #eef0f5;
-        overflow: hidden;
-    }
-
-    .modulo-table-wrap table {
-        margin-bottom: 0;
-    }
-
-    .modulo-table-wrap thead th {
-        background: #f8f9fc;
-        color: #5a5a7a;
-        font-weight: 700;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
-        padding: 12px 16px;
-        border-bottom: 2px solid #e8eaf6;
-    }
-
-    .modulo-table-wrap tbody td {
-        padding: 12px 16px;
-        vertical-align: middle;
-        border-bottom: 1px solid #f0f2f8;
-        font-size: 13px;
-        color: #374151;
-    }
-
-    .modulo-table-wrap tbody tr:hover {
-        background: #fafbff;
-    }
-
-    .modulo-table-wrap tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    .modulo-action-group {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        flex-wrap: nowrap;
-    }
-
-    .modulo-action-group .btn {
-        border-radius: 8px;
-        padding: 5px 9px;
-        font-size: 12px;
-        transition: all 0.15s ease;
-    }
-
-    .modulo-action-group .btn:hover {
-        transform: translateY(-1px);
-    }
-
-    /* ─── Botões ─── */
-    .btn {
-        border-radius: 10px !important;
-        font-weight: 500 !important;
-        font-size: 13px !important;
-        padding: 10px 20px !important;
-        transition: all 0.2s ease !important;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-    }
-
-    .btn-sm {
-        padding: 6px 12px !important;
-        font-size: 12px !important;
-        border-radius: 8px !important;
-    }
-
-    .btn-success {
-        background-color: #10b981 !important;
-        border-color: #10b981 !important;
-        color: #fff !important;
-    }
-
-    .btn-success:hover {
-        background-color: #059669 !important;
-        border-color: #059669 !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
-    }
-
-    .btn-warning {
-        background-color: #f59e0b !important;
-        border-color: #f59e0b !important;
-        color: #fff !important;
-    }
-
-    .btn-warning:hover {
-        background-color: #d97706 !important;
-        border-color: #d97706 !important;
-        transform: translateY(-1px);
-    }
-
-    .btn-danger {
-        background-color: #ef4444 !important;
-        border-color: #ef4444 !important;
-        color: #fff !important;
-    }
-
-    .btn-danger:hover {
-        background-color: #dc2626 !important;
-        border-color: #dc2626 !important;
-        transform: translateY(-1px);
-    }
-
-    /* ─── Empty State ─── */
-    .modulo-empty {
-        padding: 48px 20px;
-        text-align: center;
-    }
-
-    .modulo-empty i {
-        font-size: 48px;
-        color: #c5cae9;
-        margin-bottom: 12px;
-        display: block;
-    }
-
-    .modulo-empty p {
-        color: #9e9eb8;
-        font-size: 14px;
-        margin: 0;
-    }
+/* ─── Empty State ─── */
+.modulo-empty { padding: 48px 20px; text-align: center; }
+.modulo-empty i { font-size: 44px; color: #cbd5e1; margin-bottom: 10px; display: block; }
+.modulo-empty p { color: #94a3b8; font-size: 14px; margin: 0; }
 </style>
 @endsection
 
@@ -295,9 +195,9 @@
 <div class="mt-3 text-dark">
     <div class="row">
         <div class="col-12">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm text-dark modulo-form-card">
 
-                <!-- ═══ CABEÇALHO PREMIUM ═══ -->
+                <!-- ═══ CABEÇALHO ═══ -->
                 <div class="card-header modulo-header-gradient py-3 px-4">
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <div>
@@ -305,14 +205,14 @@
                                 <i class="ri-settings-4-line"></i>
                                 Naturezas de Operação
                             </h4>
-                            <p class="text-white-50 mb-0 modulo-subtitle fs-13">
+                            <p class="text-muted mb-0 modulo-subtitle fs-13">
                                 Cadastre e gerencie as regras tributárias e fiscais para emissão de notas.
                             </p>
                         </div>
                         <div>
                             @can('natureza_operacao_create')
-                            <a href="{{ route('natureza-operacao.create') }}" class="btn btn-success btn-sm px-3 shadow-sm">
-                                <i class="ri-add-circle-line align-middle me-1"></i> Nova Natureza
+                            <a href="{{ route('natureza-operacao.create') }}" class="dash-btn dash-btn-primary">
+                                <i class="ri-add-circle-line"></i> Nova Natureza
                             </a>
                             @endcan
                         </div>
@@ -322,62 +222,37 @@
                 <div class="card-body p-4">
 
                     <!-- ═══ KPI CARDS ═══ -->
+                    @if(isset($stats))
                     <div class="row g-3 mb-4">
                         <div class="col-md-4 col-6">
-                            <div class="card widget-icon-box text-bg-info mb-0">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between">
-                                        <div class="flex-grow-1 overflow-hidden">
-                                            <h4 class="text-uppercase fs-12 mt-0 text-white-50">Total de Naturezas</h4>
-                                            <h3 class="my-2 text-white fs-18">{{ $stats['total'] ?? $data->total() }}</h3>
-                                            <p class="mb-0 text-white-50 fs-11">Cadastradas no sistema</p>
-                                        </div>
-                                        <div class="avatar-sm flex-shrink-0">
-                                            <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                                                <i class="ri-file-list-3-line"></i>
-                                            </span>
-                                        </div>
-                                    </div>
+                            <div class="stat-card stat-indigo">
+                                <div>
+                                    <div class="stat-label">Total de Naturezas</div>
+                                    <div class="stat-value mt-1">{{ $stats['total'] }}</div>
                                 </div>
+                                <i class="ri-file-list-3-line stat-icon"></i>
                             </div>
                         </div>
                         <div class="col-md-4 col-6">
-                            <div class="card widget-icon-box text-bg-success mb-0">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between">
-                                        <div class="flex-grow-1 overflow-hidden">
-                                            <h4 class="text-uppercase fs-12 mt-0 text-white-50">Padrão do Sistema</h4>
-                                            <h3 class="my-2 text-white fs-18">{{ $stats['padrao'] ?? 0 }}</h3>
-                                            <p class="mb-0 text-white-50 fs-11">Utilizada como padrão</p>
-                                        </div>
-                                        <div class="avatar-sm flex-shrink-0">
-                                            <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                                                <i class="ri-checkbox-circle-line"></i>
-                                            </span>
-                                        </div>
-                                    </div>
+                            <div class="stat-card stat-green">
+                                <div>
+                                    <div class="stat-label">Padrão do Sistema</div>
+                                    <div class="stat-value mt-1">{{ $stats['padrao'] }}</div>
                                 </div>
+                                <i class="ri-checkbox-circle-line stat-icon"></i>
                             </div>
                         </div>
                         <div class="col-md-4 col-12">
-                            <div class="card widget-icon-box text-bg-warning mb-0">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between">
-                                        <div class="flex-grow-1 overflow-hidden">
-                                            <h4 class="text-uppercase fs-12 mt-0 text-white-50">Sobrescreve CFOP</h4>
-                                            <h3 class="my-2 text-white fs-18">{{ $stats['sobrescreve'] ?? 0 }}</h3>
-                                            <p class="mb-0 text-white-50 fs-11">Sobrescreve dados do produto</p>
-                                        </div>
-                                        <div class="avatar-sm flex-shrink-0">
-                                            <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                                                <i class="ri-swap-box-line"></i>
-                                            </span>
-                                        </div>
-                                    </div>
+                            <div class="stat-card stat-amber">
+                                <div>
+                                    <div class="stat-label">Sobrescreve CFOP</div>
+                                    <div class="stat-value mt-1">{{ $stats['sobrescreve'] }}</div>
                                 </div>
+                                <i class="ri-swap-box-line stat-icon"></i>
                             </div>
                         </div>
                     </div>
+                    @endif
 
                     <!-- ═══ FILTROS DE BUSCA PREMIUM ═══ -->
                     <div class="modulo-glass-filter-premium">
@@ -405,7 +280,7 @@
                                         <i class="ri-search-line"></i> Buscar
                                     </button>
                                     <a class="btn btn-limpar px-3" href="{{ route('natureza-operacao.index') }}" title="Limpar Filtros">
-                                        <i class="ri-eraser-line me-1"></i> Limpar
+                                        <i class="ri-eraser-line"></i>
                                     </a>
                                 </div>
                             </div>
@@ -414,7 +289,7 @@
                     </div>
 
                     <!-- ═══ TABELA PREMIUM ═══ -->
-                    <div class="modulo-table-wrap mb-4">
+                    <div class="tb-wrap mb-4">
                         <div class="table-responsive">
                             <table class="table table-centered table-hover align-middle mb-0 text-dark">
                                 <thead>
@@ -431,9 +306,17 @@
                                     @forelse($data as $item)
                                     <tr>
                                         <td>
-                                            <span class="fw-semibold text-dark fs-13 d-block">
-                                                {{ $item->descricao }}
-                                            </span>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="natureza-avatar">
+                                                    <i class="ri-file-settings-line"></i>
+                                                </div>
+                                                <div>
+                                                    <span class="fw-bold text-dark fs-13 d-block">
+                                                        {{ $item->descricao }}
+                                                    </span>
+                                                    <span class="text-muted fs-11">#{{ $item->id }}</span>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td>
                                             <div class="d-flex flex-wrap gap-1">
@@ -480,15 +363,15 @@
                                             <form action="{{ route('natureza-operacao.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="m-0">
                                                 @method('delete')
                                                 @csrf
-                                                <div class="modulo-action-group justify-content-end">
+                                                <div class="act-group">
                                                     @can('natureza_operacao_edit')
-                                                    <a class="btn btn-warning btn-sm text-white" href="{{ route('natureza-operacao.edit', [$item->id]) }}" title="Editar Natureza">
+                                                    <a class="act-btn act-edit" href="{{ route('natureza-operacao.edit', [$item->id]) }}" title="Editar Natureza">
                                                         <i class="ri-pencil-line"></i>
                                                     </a>
                                                     @endcan
 
                                                     @can('natureza_operacao_delete')
-                                                    <button type="button" class="btn btn-danger btn-sm btn-delete" title="Excluir Natureza">
+                                                    <button type="button" class="act-btn act-del btn-delete" title="Excluir Natureza">
                                                         <i class="ri-delete-bin-line"></i>
                                                     </button>
                                                     @endcan
@@ -512,10 +395,8 @@
                     </div>
 
                     <!-- ═══ PAGINAÇÃO ═══ -->
-                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                        <span class="text-muted fs-13">
-                            Total de Registros: <strong>{{ $data->total() }}</strong>
-                        </span>
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-4">
+                        <h5 class="m-0 text-dark fs-14">Total de Registros: <strong class="text-primary fs-16">{{ $data->total() }}</strong></h5>
                         <div>
                             {!! $data->appends(request()->all())->links() !!}
                         </div>

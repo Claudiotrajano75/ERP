@@ -1,74 +1,78 @@
-@extends('layouts.app', ['title' => 'Alterar Estado Fiscal MDFe'])
+@extends('layouts.app', ['title' => 'Alterar Estado Fiscal — MDF-e'])
+
 @section('content')
-
-@section('css')
-<style type="text/css">
-    input[type="file"] {
-        display: none;
-    }
-
-    .file-certificado label {
-        padding: 8px 8px;
-        width: 100%;
-        background-color: #8833FF;
-        color: #FFF;
-        text-transform: uppercase;
-        text-align: center;
-        display: block;
-        margin-top: 20px;
-        cursor: pointer;
-        border-radius: 5px;
-    }
-
-    .card-body strong {
-        color: #8833FF;
-    }
-
-</style>
-@endsection
-
-
-<div class="card mt-3">
-    <div class="card-header">
-        <h4>Alterar Estado Fiscal MDFe</h4>
-        <div style="text-align: right; margin-top: -35px;">
-            <a href="{{ route('mdfe.index') }}" class="btn btn-danger btn-sm px-3">
-                <i class="ri-arrow-left-double-fill"></i>Voltar
-            </a>
-        </div>
-    </div>
+<div class="mt-3">
     <div class="row">
-        {!!Form::open()
-        ->put()
-        ->route('mdfe.storeEstado', [$item->id])
-        ->multipart()
-        !!}
-        <hr>
-        <div class="m-3">
-            <h5>MDFe código: <strong class="text-primary">{{ $item->id }}</strong></h5>
-            <h5>Data de cadastro: <strong class="text-primary">{{ __data_pt($item->created_at) }}</strong></h5>
-            <h5>Valor de carga: <strong class="text-primary">R$ {{ __moeda($item->valor_carga) }}</strong></h5>
-            <h5>Chave: <strong class="text-primary">{{ $item->chave }}</strong></h5>
-        </div>
-        <hr>
-        <div class="row m-3">
-            <div class="col-md-3">
-                {!!Form::select('estado_emissao', 'Estado',
-                ['novo' => 'Novo', 'rejeitado' => 'Rejeitado', 'cancelado' => 'Cancelado', 'aprovado' => 'Aprovado'])
-                ->attrs(['class' => 'form-select'])->value(isset($item) ? $item->estado_emissao : '')!!}
-            </div>
-            <div class="col-md-6">
-                <div class="col-md-5 file-certificado">
-                    {!! Form::file('file', 'Arquivo XML')
-                    ->attrs(['accept' => '.xml']) !!}
-                    <span class="text-danger" id="filename"></span>
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+
+                <!-- ═══ CABEÇALHO PREMIUM ═══ -->
+                <div class="card-header modulo-header-gradient py-3 px-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div>
+                            <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
+                                <i class="ri-arrow-up-down-line"></i>
+                                Alterar Estado Fiscal MDF-e: <strong class="text-primary ms-1">#{{ $item->mdfe_numero ?: $item->id }}</strong>
+                            </h4>
+                            <p class="text-muted mb-0 modulo-subtitle fs-13">
+                                Ajuste manualmente o status de autorização na SEFAZ e anexe o XML correspondente caso necessário.
+                            </p>
+                        </div>
+                        <div class="d-inline-flex align-items-center gap-2">
+                            <a href="{{ route('mdfe.index') }}" class="dash-btn dash-btn-light">
+                                <i class="ri-arrow-left-line"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="col-12 mt-3">
-                <button type="submit" class="btn btn-success px-5">Salvar</button>
+
+                <div class="card-body p-4">
+                    <!-- Resumo dos Dados do MDF-e -->
+                    <div class="row g-3 mb-4 p-3 bg-light rounded-3 border">
+                        <div class="col-md-3 col-6">
+                            <div class="text-muted fs-11 text-uppercase fw-bold">Código MDF-e</div>
+                            <div class="fs-15 fw-bold text-dark">#{{ $item->id }}</div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="text-muted fs-11 text-uppercase fw-bold">Valor da Carga</div>
+                            <div class="fs-15 fw-bold text-success">R$ {{ __moeda($item->valor_carga) }}</div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="text-muted fs-11 text-uppercase fw-bold">Data de Emissão</div>
+                            <div class="fs-14 text-dark">{{ __data_pt($item->created_at, 1) }}</div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="text-muted fs-11 text-uppercase fw-bold">Chave de Acesso</div>
+                            <div class="fs-12 font-monospace text-secondary text-truncate" title="{{ $item->chave }}">{{ $item->chave ?: '--' }}</div>
+                        </div>
+                    </div>
+
+                    {!!Form::open()->put()->route('mdfe.storeEstado', [$item->id])->multipart()!!}
+                    <div class="row g-3">
+                        <div class="col-md-4 col-12">
+                            <label class="form-label fw-bold fs-13"><i class="ri-toggle-line me-1"></i> Novo Estado Fiscal</label>
+                            {!!Form::select('estado_emissao', '',
+                            ['novo' => 'Novo / Pendente', 'rejeitado' => 'Rejeitado', 'cancelado' => 'Cancelado', 'aprovado' => 'Aprovado / Autorizado'])
+                            ->attrs(['class' => 'form-select'])->value(isset($item) ? $item->estado_emissao : '')!!}
+                        </div>
+                        <div class="col-md-8 col-12">
+                            <label class="form-label fw-bold fs-13"><i class="ri-file-code-line me-1"></i> Anexar Arquivo XML da SEFAZ (Opcional)</label>
+                            {!! Form::file('file', '')->attrs(['class' => 'form-control', 'accept' => '.xml']) !!}
+                        </div>
+                        <div class="col-12 mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                            <a href="{{ route('mdfe.index') }}" class="dash-btn dash-btn-light px-4">
+                                <i class="ri-close-line"></i> Cancelar
+                            </a>
+                            <button type="submit" class="dash-btn dash-btn-primary px-5">
+                                <i class="ri-save-line"></i> Salvar Estado Fiscal
+                            </button>
+                        </div>
+                    </div>
+                    {!!Form::close()!!}
+                </div>
+
             </div>
         </div>
-        {!!Form::close()!!}
     </div>
 </div>
 @endsection

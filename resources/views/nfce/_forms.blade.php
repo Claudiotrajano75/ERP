@@ -1,118 +1,120 @@
 <div class="row">
     <div class="col-md-12">
-        <ul class="nav nav-tabs nav-primary" role="tablist">
+        <!-- ═══ NAVEGAÇÃO POR ABAS ═══ -->
+        <ul class="nav nav-pills nav-tabs-custom mb-4" id="pills-tab" role="tablist">
             <li class="nav-item" role="presentation">
-                <a class="nav-link active" data-bs-toggle="tab" href="#cliente" role="tab" aria-selected="true">
-                    <div class="d-flex align-items-center">
-                        <div class="tab-icon"><i class='fa fa-user me-2'></i>
-                        </div>
-                        <div class="tab-title">
-                            <i class="ri-file-user-fill"></i>
-                            Cliente
-                        </div>
-                    </div>
+                <a class="nav-link active" data-bs-toggle="pill" href="#cliente" role="tab" aria-selected="true">
+                    <i class="ri-file-user-fill"></i>
+                    <span>Cliente</span>
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" data-bs-toggle="tab" href="#produtos" role="tab" aria-selected="false">
-                    <div class="d-flex align-items-center">
-                        <div class="tab-icon"><i class='fa fa-shopping-cart me-2'></i>
-                        </div>
-                        <div class="tab-title">
-                            <i class="ri-box-2-line"></i>
-                            Produtos
-                        </div>
-                    </div>
+                <a class="nav-link" data-bs-toggle="pill" href="#produtos" role="tab" aria-selected="false">
+                    <i class="ri-box-2-line"></i>
+                    <span>Produtos</span>
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" data-bs-toggle="tab" href="#fatura" role="tab" aria-selected="false">
-                    <div class="d-flex align-items-center">
-                        <div class="tab-icon"><i class='fa fa-money-bill me-2'></i>
-                        </div>
-                        <div class="tab-title">
-                            <i class="ri-coins-line"></i>
-                            Fatura
-                        </div>
-                    </div>
+                <a class="nav-link" data-bs-toggle="pill" href="#fatura" role="tab" aria-selected="false">
+                    <i class="ri-coins-line"></i>
+                    <span>Fatura</span>
                 </a>
             </li>
         </ul>
-        <hr>
-        <div class="tab-content">
+
+        <div class="tab-content" id="pills-tabContent">
+
+            <!-- ══════════════ ABA 1: CLIENTE ══════════════ -->
             <div class="tab-pane fade show active" id="cliente" role="tabpanel">
-                <div class="card">
-                    <div class="row m-3">
-                        <h5>CPF na Nota:</h5>
-                        <div class="col-md-3">
-                            {!!Form::text('cliente_nome', 'Nome')->attrs(['class' => ''])
-                            !!}
-                        </div>
-                        <div class="col-md-3">
-                            {!!Form::tel('cliente_cpf_cnpj', 'CPF/CNPJ')->attrs(['class' => 'cpf_cnpj'])
-                            !!}
+                
+                <!-- IDENTIFICAÇÃO RÁPIDA / CPF NA NOTA -->
+                <div class="card card-secao-fiscal mb-4">
+                    <div class="card-header">
+                        <h5><i class="ri-qr-code-line text-primary"></i> Identificação na Nota (CPF / Nome no Cupom)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {!!Form::text('cliente_nome', 'Nome no Cupom')->attrs(['class' => 'form-control', 'placeholder' => 'Nome do cliente consumidor']) !!}
+                            </div>
+                            <div class="col-md-6">
+                                {!!Form::tel('cliente_cpf_cnpj', 'CPF / CNPJ na Nota')->attrs(['class' => 'form-control cpf_cnpj', 'placeholder' => '000.000.000-00']) !!}
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="card mt-1">
-                    <div class="row m-3">
-                        <div class="col-md-5">
-                            <label>Cliente</label>
-                            <div class="input-group flex-nowrap">
-                                <select id="inp-cliente_id" name="cliente_id">
-                                    @if(isset($item) && $item->cliente)
-                                    <option value="{{ $item->cliente_id }}">{{ $item->cliente->razao_social }}</option>
-                                    @endif
-                                </select>
-                                <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modal_novo_cliente" type="button">
-                                    <i class="ri-add-circle-fill"></i>
-                                </button>
+
+                <!-- DADOS CADASTRAIS COMPLETOS DO CLIENTE -->
+                <div class="card card-secao-fiscal">
+                    <div class="card-header">
+                        <h5><i class="ri-file-user-line text-primary"></i> Dados Cadastrais & Endereço Completo</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Cliente Cadastrado</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="flex-grow-1">
+                                        <select id="inp-cliente_id" name="cliente_id" class="form-select cliente_id">
+                                            @if(isset($item) && $item->cliente)
+                                            <option value="{{ $item->cliente_id }}">{{ $item->cliente->razao_social }}</option>
+                                            @endif
+                                        </select>
+                                    </div>
+                                    @can('clientes_create')
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal_novo_cliente" type="button" style="height: 42px;">
+                                        <i class="ri-add-fill fs-18"></i>
+                                    </button>
+                                    @endcan
+                                </div>
                             </div>
                         </div>
-                        <hr class="mt-3">
-                        <div class="row d-cliente">
-                            <div class="col-md-3">
-                                {!!Form::text('nome', 'Razão Social')->attrs(['class' => ''])
+
+                        <hr class="my-4">
+
+                        <div class="row g-3 d-cliente">
+                            <div class="col-md-4">
+                                {!!Form::text('nome', 'Razão Social')->attrs(['class' => 'form-control'])
                                 ->value(isset($item) && $item->cliente ? $item->cliente->razao_social : '')
                                 !!}
                             </div>
-                            <div class="col-md-3">
-                                {!!Form::text('nome_fantasia', 'Nome Fantasia')->attrs(['class' => ''])
+                            <div class="col-md-4">
+                                {!!Form::text('nome_fantasia', 'Nome Fantasia')->attrs(['class' => 'form-control'])
                                 ->value(isset($item) && $item->cliente ? $item->cliente->nome_fantasia : '')
                                 !!}
                             </div>
-                            <div class="col-md-2">
-                                {!!Form::tel('cpf_cnpj', 'CPF/CNPJ')->attrs(['class' => 'cpf_cnpj'])
+                            <div class="col-md-4">
+                                {!!Form::tel('cpf_cnpj', 'CPF / CNPJ')->attrs(['class' => 'form-control cpf_cnpj'])
                                 ->value(isset($item) && $item->cliente ? $item->cliente->cpf_cnpj : '')
                                 !!}
                             </div>
-                            <div class="col-md-2">
-                                {!!Form::text('ie', 'IE')->attrs(['class' => ''])
+                            <div class="col-md-3">
+                                {!!Form::text('ie', 'Inscrição Estadual')->attrs(['class' => 'form-control'])
                                 ->value(isset($item) && $item->cliente ? $item->cliente->ie : '')
                                 !!}
                             </div>
-                            <div class="col-md-2">
-                                {!!Form::tel('telefone', 'Fone')->attrs(['class' => 'fone'])
+                            <div class="col-md-3">
+                                {!!Form::tel('telefone', 'Telefone / WhatsApp')->attrs(['class' => 'form-control fone'])
                                 ->value(isset($item) && $item->cliente ? $item->cliente->telefone : '')
                                 !!}
                             </div>
-                            <div class="col-md-2 mt-3">
-                                {!!Form::select('contribuinte', 'Contribuinte', [0 => 'Não', 1 => 'Sim'])->attrs(['class' => 'form-select'])
+                            <div class="col-md-3">
+                                {!!Form::select('contribuinte', 'Contribuinte ICMS', [0 => 'Não', 1 => 'Sim'])->attrs(['class' => 'form-select'])
                                 ->value(isset($item) && $item->cliente ? $item->cliente->contribuinte : '')
                                 !!}
                             </div>
-                            <div class="col-md-2 mt-3">
+                            <div class="col-md-3">
                                 {!!Form::select('consumidor_final', 'Consumidor Final', [0 => 'Não', 1 => 'Sim'])->attrs(['class' => 'form-select'])
-                                ->value(isset($item) && $item->cliente ? $item->cliente->consumidor_final : '')
+                                ->value(isset($item) && $item->cliente ? $item->cliente->consumidor_final : 1)
                                 !!}
                             </div>
-                            <div class="col-md-4 mt-3">
-                                {!!Form::text('email', 'E-mail')->attrs(['class' => ''])
+                            <div class="col-md-6">
+                                {!!Form::text('email', 'E-mail do Cliente')->attrs(['class' => 'form-control'])
                                 ->value(isset($item) && $item->cliente ? $item->cliente->email : '')
                                 !!}
                             </div>
-                            <div class="col-md-4 mt-3">
-                                <label for="">Cidade</label>
+                            <div class="col-md-6">
+                                <label class="form-label" for="inp-cidade_cliente">Cidade / UF</label>
                                 <select class="form-control select2 cidade_id" name="cliente_cidade" id="inp-cidade_cliente">
                                     <option value="">Selecione..</option>
                                     @foreach ($cidades as $c)
@@ -120,28 +122,28 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-3 mt-3">
-                                {!!Form::text('cliente_rua', 'Rua')->attrs(['class' => ''])
+                            <div class="col-md-4">
+                                {!!Form::text('cliente_rua', 'Logradouro / Rua')->attrs(['class' => 'form-control'])
                                 ->value(isset($item) && $item->cliente ? $item->cliente->rua : '')
                                 !!}
                             </div>
-                            <div class="col-md-1 mt-3">
-                                {!!Form::text('cliente_numero', 'Número')->attrs(['class' => ''])
+                            <div class="col-md-2">
+                                {!!Form::text('cliente_numero', 'Número')->attrs(['class' => 'form-control'])
                                 ->value(isset($item) && $item->cliente ? $item->cliente->numero : '')
                                 !!}
                             </div>
-                            <div class="col-md-2 mt-3">
-                                {!!Form::text('cep', 'CEP')->attrs(['class' => 'cep'])
+                            <div class="col-md-3">
+                                {!!Form::text('cep', 'CEP')->attrs(['class' => 'form-control cep'])
                                 ->value(isset($item) && $item->cliente ? $item->cliente->cep : '')
                                 !!}
                             </div>
-                            <div class="col-md-2 mt-3">
-                                {!!Form::text('cliente_bairro', 'Bairro')->attrs(['class' => ''])
+                            <div class="col-md-3">
+                                {!!Form::text('cliente_bairro', 'Bairro')->attrs(['class' => 'form-control'])
                                 ->value(isset($item) && $item->cliente ? $item->cliente->bairro : '')
                                 !!}
                             </div>
-                            <div class="col-md-4 mt-3">
-                                {!!Form::text('complemento', 'Complemento')->attrs(['class' => ''])
+                            <div class="col-md-12">
+                                {!!Form::text('complemento', 'Complemento')->attrs(['class' => 'form-control'])
                                 ->value(isset($item) && $item->cliente ? $item->cliente->complemento : '')
                                 !!}
                             </div>
@@ -149,14 +151,22 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ══════════════ ABA 2: PRODUTOS ══════════════ -->
             <div class="tab-pane fade" id="produtos" role="tabpanel">
-                <div class="card">
-                    <div class="row m-3">
+                <div class="card card-secao-fiscal">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h5><i class="ri-shopping-cart-2-line text-primary"></i> Grade de Produtos da NFCe</h5>
+                        <button type="button" class="dash-btn dash-btn-primary btn-sm btn-add-tr-nfce">
+                            <i class="ri-add-line"></i> Adicionar Produto
+                        </button>
+                    </div>
+                    <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-dynamic table-produtos" style="width: 2800px">
+                            <table class="table table-custom table-dynamic table-produtos" style="width: 2800px">
                                 <thead>
                                     <tr>
-                                        <th>Produto</th>
+                                        <th class="sticky-col first-col">Produto</th>
                                         <th>Quantidade</th>
                                         <th>Valor Unit.</th>
                                         <th>Subtotal</th>
@@ -189,7 +199,6 @@
                                             <span>variação: <strong>{{ $prod->produtoVariacao->descricao }}</strong></span>
                                             @endif
                                             <input name="variacao_id[]" type="hidden" value="{{ $prod->variacao_id }}">
-
                                         </td>
                                         <td width="80">
                                             <input value="{{ __moeda($prod->quantidade) }}" class="form-control qtd" type="tel" name="quantidade[]" id="inp-quantidade">
@@ -259,7 +268,7 @@
                                             </select>
                                         </td>
                                         <td width="30"> 
-                                            <button class="btn btn-danger btn-remove-tr">
+                                            <button class="btn btn-danger btn-sm btn-remove-tr">
                                                 <i class="ri-delete-bin-line"></i>
                                             </button>
                                         </td>
@@ -270,9 +279,7 @@
                                         <td width="250">
                                             <select required class="form-control select2 produto_id" name="produto_id[]" id="inp-produto_id">
                                             </select>
-
                                             <input name="variacao_id[]" type="hidden" value="">
-
                                         </td>
                                         <td width="80">
                                             <input class="form-control qtd" type="tel" name="quantidade[]" id="inp-quantidade">
@@ -342,7 +349,7 @@
                                             </select>
                                         </td>
                                         <td width="30"> 
-                                            <button class="btn btn-danger btn-remove-tr">
+                                            <button class="btn btn-danger btn-sm btn-remove-tr">
                                                 <i class="ri-delete-bin-line"></i>
                                             </button>
                                         </td>
@@ -351,98 +358,109 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="row col-12 col-lg-2 mt-3">
-                            <br>
-                            <button type="button" class="btn btn-dark btn-add-tr-nfce px-2">
-                                <i class="ri-add-fill"></i>
-                                Adicionar Produto
+
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-4 p-3 bg-light rounded-3">
+                            <button type="button" class="btn btn-primary btn-add-tr-nfce">
+                                <i class="ri-add-line"></i> Adicionar Produto
                             </button>
-                        </div>
-                        <div class="mt-3">
-                            <h5>Total de Produtos: <strong class="total_prod">R$ 0,00</strong></h5>
+                            <h5 class="mb-0 fs-16 text-dark">
+                                Total de Produtos: <strong class="total_prod text-primary">R$ 0,00</strong>
+                            </h5>
                         </div>
 
                         <input type="hidden" class="total_prod" name="valor_total" value="">
-
                     </div>
                 </div>
             </div>
-            <div class="tab-pane fade show" id="fatura" role="tabpanel">
-                <div class="card">
-                    <div class="row m-3">
-                        <div class="col-md-3">
-                            {!!Form::select('natureza_id', 'Natureza de Operação', ['' => 'Selecione'] + $naturezas->pluck('descricao', 'id')->all())
-                            ->attrs(['class' => 'form-select'])
-                            ->value(isset($item) ? $item->natureza_id : (isset($naturezaPadrao) && $naturezaPadrao != null ? $naturezaPadrao->id : '') )
-                            ->required()
-                            !!}
-                        </div>
-                        <div class="col-md-2">
-                            {!!Form::tel('acrescimo', 'Acréscimo')
-                            ->attrs(['class' => 'moeda acrescimo'])
-                            ->value(isset($item) ? __moeda($item->acrescimo) : '')
-                            !!}
-                        </div>
-                        <div class="col-md-2">
-                            {!!Form::tel('desconto', 'Desconto')
-                            ->attrs(['class' => 'moeda desconto'])
-                            ->value(isset($item) ? __moeda($item->desconto) : '')
-                            !!}
-                        </div>
-                        <div class="col-md-5">
-                            {!!Form::text('observacao', 'Observação')
-                            ->attrs(['class' => ''])
-                            !!}
-                        </div>
 
-                        <div class="col-md-2 mt-3">
-                            {!!Form::tel('numero_nfce', 'Número NFCe')
-                            ->required()
-                            ->value(isset($item) ? $item->numero : $numeroNfce)
-                            !!}
+            <!-- ══════════════ ABA 3: FATURA & PAGAMENTOS ══════════════ -->
+            <div class="tab-pane fade" id="fatura" role="tabpanel">
+                
+                <!-- PARÂMETROS FISCAIS -->
+                <div class="card card-secao-fiscal mb-4">
+                    <div class="card-header">
+                        <h5><i class="ri-file-settings-line text-primary"></i> Detalhes da Emissão NFCe</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                {!!Form::select('natureza_id', 'Natureza de Operação', ['' => 'Selecione'] + $naturezas->pluck('descricao', 'id')->all())
+                                ->attrs(['class' => 'form-select'])
+                                ->value(isset($item) ? $item->natureza_id : (isset($naturezaPadrao) && $naturezaPadrao != null ? $naturezaPadrao->id : '') )
+                                ->required()
+                                !!}
+                            </div>
+                            <div class="col-md-2">
+                                {!!Form::tel('acrescimo', 'Acréscimo (R$)')
+                                ->attrs(['class' => 'form-control moeda acrescimo'])
+                                ->value(isset($item) ? __moeda($item->acrescimo) : '')
+                                !!}
+                            </div>
+                            <div class="col-md-2">
+                                {!!Form::tel('desconto', 'Desconto (R$)')
+                                ->attrs(['class' => 'form-control moeda desconto'])
+                                ->value(isset($item) ? __moeda($item->desconto) : '')
+                                !!}
+                            </div>
+                            <div class="col-md-4">
+                                {!!Form::text('observacao', 'Observação da NFCe')
+                                ->attrs(['class' => 'form-control'])
+                                !!}
+                            </div>
+                            <div class="col-md-3">
+                                {!!Form::tel('numero_nfce', 'Número NFCe')
+                                ->attrs(['class' => 'form-control'])
+                                ->required()
+                                ->value(isset($item) ? $item->numero : $numeroNfce)
+                                !!}
+                            </div>
+                            <div class="col-md-3">
+                                {!!Form::select('gerar_conta_receber', 'Gerar Conta a Receber', [
+                                0 => 'Não',
+                                1 => 'Sim'])
+                                ->attrs(['class' => 'form-select'])
+                                !!}
+                            </div>
                         </div>
-
-                        <div class="col-md-2 mt-3">
-                            {!!Form::select('gerar_conta_receber', 'Gerar conta a receber', [
-                            0 => 'Não',
-                            1 => 'Sim'])
-                            ->attrs(['class' => 'form-select'])
-                            !!}
-                        </div>
-
                     </div>
                 </div>
-                <div class="card mt-1">
-                    <div class="row m-3">
+
+                <!-- FATURA E FORMAS DE PAGAMENTO -->
+                <div class="card card-secao-fiscal mb-4">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h5><i class="ri-coins-line text-primary"></i> Formas de Pagamento</h5>
+                    </div>
+                    <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-dynamic table-fatura" style="width: 800px">
+                            <table class="table table-custom table-dynamic table-fatura mb-3">
                                 <thead>
                                     <tr>
                                         <th>Tipo de Pagamento</th>
-                                        <th>Data Vencimento</th>
-                                        <th>Valor</th>
+                                        <th>Data de Vencimento</th>
+                                        <th>Valor da Parcela</th>
+                                        <th width="60">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody id="body-pagamento" class="datatable-body">
                                     @if(isset($item) && sizeof($item->fatura) > 0)
                                     @foreach ($item->fatura as $f)
                                     <tr class="dynamic-form">
-                                        <td width="300">
-                                            <select required name="tipo_pagamento[]" class="form-control select2">
+                                        <td>
+                                            <select required name="tipo_pagamento[]" class="form-select select2">
                                                 <option value="">Selecione..</option>
                                                 @foreach(App\Models\Nfce::tiposPagamento() as $key => $c)
                                                 <option @if($f->tipo_pagamento == $key) selected @endif value="{{$key}}">{{$c}}</option>
                                                 @endforeach
                                             </select>
                                         </td>
-                                        <td width="150">
-                                            <input required value="{{ $f->data_vencimento }}" type="date" class="form-control date_atual" name="data_vencimento[]" id="">
+                                        <td>
+                                            <input required value="{{ $f->data_vencimento }}" type="date" class="form-control date_atual" name="data_vencimento[]">
                                         </td>
-                                        <td width="150">
+                                        <td>
                                             <input required value="{{ __moeda($f->valor) }}" type="tel" class="form-control moeda valor_fatura" name="valor_fatura[]" id="valor">
                                         </td>
-                                        <td width="30"> 
-                                            <button class="btn btn-danger btn-remove-tr">
+                                        <td class="text-center"> 
+                                            <button class="btn btn-danger btn-sm btn-remove-tr">
                                                 <i class="ri-delete-bin-line"></i>
                                             </button>
                                         </td>
@@ -450,22 +468,22 @@
                                     @endforeach
                                     @else
                                     <tr class="dynamic-form">
-                                        <td width="300">
-                                            <select required name="tipo_pagamento[]" class="form-control select2">
+                                        <td>
+                                            <select required name="tipo_pagamento[]" class="form-select select2">
                                                 <option value="">Selecione..</option>
                                                 @foreach(App\Models\Nfce::tiposPagamento() as $key => $c)
                                                 <option value="{{$key}}">{{$c}}</option>
                                                 @endforeach
                                             </select>
                                         </td>
-                                        <td width="150">
-                                            <input required type="date" class="form-control date_atual" name="data_vencimento[]" id="">
+                                        <td>
+                                            <input required type="date" class="form-control date_atual" name="data_vencimento[]">
                                         </td>
-                                        <td width="150">
+                                        <td>
                                             <input required type="tel" class="form-control moeda valor_fatura" name="valor_fatura[]" id="valor">
                                         </td>
-                                        <td width="30"> 
-                                            <button class="btn btn-danger btn-remove-tr">
+                                        <td class="text-center"> 
+                                            <button class="btn btn-danger btn-sm btn-remove-tr">
                                                 <i class="ri-delete-bin-line"></i>
                                             </button>
                                         </td>
@@ -474,30 +492,52 @@
                                 </tbody>
                             </table>
                         </div>
+
                         <div class="row">
                             <div class="col-12">
-                                <button type="button" class="btn btn-info btn-add-tr px-5">
-                                    Adicionar Pagamento
+                                <button type="button" class="dash-btn dash-btn-light btn-sm btn-add-tr px-3">
+                                    <i class="ri-add-line"></i> Adicionar Pagamento
                                 </button>
                             </div>
                         </div>
-                        <div class="col-4 mt-4">
-                            <h5>Total da Fatura: <strong class="total_fatura">R$</strong></h5>
+                    </div>
+                </div>
+
+                <!-- CARDS DE TOTAIS -->
+                <div class="row g-3 mb-2">
+                    <div class="col-md-4">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted fs-12 fw-semibold text-uppercase">Total da Fatura</span>
+                            <h4 class="mb-0 mt-1 fw-bold text-dark total_fatura">R$ 0,00</h4>
                         </div>
-                        <div class="col-4 mt-4">
-                            <h5>Total de Produtos: <strong class="total_prod">R$</strong></h5>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted fs-12 fw-semibold text-uppercase">Total de Produtos</span>
+                            <h4 class="mb-0 mt-1 fw-bold text-dark total_prod">R$ 0,00</h4>
                         </div>
-                        <div class="col-4 mt-4">
-                            <h5>Total da NFCe: <strong class="total_nfe text-success">R$ 0,00</strong></h5>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-primary-subtle rounded-3 border border-primary-subtle">
+                            <span class="text-primary fs-12 fw-bold text-uppercase">Total da NFCe</span>
+                            <h4 class="mb-0 mt-1 fw-bold text-primary total_nfe">R$ 0,00</h4>
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
-    <hr class="mt-4">
-    <div class="col-12" style="text-align: right;">
-        <button type="submit" class="btn btn-success btn-salvar-nfe px-5 m-3">Salvar</button>
+
+    <!-- RODAPÉ DE AÇÕES -->
+    <div class="col-12 modulo-actions d-flex align-items-center justify-content-end gap-2 mt-4">
+        <a href="{{ route('nfce.index') }}" class="dash-btn dash-btn-light">
+            <i class="ri-close-line"></i> Cancelar
+        </a>
+        <button type="submit" class="dash-btn dash-btn-primary btn-salvar-nfe px-4" id="btn-store">
+            <i class="ri-save-line"></i> Salvar NFCe
+        </button>
     </div>
 </div>
+
 @include('modals._variacao')

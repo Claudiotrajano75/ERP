@@ -113,7 +113,11 @@ class NFeService{
 		$stdIde->cDV = 0;
 		$stdIde->tpAmb = (int)$emitente->ambiente;
 		$stdIde->finNFe = $item->finNFe;
-		$stdIde->indFinal = $contact->consumidor_final;
+		if ($contact->contribuinte == 0) {
+			$stdIde->indFinal = 1;
+		} else {
+			$stdIde->indFinal = (int)$contact->consumidor_final;
+		}
 		$stdIde->indPres = 1;
 		$stdIde->procEmi = '0';
 		$stdIde->verProc = '2.0';
@@ -255,6 +259,7 @@ class NFeService{
 			$stdProd->qCom = $i->quantidade;
 			$stdProd->vUnCom = $this->format($i->valor_unitario);
 			$stdProd->vProd = $this->format(($i->quantidade * $i->valor_unitario));
+			$somaProdutos += $stdProd->vProd;
 			$stdProd->uTrib = $i->produto->unidade;
 			$stdProd->qTrib = $i->quantidade;
 			$stdProd->vUnTrib = $this->format($i->valor_unitario);
@@ -481,7 +486,7 @@ class NFeService{
 					}
 				}
 
-				$somaProdutos += $stdProd->vProd;
+				// $somaProdutos ja incrementado acima
 
 				$stdICMS = new \stdClass();
 				$stdICMS->item = $itemCont; 
@@ -745,18 +750,18 @@ class NFeService{
 		$stdICMSTot->vICMS = $this->format($somaICMS);
 		$stdICMSTot->vICMSDeson = 0.00;
 		$stdICMSTot->vBCST = 0.00;
-		$stdICMSTot->vST = 0.00;
-		$stdICMSTot->vProd = 0;
-		$stdICMSTot->vFrete = $item->valor_frete;
+		$stdICMSTot->vST = $this->format($somaVICMSST);
+		$stdICMSTot->vProd = $this->format($somaProdutos);
+		$stdICMSTot->vFrete = $this->format($item->valor_frete);
 		$stdICMSTot->vSeg = 0.00;
 		$stdICMSTot->vDesc = $this->format($item->desconto);
 		$stdICMSTot->vII = 0.00;
-		$stdICMSTot->vIPI = 0.00;
+		$stdICMSTot->vIPI = $this->format($somaIpi);
 		$stdICMSTot->vPIS = 0.00;
 		$stdICMSTot->vCOFINS = 0.00;
-		$stdICMSTot->vOutro = 0.00;
+		$stdICMSTot->vOutro = $this->format($item->acrescimo ?? 0);
 
-		$stdICMSTot->vNF = $this->format($item->total + $somaVICMSST + $somaIpi);
+		$stdICMSTot->vNF = $this->format($somaProdutos - $item->desconto + $item->valor_frete + ($item->acrescimo ?? 0) + $somaVICMSST + $somaIpi);
 		$stdICMSTot->vTotTrib = 0.00;
 		$ICMSTot = $nfe->tagICMSTot($stdICMSTot);
 
@@ -828,9 +833,10 @@ class NFeService{
 		//Fatura
 		$stdFat = new \stdClass();
 		$stdFat->nFat = $stdIde->nNF;
-		$stdFat->vOrig = $this->format($item->itens->sum('sub_total') + $item->valor_frete + $item->acrescimo);
+		$vOrigCalculado = $somaProdutos + $item->valor_frete + ($item->acrescimo ?? 0);
+		$stdFat->vOrig = $this->format($vOrigCalculado);
 		$stdFat->vDesc = $this->format($item->desconto);
-		$stdFat->vLiq = $this->format($item->total);
+		$stdFat->vLiq = $this->format($vOrigCalculado - $item->desconto);
 
 		$fatura = $nfe->tagfat($stdFat);
 

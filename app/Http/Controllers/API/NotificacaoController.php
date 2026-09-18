@@ -59,16 +59,21 @@ class NotificacaoController extends Controller
 
         $empresa = Empresa::findOrFail($request->empresa_id);
 
+        // Sincroniza e gera alertas inteligentes em tempo real
+        \App\Services\AlertaService::sincronizarEmpresa($request->empresa_id);
+
         $notificacoesHoje = Notificacao::where('empresa_id', $request->empresa_id)
         ->whereDate('created_at', date('Y-m-d'))
         ->where('status', 1)
         ->where('visualizada', 0)
+        ->orderBy('created_at', 'desc')
         ->get();
 
         $notificacoesOntem = Notificacao::where('empresa_id', $request->empresa_id)
         ->whereDate('created_at', date('Y-m-d', strtotime(date('Y-m-d'). '-1 days')))
         ->where('status', 1)
         ->where('visualizada', 0)
+        ->orderBy('created_at', 'desc')
         ->get();
 
         $notificacoesAtrasadas = Notificacao::where('empresa_id', $request->empresa_id)
@@ -77,7 +82,7 @@ class NotificacaoController extends Controller
         ->where('visualizada', 0)
         ->orderBy('created_at', 'desc')
         ->get();
-        // return response()->json(date('Y-m-d', strtotime(date('Y-m-d'). '-1 days')), 200);
+
         return view('notificacao.alertas', compact('notificacoesHoje', 'notificacoesOntem', 'notificacoesAtrasadas'));
 
     }

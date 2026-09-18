@@ -85,7 +85,7 @@
             </a>
             @endif
             @if($config->endereco)
-            <span class="d-flex align-items-center gap-1" style="color:var(--luxe-tan)0.55)">
+            <span class="d-flex align-items-center gap-1" style="color:color-mix(in srgb, var(--luxe-tan) 55%, transparent)">
                 <i class="ri-map-pin-line"></i> {{ $config->endereco }}
             </span>
             @endif
@@ -208,7 +208,7 @@
                                 </div>
                                 <div class="flex-grow-1" style="min-width:0">
                                     <div class="text-truncate" style="font-size:12px;font-weight:500;color:var(--luxe-brown)">{{ $ci->produto->nome }}</div>
-                                    <div style="font-size:11px;color:var(--luxe-tan)0.5)">{{ number_format($ci->quantidade, 0) }}x R${{ __moeda($ci->valor_unitario) }}</div>
+                                    <div style="font-size:11px;color:color-mix(in srgb, var(--luxe-tan) 50%, transparent)">{{ number_format($ci->quantidade, 0) }}x R${{ __moeda($ci->valor_unitario) }}</div>
                                 </div>
                                 <span class="text-gold fw-bold" style="font-size:13px;flex-shrink:0">R${{ __moeda($ci->sub_total) }}</span>
                             </div>
@@ -225,7 +225,7 @@
                             </div>
                         </div>
                         @else
-                        <div class="text-center py-5" style="color:var(--luxe-tan)0.45)">
+                        <div class="text-center py-5" style="color:color-mix(in srgb, var(--luxe-tan) 45%, transparent)">
                             <i class="ri-shopping-bag-3-line" style="font-size:36px;display:block;margin-bottom:10px;color:var(--luxe-gold);opacity:0.5"></i>
                             <span style="font-size:13px">Seu carrinho está vazio.</span>
                         </div>
@@ -512,7 +512,7 @@
                             </a>`;
                         });
                     } else {
-                        html = '<div style="padding:14px;text-align:center;font-size:13px;color:var(--luxe-tan)0.5)">Nenhum produto encontrado.</div>';
+                        html = '<div style="padding:14px;text-align:center;font-size:13px;color:color-mix(in srgb, var(--luxe-tan) 50%, transparent)">Nenhum produto encontrado.</div>';
                     }
                     $("#autocomplete-box").html(html).addClass("active");
                 });

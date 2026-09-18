@@ -10,6 +10,7 @@ use App\Models\Empresa;
 use App\Models\Mdfe;
 use App\Models\PlanoEmpresa;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
@@ -53,66 +54,86 @@ class HomeController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        $totalNfe = Nfe::where('empresa_id', request()->empresa_id)
-        ->where(function($q) {
-            $q->where('estado', 'aprovado')->orWhere('estado', 'cancelado');
-        })
-        ->where('tpNF', 1)
-        ->whereMonth('created_at', date('m'))
-        ->sum('total');
+        $empresa_id = request()->empresa_id;
+        $cacheKey = "dashboard_metrics_{$empresa_id}_" . date('Y_m');
 
-        $totalNfce = Nfce::where('empresa_id', request()->empresa_id)
-        ->where(function($q) {
-            $q->where('estado', 'aprovado')->orWhere('estado', 'cancelado');
-        })
-        ->whereMonth('created_at', date('m'))
-        ->sum('total');
+        $metrics = Cache::remember($cacheKey, 300, function() use ($empresa_id) {
+            $totalNfe = Nfe::where('empresa_id', $empresa_id)
+                ->where(function($q) {
+                    $q->where('estado', 'aprovado')->orWhere('estado', 'cancelado');
+                })
+                ->where('tpNF', 1)
+                ->whereMonth('created_at', date('m'))
+                ->sum('total');
 
-        $totalEmitidoMes = $totalNfce + $totalNfe;
+            $totalNfce = Nfce::where('empresa_id', $empresa_id)
+                ->where(function($q) {
+                    $q->where('estado', 'aprovado')->orWhere('estado', 'cancelado');
+                })
+                ->whereMonth('created_at', date('m'))
+                ->sum('total');
 
-        $totalNfeCount = Nfe::where('empresa_id', request()->empresa_id)
-        ->where(function($q) {
-            $q->where('estado', 'aprovado')->orWhere('estado', 'cancelado');
-        })
-        ->where('tpNF', 1)
-        ->whereMonth('created_at', date('m'))
-        ->count('id');
+            $totalNfeCount = Nfe::where('empresa_id', $empresa_id)
+                ->where(function($q) {
+                    $q->where('estado', 'aprovado')->orWhere('estado', 'cancelado');
+                })
+                ->where('tpNF', 1)
+                ->whereMonth('created_at', date('m'))
+                ->count('id');
 
-        $totalNfceCount = Nfce::where('empresa_id', request()->empresa_id)
-        ->where(function($q) {
-            $q->where('estado', 'aprovado')->orWhere('estado', 'cancelado');
-        })
-        ->whereMonth('created_at', date('m'))
-        ->count('id');
+            $totalNfceCount = Nfce::where('empresa_id', $empresa_id)
+                ->where(function($q) {
+                    $q->where('estado', 'aprovado')->orWhere('estado', 'cancelado');
+                })
+                ->whereMonth('created_at', date('m'))
+                ->count('id');
 
-        $totalCteCount = Cte::where('empresa_id', request()->empresa_id)
-        ->where(function($q) {
-            $q->where('estado', 'aprovado')->orWhere('estado', 'cancelado');
-        })
-        ->whereMonth('created_at', date('m'))
-        ->count('id');
+            $totalCteCount = Cte::where('empresa_id', $empresa_id)
+                ->where(function($q) {
+                    $q->where('estado', 'aprovado')->orWhere('estado', 'cancelado');
+                })
+                ->whereMonth('created_at', date('m'))
+                ->count('id');
 
-        $totalMdfeCount = Mdfe::where('empresa_id', request()->empresa_id)
-        ->where(function($q) {
-            $q->where('estado_emissao', 'aprovado')->orWhere('estado_emissao', 'cancelado');
-        })
-        ->whereMonth('created_at', date('m'))
-        ->count('id');
+            $totalMdfeCount = Mdfe::where('empresa_id', $empresa_id)
+                ->where(function($q) {
+                    $q->where('estado_emissao', 'aprovado')->orWhere('estado_emissao', 'cancelado');
+                })
+                ->whereMonth('created_at', date('m'))
+                ->count('id');
 
+            return [
+                'totalEmitidoMes' => $totalNfce + $totalNfe,
+                'totalNfeCount' => $totalNfeCount,
+                'totalNfceCount' => $totalNfceCount,
+                'totalCteCount' => $totalCteCount,
+                'totalMdfeCount' => $totalMdfeCount,
+                'somaVendasMesesAnteriores' => $this->somaVendasMesesAnteriores(),
+                'totalVendasMes' => $this->somaVendasMes(),
+                'totalComprasMes' => $this->somaComprasMes(),
+                'somaComprasMesesAnteriores' => $this->somaComprasMesesAnteriores(),
+            ];
+        });
+
+        $totalEmitidoMes = $metrics['totalEmitidoMes'];
+        $totalNfeCount = $metrics['totalNfeCount'];
+        $totalNfceCount = $metrics['totalNfceCount'];
+        $totalCteCount = $metrics['totalCteCount'];
+        $totalMdfeCount = $metrics['totalMdfeCount'];
+        
         $empresa = Empresa::find(request()->empresa_id);
         if($empresa == null){
             return redirect()->route('config.index');
         }
 
-        $totalVendasMes = 0;
         $mesAtual = date('m');
         $mes = $this->meses()[$mesAtual-1];
 
-        $somaVendasMesesAnteriores = $this->somaVendasMesesAnteriores();
-        $totalVendasMes = $this->somaVendasMes();
-
-        $totalComprasMes = $this->somaComprasMes();
-        $somaComprasMesesAnteriores = $this->somaComprasMesesAnteriores();
+        $totalVendasMes = $metrics['totalVendasMes'];
+        $somaVendasMesesAnteriores = $metrics['somaVendasMesesAnteriores'];
+        
+        $totalComprasMes = $metrics['totalComprasMes'];
+        $somaComprasMesesAnteriores = $metrics['somaComprasMesesAnteriores'];
 
         return view('home', 
             compact('empresa', 'totalEmitidoMes', 'totalNfeCount', 'totalNfceCount', 'msgPlano', 'totalCteCount', 

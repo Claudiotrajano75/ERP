@@ -19,7 +19,9 @@ class HomeController extends Controller
 {
 
     public function __construct(){
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
     }
 
     private function _validaHash($config){

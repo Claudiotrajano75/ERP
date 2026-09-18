@@ -17,7 +17,10 @@ class Mdfe extends Model
 		'chave', 'protocolo', 'empresa_id', 'produto_pred_nome', 'produto_pred_ncm',
 		'produto_pred_cod_barras', 'cep_carrega', 'cep_descarrega', 'tp_carga',
 		'latitude_carregamento', 'longitude_carregamento', 'latitude_descarregamento',
-		'longitude_descarregamento', 'local_id', 'tipo_modal'
+		'longitude_descarregamento', 'local_id', 'tipo_modal',
+		'unidade_medida', 'responsavel_seguro', 'cnpj_responsavel_seguro',
+		'infpag_nome_contratante', 'infpag_cnpj_contratante', 'infpag_valor_contrato',
+		'infpag_ind_pag'
 	];
 
 	

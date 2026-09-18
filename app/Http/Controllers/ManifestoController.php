@@ -44,7 +44,14 @@ class ManifestoController extends Controller
         ->orderBy('data_emissao', 'desc')
         ->paginate(getenv("PAGINACAO"));
 
-        return view('manifesto.index', compact('data'));
+        $stats = [
+            'total' => ManifestoDfe::where('empresa_id', $request->empresa_id)->count(),
+            'total_confirmadas' => ManifestoDfe::where('empresa_id', $request->empresa_id)->where('tipo', 2)->count(),
+            'total_ciencia' => ManifestoDfe::where('empresa_id', $request->empresa_id)->where('tipo', 1)->count(),
+            'valor_total' => ManifestoDfe::where('empresa_id', $request->empresa_id)->sum('valor'),
+        ];
+
+        return view('manifesto.index', compact('data', 'stats'));
     }
 
     public function novaConsulta()

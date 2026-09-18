@@ -22,7 +22,16 @@ class FuncionarioEventoController extends Controller
         })
         ->groupBy('funcionarios.id')
         ->paginate(env("PAGINACAO"));
-        return view('funcionario_evento.index', compact('data'));
+
+        $stats = [
+            'total_funcionarios' => Funcionario::where('empresa_id', request()->empresa_id)->has('eventos')->count(),
+            'total_eventos' => FuncionarioEvento::whereHas('funcionario', function ($q) {
+                $q->where('empresa_id', request()->empresa_id);
+            })->count(),
+            'eventos_cadastrados' => EventoSalario::where('empresa_id', request()->empresa_id)->count(),
+        ];
+
+        return view('funcionario_evento.index', compact('data', 'stats'));
     }
 
     public function create()

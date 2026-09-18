@@ -32,7 +32,9 @@ class PagamentoController extends Controller
     protected $util;
 
     public function __construct(WhatsAppUtil $util){
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         $this->util = $util;
     }
 

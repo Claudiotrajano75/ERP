@@ -16,11 +16,19 @@ class PlanoContaController extends Controller
     }
 
     public function index(Request $request){
-        $data = PlanoConta::where('empresa_id', $request->empresa_id)
+        $baseQuery = PlanoConta::where('empresa_id', $request->empresa_id);
+
+        $stats = [
+            'total'     => (clone $baseQuery)->count(),
+            'nivel_1'   => (clone $baseQuery)->whereNull('plano_conta_id')->count(),
+            'subcontas' => (clone $baseQuery)->whereNotNull('plano_conta_id')->count(),
+        ];
+
+        $data = (clone $baseQuery)
         ->orderBy('descricao')
         ->get();
 
-        return view('plano_contas.index', compact('data'))
+        return view('plano_contas.index', compact('data', 'stats'))
         ->with('title', 'Plano de Contas');
     }
 

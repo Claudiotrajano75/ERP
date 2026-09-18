@@ -13,20 +13,32 @@ class FuncionamentoController extends Controller
     public function index(Request $request)
     {
         $funcionario_id = $request->funcionario_id;
-        $data = Funcionamento::select('funcionamentos.*')
+        $base = Funcionamento::select('funcionamentos.*')
         ->where('funcionarios.empresa_id', $request->empresa_id)
-        ->join('funcionarios', 'funcionarios.id', '=', 'funcionamentos.funcionario_id')
+        ->join('funcionarios', 'funcionarios.id', '=', 'funcionamentos.funcionario_id');
+
+        $data = (clone $base)
         ->when($funcionario_id, function ($q) use ($funcionario_id) {
             return $q->where('funcionarios.id', $funcionario_id);
         })
         ->paginate(env("PAGINACAO"));
 
+        $funcionarios = Funcionario::where('empresa_id', request()->empresa_id)
+        ->orderBy('nome', 'asc')
+        ->get();
+
         $funcionario = null;
         if($funcionario_id){
-            $funcionario = Funcionario::findOrFail($funcionario_id);
+            $funcionario = Funcionario::find($funcionario_id);
         }
 
-        return view('funcionamento.index', compact('data', 'funcionario'));
+        $stats = [
+            'total'                      => (clone $base)->count(),
+            'profissionais_configurados' => (clone $base)->distinct('funcionamentos.funcionario_id')->count('funcionamentos.funcionario_id'),
+            'total_profissionais'        => $funcionarios->count(),
+        ];
+
+        return view('funcionamento.index', compact('data', 'funcionario', 'funcionarios', 'stats'));
     }
 
     public function create()

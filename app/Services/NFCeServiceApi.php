@@ -364,25 +364,25 @@ class NFCeServiceApi{
 		$contFatura = 1;
 		
 
+		$totalNota = (float) $stdFat->vLiq;
+		$vPag = (float) ($documento->dinheiro_recebido > 0 && $documento->dinheiro_recebido >= $totalNota ? $documento->dinheiro_recebido : $totalNota);
+
 		$stdPag = new \stdClass();
-		if ($documento->dinheiro_recebido > 0) {
-			$vPag = $documento->dinheiro_recebido;
-			$stdPag->vTroco = $vPag - $stdFat->vLiq;
+		if ($vPag > $totalNota) {
+			$stdPag->vTroco = $this->format($vPag - $totalNota);
 		}
 		$pag = $nfe->tagpag($stdPag);
 
-
-
 		$stdDetPag = new \stdClass();
-		$stdDetPag->tPag = $pagamento['tipo'];
-	
-		if ($documento->dinheiro_recebido > 0) {
-			$stdDetPag->vPag = $this->format($documento->dinheiro_recebido);
-		}else{
-			$stdDetPag->vPag = $this->format($somaProdutos);
-		}
-
-		$stdDetPag->indPag = $pagamento['indicacao_pagamento'];
+		$tPag = $pagamento['tipo'] ?? '01';
+		if ($tPag == '30') $tPag = '03';
+		elseif ($tPag == '31') $tPag = '04';
+		elseif ($tPag == '32') $tPag = '17';
+		elseif ($tPag == '06') $tPag = '05';
+		
+		$stdDetPag->tPag = $tPag;
+		$stdDetPag->vPag = $this->format($vPag);
+		$stdDetPag->indPag = $pagamento['indicacao_pagamento'] ?? 1;
 		$detPag = $nfe->tagdetPag($stdDetPag);
 
 		$stdInfoAdic = new \stdClass();

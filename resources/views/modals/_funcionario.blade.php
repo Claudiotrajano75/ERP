@@ -1,6 +1,5 @@
-{{-- Classe modal-funcioario preservada: o JS (frente_caixa.js) usa o seletor $(".modal-funcioario select") para inicializar o Select2 com busca AJAX --}}
 <div class="modal fade modal-pdv modal-pdv-modern modal-funcioario" id="funcionario" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="funcionarioLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-md modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header modulo-header-gradient">
                 <div>
@@ -11,7 +10,7 @@
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="min-height: 280px; padding: 24px;">
                 <div class="row g-2">
                     <div class="col-12">
                         <label class="form-label"><i class="ri-user-star-line me-1"></i>Vendedor</label>

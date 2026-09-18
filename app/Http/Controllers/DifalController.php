@@ -14,7 +14,14 @@ class DifalController extends Controller
             return $q->where('cfop', 'LIKE', "%$request->cfop%");
         })
         ->paginate(env("PAGINACAO"));
-        return view('difal.index', compact('data'));
+
+        $stats = [
+            'total' => Difal::where('empresa_id', request()->empresa_id)->count(),
+            'total_ufs' => Difal::where('empresa_id', request()->empresa_id)->distinct('uf')->count('uf'),
+            'total_cfops' => Difal::where('empresa_id', request()->empresa_id)->distinct('cfop')->count('cfop'),
+        ];
+
+        return view('difal.index', compact('data', 'stats'));
     }
 
     public function create()

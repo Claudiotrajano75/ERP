@@ -98,19 +98,19 @@
                                 <div class="upload-logo-container">
                                     <div class="mb-3">
                                         @isset($item)
-                                            <img id="file-ip-1-preview" src="{{ $item->img }}" class="img-fluid rounded" style="max-height: 100px; object-fit: contain;">
+                                            <img id="file-ip-1-preview" src="{{ $item->img }}" class="img-fluid rounded" style="max-height: 110px; object-fit: contain;">
                                             @if($item->logo)
                                                 <div class="mt-2">
-                                                    <a href="{{ route('config.delete-logo') }}" class="btn btn-outline-danger btn-sm py-0 px-2 fs-11">
+                                                    <a href="{{ route('config.delete-logo') }}" class="dash-btn dash-btn-danger btn-sm py-1 px-2 fs-11">
                                                         <i class="ri-delete-bin-line"></i> Remover Logotipo
                                                     </a>
                                                 </div>
                                             @endif
                                         @else
-                                            <img id="file-ip-1-preview" src="/imgs/no-image.png" class="img-fluid rounded opacity-50" style="max-height: 100px;">
+                                            <img id="file-ip-1-preview" src="/imgs/no-image.png" class="img-fluid rounded opacity-50" style="max-height: 110px;">
                                         @endif
                                     </div>
-                                    <label for="file-ip-1" class="btn btn-outline-primary btn-sm w-100">
+                                    <label for="file-ip-1" class="dash-btn dash-btn-primary w-100" style="cursor: pointer;">
                                         <i class="ri-upload-cloud-line me-1"></i> Selecionar Imagem
                                     </label>
                                     <input type="file" id="file-ip-1" name="image" accept="image/*" onchange="showPreview(event);" style="display: none;">
@@ -118,10 +118,15 @@
                             </div>
                             <div class="col-md-8">
                                 <div class="ps-md-2 mt-3 mt-md-0">
-                                    <h6 class="fw-bold text-dark fs-13 mb-1">Informações sobre o Logotipo:</h6>
-                                    <p class="text-muted fs-12 mb-0">
-                                        O logotipo será exibido na barra superior do sistema, no DANFE da NFe/NFCe e nos comprovantes de venda. Recomenda-se formato .PNG com fundo transparente.
+                                    <h6 class="fw-bold text-dark fs-14 mb-2">Informações sobre o Logotipo:</h6>
+                                    <p class="text-muted fs-13 mb-2">
+                                        O logotipo será exibido na barra superior do sistema, no DANFE da NFe/NFCe e nos comprovantes de venda.
                                     </p>
+                                    <ul class="text-muted fs-12 mb-0 ps-3">
+                                        <li>Formato recomendado: <strong>PNG ou WEBP</strong> com fundo transparente.</li>
+                                        <li>Dimensões ideais: <strong>400x120 pixels</strong> ou proporção retangular 3:1.</li>
+                                        <li>Tamanho máximo do arquivo: <strong>2 MB</strong>.</li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
@@ -184,7 +189,7 @@
                 </div>
             </div>
 
-            <!-- ══════════════ ABA 3: EMISSÃO FISCAL (PAINÉIS EMPILHADOS) ══════════════ -->
+            <!-- ══════════════ ABA 3: EMISSÃO FISCAL ══════════════ -->
             <div class="tab-pane fade" id="pills-emissao" role="tabpanel">
 
                 <!-- 1. PAINEL: CONFIGURAÇÕES GERAIS DE EMISSÃO -->
@@ -214,7 +219,7 @@
                                 <label class="form-label">Token API de Integração</label>
                                 <div class="input-group">
                                     <input readonly type="text" class="form-control" id="api_token" name="token" value="{{ isset($item) ? $item->token : '' }}">
-                                    <button type="button" class="btn btn-primary" id="btn_token" title="Gerar Token"><i class="ri-refresh-line"></i></button>
+                                    <button type="button" class="dash-btn dash-btn-primary" id="btn_token" title="Gerar Token"><i class="ri-refresh-line"></i></button>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -414,7 +419,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Arquivo do Certificado (.pfx / .p12)</label>
                                 <div class="input-group">
-                                    <label for="inp-cert" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-2">
+                                    <label for="inp-cert" class="dash-btn dash-btn-light w-100 d-flex align-items-center justify-content-center gap-2" style="cursor: pointer; height: 42px;">
                                         <i class="ri-file-shield-line"></i>
                                         <span id="cert-filename">Selecionar Arquivo .PFX ou .P12</span>
                                     </label>
@@ -434,11 +439,11 @@
         </div>
 
         <!-- ═══ BOTÃO SALVAR (PADRÃO SKILL ERP) ═══ -->
-        <div class="d-flex justify-content-end gap-2 pt-3 mt-3 border-top">
-            <a href="{{ route('home') }}" class="btn btn-outline-secondary">
+        <div class="d-flex align-items-center justify-content-end gap-2 pt-3 mt-3 border-top">
+            <a href="{{ route('home') }}" class="dash-btn dash-btn-light">
                 <i class="ri-close-line me-1"></i> Cancelar
             </a>
-            <button type="submit" class="btn btn-primary px-4" id="btn-store">
+            <button type="submit" class="dash-btn dash-btn-primary px-4" id="btn-store">
                 <i class="ri-save-line me-1"></i> Salvar Alterações
             </button>
         </div>

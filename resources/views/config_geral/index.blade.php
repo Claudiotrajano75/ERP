@@ -2,228 +2,445 @@
 
 @section('css')
 <style>
-    .modulo-header-gradient { background: linear-gradient(135deg, #0d2b40 0%, #1a4a6e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-    .modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-    .modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.15); padding: 8px; border-radius: 10px; color: #fff; }
-    .modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.85) !important; font-weight: 400; }
+/* ─── Navegação por Abas (Tabs) ─── */
+.nav-tabs-custom {
+    background: #f8fafc;
+    padding: 6px;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
 
-    .modulo-form-card { border: 1px solid #eef0f5; border-radius: 12px; overflow: hidden; background: #fff; }
+.nav-tabs-custom .nav-link {
+    flex: 1;
+    min-width: 160px;
+    border-radius: 10px !important;
+    padding: 12px 18px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #64748b;
+    border: none !important;
+    background: transparent;
+    text-align: center;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
 
-    .modulo-section-card {
-        background: #fdfdfd;
-        border: 1px solid #e9ecef;
-        border-radius: 10px;
-        margin-bottom: 20px;
-    }
-    .modulo-section-card .card-header {
-        background: #f8f9fa;
-        border-bottom: 1px solid #e9ecef;
-        border-radius: 10px 10px 0 0;
-        padding: 12px 20px;
-    }
-    .modulo-section-card .card-header h4 {
-        margin: 0;
-        font-size: 15px;
-        font-weight: 600;
-        color: #343a40;
-        display: flex;
-        align-items: center;
-    }
+.nav-tabs-custom .nav-link:hover {
+    color: #334155;
+    background: rgba(255, 255, 255, 0.7);
+}
 
-    .check-module-label {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 10px;
-        border-radius: 8px;
-        border: 1px solid #e9ecef;
-        background: #fff;
-        cursor: pointer;
-        margin-bottom: 8px;
-        transition: all .2s;
-    }
-    .check-module-label:hover { border-color: #0d2b40; background: #f0f4f8; }
-    .check-module-label input[type=checkbox] { width: 18px; height: 18px; flex-shrink: 0; cursor: pointer; }
+.nav-tabs-custom .nav-link.active {
+    background: #ffffff !important;
+    color: #4f46e5 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Painéis de Seção Interna ─── */
+.card-secao-fiscal {
+    border: 1px solid #eef2f6 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02) !important;
+    margin-bottom: 24px !important;
+    background: #ffffff;
+    overflow: hidden;
+}
+.card-secao-fiscal .card-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #edf2f7;
+    padding: 14px 20px;
+}
+.card-secao-fiscal .card-header h5 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.card-secao-fiscal .card-body { padding: 24px !important; }
+
+/* ─── Checkboxes Estilizados ─── */
+.check-module-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    cursor: pointer;
+    margin-bottom: 0;
+    transition: all .2s ease;
+    font-size: 13px;
+    color: #334155;
+}
+.check-module-label:hover {
+    border-color: #4f46e5;
+    background: #f5f7ff;
+    color: #4f46e5;
+}
+.check-module-label input[type=checkbox] {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    cursor: pointer;
+    accent-color: #4f46e5;
+}
 </style>
 @endsection
 
 @section('content')
-<div class="mt-3">
-    <div class="card modulo-form-card shadow-sm">
-        <div class="card-header modulo-header-gradient py-3 px-4">
-            <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
-                <i class="ri-settings-3-fill"></i>
-                Configurações Gerais
-            </h4>
-            <p class="mb-0 modulo-subtitle fs-13">
-                Defina os parâmetros globais do sistema para PDV, vendas e produtos.
-            </p>
-        </div>
-        <div class="card-body p-4">
-            {!!Form::open()->fill($item)
-            ->post()
-            ->route('config-geral.store')
-            ->multipart()
-            !!}
+<div class="mt-3 text-dark">
+    <div class="row justify-content-center">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm text-dark modulo-form-card">
 
-            {{-- ─── PDV ─── --}}
-            <div class="modulo-section-card">
-                <div class="card-header">
-                    <h4><i class="ri-store-2-line me-2"></i>PDV — Ponto de Venda</h4>
+                {{-- ═══ CABEÇALHO ═══ --}}
+                <div class="card-header modulo-header-gradient py-3 px-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div>
+                            <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
+                                <i class="ri-settings-3-fill"></i>
+                                Configurações Gerais do Sistema
+                            </h4>
+                            <p class="text-muted mb-0 modulo-subtitle fs-13">
+                                Defina os parâmetros globais de funcionamento para PDV, impressoras térmicas, regras de venda e alertas.
+                            </p>
+                        </div>
+                        <div>
+                            <a href="{{ route('home') }}" class="dash-btn dash-btn-light">
+                                <i class="ri-arrow-left-line"></i> Início
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="row g-2">
-                        <div class="col-md-3 mb-2">
-                            {!!Form::text('balanca_digito_verificador', 'Referência produto balança (dígitos)')
-                            ->value(isset($item) ? $item->balanca_digito_verificador : '')
-                            !!}
-                        </div>
-                        <div class="col-md-2 mb-2">
-                            {!!Form::select('balanca_valor_peso', 'Tipo unidade balança', ['valor' => 'Valor', 'peso' => 'Peso'])
-                            ->attrs(['class' => 'form-select'])
-                            !!}
-                        </div>
-                        <div class="col-md-2 mb-2">
-                            {!!Form::select('abrir_modal_cartao', 'Modal dados do cartão', ['1' => 'Sim', '0' => 'Não'])
-                            ->attrs(['class' => 'form-select'])
-                            !!}
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            {!!Form::text('senha_manipula_valor', 'Senha desconto/acréscimo')
-                            ->attrs(['class' => 'form-control'])
-                            !!}
-                        </div>
-                        <div class="col-md-2 mb-2">
-                            {!!Form::select('agrupar_itens', 'Agrupar itens', ['0' => 'Não', '1' => 'Sim'])
-                            ->attrs(['class' => 'form-select'])
-                            !!}
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            {!!Form::select('tipo_comissao', 'Tipo de comissão', ['percentual_vendedor' => '% Vendedor', 'percentual_margem' => '% Margem'])
-                            ->attrs(['class' => 'form-select tooltipp'])
-                            !!}
-                            <div class="text-tooltip d-none">Marcar como sim se for usar esta categoria no cardápio</div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            {!!Form::select('modelo', 'Modelo', ['light' => 'Light', 'compact' => 'Compact'])
-                            ->attrs(['class' => 'form-select'])
-                            !!}
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            {!!Form::select('alerta_sonoro', 'Alerta sonoro', ['1' => 'Sim', '0' => 'Não'])
-                            ->attrs(['class' => 'form-select'])
-                            !!}
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            {!!Form::select('cabecalho_pdv', 'Cabeçalho no PDV', ['1' => 'Sim', '0' => 'Não'])
-                            ->attrs(['class' => 'form-select'])
-                            !!}
+
+                <div class="card-body p-4">
+                    {!!Form::open()->fill($item)
+                    ->post()
+                    ->route('config-geral.store')
+                    ->multipart()
+                    !!}
+
+                    <!-- ═══ NAVEGAÇÃO POR ABAS ═══ -->
+                    <ul class="nav nav-pills nav-tabs-custom mb-4" id="config-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active" data-bs-toggle="pill" href="#tab-pdv" role="tab">
+                                <i class="ri-store-2-line"></i>
+                                <span>PDV & Caixa</span>
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" data-bs-toggle="pill" href="#tab-impressora" role="tab">
+                                <i class="ri-printer-line"></i>
+                                <span>Impressora Térmica</span>
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" data-bs-toggle="pill" href="#tab-vendas" role="tab">
+                                <i class="ri-shopping-bag-3-line"></i>
+                                <span>Vendas, Produtos & Estoque</span>
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" data-bs-toggle="pill" href="#tab-alertas" role="tab">
+                                <i class="ri-notification-3-line"></i>
+                                <span>Alertas & Notificações</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- ═══ CONTEÚDO DAS ABAS ═══ -->
+                    <div class="tab-content" id="config-tabContent">
+
+                        <!-- ══════════════ ABA 1: PDV & CAIXA ══════════════ -->
+                        <div class="tab-pane fade show active" id="tab-pdv" role="tabpanel">
+                            
+                            {{-- Parâmetros do PDV --}}
+                            <div class="card card-secao-fiscal">
+                                <div class="card-header">
+                                    <h5><i class="ri-store-2-line text-primary"></i> Parâmetros Operacionais do PDV</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-3 col-6">
+                                            {!!Form::text('balanca_digito_verificador', 'Dígitos ref. balança')
+                                            ->attrs(['class' => 'form-control', 'placeholder' => 'Ex: 2 ou 7'])
+                                            ->value(isset($item) ? $item->balanca_digito_verificador : '')
+                                            !!}
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            {!!Form::select('balanca_valor_peso', 'Tipo leitura balança', ['valor' => 'Valor Total', 'peso' => 'Peso (KG)'])
+                                            ->attrs(['class' => 'form-select'])
+                                            !!}
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            {!!Form::select('abrir_modal_cartao', 'Modal de dados do cartão', ['1' => 'Sim (Exibir)', '0' => 'Não (Ocultar)'])
+                                            ->attrs(['class' => 'form-select'])
+                                            !!}
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            {!!Form::text('senha_manipula_valor', 'Senha desconto / acréscimo')
+                                            ->attrs(['class' => 'form-control', 'placeholder' => 'Opcional'])
+                                            !!}
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            {!!Form::select('agrupar_itens', 'Agrupar itens repetidos no cupom', ['0' => 'Não', '1' => 'Sim'])
+                                            ->attrs(['class' => 'form-select'])
+                                            !!}
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            {!!Form::select('tipo_comissao', 'Cálculo de comissão', ['percentual_vendedor' => '% Sobre Valor de Venda', 'percentual_margem' => '% Sobre Margem de Lucro'])
+                                            ->attrs(['class' => 'form-select'])
+                                            !!}
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            {!!Form::select('modelo', 'Layout do PDV', ['light' => 'Light (Claro)', 'compact' => 'Compact (Compacto)'])
+                                            ->attrs(['class' => 'form-select'])
+                                            !!}
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            {!!Form::select('alerta_sonoro', 'Efeitos sonoros no leitor', ['1' => 'Sim (Ativo)', '0' => 'Não (Desativado)'])
+                                            ->attrs(['class' => 'form-select'])
+                                            !!}
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            {!!Form::select('cabecalho_pdv', 'Exibir cabeçalho no PDV', ['1' => 'Sim', '0' => 'Não'])
+                                            ->attrs(['class' => 'form-select'])
+                                            !!}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Formas de Pagamento no PDV --}}
+                            <div class="card card-secao-fiscal">
+                                <div class="card-header">
+                                    <h5><i class="ri-bank-card-line text-primary"></i> Formas de Pagamento Habilitadas no PDV</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted fs-13 mb-3">
+                                        Marque as formas de pagamento que devem aparecer disponíveis na tela de finalização de venda do PDV:
+                                    </p>
+                                    <div class="row g-2">
+                                        @foreach(\App\Models\Nfce::tiposPagamento() as $key => $t)
+                                        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                                            <label class="check-module-label">
+                                                <input name="tipos_pagamento_pdv[]" value="{{$t}}" type="checkbox" class="form-check-input check-module"
+                                                    @isset($item) @if(sizeof($item->tipos_pagamento_pdv) > 0 && in_array($t, $item->tipos_pagamento_pdv)) checked="true" @endif @endif>
+                                                <span class="fw-semibold">{{$t}}</span>
+                                            </label>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
 
-                        <div class="col-12 mt-2">
-                            <label class="fw-semibold mb-2 d-block" style="font-size:13px;">Tipos de Pagamento Habilitados</label>
-                            <div class="row g-1">
-                                @foreach(\App\Models\Nfce::tiposPagamento() as $key => $t)
-                                <div class="col-lg-3 col-6">
-                                    <label class="check-module-label">
-                                        <input name="tipos_pagamento_pdv[]" value="{{$t}}" type="checkbox" class="form-check-input check-module"
-                                            @isset($item) @if(sizeof($item->tipos_pagamento_pdv) > 0 && in_array($t, $item->tipos_pagamento_pdv)) checked="true" @endif @endif>
-                                        <span style="font-size:13px;">{{$t}}</span>
-                                    </label>
+                        <!-- ══════════════ ABA 2: IMPRESSORA TÉRMICA ══════════════ -->
+                        <div class="tab-pane fade" id="tab-impressora" role="tabpanel">
+                            <div class="card card-secao-fiscal">
+                                <div class="card-header">
+                                    <h5><i class="ri-printer-line text-primary"></i> Impressora Térmica de Rede (ESC/POS)</h5>
                                 </div>
-                                @endforeach
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-3 col-12">
+                                            <label class="form-label fw-semibold">Impressão Direta na Rede</label>
+                                            <div class="form-check form-switch mt-2">
+                                                <input class="form-check-input" type="checkbox" name="printer_status" value="1" id="printer-status-toggle"
+                                                    @isset($item) @if($item->printer_status == 1) checked @endif @endif>
+                                                <label class="form-check-label fw-semibold text-dark" for="printer-status-toggle" style="font-size:13px;">Habilitar envio direto via IP</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-12">
+                                            {!!Form::text('printer_nome', 'Nome / Identificação da Impressora')
+                                            ->attrs(['class' => 'form-control', 'placeholder' => 'Ex: Térmica Caixa 01'])
+                                            !!}
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            {!!Form::text('printer_ip', 'Endereço IP na Rede')
+                                            ->attrs(['class' => 'form-control', 'placeholder' => 'Ex: 192.168.1.200', 'id' => 'printer-ip'])
+                                            !!}
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            {!!Form::tel('printer_porta', 'Porta TCP/IP')
+                                            ->attrs(['class' => 'form-control', 'placeholder' => '9100', 'id' => 'printer-porta', 'value' => isset($item) && $item->printer_porta ? $item->printer_porta : 9100])
+                                            !!}
+                                        </div>
+                                        <div class="col-md-3 col-12">
+                                            <label class="form-label fw-semibold">Largura da Bobina</label>
+                                            <select name="printer_largura" class="form-select" id="printer-largura">
+                                                <option value="80" @isset($item) @if(($item->printer_largura ?? '80') == '80') selected @endif @else selected @endif>80mm (Padrão de Mercado)</option>
+                                                <option value="58" @isset($item) @if(($item->printer_largura ?? '80') == '58') selected @endif @endif>58mm (Bobina Estreita / Compacta)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12 mt-3 d-flex align-items-center gap-3">
+                                            <button type="button" class="dash-btn dash-btn-light" id="btn-testar-impressora" onclick="testarImpressora()">
+                                                <i class="ri-wifi-line me-1 text-primary"></i> Testar Conexão com a Impressora
+                                            </button>
+                                            <span id="printer-test-result" class="fs-13"></span>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-4">
+                                        <div class="col-12">
+                                            <div class="alert alert-info border-0 shadow-sm py-3 px-3 mb-0" style="border-radius: 12px; background: #f0f4ff;">
+                                                <div class="d-flex align-items-start gap-2">
+                                                    <i class="ri-information-line fs-18 text-primary mt-0.5"></i>
+                                                    <div class="fs-13 text-dark">
+                                                        <strong>Como funciona a Impressão Direta:</strong> Quando habilitada, o sistema envia o comprovante de venda ou NFCe instantaneamente para a impressora via protocolo ESC/POS (porta 9100), sem necessidade de abrir a caixa de diálogo de impressão do navegador. Caso esteja desabilitada, o PDF continuará sendo aberto no navegador normalmente.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- ══════════════ ABA 3: VENDAS, PRODUTOS & ESTOQUE ══════════════ -->
+                        <div class="tab-pane fade" id="tab-vendas" role="tabpanel">
+                            
+                            {{-- Pré-Venda & Orçamento --}}
+                            <div class="card card-secao-fiscal">
+                                <div class="card-header">
+                                    <h5><i class="ri-file-list-3-line text-primary"></i> Regras de Pré-Venda & Orçamentos</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6 col-12">
+                                            {!!Form::select('confirmar_itens_prevenda', 'Exigir confirmação dos itens na Pré-Venda?', ['0' => 'Não (Direto)', '1' => 'Sim (Confirmar)'] )
+                                            ->attrs(['class' => 'form-select'])
+                                            !!}
+                                        </div>
+                                        <div class="col-md-6 col-12">
+                                            {!!Form::tel('percentual_desconto_orcamento', '% Máximo de desconto permitido sobre lucro no orçamento')
+                                            ->attrs(['class' => 'form-control percentual', 'placeholder' => '0,00%'])
+                                            !!}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Produtos & Estoque --}}
+                            <div class="card card-secao-fiscal">
+                                <div class="card-header">
+                                    <h5><i class="ri-box-3-line text-primary"></i> Produtos & Controle de Estoque</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-4 col-12">
+                                            {!!Form::tel('percentual_lucro_produto', '% Margem de lucro padrão para novos produtos')
+                                            ->attrs(['class' => 'form-control percentual', 'placeholder' => 'Ex: 50,00%'])
+                                            !!}
+                                        </div>
+                                        <div class="col-md-4 col-12">
+                                            {!!Form::tel('margem_combo', 'Margem % aplicada em produtos do tipo combo')
+                                            ->attrs(['class' => 'form-control percentual', 'placeholder' => 'Ex: 50,00%'])
+                                            !!}
+                                        </div>
+                                        <div class="col-md-4 col-12">
+                                            {!!Form::select('gerenciar_estoque', 'Gerenciar controle de estoque global?', ['1' => 'Sim (Controlar)', '0' => 'Não (Sem controle)'])
+                                            ->attrs(['class' => 'form-select'])
+                                            !!}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- ══════════════ ABA 4: ALERTAS & NOTIFICAÇÕES ══════════════ -->
+                        <div class="tab-pane fade" id="tab-alertas" role="tabpanel">
+                            <div class="card card-secao-fiscal">
+                                <div class="card-header">
+                                    <h5><i class="ri-notification-3-line text-primary"></i> Alertas e Notificações Ativas</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted fs-13 mb-3">
+                                        Selecione quais avisos e notificações devem ser gerados automaticamente pelo sistema:
+                                    </p>
+                                    <div class="row g-2">
+                                        @foreach(App\Models\ConfigGeral::getNotificacoes() as $n)
+                                        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                                            <label class="check-module-label">
+                                                <input name="notificacoes[]" value="{{$n}}" type="checkbox" class="form-check-input"
+                                                    @isset($item) @if(sizeof($item->notificacoes) > 0 && in_array($n, $item->notificacoes)) checked="true" @endif @endif>
+                                                <span class="fw-semibold">{{$n}}</span>
+                                            </label>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
-                </div>
-            </div>
 
-            {{-- ─── Pré Venda ─── --}}
-            <div class="modulo-section-card">
-                <div class="card-header">
-                    <h4><i class="ri-shopping-cart-line me-2"></i>Pré Venda</h4>
-                </div>
-                <div class="card-body">
-                    <div class="row g-2">
-                        <div class="col-md-3 mb-2">
-                            {!!Form::select('confirmar_itens_prevenda', 'Confirmar itens pré venda', ['0' => 'Não', '1' => 'Sim'])
-                            ->attrs(['class' => 'form-select'])
-                            !!}
-                        </div>
+                    <!-- ═══ BOTÃO SALVAR ═══ -->
+                    <div class="d-flex align-items-center justify-content-end gap-2 pt-3 mt-3 border-top">
+                        <a href="{{ route('home') }}" class="dash-btn dash-btn-light">
+                            <i class="ri-close-line me-1"></i> Cancelar
+                        </a>
+                        <button type="submit" class="dash-btn dash-btn-primary px-5" id="btn-store">
+                            <i class="ri-save-line me-1"></i> Salvar Configurações Gerais
+                        </button>
                     </div>
-                </div>
-            </div>
 
-            {{-- ─── Orçamento ─── --}}
-            <div class="modulo-section-card">
-                <div class="card-header">
-                    <h4><i class="ri-file-list-3-line me-2"></i>Orçamento</h4>
+                    {!!Form::close()!!}
                 </div>
-                <div class="card-body">
-                    <div class="row g-2">
-                        <div class="col-md-3 mb-2">
-                            {!!Form::tel('percentual_desconto_orcamento', '% Máximo de desconto sobre lucro')
-                            ->attrs(['class' => 'percentual'])
-                            !!}
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            {{-- ─── Produto ─── --}}
-            <div class="modulo-section-card">
-                <div class="card-header">
-                    <h4><i class="ri-box-3-line me-2"></i>Produto</h4>
-                </div>
-                <div class="card-body">
-                    <div class="row g-2">
-                        <div class="col-md-3 mb-3">
-                            {!!Form::tel('percentual_lucro_produto', '% Lucro padrão')
-                            ->attrs(['class' => 'percentual'])
-                            !!}
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            {!!Form::tel('margem_combo', 'Margem % combo')
-                            ->attrs(['class' => 'percentual'])
-                            !!}
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            {!!Form::select('gerenciar_estoque', 'Gerenciar estoque', ['0' => 'Não', '1' => 'Sim'])
-                            ->attrs(['class' => 'form-select'])
-                            !!}
-                        </div>
-                    </div>
-                </div>
             </div>
-
-            {{-- ─── Alertas ─── --}}
-            <div class="modulo-section-card">
-                <div class="card-header">
-                    <h4><i class="ri-notification-3-line me-2"></i>Alertas e Notificações</h4>
-                </div>
-                <div class="card-body">
-                    <div class="row g-1">
-                        @foreach(App\Models\ConfigGeral::getNotificacoes() as $n)
-                        <div class="col-lg-3 col-6">
-                            <label class="check-module-label">
-                                <input name="notificacoes[]" value="{{$n}}" type="checkbox" class="form-check-input"
-                                    @isset($item) @if(sizeof($item->notificacoes) > 0 && in_array($n, $item->notificacoes)) checked="true" @endif @endif>
-                                <span style="font-size:13px;">{{$n}}</span>
-                            </label>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-end mt-2">
-                <button type="submit" class="btn btn-success px-5" id="btn-store">
-                    <i class="ri-save-line me-1"></i> Salvar
-                </button>
-            </div>
-
-            {!!Form::close()!!}
         </div>
     </div>
 </div>
+@endsection
+
+@section('js')
+<script>
+function testarImpressora() {
+    var ip = $('#printer-ip').val();
+    var porta = $('#printer-porta').val();
+    var result = $('#printer-test-result');
+    var btn = $('#btn-testar-impressora');
+
+    if (!ip) {
+        result.html('<span class="text-danger fw-bold"><i class="ri-error-warning-line"></i> Informe o IP da impressora</span>');
+        return;
+    }
+
+    btn.prop('disabled', true).html('<i class="ri-loader-4-line spin me-1"></i> Testando conexão...');
+    result.html('<span class="text-muted">Conectando...</span>');
+
+    $.ajax({
+        url: '{{ route("print.testar") }}',
+        type: 'POST',
+        data: { ip: ip, porta: porta, _token: '{{ csrf_token() }}' },
+        success: function(res) {
+            if (res.success) {
+                result.html('<span class="text-success fw-bold"><i class="ri-checkbox-circle-fill"></i> ' + res.message + '</span>');
+            } else {
+                result.html('<span class="text-danger fw-bold"><i class="ri-error-warning-line"></i> ' + res.message + '</span>');
+            }
+        },
+        error: function(xhr) {
+            var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Erro de conexão com a impressora';
+            result.html('<span class="text-danger fw-bold"><i class="ri-error-warning-line"></i> ' + msg + '</span>');
+        },
+        complete: function() {
+            btn.prop('disabled', false).html('<i class="ri-wifi-line me-1 text-primary"></i> Testar Conexão com a Impressora');
+        }
+    });
+}
+</script>
 @endsection

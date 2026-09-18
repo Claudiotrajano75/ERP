@@ -365,13 +365,35 @@ class CaixaController extends Controller
         return redirect()->back();
     }
 
-    public function list()
+    public function list(Request $request)
     {
+        $start_date = $request->get('start_date');
+        $end_date = $request->get('end_date');
+        $status = $request->get('status');
 
-        $data = Caixa::where('empresa_id', request()->empresa_id)
-        ->orderBy('id', 'desc')->get();
+        $baseQuery = Caixa::where('empresa_id', request()->empresa_id);
 
-        return view('caixa.list', compact('data'));
+        $stats = [
+            'total'    => (clone $baseQuery)->count(),
+            'abertos'  => (clone $baseQuery)->where('status', 1)->count(),
+            'fechados' => (clone $baseQuery)->where('status', 0)->count(),
+            'hoje'     => (clone $baseQuery)->whereDate('created_at', date('Y-m-d'))->count(),
+        ];
+
+        $data = (clone $baseQuery)
+        ->when(!empty($start_date), function ($query) use ($start_date) {
+            return $query->whereDate('created_at', '>=', $start_date);
+        })
+        ->when(!empty($end_date), function ($query) use ($end_date) {
+            return $query->whereDate('created_at', '<=', $end_date);
+        })
+        ->when($status !== null && $status !== '', function ($query) use ($status) {
+            return $query->where('status', $status);
+        })
+        ->orderBy('id', 'desc')
+        ->paginate(env("PAGINACAO", 30));
+
+        return view('caixa.list', compact('data', 'stats'));
     }
 
     public function fechar(Request $request)
@@ -433,11 +455,10 @@ class CaixaController extends Controller
             'somaServicos',
             'suprimentos',
             'produtos'
-        ));
+        ))->render();
 
         $domPdf = new Dompdf(["enable_remote" => true]);
         $domPdf->loadHtml($p);
-        $pdf = ob_get_clean();
         $domPdf->setPaper("A4");
         $domPdf->render();
         $domPdf->stream("Fechamento caixa.pdf", array("Attachment" => false));
@@ -477,16 +498,15 @@ class CaixaController extends Controller
             'somaServicos',
             'suprimentos',
             'produtos'
-        ));
-        $height = 250;
+        ))->render();
+        $height = 270;
         $height += sizeof($vendas)*32;
         $height += sizeof($produtos)*30;
 
         $domPdf = new Dompdf(["enable_remote" => true]);
         $domPdf->loadHtml($p);
-        $pdf = ob_get_clean();
-        $domPdf->setPaper([0,0,204,$height]);
-        $pdf = $domPdf->render();
+        $domPdf->setPaper([0,0,260,$height]);
+        $domPdf->render();
         $domPdf->stream("Relatório de caixa.pdf", array("Attachment" => false));
 
     }
@@ -587,7 +607,15 @@ class CaixaController extends Controller
     }
 
     public function abertosEmpresa(Request $request){
-        $data = Caixa::where('empresa_id', $request->empresa_id)->where('status', 1)->get();
-        return view('caixa.abertos', compact('data'));
+        $baseQuery = Caixa::where('empresa_id', $request->empresa_id)->where('status', 1);
+
+        $stats = [
+            'total'          => (clone $baseQuery)->count(),
+            'valor_abertura' => (clone $baseQuery)->sum('valor_abertura'),
+            'hoje'           => (clone $baseQuery)->whereDate('created_at', date('Y-m-d'))->count(),
+        ];
+
+        $data = (clone $baseQuery)->orderBy('id', 'desc')->get();
+        return view('caixa.abertos', compact('data', 'stats'));
     }
 }

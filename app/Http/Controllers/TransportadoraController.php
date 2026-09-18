@@ -27,7 +27,14 @@ class TransportadoraController extends Controller
             return $q->where('cpf_cnpj', 'LIKE', "%$request->cpf_cnpj%");
         })
         ->paginate(env("PAGINACAO"));
-        return view('transportadoras.index', compact('data'));
+
+        $stats = [
+            'total' => Transportadora::where('empresa_id', request()->empresa_id)->count(),
+            'total_antt' => Transportadora::where('empresa_id', request()->empresa_id)->whereNotNull('antt')->where('antt', '!=', '')->count(),
+            'total_cidades' => Transportadora::where('empresa_id', request()->empresa_id)->whereNotNull('cidade_id')->distinct('cidade_id')->count('cidade_id'),
+        ];
+
+        return view('transportadoras.index', compact('data', 'stats'));
     }
 
     public function create()

@@ -1,769 +1,1437 @@
+@php
+    $docsIniciais = [];
+    if (isset($item) && $item->infoDescarga && count($item->infoDescarga) > 0) {
+        $qtdDocs = count($item->infoDescarga);
+        $valCargaNum = floatval($item->valor_carga);
+        $pesoCargaNum = floatval($item->quantidade_carga);
+        $valorPorDoc = $qtdDocs > 0 ? ($valCargaNum / $qtdDocs) : 0;
+        foreach ($item->infoDescarga as $info) {
+            $chave = '';
+            if ($info->nfe && !empty($info->nfe->chave)) {
+                $chave = $info->nfe->chave;
+            } elseif ($info->cte && !empty($info->cte->chave)) {
+                $chave = $info->cte->chave;
+            }
+            $numDoc = (strlen($chave) === 44) ? (string) (int) substr($chave, 25, 9) : '';
+            $serieDoc = (strlen($chave) === 44) ? (string) (int) substr($chave, 22, 3) : '1';
+            $pesoDoc = $info->quantidade_rateio ? floatval($info->quantidade_rateio) : ($qtdDocs > 0 ? ($pesoCargaNum / $qtdDocs) : 0);
+            
+            $docsIniciais[] = [
+                'chave_nfe' => $chave,
+                'chave' => $chave,
+                'chave_cte' => $info->cte ? $info->cte->chave : '',
+                'numero' => $numDoc,
+                'serie' => $serieDoc,
+                'tipo_doc' => $info->nfe ? 'NFE' : ($info->cte ? 'CTE' : 'NFE'),
+                'valor' => number_format($valorPorDoc, 2, ',', '.'),
+                'quantidade_rateio' => number_format($pesoDoc, 2, ',', '.'),
+                'municipio_descarregamento' => $info->cidade_id,
+                'cidade_nome' => $info->cidade ? $info->cidade->nome : '',
+                'cidade_uf' => $info->cidade ? $info->cidade->uf : '',
+                'tp_und_transp' => $info->tp_unid_transp ?? 1,
+                'id_und_transp' => $info->id_unid_transp ?? '',
+                'lacres_transporte' => [],
+                'lacres_unidade' => []
+            ];
+        }
+    }
+
+    $currentTpCarga = isset($item) && $item->tp_carga ? $item->tp_carga : '05';
+    $tpCargasMap = [
+        '01' => 'GRANEL SÓLIDO',
+        '02' => 'GRANEL LÍQUIDO',
+        '03' => 'FRIGORIFICADA',
+        '04' => 'CONTEINERIZADA',
+        '05' => 'CARGA GERAL',
+        '06' => 'NEOGRANEL',
+        '07' => 'PERIGOSA (GRANEL SÓLIDO)',
+        '08' => 'PERIGOSA (GRANEL LÍQUIDO)',
+        '09' => 'PERIGOSA (FRIGORIFICADA)',
+        '10' => 'PERIGOSA (CONTEINERIZADA)',
+        '11' => 'PERIGOSA (CARGA GERAL)',
+    ];
+
+    $numeroExibicao = isset($item) && $item->mdfe_numero ? $item->mdfe_numero : ($numeroMDFe ?? 'Informe');
+    $serieExibicao = isset($item) && $item->serie ? $item->serie : '1';
+@endphp
+
 <style>
-/* Alinhamento de tabelas dinâmicas de lacres */
-.table-lacres-align td {
-    vertical-align: middle !important;
+.dashboard-card {
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
 }
-.table-lacres-align input.form-control {
-    margin-top: 0 !important;
+.dashboard-card-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e2e8f0;
 }
-.table-lacres-align .btn-remove-tr {
-    margin-top: 0 !important;
-    height: 38px;
+.editable-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 12px;
+}
+.editable-field i.ri-pencil-line {
+    color: #ff6b00;
+    cursor: pointer;
+    font-size: 15px;
+}
+.btn-outline-dashed {
+    border: 1px dashed #ccc;
+    background: transparent;
+    color: #555;
+    font-weight: 500;
+}
+.btn-outline-dashed:hover {
+    border-color: #999;
+    background: #f9f9f9;
+}
+/* ─── Card de NFes Importados (Estilo Fiel) ─── */
+.nfe-main-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+.nfe-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 14px;
+}
+.nfe-items-box {
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #ffffff;
+    min-height: 200px;
+    max-height: 320px;
+    padding: 14px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+}
+.nfe-pill-item {
+    background: #ffffff;
+    border: 1px solid #94a3b8;
+    border-radius: 30px;
+    padding: 7px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.nfe-pill-item:last-child {
+    margin-bottom: 0;
+}
+.btn-import-more-nfe {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 7px 20px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #0f172a;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+/* ─── Mini Cards Topo (Tipo Transporte, Nº Doc, Série) ─── */
+.info-mini-card {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+.info-mini-card-header {
+    padding: 9px 4px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0f172a;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.info-mini-card-body {
+    padding: 10px 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #334155;
+    font-weight: 500;
+    flex-grow: 1;
+    overflow: hidden;
+}
+.edit-icon-orange {
+    color: #ff6b00 !important;
+    font-size: 15px;
+    margin-left: 5px;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+.edit-icon-orange:hover {
+    transform: scale(1.15);
+}
+.mini-card-input {
+    border: 1px solid #1e293b !important;
+    border-radius: 4px !important;
+    font-size: 13px !important;
+    color: #0f172a !important;
+    font-weight: 500 !important;
+    padding: 3px 8px !important;
+    background-color: #ffffff !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    height: 32px !important;
+}
+.mini-card-input:focus {
+    border-color: #ff6b00 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 1px #ff6b00 !important;
+}
+.mini-card-input::placeholder {
+    color: #64748b !important;
+    font-weight: 400 !important;
+}
+/* ─── Barra de Ações Inferior (Botões) ─── */
+.bottom-actions-card {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+.btn-action-outline {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    color: #334155;
+    font-size: 13.5px;
+    font-weight: 600;
+    padding: 7px 22px;
+    transition: all 0.2s ease;
+    text-decoration: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
 }
+.btn-action-outline:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+.btn-action-view {
+    background: #3f3f46;
+    border: none;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 13.5px;
+    font-weight: 700;
+    padding: 7px 22px;
+    transition: all 0.2s ease;
+}
+.btn-action-view:hover {
+    background: #27272a;
+    color: #ffffff;
+}
+.btn-action-conclude {
+    background: #ff5722;
+    border: none;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 13.5px;
+    font-weight: 700;
+    padding: 7px 28px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(255, 87, 34, 0.25);
+}
+.btn-action-conclude:hover {
+    background: #e64a19;
+    color: #ffffff;
+}
 </style>
 
-<div class="row g-3">
-    {{-- ═══ SEÇÃO: INFORMAÇÕES BÁSICAS DO MANIFESTO ═══ --}}
-    <div class="col-12">
-        <div class="card border border-light-subtle shadow-none mb-3">
-            <div class="card-header bg-light-subtle py-2">
-                <h5 class="card-title mb-0 fs-13 text-uppercase text-muted fw-bold">1. Identificação e Dados Gerais</h5>
+<div class="row">
+    <!-- Coluna Esquerda -->
+    <div class="col-xl-7 col-lg-7">
+        
+        <!-- NFes Importados -->
+        <div class="nfe-main-card">
+            <div class="nfe-title-wrapper">
+                <i class="ri-file-line fs-17 text-dark"></i>
+                <span id="lbl-nfe-count">0 NFes Importados</span>
             </div>
-            <div class="card-body p-3">
-                <div class="row g-2">
-                    @if(__countLocalAtivo() > 1)
-                    <div class="col-md-3 col-12">
-                        <label class="form-label fw-semibold fs-12 mb-1">Local</label>
-                        <select id="inp-local_id" required class="select2 class-required" data-toggle="select2" name="local_id">
-                            <option value="">Selecione</option>
-                            @foreach(__getLocaisAtivoUsuario() as $local)
-                            <option @isset($item) @if($item->local_id == $local->id) selected @endif @endif value="{{ $local->id }}">{{ $local->descricao }}</option>
-                            @endforeach
+            
+            <div class="nfe-items-box" id="container-nfe-list">
+                <div class="text-center py-4 text-muted fs-13" id="empty-nfe-placeholder">
+                    <i class="ri-file-upload-line fs-24 d-block mb-1 text-secondary"></i>
+                    Nenhum documento importado ainda.
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button type="button" class="btn btn-import-more-nfe" data-bs-toggle="modal" data-bs-target="#modal-importar_documentos">
+                    Importar mais NFes <i class="ri-upload-2-line fs-15"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="dashboard-card">
+            <div class="dashboard-card-title">Modal</div>
+            
+            <div class="d-flex justify-content-center align-items-center gap-4 mb-4">
+                <div class="form-check d-flex align-items-center gap-2">
+                    <input class="form-check-input mt-0" type="radio" name="modal_tipo" id="modal_rodo" value="1" {{ (!isset($item) || $item->tipo_modal == 1) ? 'checked' : '' }} style="accent-color: #ff6b00; width: 17px; height: 17px;">
+                    <label class="form-check-label text-dark fw-semibold fs-13" for="modal_rodo">Rodoviário</label>
+                </div>
+                <div class="form-check d-flex align-items-center gap-2">
+                    <input class="form-check-input mt-0" type="radio" name="modal_tipo" id="modal_aqua" value="2" {{ (isset($item) && $item->tipo_modal == 2) ? 'checked' : '' }} style="accent-color: #ff6b00; width: 17px; height: 17px;">
+                    <label class="form-check-label text-muted fs-13" for="modal_aqua">Aquaviário</label>
+                </div>
+                <div class="form-check d-flex align-items-center gap-2">
+                    <input class="form-check-input mt-0" type="radio" name="modal_tipo" id="modal_aereo" value="3" {{ (isset($item) && $item->tipo_modal == 3) ? 'checked' : '' }} style="accent-color: #ff6b00; width: 17px; height: 17px;">
+                    <label class="form-check-label text-muted fs-13" for="modal_aereo">Aéreo</label>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fs-13 fw-bold text-dark mb-1">Veículo tração *</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <select name="veiculo_tracao_id" id="inp-veiculo_tracao_id" class="form-select select2" style="border-radius: 6px; border-color: #cbd5e1;">
+                            <option value="">Informe</option>
+                            @isset($veiculos)
+                                @foreach($veiculos as $v)
+                                    <option value="{{ $v->id }}" 
+                                        {{ (isset($item) && $item->veiculo_tracao_id == $v->id) ? 'selected' : '' }}
+                                        data-funcionario-id="{{ $v->funcionario_id ?? '' }}"
+                                        data-funcionario-nome="{{ $v->funcionario ? $v->funcionario->nome : '' }}"
+                                        data-funcionario-cpf="{{ $v->funcionario ? $v->funcionario->cpf_cnpj : '' }}">
+                                        {{ $v->placa }} - {{ $v->marca }}/{{ $v->modelo }}
+                                    </option>
+                                @endforeach
+                            @endisset
+                        </select>
+                        <i class="ri-add-line fs-22 fw-bold text-orange cursor-pointer" title="Cadastrar veículo"></i>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fs-13 fw-bold text-dark mb-1">Motorista *</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <select name="condutor_id" id="inp-condutor_id" class="form-select select2" style="border-radius: 6px; border-color: #cbd5e1;">
+                            <option value="">Informe</option>
+                            @isset($funcionarios)
+                                @foreach($funcionarios as $f)
+                                    <option value="{{ $f->id }}" 
+                                        {{ (isset($item) && ($item->condutor_cpf == $f->cpf_cnpj || $item->condutor_nome == $f->nome || (isset($item->veiculoTracao) && $item->veiculoTracao->funcionario_id == $f->id))) ? 'selected' : '' }}
+                                        data-nome="{{ $f->nome }}" data-cpf="{{ $f->cpf_cnpj }}">
+                                        {{ $f->nome }}
+                                    </option>
+                                @endforeach
+                            @endisset
+                        </select>
+                        <input type="hidden" name="condutor_nome" id="inp-condutor_nome" value="{{ $item->condutor_nome ?? '' }}">
+                        <input type="hidden" name="condutor_cpf" id="inp-condutor_cpf" value="{{ $item->condutor_cpf ?? '' }}">
+                        <i class="ri-add-line fs-22 fw-bold text-orange cursor-pointer" title="Cadastrar motorista"></i>
+                    </div>
+                    <a href="#" class="text-orange fs-12 text-decoration-none mt-1 d-inline-block fw-medium">Incluir mais...</a>
+                </div>
+                <div class="col-md-6 mt-2">
+                    <label class="form-label fs-13 fw-bold text-dark mb-1">Veículo reboque</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <select name="veiculo_reboque_id" id="inp-veiculo_reboque_id" class="form-select select2" style="border-radius: 6px; border-color: #cbd5e1;">
+                            <option value="">Informe</option>
+                            @isset($veiculos)
+                                @foreach($veiculos as $v)
+                                    <option value="{{ $v->id }}" {{ (isset($item) && $item->veiculo_reboque_id == $v->id) ? 'selected' : '' }}>{{ $v->placa }} - {{ $v->marca }}/{{ $v->modelo }}</option>
+                                @endforeach
+                            @endisset
+                        </select>
+                        <i class="ri-add-line fs-22 fw-bold text-orange cursor-pointer" title="Cadastrar reboque"></i>
+                    </div>
+                    <a href="#" class="text-orange fs-12 text-decoration-none mt-1 d-inline-block fw-medium">Incluir mais...</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagamento do Frete -->
+        <div class="dashboard-card">
+            <div class="dashboard-card-title mb-2 border-0">Informações de pagamento do frete</div>
+            <div style="border: 1px solid #e0e0e0; border-radius: 6px; padding: 15px;">
+                <a href="#" class="text-orange text-decoration-none fs-13 d-flex align-items-center gap-1 fw-semibold">
+                    <i class="ri-add-line fw-bold"></i> Adicionar informações de pagamento
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Coluna Direita -->
+    <div class="col-xl-5 col-lg-5">
+        
+        <!-- Top row (Mini Cards) -->
+        <div class="row g-2 mb-3">
+            <div class="col-4">
+                <div class="info-mini-card">
+                    <div class="info-mini-card-header">
+                        Tipo de Transporte
+                    </div>
+                    <div class="info-mini-card-body">
+                        <select name="tp_transp" id="inp-tp_transp" class="form-select select-clean-transport">
+                            <option value="1" {{ (isset($item) && $item->tp_transp == 1) ? 'selected' : '' }}>Carga própria</option>
+                            <option value="2" {{ (isset($item) && $item->tp_transp == 2) ? 'selected' : '' }}>Prestador de serviço</option>
+                            <option value="3" {{ (isset($item) && $item->tp_transp == 3) ? 'selected' : '' }}>Transp. Carga Própria</option>
                         </select>
                     </div>
-                    <div class="col-md-2 col-6">
-                        {!!Form::tel('mdfe_numero', 'Número MDFe')
-                        ->required()
-                        ->value(isset($item) ? $item->numero : $numeroMDFe)
-                        !!}
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="info-mini-card">
+                    <div class="info-mini-card-header">
+                        Nº do documento
                     </div>
-                    @else
-                    <input id="inp-local_id" type="hidden" value="{{ __getLocalAtivo() ? __getLocalAtivo()->id : '' }}" name="local_id">
-                    <div class="col-md-3 col-6">
-                        {!!Form::tel('mdfe_numero', 'Número MDFe')
-                        ->required()
-                        ->value(isset($item) ? $item->numero : $numeroMDFe)
-                        !!}
-                    </div>
-                    @endif
-
-                    <div class="col-md-2 col-6">
-                        {!! Form::select('uf_inicio', 'UF inicial', ['' => 'Selecione...'] + App\Models\Cidade::estados())
-                        ->attrs(['class' => 'form-select select2'])->required() !!}
-                    </div>
-                    <div class="col-md-2 col-6">
-                        {!! Form::select('uf_fim', 'UF final', ['' => 'Selecione...'] + App\Models\Cidade::estados())->attrs([
-                        'class' => 'form-select select2'])->required() !!}
-                    </div>
-                    <div class="col-md-3 col-6">
-                        {!! Form::date('data_inicio_viagem', 'Data início da viagem')->value(date('Y-m-d'))->required() !!}
-                    </div>
-
-                    {{-- Segunda Linha completa (Soma 12 colunas) --}}
-                    <div class="col-md-2 col-6">
-                        {!! Form::select('carga_posterior', 'Carga posterior', [0 => 'Não', 1 => 'Sim'])->attrs(
-                        ['class' => 'form-select'],
-                        )->required() !!}
-                    </div>
-                    <div class="col-md-4 col-12">
-                        {!! Form::select(
-                        'tp_emit',
-                        'Tipo do emitente',
-                        ['' => 'Selecione...'] + [
-                        1 => '1 - Prestador de serviço de transporte',
-                        2 => '2 - Transportador de carga própria',
-                        ],
-                        )->attrs(['class' => 'form-select class-required'])->required() !!}
-                    </div>
-                    <div class="col-md-3 col-6">
-                        {!! Form::select(
-                        'tp_transp',
-                        'Tipo do transportador',
-                        ['' => 'Selecione...'] + [1 => '1 - ETC', 2 => '2 - TAC', 3 => '3 - CTC'],
-                        )->attrs(['class' => 'form-select'])->required() !!}
-                    </div>
-                    <div class="col-md-3 col-6">
-                        {!! Form::select('tipo_modal', 'Tipo modal', ['' => 'Selecione...'] + App\Models\Mdfe::tiposModal())->attrs([
-                        'class' => 'form-select select2'])->required() !!}
+                    <div class="info-mini-card-body px-2" id="card-body-mdfe-numero">
+                        <div class="d-flex align-items-center justify-content-center cursor-pointer w-100" id="view-mdfe-numero" onclick="ativarEdicaoNumeroDoc()">
+                            <span id="txt-numero-mdfe" class="text-truncate">{{ $numeroExibicao }}</span>
+                            <i class="ri-edit-2-line edit-icon-orange" title="Editar número"></i>
+                        </div>
+                        <div id="edit-box-mdfe-numero" class="w-100" style="display: none;">
+                            <input type="text" name="mdfe_numero" id="inp-mdfe-numero" class="mini-card-input" value="{{ $numeroExibicao !== 'Informe' ? $numeroExibicao : '' }}" placeholder="Informe">
+                        </div>
                     </div>
                 </div>
+            </div>
+            <div class="col-4">
+                <div class="info-mini-card">
+                    <div class="info-mini-card-header">
+                        Série
+                    </div>
+                    <div class="info-mini-card-body px-2" id="card-body-mdfe-serie">
+                        <div class="d-flex align-items-center justify-content-center cursor-pointer w-100" id="view-mdfe-serie" onclick="ativarEdicaoSerie()">
+                            <span id="txt-serie">{{ $serieExibicao }}</span>
+                            <i class="ri-edit-2-line edit-icon-orange" title="Editar série"></i>
+                        </div>
+                        <div id="edit-box-mdfe-serie" class="w-100" style="display: none;">
+                            <input type="text" name="serie" id="inp-mdfe-serie" class="mini-card-input" value="{{ $serieExibicao }}" placeholder="1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Viagem -->
+        <div class="dashboard-card">
+            <div class="dashboard-card-title">Viagem</div>
+            
+            {{-- Local de Carregamento --}}
+            <div class="editable-field">
+                <i class="ri-map-pin-fill text-dark fs-16"></i> 
+                <span>
+                    <strong class="text-dark">Local de Carregamento:</strong> 
+                    <span class="text-secondary ms-1" id="disp-local-carregamento">
+                        @if(isset($item) && $item->municipiosCarregamento && count($item->municipiosCarregamento) > 0)
+                            {{ $item->uf_inicio }} - {{ $item->municipiosCarregamento->map(function($m) { return $m->cidade ? $m->cidade->nome : ''; })->filter()->implode(', ') }}
+                        @else
+                            CE - SOBRAL
+                        @endif
+                    </span>
+                </span> 
+                <i class="ri-edit-2-line edit-icon-orange" title="Alterar local de carregamento" onclick="abrirModalEditarCarregamento()"></i>
+            </div>
+
+            {{-- Local de Descarregamento --}}
+            <div class="editable-field">
+                <i class="ri-map-pin-line text-dark fs-16"></i> 
+                <span>
+                    <strong class="text-dark">Local de Descarregamento:</strong> 
+                    <span class="text-secondary ms-1" id="disp-local-descarregamento">{{ $item->uf_fim ?? 'CE' }}</span>
+                </span>
+            </div>
+
+            {{-- Percurso --}}
+            <div class="editable-field">
+                <i class="ri-map-pin-line text-dark fs-16"></i> 
+                <span>
+                    <strong class="text-dark">Percurso:</strong> 
+                    <span class="text-secondary ms-1" id="disp-percurso">
+                        @if(isset($item) && $item->percurso && count($item->percurso) > 0)
+                            {{ $item->percurso->pluck('uf')->implode(' -> ') }}
+                        @endif
+                    </span>
+                </span> 
+                <i class="ri-edit-2-line edit-icon-orange" title="Alterar percurso" onclick="abrirModalEditarPercurso()"></i>
+            </div>
+
+            {{-- Data de Início de Viagem --}}
+            <div class="editable-field mb-0">
+                <i class="ri-calendar-line text-dark fs-16"></i> 
+                <div class="d-flex align-items-center gap-1">
+                    <strong class="text-dark">Data de Início de Viagem:</strong> 
+                    
+                    <div id="view-data-inicio" class="d-inline-flex align-items-center cursor-pointer" onclick="ativarEdicaoDataInicio()">
+                        <span class="text-secondary ms-1" id="disp-data-inicio">{{ isset($item) && $item->data_inicio_viagem ? date('d/m/Y H:i', strtotime($item->data_inicio_viagem)) : date('d/m/Y H:i') }}</span>
+                        <i class="ri-calendar-line ms-2" style="color: #cbd5e1 !important; font-size: 15px;" title="Alterar data"></i>
+                    </div>
+
+                    <div id="box-edit-data-inicio" style="display: none;">
+                        <input type="datetime-local" id="inp-edit-data-inicio" class="mini-card-input" style="height: 28px; width: 175px; font-size: 12px;" value="{{ isset($item) && $item->data_inicio_viagem ? date('Y-m-d\TH:i', strtotime($item->data_inicio_viagem)) : date('Y-m-d\TH:i') }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carga -->
+        <div class="dashboard-card">
+            <div class="dashboard-card-title">Carga</div>
+            
+            {{-- Valor Total da Carga --}}
+            <div class="editable-field">
+                <i class="ri-money-dollar-box-line text-dark fs-16"></i> 
+                <div class="d-flex align-items-center gap-1 flex-wrap">
+                    <strong class="text-dark">Valor Total da Carga:</strong> 
+                    <div id="view-valor-carga" class="d-inline-flex align-items-center cursor-pointer" onclick="ativarEdicaoValorCarga()">
+                        <span class="text-secondary ms-1" id="disp-valor-carga">R$ {{ isset($item) && $item->valor_carga ? number_format($item->valor_carga, 2, ',', '.') : '0,00' }}</span>
+                        <i class="ri-edit-2-line edit-icon-orange ms-1" title="Editar valor da carga"></i>
+                    </div>
+                    <div id="box-edit-valor-carga" style="display: none;">
+                        <input type="text" id="inp-edit-valor-carga" class="mini-card-input" style="height: 28px; width: 130px;" placeholder="R$ 0,00" value="{{ isset($item) && $item->valor_carga ? 'R$ ' . number_format($item->valor_carga, 2, ',', '.') : '' }}">
+                    </div>
+                </div>
+            </div>
+
+            {{-- Peso Total --}}
+            <div class="editable-field">
+                <i class="ri-weight-line text-dark fs-16"></i> 
+                <div class="d-flex align-items-center gap-1 flex-wrap">
+                    <strong class="text-dark">Peso Total:</strong> 
+                    <div id="view-peso-total" class="d-inline-flex align-items-center cursor-pointer" onclick="ativarEdicaoPesoTotal()">
+                        <span class="text-secondary ms-1" id="disp-peso-total">{{ isset($item) && $item->quantidade_carga ? number_format($item->quantidade_carga, 2, ',', '.') : '0.00' }} Kg</span>
+                        <i class="ri-edit-2-line edit-icon-orange ms-1" title="Editar peso total"></i>
+                    </div>
+                    <div id="box-edit-peso-total" style="display: none;">
+                        <input type="text" id="inp-edit-peso-total" class="mini-card-input" style="height: 28px; width: 120px;" placeholder="0,00" value="{{ isset($item) && $item->quantidade_carga ? number_format($item->quantidade_carga, 2, ',', '.') : '' }}">
+                    </div>
+                </div>
+            </div>
+
+            {{-- Produto Predominante --}}
+            <div class="editable-field">
+                <i class="ri-archive-line text-dark fs-16"></i> 
+                <div class="d-flex align-items-center gap-1 flex-wrap">
+                    <strong class="text-dark">Produto Predominante:</strong> 
+                    <div id="view-prod-pred" class="d-inline-flex align-items-center cursor-pointer" onclick="ativarEdicaoProdPred()">
+                        <span class="text-secondary ms-1 text-truncate" style="max-width: 170px;" id="disp-prod-predominante">{{ isset($item) && $item->produto_pred_nome ? $item->produto_pred_nome : '-' }}</span>
+                        <i class="ri-edit-2-line edit-icon-orange ms-1" title="Editar produto predominante"></i>
+                    </div>
+                    <div id="box-edit-prod-pred" style="display: none;">
+                        <input type="text" id="inp-edit-prod-pred" class="mini-card-input" style="height: 28px; width: 180px;" placeholder="Produto predominante" value="{{ $item->produto_pred_nome ?? '' }}">
+                    </div>
+                </div>
+            </div>
+
+            {{-- Tipo de carga --}}
+            <div class="editable-field">
+                <i class="ri-archive-line text-dark fs-16"></i> 
+                <div class="d-flex align-items-center gap-1 flex-wrap">
+                    <strong class="text-dark">Tipo de carga:</strong> 
+                    <div id="view-tipo-carga" class="d-inline-flex align-items-center cursor-pointer" onclick="ativarEdicaoTipoCarga()">
+                        <span class="text-secondary ms-1" id="disp-tipo-carga">{{ $tpCargasMap[$currentTpCarga] ?? 'CARGA GERAL' }}</span>
+                        <i class="ri-edit-2-line edit-icon-orange ms-1" title="Editar tipo de carga"></i>
+                    </div>
+                    <div id="box-edit-tipo-carga" style="display: none;">
+                        <select id="inp-edit-tipo-carga" class="mini-card-input" style="height: 28px; width: 155px; font-size: 12px; padding: 2px 4px;">
+                            <option value="05" {{ $currentTpCarga == '05' ? 'selected' : '' }}>CARGA GERAL</option>
+                            <option value="01" {{ $currentTpCarga == '01' ? 'selected' : '' }}>GRANEL SÓLIDO</option>
+                            <option value="02" {{ $currentTpCarga == '02' ? 'selected' : '' }}>GRANEL LÍQUIDO</option>
+                            <option value="03" {{ $currentTpCarga == '03' ? 'selected' : '' }}>FRIGORIFICADA</option>
+                            <option value="04" {{ $currentTpCarga == '04' ? 'selected' : '' }}>CONTEINERIZADA</option>
+                            <option value="06" {{ $currentTpCarga == '06' ? 'selected' : '' }}>NEOGRANEL</option>
+                            <option value="07" {{ $currentTpCarga == '07' ? 'selected' : '' }}>PERIGOSA (GRANEL SÓLIDO)</option>
+                            <option value="08" {{ $currentTpCarga == '08' ? 'selected' : '' }}>PERIGOSA (GRANEL LÍQUIDO)</option>
+                            <option value="09" {{ $currentTpCarga == '09' ? 'selected' : '' }}>PERIGOSA (FRIGORIFICADA)</option>
+                            <option value="10" {{ $currentTpCarga == '10' ? 'selected' : '' }}>PERIGOSA (CONTEINERIZADA)</option>
+                            <option value="11" {{ $currentTpCarga == '11' ? 'selected' : '' }}>PERIGOSA (CARGA GERAL)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Código NCM --}}
+            <div class="editable-field mb-0">
+                <i class="ri-archive-line text-dark fs-16"></i> 
+                <div class="d-flex align-items-center gap-1 flex-wrap">
+                    <strong class="text-dark">Código NCM:</strong> 
+                    <div id="view-ncm" class="d-inline-flex align-items-center cursor-pointer" onclick="ativarEdicaoNcm()">
+                        <span class="text-secondary ms-1" id="disp-ncm">{{ isset($item) && $item->produto_pred_ncm ? $item->produto_pred_ncm : '-' }}</span>
+                        <i class="ri-edit-2-line edit-icon-orange ms-1" title="Editar código NCM"></i>
+                    </div>
+                    <div id="box-edit-ncm" style="display: none;">
+                        <input type="text" id="inp-edit-ncm" class="mini-card-input" style="height: 28px; width: 110px;" maxlength="8" placeholder="NCM" value="{{ $item->produto_pred_ncm ?? '' }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CIOT -->
+        <div class="dashboard-card">
+            <div class="dashboard-card-title">CIOT</div>
+            <div class="d-flex flex-column gap-3 mt-3">
+                <a href="#" class="text-orange text-decoration-none fs-13 d-flex align-items-center gap-1 fw-semibold">
+                    <i class="ri-add-line fw-bold"></i> Adicionar CIOT
+                </a>
+                <a href="#" class="text-orange text-decoration-none fs-13 d-flex align-items-center gap-1 fw-semibold">
+                    <i class="ri-file-list-3-line"></i> Emitir CIOT
+                </a>
             </div>
         </div>
     </div>
+</div>
 
-
-    {{-- ═══ SEÇÃO: VEÍCULOS E DETALHES DE CARGA ═══ --}}
-    <div class="col-12">
-        <div class="card border border-light-subtle shadow-none mb-3">
-            <div class="card-header bg-light-subtle py-2">
-                <h5 class="card-title mb-0 fs-13 text-uppercase text-muted fw-bold">2. Veículos e Valores da Carga</h5>
-            </div>
-            <div class="card-body p-3">
-                <div class="row g-2">
-                    <div class="col-md-3 col-6">
-                        {!! Form::select(
-                        'veiculo_tracao_id',
-                        'Veículo de tração',
-                        ['' => 'Selecione...'] + $veiculos->pluck('placa', 'id')->all(),
-                        )->attrs([
-                        'class' => 'form-select class-required',
-                        ])->required() !!}
-                    </div>
-                    <div class="col-md-3 col-6">
-                        {!! Form::select(
-                        'veiculo_reboque_id',
-                        'Veículo de reboque 1 (opcional)',
-                        ['' => 'Selecione...'] + $veiculos->pluck('placa', 'id')->all(),
-                        )->attrs(['class' => 'form-select']) !!}
-                    </div>
-                    <div class="col-md-3 col-6">
-                        {!! Form::select(
-                        'veiculo_reboque2_id',
-                        'Veículo de reboque 2 (opcional)',
-                        ['' => 'Selecione...'] + $veiculos->pluck('placa', 'id')->all(),
-                        )->attrs(['class' => 'form-select']) !!}
-                    </div>
-                    <div class="col-md-3 col-6">
-                        {!! Form::select(
-                        'veiculo_reboque3_id',
-                        'Veículo de reboque 3 (opcional)',
-                        ['' => 'Selecione...'] + $veiculos->pluck('placa', 'id')->all(),
-                        )->attrs(['class' => 'form-select']) !!}
-                    </div>
-
-                    <div class="col-md-3 col-6">
-                        {!! Form::text('lac_rodo', 'Lacre rodoviário')->attrs(['data-mask' => '00000000'])->required() !!}
-                    </div>
-                    <div class="col-md-3 col-6">
-                        {!! Form::tel('cnpj_contratante', 'CNPJ do contratante')->attrs(['class' => 'cpf_cnpj'])->required() !!}
-                    </div>
-                    <div class="col-md-3 col-6">
-                        {!! Form::tel('quantidade_carga', 'Quantidade da carga')->attrs(['class' => 'qtd_carga', 'data-mask' => '00000.000', 'data-mask-reverse' => 'true'])->required() !!}
-                    </div>
-                    <div class="col-md-3 col-6">
-                        {!! Form::tel('valor_carga', 'Valor da carga')->attrs(['class' => 'moeda'])->required() !!}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- ═══ SEÇÃO: PRODUTO PREDOMINANTE ═══ --}}
-    <div class="col-12">
-        <div class="card border border-light-subtle shadow-none mb-3">
-            <div class="card-header bg-light-subtle py-2">
-                <h5 class="card-title mb-0 fs-13 text-uppercase text-muted fw-bold">3. Produto Predominante (Opcional)</h5>
-            </div>
-            <div class="card-body p-3">
-                <div class="row g-2">
-                    <div class="col-md-4 col-12">
-                        {!! Form::text('produto_pred_nome', 'Nome')->attrs(['class' => '']) !!}
-                    </div>
-                    <div class="col-md-2 col-6">
-                        {!! Form::tel('produto_pred_ncm', 'NCM')->attrs(['class' => 'ncm']) !!}
-                    </div>
-                    <div class="col-md-3 col-6">
-                        {!! Form::tel('produto_pred_cod_barras', 'Código de barras')->attrs(['class' => '']) !!}
-                    </div>
-                    <div class="col-md-3 col-6">
-                        {!! Form::select('tp_carga', 'Tipo de carga', ['' => 'Selecione...'] + App\Models\Mdfe::tiposCarga())->attrs([
-                        'class' => 'form-select',
-                        ]) !!}
-                    </div>
-
-                    <div class="col-md-2 col-6">
-                        {!! Form::tel('cep_carrega', 'Cep carrega')->attrs(['data-mask' => '00000000']) !!}
-                    </div>
-                    <div class="col-md-2 col-6">
-                        {!! Form::tel('latitude_carregamento', 'Latitude carrega')->attrs(['class' => '']) !!}
-                    </div>
-                    <div class="col-md-2 col-6">
-                        {!! Form::tel('longitude_carregamento', 'Longitude carrega')->attrs(['class' => '']) !!}
-                    </div>
-                    <div class="col-md-2 col-6">
-                        {!! Form::tel('cep_descarrega', 'Cep descarrega')->attrs(['data-mask' => '00000000']) !!}
-                    </div>
-                    <div class="col-md-2 col-6">
-                        {!! Form::tel('latitude_descarregamento', 'Latitude descarrega')->attrs(['class' => '']) !!}
-                    </div>
-                    <div class="col-md-2 col-6">
-                        {!! Form::tel('longitude_descarregamento', 'Longitude descarrega')->attrs(['class' => '']) !!}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- ═══ NAVEGAÇÃO DE ABAS ═══ --}}
-    <div class="col-12 mt-3">
-        <div class="row g-2 mb-3">
-            <div class="col-md-4 col-12">
-                <button type="button" class="btn btn-outline-primary btn-gerais active w-100 py-2 fw-bold" onclick="selectDiv2('gerais')">
-                    <i class="ri-information-line me-1 align-middle fs-15"></i> 1. INFORMAÇÕES GERAIS
-                </button>
-            </div>
-            <div class="col-md-4 col-12">
-                <button type="button" class="btn btn-outline-primary btn-transporte w-100 py-2 fw-bold" onclick="selectDiv2('transporte')">
-                    <i class="ri-truck-line me-1 align-middle fs-15"></i> 2. INFORMAÇÕES TRANSPORTE
-                </button>
-            </div>
-            <div class="col-md-4 col-12">
-                <button type="button" class="btn btn-outline-primary btn-descarregamento w-100 py-2 fw-bold" onclick="selectDiv2('descarregamento')">
-                    <i class="ri-map-pin-check-line me-1 align-middle fs-15"></i> 3. INFORMAÇÕES DESCARREGAMENTO
-                </button>
-            </div>
-        </div>
-    </div>
-
-
-    {{-- ═══ DIV-GERAIS ═══ --}}
-    <div class="div-gerais row g-3">
-        <div class="col-12">
-            <div class="card border border-light-subtle shadow-none">
-                <div class="card-header bg-light-subtle py-2">
-                    <h5 class="card-title mb-0 fs-13 text-uppercase text-muted fw-bold">Seguradora (Opcional)</h5>
-                </div>
-                <div class="card-body p-3">
-                    <div class="row g-2">
-                        <div class="col-md-4">
-                            {!! Form::text('seguradora_nome', 'Nome da seguradora')->attrs(['class' => 'form-control']) !!}
-                        </div>
-                        <div class="col-md-3">
-                            {!! Form::tel('seguradora_cnpj', 'CNPJ da seguradora')->attrs(['class' => 'form-control cpf_cnpj']) !!}
-                        </div>
-                        <div class="col-md-2">
-                            {!! Form::tel('numero_apolice', 'Número da apólice')->attrs(['class' => 'form-control']) !!}
-                        </div>
-                        <div class="col-md-3">
-                            {!! Form::tel('numero_averbacao', 'Número da averbação')->attrs(['class' => 'form-control']) !!}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-8 col-12">
-            <div class="card border border-light-subtle shadow-none h-100">
-                <div class="card-header bg-light-subtle py-2">
-                    <h5 class="card-title mb-0 fs-13 text-uppercase text-muted fw-bold">Município(s) de Carregamento</h5>
-                </div>
-                <div class="card-body p-3">
-                    <div class="table-responsive">
-                        <table class="table table-centered mb-0 table-striped table-dynamic align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Cidade</th>
-                                    <th width="80" class="text-end">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="body" class="datatable-body">
-                                @if (isset($item) && sizeof($item->municipiosCarregamento) > 0)
-                                @foreach($item->municipiosCarregamento as $mun)
-                                <tr class="dynamic-form">
-                                    <td>
-                                        {!! Form::select('municipiosCarregamento[]', '', [null => 'Selecione...'] + $cidades->pluck('info', 'id')->all())
-                                        ->attrs(['class' => 'select2'])->required()->value($mun->cidade_id) !!}
-                                    </td>
-                                    <td class="text-end">
-                                        <button class="btn btn-danger btn-sm btn-remove-tr">
-                                            <i class="ri-delete-bin-line"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                @endforeach
-                                @else
-                                <tr class="dynamic-form">
-                                    <td>
-                                        {!! Form::select('municipiosCarregamento[]', '', [null => 'Selecione...'] + $cidades->pluck('info', 'id')->all())
-                                        ->attrs(['class' => 'select2 class-municipio class-required'])->required() !!}
-                                    </td>
-                                    <td class="text-end">
-                                        <button class="btn btn-danger btn-sm btn-remove-tr">
-                                            <i class="ri-delete-bin-line"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                @endif
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-2">
-                        <button type="button" class="btn btn-dark btn-sm btn-add-tr">
-                            <i class="ri-add-line align-middle me-1"></i> Adicionar Município
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 col-12">
-            <div class="card border border-light-subtle shadow-none h-100">
-                <div class="card-header bg-light-subtle py-2">
-                    <h5 class="card-title mb-0 fs-13 text-uppercase text-muted fw-bold">Percurso</h5>
-                </div>
-                <div class="card-body p-3">
-                    <div class="table-responsive">
-                        <table class="table table-centered mb-0 table-striped table-dynamic align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>UF</th>
-                                    <th width="80" class="text-end">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody class="datatable-body" id="tbody">
-                                @if (isset($item) && sizeof($item->percurso) > 0)
-                                @foreach($item->percurso as $p)
-                                <tr class="dynamic-form">
-                                    <td>
-                                        {!! Form::select('uf[]', '', ['' => 'Selecione...'] + App\Models\Cidade::estados())
-                                        ->attrs(['class' => 'select2'])
-                                        ->value($p->uf)
-                                        !!}
-                                    </td>
-                                    <td class="text-end">
-                                        <button class="btn btn-danger btn-sm btn-remove-tr">
-                                            <i class="ri-delete-bin-line"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                @endforeach
-                                @else
-                                <tr class="dynamic-form">
-                                    <td>
-                                        {!! Form::select('uf[]', '', ['' => 'Selecione...'] + App\Models\Cidade::estados())
-                                        ->attrs(['class' => 'select2']) !!}
-                                    </td>
-                                    <td class="text-end">
-                                        <button class="btn btn-danger btn-sm btn-remove-tr">
-                                            <i class="ri-delete-bin-line"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                @endif
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-2">
-                        <button type="button" class="btn btn-dark btn-sm btn-add-tr">
-                            <i class="ri-add-line align-middle me-1"></i> Adicionar Percurso
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- ═══ DIV-TRANSPORTE ═══ --}}
-    <div class="div-transporte d-none row g-3">
-        <div class="col-12">
-            <div class="card border border-light-subtle shadow-none">
-                <div class="card-header bg-light-subtle py-2">
-                    <h5 class="card-title mb-0 fs-13 text-uppercase text-muted fw-bold">CIOT (Opcional)</h5>
-                </div>
-                <div class="card-body p-3">
-                    <div class="table-responsive">
-                        <table class="table table-centered mb-0 table-striped table-dynamic align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Código CIOT</th>
-                                    <th>CPF/CNPJ</th>
-                                    <th width="80" class="text-end">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if(isset($item) && sizeof($item->ciots) > 0)
-                                @foreach($item->ciots as $ciot)
-                                <tr class="dynamic-form">
-                                    <td>
-                                        <input type="tel" class="form-control codigo_ciot" name="codigo_ciot[]" value="{{$ciot->codigo}}">
-                                    </td>
-                                    <td>
-                                        <input type="tel" class="form-control cpf_cnpj" name="cpf_cnpj[]" value="{{$ciot->cpf_cnpj}}">
-                                    </td>
-                                    <td class="text-end">
-                                        <button type="button" class="btn btn-danger btn-sm btn-remove-tr">
-                                            <i class="ri-delete-bin-line"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                @endforeach
-                                @else
-                                <tr class="dynamic-form">
-                                    <td>
-                                        <input type="tel" class="form-control codigo_ciot" name="codigo_ciot[]">
-                                    </td>
-                                    <td>
-                                        <input type="tel" class="form-control cpf_cnpj" name="cpf_cnpj[]">
-                                    </td>
-                                    <td class="text-end">
-                                        <button type="button" class="btn btn-danger btn-sm btn-remove-tr">
-                                            <i class="ri-delete-bin-line"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                @endif
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-2">
-                        <button type="button" class="btn btn-dark btn-sm btn-add-tr">
-                            <i class="ri-add-line align-middle me-1"></i> Adicionar CIOT
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div class="card border border-light-subtle shadow-none">
-                <div class="card-header bg-light-subtle py-2">
-                    <h5 class="card-title mb-0 fs-13 text-uppercase text-muted fw-bold">Vale Pedágio (Opcional)</h5>
-                </div>
-                <div class="card-body p-3">
-                    <div class="table-responsive">
-                        <table class="table table-centered mb-0 table-striped table-dynamic align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>CNPJ</th>
-                                    <th>CPF/CNPJ Pagador</th>
-                                    <th>Número da Compra</th>
-                                    <th>Valor</th>
-                                    <th width="80" class="text-end">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if(isset($item) && sizeof($item->valesPedagio) > 0)
-                                @foreach($item->valesPedagio as $vale)
-                                <tr class="dynamic-form">
-                                    <td>
-                                        <input type="tel" class="form-control cnpj_fornecedor cpf_cnpj" name="cnpj_fornecedor[]" value="{{$vale->cnpj_fornecedor}}">
-                                    </td>
-                                    <td>
-                                        <input type="tel" class="form-control cnpj_fornecedor_pagador" name="cnpj_fornecedor_pagador[]" value="{{$vale->cnpj_fornecedor_pagador}}">
-                                    </td>
-                                    <td>
-                                        <input type="tel" class="form-control numero_compra" name="numero_compra[]" value="{{$vale->numero_compra}}">
-                                    </td>
-                                    <td>
-                                        <input type="tel" class="form-control valor" name="valor_pedagio[]" value="{{ __moeda($vale->valor)}}">
-                                    </td>
-                                    <td class="text-end">
-                                        <button type="button" class="btn btn-danger btn-sm btn-remove-tr">
-                                            <i class="ri-delete-bin-line"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                @endforeach
-                                @else
-                                <tr class="dynamic-form">
-                                    <td>
-                                        <input type="tel" class="form-control cnpj_fornecedor cpf_cnpj" name="cnpj_fornecedor[]">
-                                    </td>
-                                    <td>
-                                        <input type="tel" class="form-control cnpj_fornecedor_pagador cpf_cnpj" name="cnpj_fornecedor_pagador[]">
-                                    </td>
-                                    <td>
-                                        <input type="tel" class="form-control numero_compra" name="numero_compra[]">
-                                    </td>
-                                    <td>
-                                        <input type="tel" class="form-control valor moeda" name="valor_pedagio[]">
-                                    </td>
-                                    <td class="text-end">
-                                        <button type="button" class="btn btn-danger btn-sm btn-remove-tr">
-                                            <i class="ri-delete-bin-line"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                @endif
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-2">
-                        <button type="button" class="btn btn-dark btn-sm btn-add-tr">
-                            <i class="ri-add-line align-middle me-1"></i> Adicionar Vale Pedágio
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div class="card border border-light-subtle shadow-none">
-                <div class="card-header bg-light-subtle py-2">
-                    <h5 class="card-title mb-0 fs-13 text-uppercase text-muted fw-bold">Condutor</h5>
-                </div>
-                <div class="card-body p-3">
-                    <div class="row g-2">
-                        <div class="col-md-6 col-12">
-                            {!! Form::text('condutor_nome', 'Nome')->attrs(['class' => 'form-control class-condutor class-required'])->required() !!}
-                        </div>
-                        <div class="col-md-6 col-12">
-                            {!! Form::tel('condutor_cpf', 'CPF')->attrs(['class' => 'form-control cpf class-condutor class-required'])->required() !!}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- ═══ DIV-DESCARREGAMENTO ═══ --}}
-    <div class="div-descarregamento d-none row g-3">
-        <div class="col-12 form-descarregamento">
-            <div class="card border border-light-subtle shadow-none mb-3">
-                <div class="card-header bg-light-subtle py-2">
-                    <h5 class="card-title mb-0 fs-13 text-uppercase text-muted fw-bold">Unidade de Transporte e Carga</h5>
-                </div>
-                <div class="card-body p-3">
-                    <div class="row g-2">
-                        <div class="col-md-3 col-12">
-                            {!! Form::select(
-                            'tp_unid_transp',
-                            'Tipo unidade de transporte', ['' => 'Selecione...'] +
-                            App\Models\Mdfe::tiposUnidadeTransporte(),
-                            )->attrs(['class' => 'form-select']) !!}
-                        </div>
-                        <div class="col-md-3 col-6">
-                            {!! Form::tel('id_unid_transp', 'ID da Unidade de transporte (placa)')->attrs(['class' => 'form-control placa']) !!}
-                        </div>
-                        <div class="col-md-2 col-6">
-                            {!! Form::tel('quantidade_rateio', 'Qtd rateio (transporte)')->attrs(['class' => 'form-control', 'data-mask' => '000,00']) !!}
-                        </div>
-                        <div class="col-md-2 col-6">
-                            {!! Form::tel('id_unidade_carga', 'ID unidade da carga')->attrs(['class' => 'form-control']) !!}
-                        </div>
-                        <div class="col-md-2 col-6">
-                            {!! Form::tel('quantidade_rateio_carga', 'Qtd rateio (unidade carga)')->attrs(['class' => 'form-control', 'data-mask' => '000,00']) !!}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-3 mb-3">
-                <div class="col-md-6 col-12">
-                    <div class="card border border-light-subtle shadow-none h-100">
-                        <div class="card-header bg-light-subtle py-2">
-                            <h5 class="card-title mb-0 fs-13 text-uppercase text-muted fw-bold">NFe Referência</h5>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="row g-2">
-                                <div class="col-12">
-                                    {!! Form::tel('chave_nfe', 'Chave NFe referência')->attrs(['class' => 'form-control ignore chave_nfe']) !!}
-                                </div>
-                                <div class="col-12">
-                                    {!! Form::tel('seg_cod_nfe', 'Segundo código de barra NFe (contingência)')->attrs(['class' => 'form-control ignore']) !!}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-12">
-                    <div class="card border border-light-subtle shadow-none h-100">
-                        <div class="card-header bg-light-subtle py-2">
-                            <h5 class="card-title mb-0 fs-13 text-uppercase text-muted fw-bold">CTe Referência</h5>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="row g-2">
-                                <div class="col-12">
-                                    {!! Form::tel('chave_cte', 'Chave CTe referência')->attrs(['class' => 'form-control ignore chave_nfe']) !!}
-                                </div>
-                                <div class="col-12">
-                                    {!! Form::tel('seg_cod_cte', 'Segundo código de barra CTe (contingência)')->attrs(['class' => 'form-control ignore']) !!}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Blocos de Lacres e Município lado a lado (3 colunas iguais) --}}
-            <div class="row g-3 mb-3">
-                <div class="col-md-4 col-12">
-                    <div class="card border border-light-subtle shadow-none h-100">
-                        <div class="card-header bg-light-subtle py-2">
-                            <h5 class="card-title mb-0 fs-13 text-uppercase text-muted fw-bold">Lacres de Transporte</h5>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="table-responsive">
-                                <table class="table table-centered mb-0 table-striped table-dynamic table-lacres table-lacres-align align-middle">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Número Lacre</th>
-                                            <th width="60" class="text-end">Ação</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="body" class="datatable-body">
-                                        <tr class="dynamic-form">
-                                            <td>
-                                                {!! Form::tel('numero_transporte[]', '')->attrs(['class' => 'form-control numero_transporte input_lacres']) !!}
-                                            </td>
-                                            <td class="text-end">
-                                                <button class="btn btn-danger btn-sm btn-remove-tr">
-                                                    <i class="ri-delete-bin-line"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="mt-2">
-                                <button type="button" class="btn btn-dark btn-sm btn-numero_transporte btn-add-tr">
-                                    <i class="ri-add-line align-middle me-1"></i> Adicionar Lacre
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-4 col-12">
-                    <div class="card border border-light-subtle shadow-none h-100">
-                        <div class="card-header bg-light-subtle py-2">
-                            <h5 class="card-title mb-0 fs-13 text-uppercase text-muted fw-bold">Lacres da Unidade da Carga</h5>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="table-responsive">
-                                <table class="table table-centered mb-0 table-striped table-dynamic table-lacres-carga table-lacres-align align-middle">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Número Lacre</th>
-                                            <th width="60" class="text-end">Ação</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="body" class="datatable-body">
-                                        <tr class="dynamic-form">
-                                            <td>
-                                                {!! Form::tel('numero_carga[]', '')->attrs(['class' => 'form-control numero_carga input_lacres']) !!}
-                                            </td>
-                                            <td class="text-end">
-                                                <button class="btn btn-danger btn-sm btn-remove-tr">
-                                                    <i class="ri-delete-bin-line"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="mt-2">
-                                <button type="button" class="btn btn-dark btn-sm btn-add-tr">
-                                    <i class="ri-add-line align-middle me-1"></i> Adicionar Lacre
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-4 col-12">
-                    <div class="card border border-light-subtle shadow-none h-100">
-                        <div class="card-header bg-light-subtle py-2">
-                            <h5 class="card-title mb-0 fs-13 text-uppercase text-muted fw-bold">Município de Descarregamento</h5>
-                        </div>
-                        <div class="card-body p-3">
-                            <label class="form-label fw-semibold fs-12 mb-1">Selecione o Município</label>
-                            {!! Form::select('municipio_descarregamento', '', ['' => 'Selecione...'] + $cidades->pluck('info', 'id')->all())->attrs(['class' => 'select2']) !!}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="col-12">
-            <div class="card border border-light-subtle shadow-none">
-                <div class="card-header bg-light-subtle py-2 d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0 fs-13 text-uppercase text-muted fw-bold">Dados do Descarregamento</h5>
-                    <button type="button" class="btn btn-info btn-sm btn_info_desc">
-                        <i class="ri-add-circle-line align-middle me-1"></i> Adicionar Informações
-                    </button>
-                </div>
-                <div class="card-body p-3">
-                    <div class="table-responsive class-descarregamento">
-                        <table class="table table-centered table-descarregamento mb-0 align-middle">
-                            <thead class="table-success">
-                                <tr>
-                                    <th>Tipo Transporte</th>
-                                    <th>Id Unid Transp</th>
-                                    <th>Qtd Rateio</th>
-                                    <th>Qtd Rateio Carga</th>
-                                    <th>NFe Ref</th>
-                                    <th>CTe Ref</th>
-                                    <th>Mun Descarrega</th>
-                                    <th>Lacres Transp</th>
-                                    <th>Lacres Carga</th>
-                                    <th width="80" class="text-end">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @isset($item)
-                                @foreach ($item->infoDescarga as $i)
-                                <tr>
-                                    <td>
-                                        <input readonly type="text" name="tp_und_transp_row[]" class="form-control form-control-sm" value="{{ $i->tp_unid_transp }}">
-                                    </td>
-                                    <td>
-                                        <input readonly type="text" name="id_und_transp_row[]" class="form-control form-control-sm" value="{{ $i->id_unid_transp }}">
-                                    </td>
-                                    <td>
-                                        <input readonly type="tel" name="quantidade_rateio_row[]" class="form-control form-control-sm" value="{{ $i->quantidade_rateio }}">
-                                    </td>
-                                    <td>
-                                        <input readonly type="tel" name="quantidade_rateio_carga_row[]" class="form-control form-control-sm" value="{{ $i->unidadeCarga->quantidade_rateio }}">
-                                    </td>
-                                    <td>
-                                        <input readonly type="tel" name="chave_nfe_row[]" class="form-control form-control-sm" value="{{ isset($i->nfe->chave) ? $i->nfe->chave : '' }}">
-                                    </td>
-                                    <td>
-                                        <input readonly type="tel" name="chave_cte_row[]" class="form-control form-control-sm" value="{{ isset($i->cte->chave) ? $i->cte->chave : '' }}">
-                                    </td>
-                                    <td>
-                                        <input readonly type="text" class="form-control form-control-sm" value="{{ $i->cidade->nome }}">
-                                        <input readonly type="hidden" name="municipio_descarregamento_row[]" value="{{ $i->cidade->id }}">
-                                    </td>
-                                    <td>
-                                        <input readonly type="text" name="lacres_transporte_row[]" class="form-control form-control-sm" value="{{ json_encode($i->lacresTransp->pluck('numero')->toArray()) }}">
-                                    </td>
-                                    <td>
-                                        <input readonly type="text" name="lacres_unidade_row[]" class="form-control form-control-sm" value="{{ json_encode($i->lacresUnidCarga->pluck('numero')->toArray()) }}">
-                                    </td>
-                                    <td class="text-end">
-                                        <button class="btn btn-sm btn-danger btn-delete-row">
-                                            <i class="ri-delete-bin-line"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                @endforeach
-                                @endif
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Rodapé / Infos Adicionais --}}
-    <div class="col-12 mt-3">
-        <div class="row g-2 rodape">
-            <div class="col-md-6 col-12">
-                {!! Form::text('info_complementar', 'Informação complementar (opcional)') !!}
-            </div>
-            <div class="col-md-6 col-12">
-                {!! Form::text('info_adicional_fisco', 'Informação fiscal (opcional)') !!}
-            </div>
-            <div class="col-12 alerts mt-2"></div>
-        </div>
-    </div>
-
-    <div class="col-12 d-flex justify-content-end pt-3">
-        <button type="submit" disabled class="btn btn-success btn-salvar-modulo btn-salvarMdfe">
-            <i class="ri-save-line align-middle me-1"></i> Salvar MDF-e
+<!-- Rodapé / Barra de Ações -->
+<div class="bottom-actions-card">
+    <a href="{{ route('mdfe.index') }}" class="btn-action-outline">
+        Cancelar
+    </a>
+    
+    <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn-action-outline">
+            Mais Opções
+        </button>
+        <button type="button" class="btn-action-view">
+            Visualizar
+        </button>
+        <button type="submit" class="btn-action-conclude">
+            Concluir
         </button>
     </div>
 </div>
 
-@section('js')
-<script src="/js/mdfe.js"></script>
-@endsection
+{{-- Modal de Importação de XMLs --}}
+@include('modals._importar_documentos')
+
+{{-- Modal de Edição Individual de Documento --}}
+@include('modals._editar_documento')
+
+{{-- Modal de Edição de Viagem (Carregamento e Percurso) --}}
+@include('modals._editar_viagem')
+
+<!-- Container de Inputs Ocultos do Formulário -->
+<div id="hidden-form-inputs">
+    <input type="hidden" name="valor_carga" id="inp-valor_carga" value="{{ isset($item) && $item->valor_carga ? number_format($item->valor_carga, 2, ',', '.') : '0' }}">
+    <input type="hidden" name="quantidade_carga" id="inp-quantidade_carga" value="{{ isset($item) && $item->quantidade_carga ? number_format($item->quantidade_carga, 2, ',', '.') : '0' }}">
+    <input type="hidden" name="produto_pred_nome" id="inp-produto_pred_nome" value="{{ $item->produto_pred_nome ?? '' }}">
+    <input type="hidden" name="produto_pred_ncm" id="inp-produto_pred_ncm" value="{{ $item->produto_pred_ncm ?? '' }}">
+    <input type="hidden" name="tp_carga" id="inp-tp_carga" value="{{ $item->tp_carga ?? '05' }}">
+    <input type="hidden" name="tp_emit" id="inp-tp_emit" value="{{ $item->tp_emit ?? '2' }}">
+    <input type="hidden" name="tipo_modal" id="inp-tipo_modal" value="{{ $item->tipo_modal ?? '1' }}">
+    <input type="hidden" name="unidade_medida" id="inp-unidade_medida" value="{{ $item->unidade_medida ?? 'KG' }}">
+    <input type="hidden" name="uf_inicio" id="inp-uf_inicio" value="{{ $item->uf_inicio ?? 'CE' }}">
+    <input type="hidden" name="uf_fim" id="inp-uf_fim" value="{{ $item->uf_fim ?? 'CE' }}">
+    <input type="hidden" name="data_inicio_viagem" id="inp-data_inicio_viagem" value="{{ isset($item) && $item->data_inicio_viagem ? date('Y-m-d', strtotime($item->data_inicio_viagem)) : date('Y-m-d') }}">
+    <input type="hidden" name="cnpj_contratante" id="inp-cnpj_contratante" value="{{ $item->cnpj_contratante ?? '' }}">
+    <div id="hidden-descarregamentos-container"></div>
+    <div id="hidden-municipios-carregamento-container">
+        @if(isset($item) && $item->municipiosCarregamento && count($item->municipiosCarregamento) > 0)
+            @foreach($item->municipiosCarregamento as $mc)
+                <input type="hidden" name="municipiosCarregamento[]" value="{{ $mc->cidade_id }}">
+            @endforeach
+        @elseif(isset($empresa) && $empresa->cidade_id)
+            <input type="hidden" name="municipiosCarregamento[]" value="{{ $empresa->cidade_id }}">
+        @endif
+    </div>
+    <div id="hidden-percurso-container">
+        @if(isset($item) && $item->percurso && count($item->percurso) > 0)
+            @foreach($item->percurso as $p)
+                <input type="hidden" name="uf[]" value="{{ $p->uf }}">
+            @endforeach
+        @endif
+    </div>
+</div>
+
+<script>
+window.mdfeDocumentos = {!! json_encode($docsIniciais ?? []) !!};
+
+// Funções para Modais de Viagem
+window.abrirModalEditarCarregamento = function() {
+    const ufAtual = $('#inp-uf_inicio').val() || 'CE';
+    $('#edit-carregamento-uf').val(ufAtual).trigger('change');
+    
+    const modalEl = document.getElementById('modal-editar-carregamento');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+};
+
+window.abrirModalEditarPercurso = function() {
+    // Marca as UFs atualmente selecionadas
+    $('.chk-percurso-uf').prop('checked', false);
+    $('#hidden-percurso-container input[name="uf[]"]').each(function() {
+        const uf = $(this).val();
+        $('#percurso-uf-' + uf).prop('checked', true);
+    });
+    atualizarPreviewPercurso();
+
+    const modalEl = document.getElementById('modal-editar-percurso');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+};
+
+function atualizarPreviewPercurso() {
+    let ufs = [];
+    $('.chk-percurso-uf:checked').each(function() {
+        ufs.push($(this).val());
+    });
+    if (ufs.length > 0) {
+        $('#preview-percurso-selecionado').text(ufs.join(' -> '));
+    } else {
+        $('#preview-percurso-selecionado').text('Nenhum estado intermediário selecionado.');
+    }
+}
+
+// Funções de Edição Inline de Viagem e Carga
+window.ativarEdicaoDataInicio = function() {
+    $('#view-data-inicio').hide();
+    $('#box-edit-data-inicio').show();
+    $('#inp-edit-data-inicio').focus();
+};
+
+window.ativarEdicaoValorCarga = function() {
+    $('#view-valor-carga').hide();
+    $('#box-edit-valor-carga').show();
+    $('#inp-edit-valor-carga').val($('#disp-valor-carga').text().trim()).focus().select();
+};
+
+window.ativarEdicaoPesoTotal = function() {
+    $('#view-peso-total').hide();
+    $('#box-edit-peso-total').show();
+    $('#inp-edit-peso-total').val($('#disp-peso-total').text().replace(' Kg', '').trim()).focus().select();
+};
+
+window.ativarEdicaoProdPred = function() {
+    $('#view-prod-pred').hide();
+    $('#box-edit-prod-pred').show();
+    let cur = $('#disp-prod-predominante').text().trim();
+    $('#inp-edit-prod-pred').val(cur === '-' ? '' : cur).focus().select();
+};
+
+window.ativarEdicaoTipoCarga = function() {
+    $('#view-tipo-carga').hide();
+    $('#box-edit-tipo-carga').show();
+    $('#inp-edit-tipo-carga').val($('#inp-tp_carga').val() || '05').focus();
+};
+
+window.ativarEdicaoNcm = function() {
+    $('#view-ncm').hide();
+    $('#box-edit-ncm').show();
+    let cur = $('#disp-ncm').text().trim();
+    $('#inp-edit-ncm').val(cur === '-' ? '' : cur).focus().select();
+};
+
+// Função global para abrir a modal de edição individual de um documento
+window.abrirModalEditarDoc = function(index) {
+    const doc = window.mdfeDocumentos[index];
+    if (!doc) return;
+
+    $('#edit-doc-index').val(index);
+    $('#edit-doc-tipo').val(doc.tipo_doc || 'NFE');
+    
+    // UF e Município
+    const uf = doc.cidade_uf || '';
+    $('#edit-doc-uf').val(uf).trigger('change');
+    
+    if (doc.municipio_descarregamento) {
+        $('#edit-doc-municipio').val(doc.municipio_descarregamento).trigger('change');
+    }
+
+    // Valor Total
+    let vStr = (doc.valor || '0,00').toString();
+    if (!vStr.startsWith('R$')) {
+        vStr = 'R$ ' + vStr;
+    }
+    $('#edit-doc-valor').val(vStr);
+
+    // Peso
+    $('#edit-doc-peso').val(doc.quantidade_rateio || '0,00');
+
+    // Chave de Acesso
+    $('#edit-doc-chave').val(doc.chave_nfe || doc.chave || '');
+
+    // Unidades de Transporte (Mais informações)
+    $('#edit-doc-tp-und').val(doc.tp_und_transp || 1);
+    $('#edit-doc-id-und').val(doc.id_und_transp || '');
+    $('#container-mais-info').hide();
+    $('#icon-mais-info').removeClass('ri-subtract-line').addClass('ri-add-line');
+
+    const modalEl = document.getElementById('modal-editar-documento');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+};
+
+// Função global para remover documento
+window.removerDoc = function(index) {
+    window.mdfeDocumentos.splice(index, 1);
+    renderizarDocumentosNfe();
+};
+
+// Renderiza a lista de documentos e recalcula os totais
+window.renderizarDocumentosNfe = function() {
+    const descarregamentos = window.mdfeDocumentos || [];
+    const nfeCount = descarregamentos.length;
+    $('#lbl-nfe-count').text(nfeCount + ' ' + (nfeCount === 1 ? 'NFe Importada' : 'NFes Importados'));
+
+    if (descarregamentos.length === 0) {
+        $('#container-nfe-list').html(`
+            <div class="text-center py-4 text-muted fs-13" id="empty-nfe-placeholder">
+                <i class="ri-file-upload-line fs-24 d-block mb-1 text-secondary"></i>
+                Nenhum documento importado ainda.
+            </div>
+        `);
+        $('#hidden-descarregamentos-container').html('');
+        $('#disp-valor-carga').text('R$ 0,00');
+        $('#inp-valor_carga').val('0,00');
+        $('#disp-peso-total').text('0.00 Kg');
+        $('#inp-quantidade_carga').val('0');
+        return;
+    }
+
+    let nfeHtml = '';
+    let hiddenDescHtml = '';
+    let totalValor = 0.0;
+    let totalPeso = 0.0;
+
+    descarregamentos.forEach((item, index) => {
+        let cidadeUf = '';
+        if (item.cidade_nome && item.cidade_uf) {
+            cidadeUf = item.cidade_nome + '/' + item.cidade_uf;
+        } else if (item.cidade_info) {
+            cidadeUf = item.cidade_info.replace(' (', '/').replace(')', '');
+        } else if (item.destinatario) {
+            cidadeUf = (item.destinatario.municipio || '') + '/' + (item.destinatario.uf || '');
+        }
+
+        let chave = item.chave_nfe || item.chave || '';
+        let numDoc = item.numero || (chave.length === 44 ? chave.substring(25, 34) : '');
+        let serieDoc = (chave.length === 44 ? chave.substring(22, 25) : '001');
+
+        nfeHtml += `
+            <div class="nfe-pill-item" id="nfe-row-${index}">
+                <span class="fw-bold text-dark fs-13">NFe ${numDoc}/${serieDoc}</span>
+                <div class="d-flex align-items-center gap-2 fs-13">
+                    <span class="text-dark fw-medium">${cidadeUf || 'Descarregamento Padrão'}</span>
+                    <i class="ri-edit-2-line text-secondary ms-1" style="cursor: pointer; font-size: 15px;" title="Editar documento" onclick="abrirModalEditarDoc(${index})"></i>
+                    <i class="ri-close-line text-secondary ms-1" style="cursor: pointer; font-size: 17px;" title="Remover documento" onclick="removerDoc(${index})"></i>
+                </div>
+            </div>
+        `;
+
+        // Soma de valores
+        let vNum = 0.0;
+        if (typeof item.valor === 'number') {
+            vNum = item.valor;
+        } else if (typeof item.valor === 'string') {
+            vNum = parseFloat(item.valor.replace('R$', '').replace(/\./g, '').replace(',', '.').trim()) || 0;
+        }
+        totalValor += vNum;
+
+        // Soma de pesos
+        let pNum = 0.0;
+        if (typeof item.quantidade_rateio === 'number') {
+            pNum = item.quantidade_rateio;
+        } else if (typeof item.quantidade_rateio === 'string') {
+            pNum = parseFloat(item.quantidade_rateio.replace(/\./g, '').replace(',', '.').trim()) || 0;
+        }
+        totalPeso += pNum;
+
+        // Hidden inputs para salvar no backend
+        let munId = item.municipio_descarregamento;
+        hiddenDescHtml += `
+            <div id="hidden-desc-row-${index}">
+                <input type="hidden" name="tp_und_transp_row[]" value="${item.tp_und_transp || 1}">
+                <input type="hidden" name="municipio_descarregamento_row[]" value="${munId || ''}">
+                <input type="hidden" name="quantidade_rateio_row[]" value="${item.quantidade_rateio || ''}">
+                <input type="hidden" name="chave_nfe_row[]" value="${chave}">
+                <input type="hidden" name="chave_cte_row[]" value="${item.chave_cte || ''}">
+                <input type="hidden" name="lacres_transporte_row[]" value='${JSON.stringify(item.lacres_transporte || [])}'>
+                <input type="hidden" name="lacres_unidade_row[]" value='${JSON.stringify(item.lacres_unidade || [])}'>
+            </div>
+        `;
+    });
+
+    $('#container-nfe-list').html(nfeHtml);
+    $('#hidden-descarregamentos-container').html(hiddenDescHtml);
+
+    // Atualiza Totais Calculados no Card Carga
+    const totalValorFormatado = totalValor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const totalPesoFormatado = totalPeso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    $('#disp-valor-carga').text('R$ ' + totalValorFormatado);
+    $('#inp-valor_carga').val(totalValorFormatado);
+
+    $('#disp-peso-total').text(totalPesoFormatado + ' Kg');
+    $('#inp-quantidade_carga').val(totalPesoFormatado);
+};
+
+// Funções para ativar edição inline de Número do Documento e Série
+window.ativarEdicaoNumeroDoc = function() {
+    $('#view-mdfe-numero').hide();
+    $('#edit-box-mdfe-numero').show();
+    $('#inp-mdfe-numero').focus().select();
+};
+
+window.ativarEdicaoSerie = function() {
+    $('#view-mdfe-serie').hide();
+    $('#edit-box-mdfe-serie').show();
+    $('#inp-mdfe-serie').focus().select();
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Inicializa Select2 para veículos, motorista e modal de edição
+    $('#inp-veiculo_tracao_id, #inp-veiculo_reboque_id, #inp-condutor_id').select2({
+        width: '100%',
+        language: "pt-BR"
+    });
+
+    // Handlers para edição inline de Número do Documento
+    $('#inp-mdfe-numero').on('blur', function() {
+        let val = $(this).val().trim();
+        $('#txt-numero-mdfe').text(val !== '' ? val : 'Informe');
+        $('#edit-box-mdfe-numero').hide();
+        $('#view-mdfe-numero').show();
+    }).on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            $(this).blur();
+        } else if (e.key === 'Escape') {
+            $(this).val($('#txt-numero-mdfe').text() === 'Informe' ? '' : $('#txt-numero-mdfe').text());
+            $('#edit-box-mdfe-numero').hide();
+            $('#view-mdfe-numero').show();
+        }
+    });
+
+    // Handlers para edição inline de Série
+    $('#inp-mdfe-serie').on('blur', function() {
+        let val = $(this).val().trim();
+        $('#txt-serie').text(val !== '' ? val : '1');
+        $('#edit-box-mdfe-serie').hide();
+        $('#view-mdfe-serie').show();
+    }).on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            $(this).blur();
+        } else if (e.key === 'Escape') {
+            $(this).val($('#txt-serie').text());
+            $('#edit-box-mdfe-serie').hide();
+            $('#view-mdfe-serie').show();
+        }
+    });
+
+    $('#edit-doc-municipio').select2({
+        dropdownParent: $('#modal-editar-documento'),
+        width: '100%',
+        language: "pt-BR"
+    });
+
+    $('#edit-carregamento-municipio').select2({
+        dropdownParent: $('#modal-editar-carregamento'),
+        width: '100%',
+        language: "pt-BR"
+    });
+
+    // Filtro de municípios por UF na modal de Carregamento
+    $('#edit-carregamento-uf').on('change', function() {
+        const selectedUf = $(this).val();
+        if (!selectedUf) {
+            $('#edit-carregamento-municipio option').show();
+            return;
+        }
+        $('#edit-carregamento-municipio option').each(function() {
+            const optUf = $(this).data('uf');
+            if (!optUf || optUf === selectedUf) {
+                $(this).prop('disabled', false);
+            } else {
+                $(this).prop('disabled', true);
+            }
+        });
+        $('#edit-carregamento-municipio').select2({
+            dropdownParent: $('#modal-editar-carregamento'),
+            width: '100%',
+            language: "pt-BR"
+        });
+    });
+
+    // Confirmar alteração do Local de Carregamento
+    $('#btn-confirmar-carregamento').on('click', function() {
+        const uf = $('#edit-carregamento-uf').val();
+        const munId = $('#edit-carregamento-municipio').val();
+        const munNome = $('#edit-carregamento-municipio option:selected').data('nome') || $('#edit-carregamento-municipio option:selected').text().split(' (')[0];
+
+        if (uf && munId) {
+            $('#disp-local-carregamento').text(uf + ' - ' + munNome);
+            $('#inp-uf_inicio').val(uf);
+            $('#hidden-municipios-carregamento-container').html(`<input type="hidden" name="municipiosCarregamento[]" value="${munId}">`);
+        } else if (uf) {
+            $('#disp-local-carregamento').text(uf);
+            $('#inp-uf_inicio').val(uf);
+        }
+
+        const modalEl = document.getElementById('modal-editar-carregamento');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    });
+
+    // Eventos na modal de Percurso
+    $(document).on('change', '.chk-percurso-uf', function() {
+        atualizarPreviewPercurso();
+    });
+
+    // Confirmar alteração do Percurso
+    $('#btn-confirmar-percurso').on('click', function() {
+        let ufs = [];
+        let hiddenHtml = '';
+        $('.chk-percurso-uf:checked').each(function() {
+            const uf = $(this).val();
+            ufs.push(uf);
+            hiddenHtml += `<input type="hidden" name="uf[]" value="${uf}">`;
+        });
+
+        $('#disp-percurso').text(ufs.join(' -> '));
+        $('#hidden-percurso-container').html(hiddenHtml);
+
+        const modalEl = document.getElementById('modal-editar-percurso');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    });
+
+    // Edição inline da Data de Início de Viagem
+    $('#inp-edit-data-inicio').on('blur', function() {
+        const rawVal = $(this).val();
+        if (rawVal) {
+            const d = new Date(rawVal);
+            if (!isNaN(d.getTime())) {
+                const dia = String(d.getDate()).padStart(2, '0');
+                const mes = String(d.getMonth() + 1).padStart(2, '0');
+                const ano = d.getFullYear();
+                const hora = String(d.getHours()).padStart(2, '0');
+                const min = String(d.getMinutes()).padStart(2, '0');
+                $('#disp-data-inicio').text(`${dia}/${mes}/${ano} ${hora}:${min}`);
+                $('#inp-data_inicio_viagem').val(`${ano}-${mes}-${dia}`);
+            }
+        }
+        $('#box-edit-data-inicio').hide();
+        $('#view-data-inicio').show();
+    }).on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            $(this).blur();
+        } else if (e.key === 'Escape') {
+            $('#box-edit-data-inicio').hide();
+            $('#view-data-inicio').show();
+        }
+    });
+
+    // Edição inline de Valor Total da Carga
+    $('#inp-edit-valor-carga').on('blur', function() {
+        let val = $(this).val().trim();
+        if (val) {
+            if (!val.startsWith('R$')) val = 'R$ ' + val;
+            $('#disp-valor-carga').text(val);
+            $('#inp-valor_carga').val(val.replace('R$', '').trim());
+        }
+        $('#box-edit-valor-carga').hide();
+        $('#view-valor-carga').show();
+    }).on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            $(this).blur();
+        } else if (e.key === 'Escape') {
+            $('#box-edit-valor-carga').hide();
+            $('#view-valor-carga').show();
+        }
+    });
+
+    // Edição inline de Peso Total
+    $('#inp-edit-peso-total').on('blur', function() {
+        let val = $(this).val().trim();
+        if (val) {
+            val = val.replace('Kg', '').replace('kg', '').trim();
+            $('#disp-peso-total').text(val + ' Kg');
+            $('#inp-quantidade_carga').val(val);
+        }
+        $('#box-edit-peso-total').hide();
+        $('#view-peso-total').show();
+    }).on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            $(this).blur();
+        } else if (e.key === 'Escape') {
+            $('#box-edit-peso-total').hide();
+            $('#view-peso-total').show();
+        }
+    });
+
+    // Edição inline de Produto Predominante
+    $('#inp-edit-prod-pred').on('blur', function() {
+        let val = $(this).val().trim();
+        $('#disp-prod-predominante').text(val !== '' ? val : '-');
+        $('#inp-produto_pred_nome').val(val);
+        $('#box-edit-prod-pred').hide();
+        $('#view-prod-pred').show();
+    }).on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            $(this).blur();
+        } else if (e.key === 'Escape') {
+            $('#box-edit-prod-pred').hide();
+            $('#view-prod-pred').show();
+        }
+    });
+
+    // Edição inline de Tipo de Carga
+    $('#inp-edit-tipo-carga').on('change blur', function() {
+        const text = $(this).find('option:selected').text();
+        const val = $(this).val();
+        $('#disp-tipo-carga').text(text);
+        $('#inp-tp_carga').val(val);
+        $('#box-edit-tipo-carga').hide();
+        $('#view-tipo-carga').show();
+    });
+
+    // Edição inline de Código NCM
+    $('#inp-edit-ncm').on('blur', function() {
+        let val = $(this).val().trim();
+        $('#disp-ncm').text(val !== '' ? val : '-');
+        $('#inp-produto_pred_ncm').val(val);
+        $('#box-edit-ncm').hide();
+        $('#view-ncm').show();
+    }).on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            $(this).blur();
+        } else if (e.key === 'Escape') {
+            $('#box-edit-ncm').hide();
+            $('#view-ncm').show();
+        }
+    });
+
+    // Toggle de Mais Informações na modal de edição
+    $('#btn-toggle-mais-info').on('click', function() {
+        const container = $('#container-mais-info');
+        const icon = $('#icon-mais-info');
+        if (container.is(':visible')) {
+            container.slideUp(200);
+            icon.removeClass('ri-subtract-line').addClass('ri-add-line');
+        } else {
+            container.slideDown(200);
+            icon.removeClass('ri-add-line').addClass('ri-subtract-line');
+        }
+    });
+
+    // Filtrar municípios por UF na modal de edição
+    $('#edit-doc-uf').on('change', function() {
+        const selectedUf = $(this).val();
+        if (!selectedUf) {
+            $('#edit-doc-municipio option').show();
+            return;
+        }
+        $('#edit-doc-municipio option').each(function() {
+            const optUf = $(this).data('uf');
+            if (!optUf || optUf === selectedUf) {
+                $(this).prop('disabled', false);
+            } else {
+                $(this).prop('disabled', true);
+            }
+        });
+        $('#edit-doc-municipio').select2({
+            dropdownParent: $('#modal-editar-documento'),
+            width: '100%',
+            language: "pt-BR"
+        });
+    });
+
+    // Confirmar Edição do Documento
+    $('#btn-confirmar-edicao-doc').on('click', function() {
+        const index = parseInt($('#edit-doc-index').val());
+        if (isNaN(index) || !window.mdfeDocumentos[index]) return;
+
+        const doc = window.mdfeDocumentos[index];
+        doc.tipo_doc = $('#edit-doc-tipo').val();
+        doc.cidade_uf = $('#edit-doc-uf').val();
+        doc.municipio_descarregamento = $('#edit-doc-municipio').val();
+        
+        const selectedMunOption = $('#edit-doc-municipio option:selected');
+        if (selectedMunOption.length && selectedMunOption.val()) {
+            doc.cidade_nome = selectedMunOption.data('nome') || selectedMunOption.text().split(' (')[0];
+        }
+
+        // Valor e Peso
+        let rawVal = $('#edit-doc-valor').val().replace('R$', '').trim();
+        doc.valor = rawVal;
+        doc.quantidade_rateio = $('#edit-doc-peso').val().trim();
+
+        // Chave e atualização de número e série
+        const chave = $('#edit-doc-chave').val().trim();
+        doc.chave_nfe = chave;
+        if (chave.length === 44) {
+            doc.serie = chave.substring(22, 25);
+            doc.numero = chave.substring(25, 34);
+        }
+
+        // Unidades de Transporte
+        doc.tp_und_transp = $('#edit-doc-tp-und').val();
+        doc.id_und_transp = $('#edit-doc-id-und').val();
+
+        // Re-renderiza e recalcula totais
+        renderizarDocumentosNfe();
+
+        // Fecha modal
+        const modalEl = document.getElementById('modal-editar-documento');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    });
+
+    // Função para sincronizar motorista a partir do veículo selecionado
+    function sincronizarMotoristaPorVeiculo() {
+        const selectedOption = $('#inp-veiculo_tracao_id').find('option:selected');
+        const funcId = selectedOption.data('funcionario-id');
+        const funcNome = selectedOption.data('funcionario-nome');
+        const funcCpf = selectedOption.data('funcionario-cpf');
+
+        if (funcId) {
+            $('#inp-condutor_id').val(funcId).trigger('change');
+        }
+        if (funcNome) {
+            $('#inp-condutor_nome').val(funcNome);
+        }
+        if (funcCpf) {
+            $('#inp-condutor_cpf').val(funcCpf);
+        }
+    }
+
+    // Evento change no veículo tração
+    $('#inp-veiculo_tracao_id').on('change', function() {
+        sincronizarMotoristaPorVeiculo();
+    });
+
+    // Inicializa renderização dos documentos já existentes (modo edição)
+    if (window.mdfeDocumentos && window.mdfeDocumentos.length > 0) {
+        renderizarDocumentosNfe();
+    }
+
+    // Se já tiver veículo selecionado no carregamento e nenhum motorista definido
+    if ($('#inp-veiculo_tracao_id').val() && !$('#inp-condutor_id').val()) {
+        sincronizarMotoristaPorVeiculo();
+    }
+
+    // Atualizar hidden fields ao alterar motorista manualmente
+    $('#inp-condutor_id').on('change', function() {
+        const selectedOption = $(this).find('option:selected');
+        const funcNome = selectedOption.data('nome') || selectedOption.text();
+        const funcCpf = selectedOption.data('cpf') || '';
+        
+        if ($(this).val()) {
+            $('#inp-condutor_nome').val(funcNome ? funcNome.trim() : '');
+            $('#inp-condutor_cpf').val(funcCpf ? funcCpf.trim() : '');
+        }
+    });
+
+    // 2. Processa dados importados do XML (sessionStorage)
+    const rawData = sessionStorage.getItem('mdfe_imported_data');
+    if (rawData) {
+        try {
+            const data = JSON.parse(rawData);
+            console.log('Dados importados do XML recebidos:', data);
+
+            // Carrega descarregamentos
+            window.mdfeDocumentos = data.descarregamentos || [];
+            
+            // Se o usuário customizou descarregamento na modal de importação
+            if (data.descarregamento_customizado) {
+                window.mdfeDocumentos.forEach(d => {
+                    d.cidade_uf = data.descarregamento_customizado.uf;
+                    d.cidade_nome = data.descarregamento_customizado.cidade_nome;
+                    d.municipio_descarregamento = data.descarregamento_customizado.cidade_id;
+                });
+            }
+
+            // Renderiza as notas
+            renderizarDocumentosNfe();
+
+            // 2.2 Viagem
+            if (data.campos) {
+                let ufIni = data.campos.uf_inicio || 'CE';
+                let ufFim = (data.descarregamento_customizado ? data.descarregamento_customizado.uf : data.campos.uf_fim) || 'CE';
+                
+                $('#inp-uf_inicio').val(ufIni);
+                $('#inp-uf_fim').val(ufFim);
+
+                if (data.municipios_carregamento_nomes && data.municipios_carregamento_nomes.length > 0) {
+                    $('#disp-local-carregamento').text(ufIni + ' - ' + data.municipios_carregamento_nomes.join(', '));
+                } else if (ufIni) {
+                    $('#disp-local-carregamento').text(ufIni + ' - SOBRAL');
+                }
+
+                if (data.municipios_carregamento && data.municipios_carregamento.length > 0) {
+                    let munCarregHtml = '';
+                    data.municipios_carregamento.forEach(mId => {
+                        munCarregHtml += `<input type="hidden" name="municipiosCarregamento[]" value="${mId}">`;
+                    });
+                    $('#hidden-municipios-carregamento-container').html(munCarregHtml);
+                }
+
+                if (data.descarregamento_customizado && data.descarregamento_customizado.cidade_nome) {
+                    $('#disp-local-descarregamento').text(ufFim + ' - ' + data.descarregamento_customizado.cidade_nome);
+                } else if (ufFim) {
+                    $('#disp-local-descarregamento').text(ufFim);
+                }
+
+                if (data.percurso && data.percurso.length > 0) {
+                    $('#disp-percurso').text(data.percurso.join(' -> '));
+                    let percursoHtml = '';
+                    data.percurso.forEach(ufP => {
+                        percursoHtml += `<input type="hidden" name="uf[]" value="${ufP}">`;
+                    });
+                    $('#hidden-percurso-container').html(percursoHtml);
+                }
+            }
+
+            // 2.3 Carga - Informações adicionais
+            if (data.campos) {
+                // Produto Predominante
+                let prodNome = data.campos.produto_pred_nome || (data.produto_predominante ? data.produto_predominante.nome : '') || (data.campos.produto_predominante || '');
+                if (prodNome) {
+                    $('#disp-prod-predominante').text(prodNome);
+                    $('#inp-produto_pred_nome').val(prodNome);
+                }
+
+                // Tipo de Carga
+                if (data.campos.tp_carga) {
+                    let tpCargaMap = {
+                        '01': 'GRANEL SÓLIDO',
+                        '02': 'GRANEL LÍQUIDO',
+                        '03': 'FRIGORIFICADA',
+                        '04': 'CONTEINERIZADA',
+                        '05': 'CARGA GERAL',
+                        '06': 'NEOGRANEL',
+                        '07': 'PERIGOSA (GRANEL SÓLIDO)',
+                        '08': 'PERIGOSA (GRANEL LÍQUIDO)',
+                        '09': 'PERIGOSA (FRIGORIFICADA)',
+                        '10': 'PERIGOSA (CONTEINERIZADA)',
+                        '11': 'PERIGOSA (CARGA GERAL)'
+                    };
+                    $('#disp-tipo-carga').text(tpCargaMap[data.campos.tp_carga] || data.campos.tp_carga);
+                    $('#inp-tp_carga').val(data.campos.tp_carga);
+                }
+
+                // NCM
+                let ncm = data.campos.produto_pred_ncm || (data.produto_predominante ? data.produto_predominante.ncm : '') || (data.campos.ncm || '');
+                if (ncm) {
+                    $('#disp-ncm').text(ncm);
+                    $('#inp-produto_pred_ncm').val(ncm);
+                }
+            }
+
+            // Limpa o sessionStorage após aplicar com sucesso
+            sessionStorage.removeItem('mdfe_imported_data');
+
+        } catch (e) {
+            console.error('Erro ao processar dados do XML no layout:', e);
+        }
+    }
+
+    // Validação e Sincronização no submit do formulário antes de salvar
+    $('#form-mdfe').on('submit', function(e) {
+        const veiculoId = $('#inp-veiculo_tracao_id').val();
+        const condutorId = $('#inp-condutor_id').val();
+        const docs = window.mdfeDocumentos || [];
+
+        if (!veiculoId) {
+            e.preventDefault();
+            if (typeof swal === 'function') {
+                swal('Atenção', 'Por favor, selecione o Veículo tração antes de concluir.', 'warning');
+            } else {
+                alert('Por favor, selecione o Veículo tração antes de concluir.');
+            }
+            $('#inp-veiculo_tracao_id').select2('open');
+            return false;
+        }
+
+        if (!condutorId) {
+            e.preventDefault();
+            if (typeof swal === 'function') {
+                swal('Atenção', 'Por favor, informe o Motorista responsável.', 'warning');
+            } else {
+                alert('Por favor, informe o Motorista responsável.');
+            }
+            $('#inp-condutor_id').select2('open');
+            return false;
+        }
+
+        if (docs.length === 0) {
+            e.preventDefault();
+            if (typeof swal === 'function') {
+                swal('Atenção', 'Nenhum documento fiscal (NF-e) foi importado para esta MDF-e.', 'warning');
+            } else {
+                alert('Nenhum documento fiscal (NF-e) foi importado para esta MDF-e.');
+            }
+            return false;
+        }
+
+        // 1. Sincroniza motorista e condutor hidden
+        const selectedOption = $('#inp-condutor_id').find('option:selected');
+        if (selectedOption.length && selectedOption.val()) {
+            $('#inp-condutor_nome').val(selectedOption.data('nome') || selectedOption.text());
+            $('#inp-condutor_cpf').val(selectedOption.data('cpf') || '');
+        }
+
+        // 2. Sincroniza tipo de emitente e modal
+        const tpTransp = $('#inp-tp_transp').val() || '1';
+        $('#inp-tp_emit').val(tpTransp === '2' ? '1' : '2');
+        
+        const modalSelecionado = $('input[name="modal_tipo"]:checked').val() || '1';
+        $('#inp-tipo_modal').val(modalSelecionado);
+
+        // 3. Sincroniza Data de início de viagem
+        const dtInicioRaw = $('#inp-edit-data-inicio').val();
+        if (dtInicioRaw) {
+            $('#inp-data_inicio_viagem').val(dtInicioRaw.substring(0, 10));
+        }
+
+        // 4. Garantir município de carregamento
+        if ($('#hidden-municipios-carregamento-container input[name="municipiosCarregamento[]"]').length === 0) {
+            const munPadrao = $('#edit-carregamento-municipio').val() || '{{ $empresa->cidade_id ?? 1 }}';
+            $('#hidden-municipios-carregamento-container').html(`<input type="hidden" name="municipiosCarregamento[]" value="${munPadrao}">`);
+        }
+
+        // 5. Feedback no botão Concluir
+        const btnConcluir = $(this).find('.btn-action-conclude');
+        btnConcluir.prop('disabled', true).html('<i class="ri-loader-4-line ri-spin me-1"></i> Salvando MDF-e...');
+    });
+});
+</script>
 

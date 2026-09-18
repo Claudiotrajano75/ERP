@@ -18,14 +18,23 @@ class ContaBoletoController extends Controller
 
     public function index(Request $request)
     {
-        $data = ContaBoleto::where('empresa_id', request()->empresa_id)
+        $baseQuery = ContaBoleto::where('empresa_id', request()->empresa_id);
+
+        $stats = [
+            'total'   => (clone $baseQuery)->count(),
+            'padrao'  => (clone $baseQuery)->where('padrao', 1)->first(),
+            'bancos'  => (clone $baseQuery)->distinct('banco')->count('banco'),
+        ];
+
+        $data = (clone $baseQuery)
         ->when(!empty($request->banco), function ($q) use ($request) {
             return $q->where('banco', $request->banco);
         })
+        ->orderBy('padrao', 'desc')
         ->get();
 
         $banco = $request->banco;
-        return view('contas_boleto.index', compact('data', 'banco'));
+        return view('contas_boleto.index', compact('data', 'banco', 'stats'));
     }
 
     public function create(){

@@ -2,30 +2,23 @@
 
 @section('css')
 <style>
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.6) !important; font-weight: 400; }
-.modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-.modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+/* ─── Tabela ─── */
+.tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+.tb-wrap table { margin-bottom: 0; }
+.tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 16px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+.tb-wrap tbody td { padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13.5px; color: #374151; }
+.tb-wrap tbody tr:hover { background: #f5f6fe; }
+.tb-wrap tbody tr:last-child td { border-bottom: none; }
 
-.modulo-table-wrap { border-radius: 12px; border: 1px solid #eef0f5; overflow: hidden; }
-.modulo-table-wrap table { margin-bottom: 0; }
-.modulo-table-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding: 12px 14px; border-bottom: 2px solid #e8eaf6; }
-.modulo-table-wrap tbody td { padding: 12px 14px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13px; }
-.modulo-table-wrap tbody tr { transition: all 0.15s ease; }
-.modulo-table-wrap tbody tr:hover { background: #f5f6fe; }
-.modulo-table-wrap tbody tr:last-child td { border-bottom: none; }
-
-.modulo-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.2px; }
-.modulo-badge-info { background: linear-gradient(135deg, #e3f2fd, #bbdefb); color: #0d47a1; }
-.modulo-badge-success { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); color: #2e7d32; }
-.modulo-badge-danger { background: linear-gradient(135deg, #ffebee, #ffcdd2); color: #b71c1c; }
-.modulo-badge-warning { background: linear-gradient(135deg, #fff3e0, #ffe0b2); color: #e65100; }
+.modulo-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.2px; }
+.modulo-badge-info { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+.modulo-badge-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.modulo-badge-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.modulo-badge-warning { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
 
 .modulo-empty { padding: 48px 20px; text-align: center; }
-.modulo-empty i { font-size: 48px; color: #c5cae9; margin-bottom: 12px; display: block; }
-.modulo-empty p { color: #9e9eb8; font-size: 14px; margin: 0; }
+.modulo-empty i { font-size: 44px; color: #cbd5e1; margin-bottom: 10px; display: block; }
+.modulo-empty p { color: #94a3b8; font-size: 14px; margin: 0; }
 .audit-diff { font-size: 11px; font-family: monospace; color: #475569; background: #f8f9fc; border-radius: 6px; padding: 4px 8px; display: inline-block; max-width: 260px; white-space: pre-wrap; word-break: break-all; }
 </style>
 @endsection
@@ -33,23 +26,23 @@
 @section('content')
 <div class="mt-3 text-dark">
     <div class="row">
-        <div class="card border-0 shadow-sm">
+        <div class="card border-0 shadow-sm text-dark modulo-form-card">
 
-            <!-- ═══ Cabeçalho Premium ═══ -->
+            <!-- ═══ CABEÇALHO ═══ -->
             <div class="card-header modulo-header-gradient py-3 px-4">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div>
                         <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
                             <i class="ri-history-line"></i>
-                            Histórico de Alterações
+                            Histórico de Alterações &mdash; Pré-venda #{{ $item->codigo }}
                         </h4>
                         <p class="text-muted mb-0 modulo-subtitle fs-13">
-                            Auditoria da pré-venda #{{ $item->codigo }} — todas as alterações registradas com usuário, data e valores antes/depois.
+                            Auditoria completa das alterações registradas com usuário, data e valores antes/depois.
                         </p>
                     </div>
                     <div>
-                        <a href="{{ route('pre-venda.index') }}" class="btn btn-light btn-sm px-3 text-dark">
-                            <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
+                        <a href="{{ route('pre-venda.index') }}" class="dash-btn dash-btn-light">
+                            <i class="ri-arrow-left-line"></i> Voltar
                         </a>
                     </div>
                 </div>
@@ -57,16 +50,16 @@
 
             <div class="card-body p-4">
 
-                <!-- ═══ Tabela de Auditoria ═══ -->
-                <div class="modulo-table-wrap">
+                <!-- ═══ TABELA DE AUDITORIA ═══ -->
+                <div class="tb-wrap">
                     <div class="table-responsive">
-                        <table class="table">
+                        <table class="table table-centered table-hover align-middle mb-0 text-dark">
                             <thead>
                                 <tr>
-                                    <th style="width:150px;">Data/Hora</th>
+                                    <th style="width:160px;">Data/Hora</th>
                                     <th style="width:160px;">Usuário</th>
                                     <th style="width:180px;">Operação</th>
-                                    <th style="width:70px;">Item</th>
+                                    <th style="width:80px;">Item</th>
                                     <th>Valores Antes</th>
                                     <th>Valores Depois</th>
                                 </tr>

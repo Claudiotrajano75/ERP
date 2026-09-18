@@ -18,7 +18,9 @@ class CarrinhoController extends Controller
 {
 
     public function __construct(CorreioUtil $util){
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         $this->util = $util;
     }
 

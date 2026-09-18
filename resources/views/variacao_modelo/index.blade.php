@@ -2,61 +2,56 @@
 
 @section('css')
 <style>
-/* ─── Header Gradiente ─── */
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.6) !important; font-weight: 400; }
-.modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-.modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+    .modulo-footer { padding: 16px 0 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 
-/* ─── Glass Filters ─── */
-.modulo-glass-filter { background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8) !important; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.04); }
-.modulo-glass-filter label { font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #5a5a7a; margin-bottom: 2px; }
-.modulo-glass-filter .form-control, .modulo-glass-filter .form-select { height: 38px; } .modulo-glass-filter .btn { border-radius: 8px; font-weight: 600; font-size: 13px; height: 38px; padding-top: 0; padding-bottom: 0; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
-.modulo-glass-filter .btn:hover { transform: translateY(-1px); }
+    /* ─── Cards de Estatísticas ─── */
+    .stat-card { border: 0; border-radius: 16px; padding: 18px 20px; height: 100%; color: #fff; position: relative; overflow: hidden; transition: transform .18s ease, box-shadow .18s ease; }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-card::after { content: ''; position: absolute; top: -44px; right: -44px; width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,.12); }
+    .stat-indigo { background: linear-gradient(135deg,#6366f1,#4f46e5); box-shadow: 0 6px 18px rgba(79,70,229,.32); }
+    .stat-green  { background: linear-gradient(135deg,#24c98a,#109f61); box-shadow: 0 6px 18px rgba(16,185,129,.32); }
+    .stat-red    { background: linear-gradient(135deg,#fb7185,#dc2626); box-shadow: 0 6px 18px rgba(239,68,68,.32); }
+    .stat-blue   { background: linear-gradient(135deg,#4d94ff,#1d4ed8); box-shadow: 0 6px 18px rgba(37,99,235,.32); }
+    .stat-card .st-label { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: rgba(255,255,255,.85); }
+    .stat-card .st-value { font-size: 26px; font-weight: 800; color: #fff; margin-top: 4px; line-height: 1.1; }
+    .stat-card .st-sub { font-size: 11.5px; color: rgba(255,255,255,.75); margin-top: 4px; }
+    .stat-card .st-icon { width: 46px; height: 46px; border-radius: 13px; background: rgba(255,255,255,.22); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
-/* ─── Premium Table ─── */
-.modulo-table-wrap { border-radius: 12px; border: 1px solid #eef0f5; overflow: hidden; }
-.modulo-table-wrap table { margin-bottom: 0; }
-.modulo-table-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding: 12px 14px; border-bottom: 2px solid #e8eaf6; }
-.modulo-table-wrap tbody td { padding: 12px 14px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; transition: background 0.15s ease; font-size: 13px; }
-.modulo-table-wrap tbody tr { transition: all 0.15s ease; }
-.modulo-table-wrap tbody tr:hover { background: #f5f6fe; }
-.modulo-table-wrap tbody tr:last-child td { border-bottom: none; }
+    /* ─── Tabela ─── */
+    .tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+    .tb-wrap table { margin-bottom: 0; }
+    .tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 16px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+    .tb-wrap tbody td { padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13.5px; color: #374151; }
+    .tb-wrap tbody tr:hover { background: #f5f6fe; }
+    .tb-wrap tbody tr:last-child td { border-bottom: none; }
 
-/* ─── Action Buttons ─── */
-.modulo-action-group { display: inline-flex; gap: 4px; flex-wrap: nowrap; align-items: center; }
-.modulo-action-group .btn { border-radius: 8px; padding: 4px 10px; font-size: 13px; transition: all 0.15s ease; }
-.modulo-action-group .btn:hover { transform: translateY(-1px); }
+    /* ─── Ações ─── */
+    .act-group { display: inline-flex; gap: 6px; align-items: center; }
+    .act-btn { width: 34px; height: 34px; border-radius: 10px; border: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; text-decoration: none; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+    .act-btn:hover { transform: translateY(-2px); text-decoration: none; }
+    .act-edit { background: #eef0ff; color: #4f46e5; }
+    .act-edit:hover { box-shadow: 0 4px 12px rgba(79,70,229,.3); }
+    .act-del { background: #fee2e2; color: #dc2626; }
+    .act-del:hover { box-shadow: 0 4px 12px rgba(220,38,38,.3); }
 
-/* ─── Empty State ─── */
-.modulo-empty { padding: 48px 20px; text-align: center; }
-.modulo-empty i { font-size: 48px; color: #c5cae9; margin-bottom: 12px; display: block; }
-.modulo-empty p { color: #9e9eb8; font-size: 14px; margin: 0; }
+    /* ─── Pills ─── */
+    .pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 8px; padding: 4px 10px; font-size: 11.5px; font-weight: 700; }
+    .pill-ok { background: #dcfce7; color: #15803d; }
+    .pill-no { background: #fee2e2; color: #b91c1c; }
+    .tag-item { background: #eef0ff; color: #4f46e5; border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 600; display: inline-block; margin: 2px; }
+    .modulo-tag-list { display: flex; flex-wrap: wrap; gap: 4px; }
 
-/* ─── Footer ─── */
-.modulo-footer { padding: 16px 0 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-
-/* ─── Badges Pill ─── */
-.badge { font-weight: 500; font-size: 11px; }
-
-/* ─── Valores Tag ─── */
-.modulo-tag-list { display: flex; flex-wrap: wrap; gap: 4px; }
-.modulo-tag-list .tag-item { background: #f0f2f8; border-radius: 6px; padding: 2px 10px; font-size: 12px; color: #5a5a7a; font-weight: 500; }
-
-@media (max-width: 768px) {
-    .modulo-header-gradient .modulo-title { font-size: 18px; }
-}
+    .empty-state { padding: 52px 20px; text-align: center; }
+    .empty-state i { font-size: 52px; color: #c5cae9; display: block; margin-bottom: 12px; }
+    .empty-state p { color: #9e9eb8; font-size: 14px; margin: 0; }
 </style>
 @endsection
 
 @section('content')
-<div class="mt-3 text-dark">
+<div class="mt-3">
     <div class="row">
-        <div class="card border-0 shadow-sm text-dark">
+        <div class="card border-0 shadow-sm">
 
-            <!-- ═══ CABEÇALHO PREMIUM ═══ -->
             <div class="card-header modulo-header-gradient py-3 px-4">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div>
@@ -64,15 +59,12 @@
                             <i class="ri-shapes-line"></i>
                             Modelos de Variação
                         </h4>
-                        <p class="text-muted mb-0 modulo-subtitle fs-13">
-                            Configure atributos dinâmicos para seus produtos, como Grade de Tamanhos, Cores ou Voltagens.
-                        </p>
+                        <p class="text-muted mb-0 modulo-subtitle fs-13">Configure atributos dinâmicos para seus produtos, como Grade de Tamanhos, Cores ou Voltagens.</p>
                     </div>
-                    <div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ route('variacoes.index') }}" class="dash-btn dash-btn-light"><i class="ri-refresh-line"></i> Atualizar</a>
                         @can('variacao_create')
-                        <a href="{{ route('variacoes.create') }}" class="btn btn-light btn-sm px-3 text-dark">
-                            <i class="ri-add-circle-line align-middle me-1"></i> Nova Variação
-                        </a>
+                        <a href="{{ route('variacoes.create') }}" class="dash-btn dash-btn-primary"><i class="ri-add-line"></i> Nova Variação</a>
                         @endcan
                     </div>
                 </div>
@@ -80,10 +72,46 @@
 
             <div class="card-body p-4">
 
-                <!-- ═══ TABELA PREMIUM ═══ -->
-                <div class="modulo-table-wrap">
+                {{-- ═══ CARDS DE ESTATÍSTICA ═══ --}}
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-indigo">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Total</div><div class="st-value">{{ $stats['total'] }}</div><div class="st-sub">modelos cadastrados</div></div>
+                                <div class="st-icon"><i class="ri-shapes-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-green">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Ativas</div><div class="st-value">{{ $stats['ativas'] }}</div><div class="st-sub">em uso</div></div>
+                                <div class="st-icon"><i class="ri-checkbox-circle-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-red">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Inativas</div><div class="st-value">{{ $stats['inativas'] }}</div><div class="st-sub">desativadas</div></div>
+                                <div class="st-icon"><i class="ri-close-circle-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-blue">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Valores</div><div class="st-value">{{ $stats['valores'] }}</div><div class="st-sub">opções configuradas</div></div>
+                                <div class="st-icon"><i class="ri-list-check-2"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ═══ TABELA ═══ --}}
+                <div class="tb-wrap">
                     <div class="table-responsive">
-                        <table class="table table-centered table-hover align-middle mb-0 text-dark">
+                        <table class="table table-centered table-hover align-middle mb-0">
                             <thead>
                                 <tr>
                                     @can('variacao_delete')
@@ -96,7 +124,7 @@
                                     <th>Descrição (Atributo)</th>
                                     <th>Valores Configurados</th>
                                     <th>Status</th>
-                                    <th class="text-end" style="width: 120px;">Ações</th>
+                                    <th class="text-end" style="width: 110px;">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -111,7 +139,7 @@
                                     </td>
                                     @endcan
                                     <td>
-                                        <span class="fw-semibold text-dark d-block">{{ $item->descricao }}</span>
+                                        <span class="fw-semibold d-block" style="color:#1f2937;">{{ $item->descricao }}</span>
                                     </td>
                                     <td>
                                         <div class="modulo-tag-list">
@@ -128,13 +156,9 @@
                                     </td>
                                     <td>
                                         @if($item->status)
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-11">
-                                            <i class="ri-check-line me-1"></i>Ativa
-                                        </span>
+                                        <span class="pill pill-ok"><i class="ri-check-line"></i> Ativa</span>
                                         @else
-                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fs-11">
-                                            <i class="ri-close-line me-1"></i>Inativa
-                                        </span>
+                                        <span class="pill pill-no"><i class="ri-close-line"></i> Inativa</span>
                                         @endif
                                     </td>
                                     <td class="text-end">
@@ -142,17 +166,12 @@
                                               id="form-{{$item->id}}" class="m-0">
                                             @method('delete')
                                             @csrf
-                                            <div class="modulo-action-group">
+                                            <div class="act-group">
                                                 @can('variacao_edit')
-                                                <a class="btn btn-warning btn-sm text-white"
-                                                   href="{{ route('variacoes.edit', [$item->id]) }}" title="Editar Variação">
-                                                    <i class="ri-pencil-line"></i>
-                                                </a>
+                                                <a class="act-btn act-edit" href="{{ route('variacoes.edit', [$item->id]) }}" title="Editar Variação"><i class="ri-pencil-line"></i></a>
                                                 @endcan
                                                 @can('variacao_delete')
-                                                <button type="button" class="btn btn-danger btn-sm btn-delete" title="Excluir Variação">
-                                                    <i class="ri-delete-bin-line"></i>
-                                                </button>
+                                                <button type="button" class="act-btn act-del btn-delete" title="Excluir Variação"><i class="ri-delete-bin-line"></i></button>
                                                 @endcan
                                             </div>
                                         </form>
@@ -161,7 +180,7 @@
                                 @empty
                                 <tr>
                                     <td colspan="{{ (Auth::user()->can('variacao_delete') ? 5 : 4) }}">
-                                        <div class="modulo-empty">
+                                        <div class="empty-state">
                                             <i class="ri-inbox-2-line"></i>
                                             <p>Nenhum modelo de variação cadastrado.</p>
                                         </div>
@@ -173,19 +192,20 @@
                     </div>
                 </div>
 
-                <!-- ═══ FOOTER (Lote + Paginação) ═══ -->
+                {{-- ═══ FOOTER ═══ --}}
                 <div class="modulo-footer">
-                    <div>
+                    <div class="d-flex gap-2 flex-wrap">
                         @can('variacao_delete')
                         <form action="{{ route('variacoes.destroy-select') }}" method="post" id="form-delete-select" class="m-0">
                             @method('delete')
                             @csrf
-                            <button type="button" class="btn btn-outline-danger btn-sm btn-delete-all" disabled>
-                                <i class="ri-delete-bin-line align-middle me-1"></i> Remover Selecionados
+                            <button type="button" class="dash-btn dash-btn-light btn-delete-all" style="color:#dc2626;" disabled>
+                                <i class="ri-delete-bin-2-line"></i> Remover Selecionados
                             </button>
                         </form>
                         @endcan
                     </div>
+                    <div class="fs-12" style="color:#94a3b8;">Exibindo <strong>{{ $data->count() }}</strong> modelos</div>
                 </div>
 
             </div>

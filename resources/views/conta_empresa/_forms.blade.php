@@ -2,14 +2,14 @@
     <!-- Linha 1 -->
     <div class="col-md-6 col-12">
         {!!Form::text('nome', 'Nome da Conta')
-        ->attrs(['placeholder' => 'Ex: Banco do Brasil - Principal'])
+        ->attrs(['placeholder' => 'Ex: Banco do Brasil - Principal', 'class' => 'form-control'])
         ->required()
         !!}
     </div>
     
     <div class="col-md-3 col-6">
         {!!Form::text('banco', 'Banco')
-        ->attrs(['placeholder' => 'Ex: Banco do Brasil'])
+        ->attrs(['placeholder' => 'Ex: Banco do Brasil', 'class' => 'form-control'])
         !!}
     </div>
 
@@ -23,13 +23,13 @@
     <!-- Linha 2 -->
     <div class="col-md-4 col-6">
         {!!Form::text('agencia', 'Agência')
-        ->attrs(['placeholder' => 'Ex: 1234-5'])
+        ->attrs(['placeholder' => 'Ex: 1234-5', 'class' => 'form-control'])
         !!}
     </div>
     
     <div class="col-md-4 col-6">
         {!!Form::text('conta', 'Conta Corrente')
-        ->attrs(['placeholder' => 'Ex: 123456-7'])
+        ->attrs(['placeholder' => 'Ex: 123456-7', 'class' => 'form-control'])
         !!}
     </div>
 
@@ -83,9 +83,9 @@
     <div class="col-12 mt-4">
         <hr class="text-muted opacity-25">
         <div class="d-flex align-items-center justify-content-end gap-2">
-            <a href="{{ route('contas-empresa.index') }}" class="btn btn-light px-4">Cancelar</a>
-            <button type="submit" class="btn btn-success px-4" id="btn-store">
-                <i class="ri-save-line align-middle me-1"></i> Salvar Conta
+            <a href="{{ route('contas-empresa.index') }}" class="dash-btn dash-btn-light">Cancelar</a>
+            <button type="submit" class="dash-btn dash-btn-primary" id="btn-store">
+                <i class="ri-save-line"></i> Salvar Conta
             </button>
         </div>
     </div>

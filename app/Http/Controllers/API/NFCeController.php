@@ -515,241 +515,303 @@ class NFCeController extends Controller
 
     public function gerarNfce(Request $request)
     {
-        $nfce = DB::transaction(function () use ($request) {
-            $config = Empresa::find($request->empresa_id);
-            $item = PreVenda::findOrFail($request->pre_venda_id);
-            $usuario_id = $request->usuario_id;
-            
-            if ($config->ambiente == 2) {
-                $numero = $config->numero_ultima_nfce_homologacao;
-            } else {
-                $numero = $config->numero_ultima_nfce_producao;
-            }
-            $caixa = Caixa::where('usuario_id', $usuario_id)->where('status', 1)->first();
-
-            $request->merge([
-                'emissor_nome' => $config->nome,
-                'emissor_cpf_cnpj' => $config->cpf_cnpj,
-                'ambiente' => $config->ambiente,
-                'chave' => '',
-                'cliente_id' => $item->cliente_id,
-                'numero_serie' => $config->numero_serie_nfce,
-                'numero' => $numero+1,
-                'cliente_nome' => $item->cliente->razao_social ?? '',
-                'cliente_cpf_cnpj' => $item->cliente->cpf_cnpj ?? '',
-                'estado' => 'novo',
-                'total' => $item->valor_total,
-                'desconto' => $item->desconto,
-                'acrescimo' => $item->acrescimo,
-                'valor_produtos' => __convert_value_bd($item->valor_total) ?? 0,
-                'valor_frete' => $item->valor_frete ? __convert_value_bd($item->valor_frete) : 0,
-                'caixa_id' => $caixa ? $caixa->id : null,
-                'local_id' => $item->local_id,
-                'tipo_pagamento' => '99',
-                'dinheiro_recebido' => 0,
-                'troco' => 0,
-                'natureza_id' => $config->natureza_id_pdv,
-            ]);
-
-            $nfce = Nfce::create($request->all());
-
-            for ($i = 0; $i < sizeof($item->itens); $i++) {
-                $product = Produto::findOrFail($item->itens[$i]->produto_id);
-                ItemNfce::create([
-                    'nfce_id' => $nfce->id,
-                    'produto_id' => (int)$product->id,
-                    'quantidade' => __convert_value_bd($item->itens[$i]->quantidade),
-                    'valor_unitario' => $item->itens[$i]->valor,
-                    'valor_custo' => $item->itens[$i]->valor,
-                    'sub_total' => __convert_value_bd($item->itens[$i]->quantidade * $item->itens[$i]->valor),
-                    'perc_icms' =>  $product->perc_icms,
-                    'perc_pis' => $product->perc_icms,
-                    'perc_cofins' => $product->perc_cofins,
-                    'perc_ipi' => $product->perc_ipi,
-                    'cst_csosn' => $product->cst_csosn,
-                    'cst_pis' => $product->cst_pis,
-                    'cst_cofins' => $product->cst_cofins,
-                    'cst_ipi' => $product->cst_ipi,
-                    'perc_red_bc' => $request->perc_red_bc ? __convert_value_bd($request->perc_red_bc) : 0,
-                    'cfop' => $product->cfop_estadual,
-                    'ncm' => $product->ncm,
-                    'codigo_beneficio_fiscal' => $request->codigo_beneficio_fiscal ?? 0
-                ]);
-
-                if ($product->gerenciar_estoque) {
-                    $this->util->reduzEstoque($product->id, __convert_value_bd($item->itens[$i]->quantidade), null, $item->local_id);
+        try {
+            $nfce = DB::transaction(function () use ($request) {
+                $config = Empresa::find($request->empresa_id);
+                $item = PreVenda::findOrFail($request->pre_venda_id);
+                $usuario_id = $request->usuario_id;
+                
+                // Validação de segurança: a fatura deve cobrir o total da pré-venda
+                $fatura = $request->fatura ?? [];
+                $totalFaturado = 0;
+                foreach ($fatura as $f) {
+                    $totalFaturado += (float)__convert_value_bd($f['valor'] ?? 0);
                 }
 
-                $tipo = 'reducao';
-                $codigo_transacao = $nfce->id;
-                $tipo_transacao = 'venda_nfce';
+                if ($totalFaturado < ($item->valor_total - 0.009)) {
+                    throw new \Exception("O valor informado (R$ " . number_format($totalFaturado, 2, ',', '.') . ") é menor que o total da pré-venda (R$ " . number_format($item->valor_total, 2, ',', '.') . ").");
+                }
 
-                $this->util->movimentacaoProduto($product->id, __convert_value_bd($item->itens[$i]->quantidade), $tipo, $codigo_transacao, $tipo_transacao, $item->usuario_id);
-            }
+                $dinheiroRecebido = $request->valor_recebido ? (float)__convert_value_bd($request->valor_recebido) : 0;
+                $troco = $request->troco ? (float)__convert_value_bd($request->troco) : 0;
+                if ($dinheiroRecebido == 0 && $troco == 0) {
+                    $dinheiroRecebido = $item->valor_total;
+                }
 
-            for ($i = 0; $i < sizeof($request->fatura); $i++) {
-                $objeto = (object)$request->fatura[$i];
-                FaturaNfce::create([
-                    'nfce_id' => $nfce->id,
-                    'tipo_pagamento' => $objeto->tipo,
-                    'data_vencimento' => $objeto->vencimento,
-                    'valor' => __convert_value_bd($objeto->valor)
+                if ($config->ambiente == 2) {
+                    $numero = $config->numero_ultima_nfce_homologacao;
+                } else {
+                    $numero = $config->numero_ultima_nfce_producao;
+                }
+                $caixa = Caixa::where('usuario_id', $usuario_id)->where('status', 1)->first();
+
+                $request->merge([
+                    'emissor_nome' => $config->nome,
+                    'emissor_cpf_cnpj' => $config->cpf_cnpj,
+                    'ambiente' => $config->ambiente,
+                    'chave' => '',
+                    'cliente_id' => $item->cliente_id,
+                    'numero_serie' => $config->numero_serie_nfce,
+                    'numero' => $numero+1,
+                    'cliente_nome' => $item->cliente->razao_social ?? '',
+                    'cliente_cpf_cnpj' => $item->cliente->cpf_cnpj ?? '',
+                    'estado' => 'novo',
+                    'total' => $item->valor_total,
+                    'desconto' => $item->desconto,
+                    'acrescimo' => $item->acrescimo,
+                    'valor_produtos' => __convert_value_bd($item->valor_total) ?? 0,
+                    'valor_frete' => $item->valor_frete ? __convert_value_bd($item->valor_frete) : 0,
+                    'caixa_id' => $caixa ? $caixa->id : null,
+                    'local_id' => $item->local_id,
+                    'tipo_pagamento' => '99',
+                    'dinheiro_recebido' => $dinheiroRecebido,
+                    'troco' => $troco,
+                    'natureza_id' => $config->natureza_id_pdv,
                 ]);
-            }
 
-            for ($i = 0; $i < sizeof($request->fatura); $i++) {
-                $objeto = (object)$request->fatura[$i];
-                if ($request->conta_receber == 1) {
-                    ContaReceber::create([
-                        'empresa_id' => $request->empresa_id,
+                $nfce = Nfce::create($request->all());
+
+                for ($i = 0; $i < sizeof($item->itens); $i++) {
+                    $product = Produto::findOrFail($item->itens[$i]->produto_id);
+                    ItemNfce::create([
                         'nfce_id' => $nfce->id,
-                        'cliente_id' => $item->cliente_id,
-                        'valor_integral' => __convert_value_bd($objeto->valor),
+                        'produto_id' => (int)$product->id,
+                        'quantidade' => __convert_value_bd($item->itens[$i]->quantidade),
+                        'valor_unitario' => $item->itens[$i]->valor,
+                        'valor_custo' => $item->itens[$i]->valor,
+                        'sub_total' => __convert_value_bd($item->itens[$i]->quantidade * $item->itens[$i]->valor),
+                        'perc_icms' =>  $product->perc_icms,
+                        'perc_pis' => $product->perc_icms,
+                        'perc_cofins' => $product->perc_cofins,
+                        'perc_ipi' => $product->perc_ipi,
+                        'cst_csosn' => $product->cst_csosn,
+                        'cst_pis' => $product->cst_pis,
+                        'cst_cofins' => $product->cst_cofins,
+                        'cst_ipi' => $product->cst_ipi,
+                        'perc_red_bc' => $request->perc_red_bc ? __convert_value_bd($request->perc_red_bc) : 0,
+                        'cfop' => $product->cfop_estadual,
+                        'ncm' => $product->ncm,
+                        'codigo_beneficio_fiscal' => $request->codigo_beneficio_fiscal ?? 0
+                    ]);
+
+                    if ($product->gerenciar_estoque) {
+                        $this->util->reduzEstoque($product->id, __convert_value_bd($item->itens[$i]->quantidade), null, $item->local_id);
+                    }
+
+                    $tipo = 'reducao';
+                    $codigo_transacao = $nfce->id;
+                    $tipo_transacao = 'venda_nfce';
+
+                    $this->util->movimentacaoProduto($product->id, __convert_value_bd($item->itens[$i]->quantidade), $tipo, $codigo_transacao, $tipo_transacao, $item->usuario_id);
+                }
+
+                for ($i = 0; $i < sizeof($request->fatura); $i++) {
+                    $objeto = (object)$request->fatura[$i];
+                    $valorParcela = (float)__convert_value_bd($objeto->valor);
+                    $dataVencimento = !empty($objeto->vencimento) ? $objeto->vencimento : date('Y-m-d');
+                    // Se for dinheiro e tiver troco, ajusta o valor fiscal da fatura para bater com o total
+                    if ($objeto->tipo == '01' && $troco > 0) {
+                        $valorParcela = max(0, $valorParcela - $troco);
+                    }
+                    FaturaNfce::create([
+                        'nfce_id' => $nfce->id,
                         'tipo_pagamento' => $objeto->tipo,
-                        'data_vencimento' => $objeto->vencimento,
-                        'local_id' => $caixa->local_id,
+                        'data_vencimento' => $dataVencimento,
+                        'valor' => $valorParcela
                     ]);
                 }
-            }
 
-            $item->status = 0;
-            $item->venda_id = $nfce->id;
-            $item->tipo_finalizado = 'nfce';
-            $item->save();
+                for ($i = 0; $i < sizeof($request->fatura); $i++) {
+                    $objeto = (object)$request->fatura[$i];
+                    $valorParcela = (float)__convert_value_bd($objeto->valor);
+                    $dataVencimento = !empty($objeto->vencimento) ? $objeto->vencimento : date('Y-m-d');
+                    if ($objeto->tipo == '01' && $troco > 0) {
+                        $valorParcela = max(0, $valorParcela - $troco);
+                    }
+                    if ($request->conta_receber == 1) {
+                        ContaReceber::create([
+                            'empresa_id' => $request->empresa_id,
+                            'nfce_id' => $nfce->id,
+                            'cliente_id' => $item->cliente_id,
+                            'valor_integral' => $valorParcela,
+                            'tipo_pagamento' => $objeto->tipo,
+                            'data_vencimento' => $dataVencimento,
+                            'local_id' => $caixa ? $caixa->local_id : null,
+                        ]);
+                    }
+                }
 
-            return $nfce;
-        });
-return response()->json($nfce->id);
-}
+                $item->status = 0;
+                $item->venda_id = $nfce->id;
+                $item->tipo_finalizado = 'nfce';
+                $item->save();
 
-public function gerarVenda(Request $request)
-{
-    
-    $nfce = DB::transaction(function () use ($request) {
-        $config = Empresa::find($request->empresa_id);
-        $item = PreVenda::findOrFail($request->pre_venda_id);
-
-        $config = __objetoParaEmissao($config, $item->local_id);
-
-        if ($config->ambiente == 2) {
-            $numero = $config->numero_ultima_nfe_homologacao;
-        } else {
-            $numero = $config->numero_ultima_nfe_producao;
+                return $nfce;
+            });
+            return response()->json($nfce->id);
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage(), 422);
         }
+    }
 
-        $usuario_id = $item->usuario_id;
-        $caixa = Caixa::where('usuario_id', $usuario_id)->where('status', 1)->first();
-        $request->merge([
-            'emissor_nome' => $config->nome,
-            'emissor_cpf_cnpj' => $config->cpf_cnpj,
-            'ambiente' => $config->ambiente,
-            'chave' => '',
-            'cliente_id' => $item->cliente_id,
-            'numero_serie' => $config->numero_serie_nfce,
-            'numero' => $numero,
-            'cliente_nome' => $item->cliente->razao_social ?? '',
-            'cliente_cpf_cnpj' => $item->cliente->cpf_cnpj ?? '',
-            'estado' => 'novo',
-            'total' => $item->valor_total,
-            'desconto' => $item->desconto,
-            'acrescimo' => $item->acrescimo,
-            'valor_produtos' => __convert_value_bd($item->valor_total) ?? 0,
-            'valor_frete' => $item->valor_frete ? __convert_value_bd($item->valor_frete) : 0,
-            'caixa_id' => $caixa ? $caixa->id : null,
-            'local_id' => $item->local_id,
-            'tipo_pagamento' => '99',
-            'dinheiro_recebido' => 0,
-            'troco' => 0,
-            'natureza_id' => $config->natureza_id_pdv,
-        ]);
+    public function gerarVenda(Request $request)
+    {
+        try {
+            $nfce = DB::transaction(function () use ($request) {
+                $config = Empresa::find($request->empresa_id);
+                $item = PreVenda::findOrFail($request->pre_venda_id);
 
-        $nfce = Nfce::create($request->all());
+                // Validação de segurança: a fatura deve cobrir o total da pré-venda
+                $fatura = $request->fatura ?? [];
+                $totalFaturado = 0;
+                foreach ($fatura as $f) {
+                    $totalFaturado += (float)__convert_value_bd($f['valor'] ?? 0);
+                }
 
-        for ($i = 0; $i < sizeof($item->itens); $i++) {
-            $product = Produto::findOrFail($item->itens[$i]->produto_id);
-            ItemNfce::create([
-                'nfce_id' => $nfce->id,
-                'produto_id' => (int)$product->id,
-                'quantidade' => __convert_value_bd($item->itens[$i]->quantidade),
-                'valor_unitario' => $item->itens[$i]->valor,
-                'valor_custo' => $item->itens[$i]->valor,
-                'sub_total' => __convert_value_bd($item->itens[$i]->quantidade * $item->itens[$i]->valor),
-                'perc_icms' =>  $product->perc_icms,
-                'perc_pis' => $product->perc_icms,
-                'perc_cofins' => $product->perc_cofins,
-                'perc_ipi' => $product->perc_ipi,
-                'cst_csosn' => $product->cst_csosn,
-                'cst_pis' => $product->cst_pis,
-                'cst_cofins' => $product->cst_cofins,
-                'cst_ipi' => $product->cst_ipi,
-                'perc_red_bc' => $request->perc_red_bc ? __convert_value_bd($request->perc_red_bc) : 0,
-                'cfop' => $product->cfop_estadual,
-                'ncm' => $product->ncm,
-                'codigo_beneficio_fiscal' => $request->codigo_beneficio_fiscal ?? 0
-            ]);
+                if ($totalFaturado < ($item->valor_total - 0.009)) {
+                    throw new \Exception("O valor informado (R$ " . number_format($totalFaturado, 2, ',', '.') . ") é menor que o total da pré-venda (R$ " . number_format($item->valor_total, 2, ',', '.') . ").");
+                }
 
-            if ($product->gerenciar_estoque) {
-                $this->util->reduzEstoque($product->id, __convert_value_bd($item->itens[$i]->quantidade), null, $item->local_id);
-            }
+                $dinheiroRecebido = $request->valor_recebido ? (float)__convert_value_bd($request->valor_recebido) : 0;
+                $troco = $request->troco ? (float)__convert_value_bd($request->troco) : 0;
+                if ($dinheiroRecebido == 0 && $troco == 0) {
+                    $dinheiroRecebido = $item->valor_total;
+                }
 
-            $tipo = 'reducao';
-            $codigo_transacao = $nfce->id;
-            $tipo_transacao = 'venda_nfce';
+                $config = __objetoParaEmissao($config, $item->local_id);
 
-            $this->util->movimentacaoProduto($product->id, __convert_value_bd($item->itens[$i]->quantidade), $tipo, 
-                $codigo_transacao, $tipo_transacao, $item->usuario_id);
-        }
+                if ($config->ambiente == 2) {
+                    $numero = $config->numero_ultima_nfe_homologacao;
+                } else {
+                    $numero = $config->numero_ultima_nfe_producao;
+                }
 
-        for ($i = 0; $i < sizeof($request->fatura); $i++) {
-            $objeto = (object)$request->fatura[$i];
-            FaturaNfce::create([
-                'nfce_id' => $nfce->id,
-                'tipo_pagamento' => $objeto->tipo,
-                'data_vencimento' => $objeto->vencimento,
-                'valor' => __convert_value_bd($objeto->valor)
-            ]);
-        }
-
-        for ($i = 0; $i < sizeof($request->fatura); $i++) {
-            $objeto = (object)$request->fatura[$i];
-            if ($request->conta_receber == 1) {
-                ContaReceber::create([
-                    'empresa_id' => $request->empresa_id,
-                    'nfce_id' => $nfce->id,
+                $usuario_id = $item->usuario_id;
+                $caixa = Caixa::where('usuario_id', $usuario_id)->where('status', 1)->first();
+                $request->merge([
+                    'emissor_nome' => $config->nome,
+                    'emissor_cpf_cnpj' => $config->cpf_cnpj,
+                    'ambiente' => $config->ambiente,
+                    'chave' => '',
                     'cliente_id' => $item->cliente_id,
-                    'valor_integral' => __convert_value_bd($objeto->valor),
-                    'tipo_pagamento' => $objeto->tipo,
-                    'data_vencimento' => $objeto->vencimento,
+                    'numero_serie' => $config->numero_serie_nfce,
+                    'numero' => $numero,
+                    'cliente_nome' => $item->cliente->razao_social ?? '',
+                    'cliente_cpf_cnpj' => $item->cliente->cpf_cnpj ?? '',
+                    'estado' => 'novo',
+                    'total' => $item->valor_total,
+                    'desconto' => $item->desconto,
+                    'acrescimo' => $item->acrescimo,
+                    'valor_produtos' => __convert_value_bd($item->valor_total) ?? 0,
+                    'valor_frete' => $item->valor_frete ? __convert_value_bd($item->valor_frete) : 0,
+                    'caixa_id' => $caixa ? $caixa->id : null,
+                    'local_id' => $item->local_id,
+                    'tipo_pagamento' => '99',
+                    'dinheiro_recebido' => $dinheiroRecebido,
+                    'troco' => $troco,
+                    'natureza_id' => $config->natureza_id_pdv,
                 ]);
-            }
+
+                $nfce = Nfce::create($request->all());
+
+                for ($i = 0; $i < sizeof($item->itens); $i++) {
+                    $product = Produto::findOrFail($item->itens[$i]->produto_id);
+                    ItemNfce::create([
+                        'nfce_id' => $nfce->id,
+                        'produto_id' => (int)$product->id,
+                        'quantidade' => __convert_value_bd($item->itens[$i]->quantidade),
+                        'valor_unitario' => $item->itens[$i]->valor,
+                        'valor_custo' => $item->itens[$i]->valor,
+                        'sub_total' => __convert_value_bd($item->itens[$i]->quantidade * $item->itens[$i]->valor),
+                        'perc_icms' =>  $product->perc_icms,
+                        'perc_pis' => $product->perc_icms,
+                        'perc_cofins' => $product->perc_cofins,
+                        'perc_ipi' => $product->perc_ipi,
+                        'cst_csosn' => $product->cst_csosn,
+                        'cst_pis' => $product->cst_pis,
+                        'cst_cofins' => $product->cst_cofins,
+                        'cst_ipi' => $product->cst_ipi,
+                        'perc_red_bc' => $request->perc_red_bc ? __convert_value_bd($request->perc_red_bc) : 0,
+                        'cfop' => $product->cfop_estadual,
+                        'ncm' => $product->ncm,
+                        'codigo_beneficio_fiscal' => $request->codigo_beneficio_fiscal ?? 0
+                    ]);
+
+                    if ($product->gerenciar_estoque) {
+                        $this->util->reduzEstoque($product->id, __convert_value_bd($item->itens[$i]->quantidade), null, $item->local_id);
+                    }
+
+                    $tipo = 'reducao';
+                    $codigo_transacao = $nfce->id;
+                    $tipo_transacao = 'venda_nfce';
+
+                    $this->util->movimentacaoProduto($product->id, __convert_value_bd($item->itens[$i]->quantidade), $tipo, 
+                        $codigo_transacao, $tipo_transacao, $item->usuario_id);
+                }
+
+                for ($i = 0; $i < sizeof($request->fatura); $i++) {
+                    $objeto = (object)$request->fatura[$i];
+                    $valorParcela = (float)__convert_value_bd($objeto->valor);
+                    $dataVencimento = !empty($objeto->vencimento) ? $objeto->vencimento : date('Y-m-d');
+                    if ($objeto->tipo == '01' && $troco > 0) {
+                        $valorParcela = max(0, $valorParcela - $troco);
+                    }
+                    FaturaNfce::create([
+                        'nfce_id' => $nfce->id,
+                        'tipo_pagamento' => $objeto->tipo,
+                        'data_vencimento' => $dataVencimento,
+                        'valor' => $valorParcela
+                    ]);
+                }
+
+                for ($i = 0; $i < sizeof($request->fatura); $i++) {
+                    $objeto = (object)$request->fatura[$i];
+                    $valorParcela = (float)__convert_value_bd($objeto->valor);
+                    $dataVencimento = !empty($objeto->vencimento) ? $objeto->vencimento : date('Y-m-d');
+                    if ($objeto->tipo == '01' && $troco > 0) {
+                        $valorParcela = max(0, $valorParcela - $troco);
+                    }
+                    if ($request->conta_receber == 1) {
+                        ContaReceber::create([
+                            'empresa_id' => $request->empresa_id,
+                            'nfce_id' => $nfce->id,
+                            'cliente_id' => $item->cliente_id,
+                            'valor_integral' => $valorParcela,
+                            'tipo_pagamento' => $objeto->tipo,
+                            'data_vencimento' => $dataVencimento,
+                        ]);
+                    }
+                }
+
+                if ($item->funcionario_id != null) {
+                    $funcionario = Funcionario::where('empresa_id', $request->empresa_id)->first();
+                    $funcionario->comissao;
+                    $comissao = $funcionario->comissao;
+                    $valorRetorno = $this->calcularComissaoVenda($nfce, $comissao);
+                    ComissaoVenda::create([
+                        'funcionario_id' => $request->funcionario_id,
+                        'nfe_id' => null,
+                        'nfce_id' => $nfce->id,
+                        'tabela' => 'nfce',
+                        'valor' => $valorRetorno,
+                        'valor_venda' => $item->valor_total,
+                        'status' => 0,
+                        'empresa_id' => $request->empresa_id
+                    ]);
+                }
+
+                $item->status = 0;
+                $item->venda_id = $nfce->id;
+                $item->tipo_finalizado = 'nfce';
+                $item->save();
+
+                return $nfce;
+            });
+            return response()->json($nfce->id);
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage(), 422);
         }
-
-        if ($item->funcionario_id != null) {
-            $funcionario = Funcionario::where('empresa_id', $request->empresa_id)->first();
-            $funcionario->comissao;
-            $comissao = $funcionario->comissao;
-            $valorRetorno = $this->calcularComissaoVenda($nfce, $comissao);
-            ComissaoVenda::create([
-                'funcionario_id' => $request->funcionario_id,
-                'nfe_id' => null,
-                'nfce_id' => $nfce->id,
-                'tabela' => 'nfce',
-                'valor' => $valorRetorno,
-                'valor_venda' => $item->valor_total,
-                'status' => 0,
-                'empresa_id' => $request->empresa_id
-            ]);
-        }
-
-        $item->status = 0;
-        $item->venda_id = $nfce->id;
-        $item->tipo_finalizado = 'nfce';
-        $item->save();
-
-        return $nfce;
-    });
-return response()->json($nfce->id);
-}
+    }
 
 private function calcularComissaoVenda($nfce, $comissao)
 {

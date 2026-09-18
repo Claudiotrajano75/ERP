@@ -2,37 +2,98 @@
 
 @section('css')
 <style>
-/* ─── Header Gradiente ─── */
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.6) !important; font-weight: 400; }
-.modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-.modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+/* ─── Cards de Estatística (KPIs) ─── */
+.stat-card {
+    border-radius: 14px;
+    padding: 18px 20px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    min-height: 105px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+.stat-card .stat-icon {
+    position: absolute;
+    right: 14px;
+    bottom: 8px;
+    font-size: 52px;
+    opacity: .18;
+    line-height: 1;
+    pointer-events: none;
+}
+.stat-card .stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    opacity: .88;
+}
+.stat-card .stat-value {
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+.stat-indigo { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); }
+.stat-green  { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+.stat-blue   { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); }
+.stat-amber  { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
 
-/* ─── Form Card ─── */
-.modulo-form-card { border: 1px solid #eef0f5; border-radius: 12px; overflow: hidden; }
+/* ─── Tabela ─── */
+.tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+.tb-wrap table { margin-bottom: 0; }
+.tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 16px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+.tb-wrap tbody td { padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13.5px; color: #374151; }
+.tb-wrap tbody tr:hover { background: #f5f6fe; }
+.tb-wrap tbody tr:last-child td { border-bottom: none; }
 
-/* ─── Premium Table ─── */
-.modulo-table-wrap { border-radius: 12px; border: 1px solid #eef0f5; overflow: hidden; }
-.modulo-table-wrap table { margin-bottom: 0; }
-.modulo-table-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding: 12px 14px; border-bottom: 2px solid #e8eaf6; }
-.modulo-table-wrap tbody td { padding: 12px 14px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; transition: background 0.15s ease; font-size: 13px; }
-.modulo-table-wrap tbody tr { transition: all 0.15s ease; }
-.modulo-table-wrap tbody tr:hover { background: #f5f6fe; }
-.modulo-table-wrap tbody tr:last-child td { border-bottom: none; }
+/* ─── Avatar Tipo ─── */
+.type-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #eef2ff;
+    color: #4f46e5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
 
-/* ─── Botões de Ação do Grid ─── */
-.modulo-action-group { display: inline-flex; gap: 4px; flex-wrap: wrap; }
-.modulo-action-group .btn { border-radius: 8px; padding: 4px 10px; font-size: 13px; transition: all 0.15s ease; }
-.modulo-action-group .btn:hover { transform: translateY(-1px); }
+/* ─── Grade de Ações ─── */
+.act-group { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+.act-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    border: 1px solid transparent;
+    transition: all .15s ease;
+    cursor: pointer;
+    text-decoration: none !important;
+}
+.act-btn:hover { transform: translateY(-1px); }
+.act-edit  { background: #eef2ff; color: #4f46e5; border-color: #c7d2fe; }
+.act-edit:hover  { background: #4f46e5; color: #fff; box-shadow: 0 3px 8px rgba(79,70,229,0.3); }
+.act-del   { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
+.act-del:hover   { background: #dc2626; color: #fff; box-shadow: 0 3px 8px rgba(220,38,38,0.3); }
 
 /* ─── Empty State ─── */
 .modulo-empty { padding: 48px 20px; text-align: center; }
-.modulo-empty i { font-size: 48px; color: #c5cae9; margin-bottom: 12px; display: block; }
-.modulo-empty p { color: #9e9eb8; font-size: 14px; margin: 0; }
-
-@media (max-width: 768px) { .modulo-header-gradient .modulo-title { font-size: 18px; } }
+.modulo-empty i { font-size: 44px; color: #cbd5e1; margin-bottom: 10px; display: block; }
+.modulo-empty p { color: #94a3b8; font-size: 14px; margin: 0; }
 </style>
 @endsection
 
@@ -41,6 +102,7 @@
     <div class="row">
         <div class="card border-0 shadow-sm text-dark modulo-form-card">
 
+            <!-- ═══ CABEÇALHO ═══ -->
             <div class="card-header modulo-header-gradient py-3 px-4">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div>
@@ -48,12 +110,12 @@
                             <i class="ri-percent-line"></i> 
                             Taxas de Cartão
                         </h4>
-                        <p class="text-muted mb-0 modulo-subtitle fs-13">Configure as taxas de pagamento de cartão e suas bandeiras para cálculo correto dos faturamentos.</p>
+                        <p class="text-muted mb-0 modulo-subtitle fs-13">Configure as taxas de pagamento de cartão e suas bandeiras para o cálculo correto dos faturamentos.</p>
                     </div>
                     <div>
                         @can('taxa_pagamento_create')
-                        <a href="{{ route('taxa-cartao.create') }}" class="btn btn-light btn-sm px-3 text-dark">
-                            <i class="ri-add-circle-line align-middle me-1"></i> Nova Taxa
+                        <a href="{{ route('taxa-cartao.create') }}" class="dash-btn dash-btn-primary">
+                            <i class="ri-add-circle-line"></i> Nova Taxa
                         </a>
                         @endcan
                     </div>
@@ -62,40 +124,100 @@
 
             <div class="card-body p-4">
 
-                <div class="modulo-table-wrap">
+                <!-- ═══ CARDS DE ESTATÍSTICA (KPIS) ═══ -->
+                @if(isset($stats))
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card stat-indigo">
+                            <div>
+                                <div class="stat-label">Total de Regras</div>
+                                <div class="stat-value mt-1">{{ $stats['total'] }}</div>
+                            </div>
+                            <i class="ri-percent-line stat-icon"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card stat-green">
+                            <div>
+                                <div class="stat-label">Taxa Média</div>
+                                <div class="stat-value mt-1">{{ number_format($stats['taxa_media'], 2, ',', '.') }}%</div>
+                            </div>
+                            <i class="ri-calculator-line stat-icon"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card stat-blue">
+                            <div>
+                                <div class="stat-label">Regras Crédito</div>
+                                <div class="stat-value mt-1">{{ $stats['credito'] }}</div>
+                            </div>
+                            <i class="ri-bank-card-line stat-icon"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card stat-amber">
+                            <div>
+                                <div class="stat-label">Regras Débito</div>
+                                <div class="stat-value mt-1">{{ $stats['debito'] }}</div>
+                            </div>
+                            <i class="ri-bank-card-2-line stat-icon"></i>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                <!-- ═══ TABELA ═══ -->
+                <div class="tb-wrap mb-3">
                     <div class="table-responsive">
                         <table class="table table-centered table-hover align-middle mb-0 text-dark">
                             <thead>
                                 <tr>
                                     <th>Tipo de Pagamento</th>
-                                    <th>Bandeira</th>
+                                    <th>Bandeira do Cartão</th>
                                     <th>Taxa (%)</th>
-                                    <th class="text-end" style="width:100px;">Ações</th>
+                                    <th class="text-end" style="width:120px;">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    <td class="fw-semibold text-dark">{{ $item->getTipo() }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="type-avatar">
+                                                <i class="ri-bank-card-line"></i>
+                                            </div>
+                                            <div>
+                                                <span class="fw-semibold text-dark d-block">{{ $item->getTipo() }}</span>
+                                                <span class="text-muted fs-11">Código: {{ $item->tipo_pagamento }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td>
                                         @if($item->bandeira_cartao)
-                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 fs-12">{{ $item->getBandeira() }}</span>
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 fs-12">
+                                            <i class="ri-vip-diamond-line me-1"></i> {{ $item->getBandeira() }}
+                                        </span>
                                         @else
-                                        <span class="text-muted">--</span>
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 fs-11">
+                                            Todas as Bandeiras
+                                        </span>
                                         @endif
                                     </td>
-                                    <td class="fw-bold text-danger">R$ {{ __moeda($item->taxa) }}%</td>
+                                    <td>
+                                        <strong class="text-danger fs-14">{{ __moeda($item->taxa) }}%</strong>
+                                    </td>
                                     <td class="text-end">
                                         <form action="{{ route('taxa-cartao.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="m-0">
-                                            @csrf @method('delete')
-                                            <div class="modulo-action-group">
+                                            @csrf
+                                            @method('delete')
+                                            <div class="act-group">
                                                 @can('taxa_pagamento_edit')
-                                                <a class="btn btn-warning btn-sm text-white" href="{{ route('taxa-cartao.edit', [$item->id]) }}" title="Editar">
+                                                <a class="act-btn act-edit" href="{{ route('taxa-cartao.edit', [$item->id]) }}" title="Editar Taxa">
                                                     <i class="ri-pencil-line"></i>
                                                 </a>
                                                 @endcan
                                                 @can('taxa_pagamento_delete')
-                                                <button type="button" class="btn btn-danger btn-delete btn-sm" title="Excluir">
+                                                <button type="button" class="act-btn act-del btn-delete" title="Excluir Taxa">
                                                     <i class="ri-delete-bin-line"></i>
                                                 </button>
                                                 @endcan
@@ -107,8 +229,8 @@
                                 <tr>
                                     <td colspan="4">
                                         <div class="modulo-empty">
-                                            <i class="ri-inbox-2-line"></i>
-                                            <p>Nenhuma taxa de cartão configurada.</p>
+                                            <i class="ri-percent-line"></i>
+                                            <p>Nenhuma taxa de cartão configurada até o momento.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -118,7 +240,17 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-end mt-3">{!! $data->appends(request()->all())->links() !!}</div>
+                <!-- ═══ PAGINAÇÃO ═══ -->
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
+                    <div>
+                        <h6 class="m-0 text-muted fs-13">
+                            Exibindo <strong>{{ $data->count() }}</strong> taxas cadastradas
+                        </h6>
+                    </div>
+                    <div>
+                        {!! $data->appends(request()->all())->links() !!}
+                    </div>
+                </div>
 
             </div>
         </div>

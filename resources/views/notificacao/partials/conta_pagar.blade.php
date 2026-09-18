@@ -1,14 +1,45 @@
-<div class="row">
-	<div class="col-md-6 col-12">
-		<h5>Data de vencimento: <strong>{{ __data_pt($item->data_vencimento, 0) }}</strong></h5>
-		<h5>Valor: <strong>R$ {{ __moeda($item->valor_integral) }}</strong></h5>
-	</div>
-	<div class="col-md-6 col-12">
-		<h5>Cliente: <strong>{{ $item->fornecedor->info }}</strong></h5>
-		<h5>Descrição: <strong>{{ $item->descricao }}</strong></h5>
-	</div>
+<div class="row g-3">
+    <div class="col-md-6 col-12">
+        <div class="p-3 rounded-3 border bg-light h-100">
+            <div class="d-flex align-items-center gap-2 mb-2 text-danger">
+                <i class="ri-calendar-todo-line fs-5"></i>
+                <span class="fw-bold fs-14">Vencimento &amp; Valor</span>
+            </div>
+            <div class="mb-2">
+                <span class="text-muted fs-12 d-block">Data de Vencimento:</span>
+                <span class="fw-bold fs-14 text-danger">{{ __data_pt($item->data_vencimento, 0) }}</span>
+            </div>
+            <div>
+                <span class="text-muted fs-12 d-block">Valor da Conta:</span>
+                <span class="fs-18 fw-bold text-dark">R$ {{ __moeda($item->valor_integral) }}</span>
+            </div>
+        </div>
+    </div>
 
-	<div class="col-md-2 col-6">
-		<a class="btn btn-dark" href="{{ route('conta-pagar.pay', [$item->id]) }}">Ver conta</a>
-	</div>
+    <div class="col-md-6 col-12">
+        <div class="p-3 rounded-3 border bg-light h-100 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2 text-primary">
+                    <i class="ri-building-line fs-5"></i>
+                    <span class="fw-bold fs-14">Favorecido / Fornecedor</span>
+                </div>
+                <div class="mb-2">
+                    <span class="text-muted fs-12 d-block">Fornecedor:</span>
+                    <span class="fw-semibold text-dark">{{ $item->fornecedor->razao_social ?? ($item->fornecedor->info ?? 'Não informado') }}</span>
+                </div>
+                @if($item->descricao)
+                    <div>
+                        <span class="text-muted fs-12 d-block">Descrição:</span>
+                        <span class="text-secondary fs-13">{{ $item->descricao }}</span>
+                    </div>
+                @endif
+            </div>
+
+            <div class="mt-3 pt-2 border-top">
+                <a class="btn btn-danger btn-sm w-100" href="{{ route('conta-pagar.pay', [$item->id]) }}">
+                    <i class="ri-money-dollar-box-line me-1"></i> Acessar / Baixar Conta
+                </a>
+            </div>
+        </div>
+    </div>
 </div>

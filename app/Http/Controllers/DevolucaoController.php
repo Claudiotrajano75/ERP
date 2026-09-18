@@ -173,7 +173,15 @@ class DevolucaoController extends Controller
         ->orderBy('created_at', 'desc')
         ->paginate(env("PAGINACAO"));
 
-        return view('devolucao.index', compact('data'));
+        $base = Nfe::where('empresa_id', request()->empresa_id)->where('orcamento', 0)->where('finNFe', 4);
+        $stats = [
+            'total'      => (clone $base)->count(),
+            'aprovadas'  => (clone $base)->where('estado', 'aprovado')->count(),
+            'canceladas' => (clone $base)->where('estado', 'cancelado')->count(),
+            'valor'      => (clone $base)->where('estado', 'aprovado')->sum('total'),
+        ];
+
+        return view('devolucao.index', compact('data', 'stats'));
 
     }
 

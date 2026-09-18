@@ -241,9 +241,11 @@ class NfeController extends Controller
 
             $danfe = new Danfe($xml);
             if($empresa->logo){
-                $logo = 'data://text/plain;base64,'. base64_encode(file_get_contents(public_path('/uploads/logos/') . 
-                    $empresa->logo));
-                $danfe->logoParameters($logo, 'L');
+                $logoPath = public_path('/uploads/logos/') . $empresa->logo;
+                if(file_exists($logoPath)){
+                    $logo = 'data://text/plain;base64,'. base64_encode(file_get_contents($logoPath));
+                    $danfe->logoParameters($logo, 'L');
+                }
             }
             $pdf = $danfe->render();
             header("Content-Disposition: ; filename=DANFE $item->numero.pdf");
@@ -494,7 +496,13 @@ class NfeController extends Controller
 
                 $nfe = Nfe::create($request->all());
 
+                $nfe->itens()->delete();
+                $nfe->fatura()->delete();
+
                 for ($i = 0; $i < sizeof($request->produto_id); $i++) {
+
+                    // Ignora linhas em branco ou inválidas geradas por clonagem do formulário
+                    if (empty($request->produto_id[$i]) || (int)$request->produto_id[$i] <= 0) continue;
 
                     $product = Produto::findOrFail($request->produto_id[$i]);
                     $variacao_id = isset($request->variacao_id[$i]) ? $request->variacao_id[$i] : null;
@@ -902,9 +910,30 @@ public function update(Request $request, $id)
 
         DB::transaction(function () use ($request, $id) {
             $item = Nfe::findOrFail($id);
+
+            $cliente_id = isset($request->cliente_id) ? $request->cliente_id : $item->cliente_id;
+            $fornecedor_id = isset($request->fornecedor_id) ? $request->fornecedor_id : $item->fornecedor_id;
+
+            if (isset($request->cliente_id)) {
+                if ($request->cliente_id == null) {
+                    $cliente_id = $this->cadastrarCliente($request);
+                } else {
+                    $this->atualizaCliente($request);
+                }
+            }
+            if (isset($request->fornecedor_id)) {
+                if ($request->fornecedor_id == null) {
+                    $fornecedor_id = $this->cadastrarFornecedor($request);
+                } else {
+                    $this->atualizaFornecedor($request);
+                }
+            }
+
             $transportadora_id = $request->transportadora_id;
             if ($request->transportadora_id == null) {
                 $transportadora_id = $this->cadastrarTransportadora($request);
+            } else {
+                $this->atualizaTransportadora($request);
             }
             $config = Empresa::find($request->empresa_id);
             $tipoPagamento = $request->tipo_pagamento;
@@ -914,12 +943,14 @@ public function update(Request $request, $id)
                 'emissor_cpf_cnpj' => $config->cpf_cnpj,
                 'ambiente' => $config->ambiente,
                 'chave' => '',
+                'cliente_id' => $cliente_id,
+                'fornecedor_id' => $fornecedor_id,
                 'transportadora_id' => $transportadora_id,
                 'numero' => $request->numero_nfe ? $request->numero_nfe : 0,
                 'total' => __convert_value_bd($request->valor_total),
                 'desconto' => __convert_value_bd($request->desconto),
                 'acrescimo' => __convert_value_bd($request->acrescimo),
-                'valor_produtos' => __convert_value_bd($request->valor_total) ?? 0,
+                'valor_produtos' => __convert_value_bd($request->valor_produtos ?? $request->valor_total) ?? 0,
                 'valor_frete' => $request->valor_frete ? __convert_value_bd($request->valor_frete) : 0,
                 'tipo_pagamento' => $request->tipo_pagamento[0],
             ]);
@@ -941,6 +972,9 @@ public function update(Request $request, $id)
             $item->fatura()->delete();
 
             for ($i = 0; $i < sizeof($request->produto_id); $i++) {
+                // Ignora linhas em branco ou inválidas geradas por clonagem do formulário
+                if (empty($request->produto_id[$i]) || (int)$request->produto_id[$i] <= 0) continue;
+
                 $product = Produto::findOrFail($request->produto_id[$i]);
                 $variacao_id = isset($request->variacao_id[$i]) ? $request->variacao_id[$i] : null;
 
@@ -1235,8 +1269,11 @@ public function destroy($id)
 
         $danfe = new Danfe($xml);
         if($empresa->logo){
-            $logo = 'data://text/plain;base64,'. base64_encode(file_get_contents(public_path('/uploads/logos/') . $empresa->logo));
-            $danfe->logoParameters($logo, 'L');
+            $logoPath = public_path('/uploads/logos/') . $empresa->logo;
+            if(file_exists($logoPath)){
+                $logo = 'data://text/plain;base64,'. base64_encode(file_get_contents($logoPath));
+                $danfe->logoParameters($logo, 'L');
+            }
         }
         $pdf = $danfe->render();
         return response($pdf)
@@ -1250,17 +1287,26 @@ public function inutilizar(Request $request)
 {
     $start_date = $request->get('start_date');
     $end_date = $request->get('end_date');
-    $data = Inutilizacao::where('empresa_id', request()->empresa_id)
-    ->where('modelo', '55')->orderBy('id', 'desc')
+    $query = Inutilizacao::where('empresa_id', request()->empresa_id)
+        ->where('modelo', '55');
+
+    $stats = [
+        'total'     => (clone $query)->count(),
+        'aprovados' => (clone $query)->where('estado', 'aprovado')->count(),
+        'rejeitados'=> (clone $query)->where('estado', 'rejeitado')->count(),
+        'novos'     => (clone $query)->where('estado', 'novo')->count(),
+    ];
+
+    $data = $query->orderBy('id', 'desc')
     ->when(!empty($start_date), function ($query) use ($start_date) {
         return $query->whereDate('created_at', '>=', $start_date);
     })
-    ->when(!empty($end_date), function ($query) use ($end_date,) {
+    ->when(!empty($end_date), function ($query) use ($end_date) {
         return $query->whereDate('created_at', '<=', $end_date);
     })
     ->get();
     $modelo = '55';
-    return view('inutilizacao.index', compact('data', 'modelo'));
+    return view('inutilizacao.index', compact('data', 'modelo', 'stats'));
 }
 
 public function inutilStore(Request $request)

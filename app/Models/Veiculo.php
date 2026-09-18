@@ -23,6 +23,11 @@ class Veiculo extends Model
         return "$this->placa - $this->modelo";
     }
 
+    public function funcionario()
+    {
+        return $this->belongsTo(Funcionario::class, 'funcionario_id');
+    }
+
     public static function tipos(){
         return [
             "02" => "CICLOMOTO",

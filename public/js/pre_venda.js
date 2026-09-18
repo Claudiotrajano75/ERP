@@ -2,6 +2,26 @@ var DESCONTO = 0;
 var VALORACRESCIMO = 0;
 var PERCENTUALMAXDESCONTO = false;
 
+function beepSucesso(){
+    let alerta = $('#alerta_sonoro').val();
+    if(alerta == 1 || alerta === undefined || alerta === ''){
+        try {
+            var audio = new Audio('/audio/beep.mp3');
+            audio.play().catch(function(err){});
+        } catch(e){}
+    }
+}
+
+function beepErro(){
+    let alerta = $('#alerta_sonoro').val();
+    if(alerta == 1 || alerta === undefined || alerta === ''){
+        try {
+            var audio = new Audio('/audio/beep_error.mp3');
+            audio.play().catch(function(err){});
+        } catch(e){}
+    }
+}
+
 function preVendaAtualizarCardCliente(razaoSocial) {
     if (razaoSocial && String(razaoSocial).trim() !== '') {
         $('.cliente_selecionado').text(razaoSocial).removeClass('pdv-card-value-empty').addClass('pdv-card-value');
@@ -113,19 +133,15 @@ function pdvAtualizarCorPagamento(selectEl) {
 }
 
 function validaButtonSave() {
-    $('#salvar_pre_venda').attr("disabled", 1)
+    $('#salvar_pre_venda').attr("disabled", 1);
 
-    var tipo = $('#inp-tipo_pagamento').val()
-    var funcionario = $('#inp-funcionario_id').val()
-    // var tipo_row = $('#inp-tipo_pagamento_row').val()
+    var tipo = $('#inp-tipo_pagamento').val();
+    var funcionario = $('#inp-funcionario_id').val();
+    var parcelasMultiplas = $(".table-payment tbody tr").length;
 
-    if (tipo != "" && funcionario != "" && tipo != null && funcionario != null) {
-
-        if (tipo != '01') {
-            $('#salvar_pre_venda').removeAttr("disabled")
-        }
-        else {
-            $('#salvar_pre_venda').removeAttr("disabled")
+    if (funcionario != "" && funcionario != null) {
+        if (parcelasMultiplas > 0 || (tipo != "" && tipo != null)) {
+            $('#salvar_pre_venda').removeAttr("disabled");
         }
     }
 }
@@ -137,8 +153,6 @@ function finalizar(id) {
         $('#finalizar_pre_venda .modal-body').html(res)
         setTimeout(() => {
             calcTotalFatura()
-            // Garantir que os botoes de acao fiquem habilitados
-            $('#finalizar_pre_venda .btn-sbm').prop('disabled', false);
         }, 200)
     })
     .fail((e) => {
@@ -146,26 +160,80 @@ function finalizar(id) {
     })
 }
 
-
-$('body').on('blur', '.valor_parcela', function () {
+$('body').on('input blur keyup change', '.valor_parcela, .tipo_pagamento', function () {
     calcTotalFatura()
 })
 
-// $(document).on("click", ".btn-delete-linha", function () {
-//     $(this).closest("tr").remove();
-//     swal("Sucesso", "Parcela removida!", "success");
-//     calcTotalFatura()
-// });
+$(document).on("click", ".btn-delete-row", function () {
+    var $table = $(this).closest("table");
+    if ($table.find("tbody tr").length > 1) {
+        $(this).closest("tr").remove();
+        calcTotalFatura();
+    } else {
+        swal("Atenção", "A venda deve conter ao menos uma forma de pagamento!", "warning");
+    }
+});
 
 function calcTotalFatura() {
-    var total = 0
-    $(".valor_parcela").each(function () {
-        total += convertMoedaToFloat($(this).val())
+    var totalFaturado = 0
+    var totalDinheiro = 0
+    var temDinheiro = false
+    var valorTotalVenda = parseFloat($('#modal_valor_total').val()) || 0
+
+    $(".tipo_pagamento").each(function () {
+        var tipo = $(this).val()
+        var valorStr = $(this).closest('tr').find('.valor_parcela').val()
+        var valor = convertMoedaToFloat(valorStr) || 0
+        totalFaturado += valor
+        if (tipo === '01') {
+            temDinheiro = true
+            totalDinheiro += valor
+        }
     })
-    setTimeout(() => {
-        total_fatura = total
-        $('.total_parcelas').html("R$ " + convertFloatToMoeda(total))
-    }, 100)
+
+    $('.total_parcelas').html("R$ " + convertFloatToMoeda(totalFaturado))
+
+    var $painel = $('#painel-status-pagamento')
+    var $botoes = $('#finalizar_pre_venda .btn-sbm')
+    var diferenca = parseFloat((totalFaturado - valorTotalVenda).toFixed(2))
+
+    if (diferenca < -0.009) {
+        // Valor insuficiente
+        var faltam = Math.abs(diferenca)
+        $painel.removeClass('bg-success-subtle text-success border-success-subtle bg-info-subtle text-info border-info-subtle bg-warning-subtle text-warning border-warning-subtle')
+               .addClass('bg-danger-subtle text-danger border border-danger-subtle')
+               .html('<i class="ri-error-warning-fill fs-16"></i> Valor Insuficiente: Faltam <strong class="ms-1 fs-14">R$ ' + convertFloatToMoeda(faltam) + '</strong>')
+        $botoes.prop('disabled', true)
+        $('#modal_dinheiro_recebido').val(totalDinheiro)
+        $('#modal_troco').val(0)
+    } else if (diferenca > 0.009) {
+        if (temDinheiro) {
+            // Pagamento em dinheiro com troco
+            var troco = diferenca
+            $painel.removeClass('bg-danger-subtle text-danger border-danger-subtle bg-info-subtle text-info border-info-subtle bg-warning-subtle text-warning border-warning-subtle')
+                   .addClass('bg-success-subtle text-success border border-success-subtle')
+                   .html('<i class="ri-hand-coin-fill fs-16"></i> Troco a Devolver: <strong class="ms-1 fs-15 text-success">R$ ' + convertFloatToMoeda(troco) + '</strong>')
+            $botoes.prop('disabled', false)
+            $('#modal_dinheiro_recebido').val(totalDinheiro)
+            $('#modal_troco').val(troco)
+        } else {
+            // Pagamento sem dinheiro ultrapassou o total
+            $painel.removeClass('bg-success-subtle text-success border-success-subtle bg-info-subtle text-info border-info-subtle bg-danger-subtle text-danger border-danger-subtle')
+                   .addClass('bg-warning-subtle text-warning border border-warning-subtle')
+                   .html('<i class="ri-alert-line fs-16"></i> Total faturado excede a pré-venda em R$ ' + convertFloatToMoeda(diferenca) + ' sem forma Dinheiro.')
+            $botoes.prop('disabled', true)
+            $('#modal_dinheiro_recebido').val(0)
+            $('#modal_troco').val(0)
+        }
+    } else {
+        // Valor exato
+        $painel.removeClass('bg-danger-subtle text-danger border-danger-subtle bg-warning-subtle text-warning border-warning-subtle')
+               .addClass('bg-success-subtle text-success border border-success-subtle')
+               .html('<i class="ri-checkbox-circle-fill fs-16"></i> Total 100% Conferido e Pago!')
+        $botoes.prop('disabled', false)
+        $('#modal_dinheiro_recebido').val(totalDinheiro > 0 ? totalDinheiro : valorTotalVenda)
+        $('#modal_troco').val(0)
+    }
 }
 
 $(document).on("keyup", "#inp-codigo_barras", function (e) {
@@ -175,7 +243,6 @@ $(document).on("keyup", "#inp-codigo_barras", function (e) {
 })
 
 $(document).on("blur", "#inp-codigo_barras", function (e) {
-
     encontraItemCodigoBarras($(this).val())
 })
 
@@ -184,11 +251,9 @@ function encontraItemCodigoBarras(codigo){
         if($(this).val() == codigo){
             var $card = $(this).closest('.fin-card-item');
             if($card.length > 0){
-                // Novo layout (cards)
                 $(this).prev().val(1);
                 $card.find('.item-name').addClass('text-success');
             }else{
-                // Fallback: layout antigo (tabela)
                 $(this).prev().val(1);
                 $(this).closest('tr').find('.produto_nome').addClass('text-success');
             }
@@ -233,6 +298,23 @@ $(document).on("click", ".btn-add-tr", function () {
     var $clone = $tr.clone();
     $clone.show();
     $clone.find("input,select").val("");
+
+    // Preenche automaticamente a data de vencimento com a data de hoje
+    let hoje = new Date().toISOString().split('T')[0];
+    $clone.find('input[name="data_vencimento[]"]').val(hoje);
+
+    // Calcula saldo restante que falta faturar e sugere no valor da nova parcela
+    var totalJaFaturado = 0;
+    var valorTotalVenda = parseFloat($('#modal_valor_total').val()) || 0;
+    $table.find(".tipo_pagamento").each(function () {
+        var valor = convertMoedaToFloat($(this).closest('tr').find('.valor_parcela').val()) || 0;
+        totalJaFaturado += valor;
+    });
+    var saldoRestante = valorTotalVenda - totalJaFaturado;
+    if (saldoRestante > 0) {
+        $clone.find('.valor_parcela').val(convertFloatToMoeda(saldoRestante));
+    }
+
     $table.append($clone);
     setTimeout(function () {
         $("tbody select.select2").select2({
@@ -240,48 +322,78 @@ $(document).on("click", ".btn-add-tr", function () {
             width: "100%",
             theme: "bootstrap4"
         });
+        calcTotalFatura();
     }, 100);
-
-
 })
 
+function validarAntesDeEnviar() {
+    var totalFaturado = 0
+    var valorTotalVenda = parseFloat($('#modal_valor_total').val()) || 0
+    var hoje = new Date().toISOString().split('T')[0];
+
+    $(".tipo_pagamento").each(function () {
+        var $tr = $(this).closest('tr');
+        var valor = convertMoedaToFloat($tr.find('.valor_parcela').val()) || 0;
+        totalFaturado += valor;
+
+        // Se a data de vencimento estiver vazia, preenche com a data de hoje
+        var $vencInput = $tr.find('input[name="data_vencimento[]"]');
+        if (!$vencInput.val()) {
+            $vencInput.val(hoje);
+        }
+    })
+    if (totalFaturado < (valorTotalVenda - 0.009)) {
+        var faltam = valorTotalVenda - totalFaturado
+        swal("Valor Insuficiente", "O total informado é menor que o valor da pré-venda! Faltam R$ " + convertFloatToMoeda(faltam) + " para completar o total de R$ " + convertFloatToMoeda(valorTotalVenda), "error")
+        return false
+    }
+    return true
+}
+
 $(document).on("click", '#gerar_nfe', function () {
+    if (!validarAntesDeEnviar()) return false;
     let fatura = getFaturas()
     gerarNFe(fatura)
 })
 
 $(document).on("click", '#gerar_nfce', function () {
+    if (!validarAntesDeEnviar()) return false;
     let fatura = getFaturas()
     gerarNFCe(fatura)
 })
 
 $(document).on("click", '.finalizar_pre_venda', function () {
+    if (!validarAntesDeEnviar()) return false;
     let fatura = getFaturas()
     gerarVenda(fatura)
 })
 
 function getFaturas() {
     let data = []
+    let hoje = new Date().toISOString().split('T')[0];
     $('.tipo_pagamento').each(function () {
         let tipo = $(this).val()
-        let vencimento = $(this).closest('td').next().find('input').val()
-        let valor = $(this).closest('td').next().next().find('input').val()
-        let js = {
-            tipo: tipo,
-            vencimento: vencimento,
-            valor: valor,
+        let vencimento = $(this).closest('tr').find('input[name="data_vencimento[]"]').val() || hoje;
+        let valor = $(this).closest('tr').find('.valor_parcela').val()
+        if (tipo && valor) {
+            let js = {
+                tipo: tipo,
+                vencimento: vencimento,
+                valor: valor,
+            }
+            data.push(js)
         }
-        data.push(js)
     })
     return data
 }
 
 function gerarNFe(fatura) {
-
     $.post(path_url + "api/nfe/gerarNfe", {
         pre_venda_id: $('#pre_venda_id').val(),
         conta_receber: $('#inp-gerar_conta_receber').val(),
         fatura: fatura,
+        valor_recebido: $('#modal_dinheiro_recebido').val(),
+        troco: $('#modal_troco').val(),
         empresa_id: $('#empresa_id').val(),
         usuario_id: $('#usuario_id').val()
     })
@@ -290,6 +402,7 @@ function gerarNFe(fatura) {
     })
     .fail((err) => {
         console.log(err)
+        swal("Erro", err.responseJSON || "Não foi possível gerar a NFe", "error")
     })
 }
 
@@ -298,6 +411,8 @@ function gerarNFCe(fatura) {
         pre_venda_id: $('#pre_venda_id').val(),
         conta_receber: $('#inp-gerar_conta_receber').val(),
         fatura: fatura,
+        valor_recebido: $('#modal_dinheiro_recebido').val(),
+        troco: $('#modal_troco').val(),
         empresa_id: $('#empresa_id').val(),
         usuario_id: $('#usuario_id').val()
     })
@@ -306,15 +421,17 @@ function gerarNFCe(fatura) {
     })
     .fail((err) => {
         console.log(err)
+        swal("Erro", err.responseJSON || "Não foi possível gerar a NFCe", "error")
     })
 }
 
 function gerarVenda(fatura) {
-
     $.post(path_url + "api/nfce/gerarVenda", {
         pre_venda_id: $('#pre_venda_id').val(),
         conta_receber: $('#inp-gerar_conta_receber').val(),
         fatura: fatura,
+        valor_recebido: $('#modal_dinheiro_recebido').val(),
+        troco: $('#modal_troco').val(),
         empresa_id: $('#empresa_id').val(),
     })
     .done((success) => {
@@ -336,7 +453,7 @@ function gerarVenda(fatura) {
     })
     .fail((err) => {
         console.log(err)
-        swal("Erro", err.responseJSON, "error")
+        swal("Erro", err.responseJSON || "Não foi possível finalizar a venda", "error")
     })
 }
 
@@ -455,6 +572,7 @@ function buscarPorReferencia(barcode) {
     .done((e) => {
         var $newRow = $(e).addClass('pdv-item-new');
         $(".table-itens tbody").append($newRow);
+        beepSucesso();
         calcTotal();
         setTimeout(function() {
             $('.total-venda').addClass('pdv-total-bounce');
@@ -465,7 +583,9 @@ function buscarPorReferencia(barcode) {
     })
     .fail((e) => {
         console.log(e);
-        swal("Erro", "Produto não localizado!", "error")
+        beepErro();
+        let msg = typeof e.responseJSON === 'string' ? e.responseJSON : (e.responseText || "Produto não localizado ou sem estoque!");
+        swal("Erro", msg, "error");
     });
 }
 
@@ -583,10 +703,13 @@ function addProdutos(id) {
     })
     .done((e) => {
         if(!e){
-            swal("Alerta", "Produto sem estoque", "warning")
+            beepErro();
+            swal("Alerta", "Produto sem estoque", "warning");
+            return;
         }
         var $newRow = $(e).addClass('pdv-item-new');
         $(".table-itens tbody").append($newRow);
+        beepSucesso();
         calcTotal();
         setTimeout(function() {
             $('.total-venda').addClass('pdv-total-bounce');
@@ -597,9 +720,13 @@ function addProdutos(id) {
     })
     .fail((e) => {
         console.log(e);
-        PRODUTOID = id
+        PRODUTOID = id;
         if(e.status == 402){
-            buscarVariacoes(id)
+            buscarVariacoes(id);
+        } else {
+            beepErro();
+            let msg = typeof e.responseJSON === 'string' ? e.responseJSON : (e.responseText || "Produto com estoque insuficiente");
+            swal("Atenção", msg, "warning");
         }
     });
 }
@@ -761,7 +888,7 @@ $(".btn-add-item").click(() => {
             let value_unit = $("#inp-valor_unitario").val();
             let sub_total = $("#inp-subtotal").val();
             let product_id = $("#inp-produto_id").val();
-            // let key = $("#inp-key").val()
+            let variacao_id = $("#inp-variacao_id").val();
 
             if (qtd && value_unit && product_id && sub_total) {
                 let dataRequest = {
@@ -769,23 +896,34 @@ $(".btn-add-item").click(() => {
                     value_unit: value_unit,
                     sub_total: sub_total,
                     product_id: product_id,
+                    variacao_id: variacao_id
                 };
                 $.get(path_url + "api/frenteCaixa/linhaProdutoVenda", dataRequest)
                 .done((e) => {
-                    var $newRow = $(e).addClass('pdv-item-new');
-                    $(".table-itens tbody").append($newRow);
-                    calcTotal();
-                    setTimeout(function() {
-                        $('.total-venda').addClass('pdv-total-bounce');
+                    if (e == false) {
+                        beepErro();
+                        swal("Atenção", "Produto com estoque insuficiente!", "warning");
+                    } else {
+                        var $newRow = $(e).addClass('pdv-item-new');
+                        $(".table-itens tbody").append($newRow);
+                        beepSucesso();
+                        calcTotal();
                         setTimeout(function() {
-                            $('.total-venda').removeClass('pdv-total-bounce');
-                        }, 500);
-                    }, 20);
+                            $('.total-venda').addClass('pdv-total-bounce');
+                            setTimeout(function() {
+                                $('.total-venda').removeClass('pdv-total-bounce');
+                            }, 500);
+                        }, 20);
+                    }
                 })
                 .fail((e) => {
                     console.log(e);
+                    beepErro();
+                    let msg = typeof e.responseJSON === 'string' ? e.responseJSON : (e.responseText || "Produto com estoque insuficiente!");
+                    swal("Atenção", msg, "warning");
                 });
             } else {
+                beepErro();
                 swal(
                     "Atenção",
                     "Informe corretamente os campos para continuar!",
@@ -793,6 +931,7 @@ $(".btn-add-item").click(() => {
                     );
             }
         } else {
+            beepErro();
             swal(
                 "Atenção",
                 "Abra o caixa para continuar!",
@@ -814,23 +953,42 @@ function validaCaixa() {
 
 
 $("body").on("click", "#btn-incrementa", function () {
-    let inp = $(this).closest('div.input-group-append').prev()[0]
-    if (inp.value) {
+    let inp = $(this).closest('div.input-group-append').prev()[0] || $(this).siblings('input')[0]
+    let prodRow = $(this).closest('.line-product').find('.produto_row')
+    let produto_id = prodRow.length ? prodRow.val() : $(this).closest('tr').find('input[name="produto_id[]"]').val()
+    if (inp && inp.value) {
         let v = convertMoedaToFloat(inp.value)
-        v += 1
-        inp.value = convertFloatToMoeda(v)
-        calcSubTotal()
+        if (produto_id) {
+            $.get(path_url + "api/produtos/valida-estoque", { qtd: v + 1, product_id: produto_id })
+            .done((res) => {
+                v += 1
+                inp.value = convertFloatToMoeda(v)
+                calcSubTotal()
+                beepSucesso()
+            })
+            .fail((err) => {
+                beepErro()
+                let msg = typeof err.responseJSON === 'string' ? err.responseJSON : (err.responseText || "Estoque insuficiente!");
+                swal("Alerta", msg, "warning")
+            });
+        } else {
+            v += 1
+            inp.value = convertFloatToMoeda(v)
+            calcSubTotal()
+            beepSucesso()
+        }
     }
 })
 
 $("body").on("click", "#btn-subtrai", function () {
-    let inp = $(this).closest('.input-group').find('input')[0]
-    if (inp.value) {
+    let inp = $(this).closest('.input-group').find('input')[0] || $(this).siblings('input')[0]
+    if (inp && inp.value) {
         let v = convertMoedaToFloat(inp.value)
         v -= 1
         inp.value = convertFloatToMoeda(v)
 
         calcSubTotal()
+        beepSucesso()
     }
 })
 
@@ -1072,35 +1230,41 @@ function calcTotal() {
     $(".subtotal-item").each(function () {
         total += convertMoedaToFloat($(this).val());
     });
-    setTimeout(() => {
-        total_venda = total;
-        $(".total-venda").html(
-            convertFloatToMoeda(total + parseFloat(VALORACRESCIMO) - parseFloat(DESCONTO))
-            );
-        $('#inp-valor_total').val(
-            convertFloatToMoeda(total + parseFloat(VALORACRESCIMO) - parseFloat(DESCONTO))
-            );
-        $(".total-venda-modal").html(
-            convertFloatToMoeda(total + VALORACRESCIMO - DESCONTO)
-            );
-        $('#inp-valor_integral').val(convertFloatToMoeda(total_venda))
+    total_venda = total + parseFloat(VALORACRESCIMO || 0) - parseFloat(DESCONTO || 0);
+    $(".total-venda").html(convertFloatToMoeda(total_venda));
+    $('#inp-valor_total').val(convertFloatToMoeda(total_venda));
+    $(".total-venda-modal").html("R$ " + convertFloatToMoeda(total_venda));
+    $('#inp-valor_integral').val(convertFloatToMoeda(total_venda));
 
-        $('#inp-quantidade').val('')
-        $('#inp-valor_unitario').val('')
-        $('#inp-produto_id').val('').change()
-    }, 100);
+    $('#inp-quantidade').val('');
+    $('#inp-valor_unitario').val('');
+    $('#inp-produto_id').val('').change();
+
+    calcTotalPayment();
 }
 
 $(function () {
-    let data = new Date
+    let data = new Date();
     let dataFormatada = (data.getFullYear() + "-" + adicionaZero((data.getMonth() + 1)) + "-" + adicionaZero(data.getDate()));
     // Preenche a data atual apenas em campos vazios (na edição preserva o vencimento salvo)
     $('.data_atual').each(function () {
         if (!$(this).val()) {
-            $(this).val(dataFormatada)
+            $(this).val(dataFormatada);
         }
-    })
-})
+    });
+
+    $('#pagamento_multiplo').on('show.bs.modal', function () {
+        calcTotal();
+        setTimeout(() => {
+            calcTotalPayment();
+            let restante = total_venda - total_payment;
+            if (restante > 0 && (!$("#inp-valor_row").val() || convertMoedaToFloat($("#inp-valor_row").val()) <= 0)) {
+                $("#inp-valor_row").val(convertFloatToMoeda(restante));
+            }
+        }, 100);
+    });
+});
+
 function adicionaZero(numero) {
     if (numero <= 9)
         return "0" + numero;
@@ -1115,11 +1279,15 @@ $(".btn-add-payment").click(() => {
     let valor_integral_row = $("#inp-valor_row").val();
     let obs_row = $("#inp-observacao_row").val();
 
-    validaButtonSave();
-
     let v = convertMoedaToFloat(valor_integral_row);
 
-    if (v + total_payment <= total_venda) {
+    if (v <= 0) {
+        beepErro();
+        swal("Atenção", "Informe um valor válido para a parcela!", "warning");
+        return;
+    }
+
+    if (v + total_payment <= total_venda + 0.05) {
         if (vencimento && valor_integral_row && tipo_pagamento_row) {
             let dataRequest = {
                 data_vencimento_row: vencimento,
@@ -1131,86 +1299,78 @@ $(".btn-add-payment").click(() => {
             $.get(path_url + "api/frenteCaixa/linhaParcelaVenda", dataRequest)
             .done((e) => {
                 $(".table-payment tbody").append(e);
+                beepSucesso();
                 calcTotalPayment();
 
+                // Limpa os campos do formulário para permitir adicionar a próxima forma de pagamento
+                $("#inp-tipo_pagamento_row").val("").change();
+                let restante = total_venda - total_payment;
+                $("#inp-valor_row").val(restante > 0 ? convertFloatToMoeda(restante) : "");
+                $("#inp-observacao_row").val("");
+                let data = new Date();
+                let dataFormatada = (data.getFullYear() + "-" + adicionaZero((data.getMonth() + 1)) + "-" + adicionaZero(data.getDate()));
+                $("#inp-data_vencimento_row").val(dataFormatada);
+
+                validaButtonSave();
             })
             .fail((e) => {
                 console.log(e);
+                beepErro();
+                swal("Erro", "Não foi possível adicionar a parcela de pagamento!", "error");
             });
         } else {
+            beepErro();
             swal(
                 "Atenção",
-                "Informe corretamente os campos para continuar!",
+                "Informe o tipo de pagamento, valor e vencimento para continuar!",
                 "warning"
-                );
+            );
         }
     } else {
+        beepErro();
         swal(
             "Atenção",
-            "A soma das parcelas não bate com o valor total da venda",
+            "A soma das parcelas ultrapassa o valor total da venda!",
             "warning"
-            );
+        );
     }
 });
 
 var total_payment = 0;
 function calcTotalPayment() {
-    $('#btn-pag_row').attr("disabled", true)
-
     var total = 0;
-    $(".valor_integral").each(function () {
+    $(".table-payment .valor_integral").each(function () {
         total += convertMoedaToFloat($(this).val());
     });
-    setTimeout(() => {
-        total_payment = total;
-        $(".sum-payment").html("R$ " + convertFloatToMoeda(total));
+    total_payment = total;
+    $(".sum-payment").html("R$ " + convertFloatToMoeda(total));
 
-        $(".sum-restante").html("R$ " + convertFloatToMoeda(total_venda - total));
-    }, 100);
+    let restante = Math.max(0, total_venda - total);
+    $(".sum-restante").html("R$ " + convertFloatToMoeda(restante));
+    $(".total-venda-modal").html("R$ " + convertFloatToMoeda(total_venda));
 
     let dif = total_venda - total;
-
-    let diferenca = dif.toFixed(2);
-
-    if (diferenca <= 10) {
-        $("#btn-pag_row").removeAttr("disabled")
+    if (dif <= 0.05 && total > 0) {
+        $("#btn-pag_row, .btn-modal-multiplo").removeAttr("disabled");
     }
 }
 
-
-// $(".table-payment").on("click", ".btn-delete-row", function () {
-//     $(this).closest("tr").remove();
-//     swal("Sucesso", "Parcela removida!", "success");
-//     calcTotalPayment();
-// });
-
-$(document).delegate(".btn-delete-row", "click", function (e) {
+$(document).on("click", ".table-payment .btn-delete-row", function (e) {
     e.preventDefault();
-    swal({
-        title: "Você esta certo?",
-        text: "Deseja remover esse item mesmo?",
-        icon: "warning",
-        buttons: true
-    }).then(willDelete => {
-        if (willDelete) {
-            var trLength = $(this)
-            .closest("tr")
-            .closest("tbody")
-            .find("tr")
-            .not(".dynamic-form-document").length;
-            if (!trLength || trLength > 1) {
-                $(this)
-                .closest("tr")
-                .remove();
-            } else {
-                swal(
-                    "Atenção",
-                    "Você deve ter ao menos um item na lista",
-                    "warning"
-                    );
-            }
-        }
-    });
+    e.stopPropagation();
+    $(this).closest("tr").remove();
+    beepSucesso();
+    calcTotalPayment();
+    let restante = total_venda - total_payment;
+    if (restante > 0 && (!$("#inp-valor_row").val() || convertMoedaToFloat($("#inp-valor_row").val()) <= 0)) {
+        $("#inp-valor_row").val(convertFloatToMoeda(restante));
+    }
+    validaButtonSave();
+});
+
+$(".btn-modal-multiplo").click(function () {
+    calcTotalPayment();
+    validaButtonSave();
 });
 
 $(document).on('change', '#inp-funcionario_id', function() {

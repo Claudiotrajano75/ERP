@@ -2,13 +2,75 @@
 
 @section('css')
 <style>
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.6) !important; font-weight: 400; }
-.modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-.modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
-@media (max-width: 768px) { .modulo-header-gradient .modulo-title { font-size: 18px; } }
+/* ─── Navegação por Abas (Tabs) ─── */
+.nav-tabs-custom {
+    background: #f8fafc;
+    padding: 6px;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.nav-tabs-custom .nav-link {
+    flex: 1;
+    min-width: 160px;
+    border-radius: 10px !important;
+    padding: 12px 18px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #64748b;
+    border: none !important;
+    background: transparent;
+    text-align: center;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.nav-tabs-custom .nav-link:hover {
+    color: #334155;
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.nav-tabs-custom .nav-link.active {
+    background: #ffffff !important;
+    color: #4f46e5 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Tabela ─── */
+.tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+.tb-wrap table { margin-bottom: 0; }
+.tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 16px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+.tb-wrap tbody td { padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13.5px; color: #374151; }
+.tb-wrap tbody tr:hover { background: #f5f6fe; }
+.tb-wrap tbody tr:last-child td { border-bottom: none; }
+
+/* ─── Badges de Status ─── */
+.modulo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+.modulo-badge-success { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+.modulo-badge-danger  { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+.modulo-badge-warning { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+.modulo-badge-info    { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; }
+
+/* ─── Empty State ─── */
+.modulo-empty { padding: 48px 20px; text-align: center; }
+.modulo-empty i { font-size: 44px; color: #cbd5e1; margin-bottom: 10px; display: block; }
+.modulo-empty p { color: #94a3b8; font-size: 14px; margin: 0; }
 </style>
 @endsection
 
@@ -16,54 +78,58 @@
 <div class="mt-3 text-dark">
     <div class="row">
         <div class="col-lg-12">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm text-dark modulo-form-card">
 
                 <div class="card-header modulo-header-gradient py-3 px-4">
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <div>
                             <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
                                 <i class="ri-file-list-3-line"></i>
-                                Histórico Comercial — <strong style="color:#f8bbd0;">{{ $item->info }}</strong>
+                                Histórico Comercial — <span style="color:#a8b5ff;">{{ $item->info }}</span>
                             </h4>
                             <p class="text-muted mb-0 modulo-subtitle fs-13">Acompanhe as compras efetuadas, produtos adquiridos e faturas a pagar com este fornecedor.</p>
                         </div>
                         <div>
-                            <a href="{{ route('fornecedores.index') }}" class="btn btn-light btn-sm px-3 text-dark">
-                                <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
+                            <a href="{{ route('fornecedores.index') }}" class="dash-btn dash-btn-light">
+                                <i class="ri-arrow-left-line"></i> Voltar
                             </a>
                         </div>
                     </div>
                 </div>
 
                 <div class="card-body p-4">
-                    <div id="basicwizard">
-                        <ul class="nav nav-pills nav-justified mb-4 border p-1 rounded bg-light" role="tablist">
-                            <li class="nav-item">
-                                <a href="#tab-compras" data-bs-toggle="tab" class="nav-link rounded py-2 active" role="tab">
-                                    <i class="ri-shopping-cart-line me-1 align-middle fs-16"></i> Compras Realizadas
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#tab-produtos" data-bs-toggle="tab" class="nav-link rounded py-2" role="tab">
-                                    <i class="ri-box-3-line me-1 align-middle fs-16"></i> Produtos Comprados
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#tab-faturas" data-bs-toggle="tab" class="nav-link rounded py-2" role="tab">
-                                    <i class="ri-wallet-line me-1 align-middle fs-16"></i> Contas & Faturas
-                                </a>
-                            </li>
-                        </ul>
+                    <ul class="nav nav-pills nav-tabs-custom mb-4" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a href="#tab-compras" data-bs-toggle="tab" class="nav-link active" role="tab">
+                                <i class="ri-shopping-cart-line"></i>
+                                <span>Compras Realizadas</span>
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a href="#tab-produtos" data-bs-toggle="tab" class="nav-link" role="tab">
+                                <i class="ri-box-3-line"></i>
+                                <span>Produtos Comprados</span>
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a href="#tab-faturas" data-bs-toggle="tab" class="nav-link" role="tab">
+                                <i class="ri-wallet-line"></i>
+                                <span>Contas & Faturas a Pagar</span>
+                            </a>
+                        </li>
+                    </ul>
 
-                        <div class="tab-content border p-3 rounded bg-white shadow-sm mt-3">
-                            <div class="tab-pane show active" id="tab-compras" role="tabpanel">
+                    <div class="tab-content mt-3">
+                        <!-- ═══ ABA 1: COMPRAS ═══ -->
+                        <div class="tab-pane fade show active" id="tab-compras" role="tabpanel">
+                            <div class="tb-wrap">
                                 <div class="table-responsive">
-                                    <table class="table table-centered table-hover align-middle mb-0 text-dark">
-                                        <thead class="table-light">
+                                    <table class="table table-hover align-middle mb-0 text-dark">
+                                        <thead>
                                             <tr>
                                                 <th>Data da Compra</th>
                                                 <th>Valor Total</th>
-                                                <th>Estado</th>
+                                                <th>Status</th>
                                                 <th>Chave Eletrônica</th>
                                                 <th>Nº Documento</th>
                                             </tr>
@@ -72,91 +138,154 @@
                                             @php $total = 0; @endphp
                                             @forelse($data as $c)
                                             <tr>
-                                                <td>{{ __data_pt($c->created_at) }}</td>
-                                                <td class="fw-bold text-success">R$ {{ __moeda($c->total) }}</td>
+                                                <td>
+                                                    <span class="fw-bold text-dark">{{ __data_pt($c->created_at) }}</span>
+                                                </td>
+                                                <td class="fw-bold text-success fs-14">R$ {{ __moeda($c->total) }}</td>
                                                 <td>
                                                     @if($c->estado == 'aprovado')
-                                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-11">Aprovado</span>
+                                                        <span class="modulo-badge modulo-badge-success">Aprovado</span>
                                                     @elseif($c->estado == 'cancelado')
-                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fs-11">Cancelado</span>
+                                                        <span class="modulo-badge modulo-badge-danger">Cancelado</span>
                                                     @elseif($c->estado == 'rejeitado')
-                                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 fs-11">Rejeitado</span>
-                                                    @else<span class="badge bg-light text-dark border px-2 py-1 fs-11">Novo</span>
+                                                        <span class="modulo-badge modulo-badge-warning">Rejeitado</span>
+                                                    @else
+                                                        <span class="modulo-badge modulo-badge-info">Novo</span>
                                                     @endif
                                                 </td>
-                                                <td class="text-muted fs-12">{{ $c->estado == 'aprovado' ? $c->chave : '--' }}</td>
-                                                <td class="fw-semibold">{{ $c->estado == 'aprovado' ? $c->numero : '--' }}</td>
+                                                <td>
+                                                    <span class="text-muted fs-12 font-monospace">{{ $c->estado == 'aprovado' ? $c->chave : '--' }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-light text-dark border px-2 py-1 fs-12 fw-semibold">{{ $c->estado == 'aprovado' ? $c->numero : '--' }}</span>
+                                                </td>
                                             </tr>
                                             @php $total += $c->total; @endphp
                                             @empty
-                                            <tr><td colspan="5" class="text-center text-muted py-3">Nenhuma compra registrada.</td></tr>
+                                            <tr>
+                                                <td colspan="5">
+                                                    <div class="modulo-empty">
+                                                        <i class="ri-shopping-cart-2-line"></i>
+                                                        <p>Nenhuma compra registrada para este fornecedor.</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                             @endforelse
                                         </tbody>
                                         @if(sizeof($data) > 0)
-                                        <tfoot class="table-light"><tr class="fw-bold"><td>Total Acumulado</td><td class="text-success fs-15" colspan="4">R$ {{ __moeda($total) }}</td></tr></tfoot>
+                                        <tfoot>
+                                            <tr class="fw-bold bg-light">
+                                                <td class="text-dark">Total Acumulado em Compras:</td>
+                                                <td class="text-success fs-15" colspan="4">R$ {{ __moeda($total) }}</td>
+                                            </tr>
+                                        </tfoot>
                                         @endif
                                     </table>
                                 </div>
                             </div>
-                            <div class="tab-pane" id="tab-produtos" role="tabpanel">
+                        </div>
+
+                        <!-- ═══ ABA 2: PRODUTOS ═══ -->
+                        <div class="tab-pane fade" id="tab-produtos" role="tabpanel">
+                            <div class="tb-wrap">
                                 <div class="table-responsive">
-                                    <table class="table table-centered table-hover align-middle mb-0 text-dark">
-                                        <thead class="table-light">
+                                    <table class="table table-hover align-middle mb-0 text-dark">
+                                        <thead>
                                             <tr>
-                                                <th style="width: 60px;">Imagem</th>
-                                                <th>Descrição</th>
-                                                <th>Quantidade</th>
-                                                <th>Valor Unitário</th>
-                                                <th>Subtotal</th>
+                                                <th>Produto</th>
+                                                <th>Código de Barras</th>
+                                                <th>Unidade</th>
+                                                <th>Quantidade Total</th>
+                                                <th>Valor Unitário Médio</th>
+                                                <th>Subtotal Comprado</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @forelse($produtos as $p)
+                                            @php $totalProdutos = 0; @endphp
+                                            @forelse($item->itensNfe ?? [] as $i)
                                             <tr>
-                                                <td><img class="rounded border bg-light" src="{{ $p->produto->img }}" alt="" style="width: 38px; height: 38px; object-fit: cover;"></td>
-                                                <td class="fw-semibold text-dark">{{ $p->produto->nome }}</td>
-                                                <td>{{ number_format($p->quantidade, 2) }}</td>
-                                                <td>R$ {{ __moeda($p->valor_unitario) }}</td>
-                                                <td class="fw-bold text-success">R$ {{ __moeda($p->quantidade * $p->valor_unitario) }}</td>
+                                                <td>
+                                                    <span class="fw-bold text-dark">{{ $i->produto ? $i->produto->nome : ($i->xProd ?? '--') }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="text-muted fs-12 font-monospace">{{ $i->produto ? ($i->produto->codigo_barras ?: '--') : '--' }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-light text-dark border px-2 py-1 fs-11">{{ $i->uCom ?? 'UN' }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="fw-semibold">{{ $i->quantidade ?? 0 }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="text-dark">R$ {{ __moeda($i->valor_unitario ?? 0) }}</span>
+                                                </td>
+                                                <td>
+                                                    <strong class="text-success">R$ {{ __moeda(($i->quantidade ?? 0) * ($i->valor_unitario ?? 0)) }}</strong>
+                                                </td>
                                             </tr>
+                                            @php $totalProdutos += (($i->quantidade ?? 0) * ($i->valor_unitario ?? 0)); @endphp
                                             @empty
-                                            <tr><td colspan="5" class="text-center text-muted py-3">Nenhum produto comprado.</td></tr>
+                                            <tr>
+                                                <td colspan="6">
+                                                    <div class="modulo-empty">
+                                                        <i class="ri-box-3-line"></i>
+                                                        <p>Nenhum item ou produto vinculado registrado.</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                             @endforelse
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
-                            <div class="tab-pane" id="tab-faturas" role="tabpanel">
+                        </div>
+
+                        <!-- ═══ ABA 3: FATURAS & CONTAS A PAGAR ═══ -->
+                        <div class="tab-pane fade" id="tab-faturas" role="tabpanel">
+                            <div class="tb-wrap">
                                 <div class="table-responsive">
-                                    <table class="table table-centered table-hover align-middle mb-0 text-dark">
-                                        <thead class="table-light">
+                                    <table class="table table-hover align-middle mb-0 text-dark">
+                                        <thead>
                                             <tr>
-                                                <th>Descrição</th>
-                                                <th>Lançamento</th>
                                                 <th>Vencimento</th>
-                                                <th>Pagamento</th>
-                                                <th>Valor</th>
-                                                <th>Status</th>
+                                                <th>Valor da Parcela</th>
+                                                <th>Status da Fatura</th>
+                                                <th>Data de Pagamento</th>
+                                                <th>Valor Pago</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @forelse($faturas as $c)
+                                            @forelse($item->contasPagar ?? [] as $f)
                                             <tr>
-                                                <td class="fw-semibold text-dark">{{ $c->descricao }}</td>
-                                                <td>{{ __data_pt($c->created_at) }}</td>
-                                                <td>{{ __data_pt($c->data_vencimento, 0) }}</td>
-                                                <td>{{ $c->status ? __data_pt($c->data_recebimento, 0) : '--' }}</td>
-                                                <td class="fw-bold text-success">R$ {{ __moeda($c->valor_integral) }}</td>
                                                 <td>
-                                                    @if($c->status)
-                                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-11"><i class="ri-checkbox-circle-line me-1"></i>Pago</span>
+                                                    <span class="fw-bold text-dark">{{ __data_pt($f->data_vencimento) }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="fw-bold text-dark fs-14">R$ {{ __moeda($f->valor_integral) }}</span>
+                                                </td>
+                                                <td>
+                                                    @if($f->status)
+                                                        <span class="modulo-badge modulo-badge-success">Quitada / Paga</span>
                                                     @else
-                                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 fs-11"><i class="ri-alert-line me-1"></i>Pendente</span>
+                                                        <span class="modulo-badge modulo-badge-warning">Pendente</span>
                                                     @endif
+                                                </td>
+                                                <td>
+                                                    <span class="text-muted fs-13">{{ $f->data_pagamento ? __data_pt($f->data_pagamento) : '--' }}</span>
+                                                </td>
+                                                <td>
+                                                    <strong class="text-success">{{ $f->valor_pago ? 'R$ ' . __moeda($f->valor_pago) : '--' }}</strong>
                                                 </td>
                                             </tr>
                                             @empty
-                                            <tr><td colspan="6" class="text-center text-muted py-3">Nenhuma fatura lançada.</td></tr>
+                                            <tr>
+                                                <td colspan="5">
+                                                    <div class="modulo-empty">
+                                                        <i class="ri-wallet-line"></i>
+                                                        <p>Nenhuma conta a pagar vinculada a este fornecedor.</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                             @endforelse
                                         </tbody>
                                     </table>
@@ -164,15 +293,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
+                </div>
             </div>
         </div>
     </div>
 </div>
-@endsection
-
-@section('js')
-<script src="/assets/vendor/twitter-bootstrap-wizard/jquery.bootstrap.wizard.min.js"></script>
-<script src="/assets/js/pages/demo.form-wizard.js"></script>
 @endsection

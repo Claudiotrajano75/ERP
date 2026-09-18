@@ -21,8 +21,10 @@ class PagamentoController extends Controller
 
     public function __construct(UploadUtil $util)
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         $this->util = $util;
-        session_start();
     }
 
     public function index(Request $request){

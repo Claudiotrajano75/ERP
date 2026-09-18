@@ -32,21 +32,33 @@ class TrocaController extends Controller
         $end_date = $request->get('end_date');
         $cliente_id = $request->get('cliente_id');
 
-        $data = Troca::where('trocas.empresa_id', $request->empresa_id)
-        ->select('trocas.*')
+        $base = Troca::where('trocas.empresa_id', $request->empresa_id)
         ->join('nfces', 'nfces.id', '=', 'trocas.nfce_id')
         ->when(!empty($start_date), function ($query) use ($start_date) {
             return $query->whereDate('trocas.created_at', '>=', $start_date);
         })
-        ->when(!empty($end_date), function ($query) use ($end_date,) {
+        ->when(!empty($end_date), function ($query) use ($end_date) {
             return $query->whereDate('trocas.created_at', '<=', $end_date);
         })
         ->when(!empty($cliente_id), function ($query) use ($cliente_id) {
             return $query->where('nfces.cliente_id', $cliente_id);
-        })
+        });
+
+        $data = (clone $base)
+        ->select('trocas.*')
         ->orderBy('trocas.created_at', 'desc')
         ->paginate(env("PAGINACAO"));
-        return view('trocas.index', compact('data'));
+
+        $baseEmpresa = Troca::where('empresa_id', $request->empresa_id);
+
+        $stats = [
+            'total'        => (clone $baseEmpresa)->count(),
+            'valor_trocas' => (clone $baseEmpresa)->sum('valor_troca'),
+            'valor_vendas' => (clone $baseEmpresa)->sum('valor_original'),
+            'hoje'         => (clone $baseEmpresa)->whereDate('created_at', date('Y-m-d'))->count(),
+        ];
+
+        return view('trocas.index', compact('data', 'stats'));
     }
 
     public function create(Request $request){
@@ -138,17 +150,39 @@ class TrocaController extends Controller
 
     public function imprimir($id){
 
-        $item = Troca::findOrFail($id);
+        $item = Troca::with(['itens.produto', 'cliente', 'nfce.itens.produto', 'nfce.fatura', 'nfce.cliente'])->findOrFail($id);
 
         __validaObjetoEmpresa($item);
-        $config = Empresa::where('id', $item->empresa_id)
+        $config = Empresa::with('cidade')->where('id', $item->empresa_id)
         ->first();
 
-        $cupom = new CupomNaoFiscal($item->nfce, $config, 0, $item);
+        $html = view('trocas.cupom_troca', compact('item', 'config'))->render();
 
-        $pdf = $cupom->render();
-        return response($pdf)
-        ->header('Content-Type', 'application/pdf');
+        $options = new \Dompdf\Options();
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new \Dompdf\Dompdf($options);
+        
+        $dompdf->loadHtml($html);
+        
+        $altura = 300 + (count($item->itens) * 25);
+        if ($item->nfce && $item->nfce->itens) {
+            $altura += (count($item->nfce->itens) * 25);
+        }
+        
+        $dompdf->setPaper([0, 0, 226.77, $altura], 'portrait'); 
+        
+        $dompdf->render();
+        
+        $output = $dompdf->output();
+
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        return response($output, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="cupom_troca.pdf"'
+        ]);
     }
 
 }

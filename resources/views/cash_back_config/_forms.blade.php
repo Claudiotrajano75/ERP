@@ -1,58 +1,82 @@
-<div class="row g-3 text-dark">
-    <div class="col-12">
-        <h5 class="text-dark border-bottom pb-2 mb-3">
-            <i class="ri-settings-3-line text-primary me-2 align-middle fs-18"></i>
-            Parâmetros de CashBack
-        </h5>
+{{-- ═══ SEÇÃO: REGRAS E PERCENTUAIS ═══ --}}
+<div class="card card-secao-fiscal">
+    <div class="card-header">
+        <h5><i class="ri-percent-line text-primary"></i> Regras de Cálculo e Validade</h5>
+    </div>
+    <div class="card-body">
         <div class="row g-3">
             <div class="col-md-3 col-6">
-                {!!Form::text('valor_percentual', 'Percentual de crédito sobre a venda')
-    ->attrs(['class' => 'percentual'])->required()
+                {!!Form::text('valor_percentual', 'Percentual de Crédito gerado na venda')
+                ->attrs(['class' => 'form-control percentual', 'placeholder' => 'Ex: 5,00%'])
+                ->required()
                 !!}
             </div>
 
             <div class="col-md-3 col-6">
-                {!!Form::text('percentual_maximo_venda', 'Percentual máximo por venda')
-    ->attrs(['class' => 'percentual'])->required()
+                {!!Form::text('percentual_maximo_venda', 'Limite % máximo de uso por venda')
+                ->attrs(['class' => 'form-control percentual', 'placeholder' => 'Ex: 50,00%'])
+                ->required()
                 !!}
             </div>
 
             <div class="col-md-3 col-6">
-                {!!Form::text('dias_expiracao', 'Dias expiração')
-    ->attrs(['class' => 'percentual', 'data-mask' => '0000'])->required()
+                {!!Form::text('dias_expiracao', 'Dias para Expiração do saldo')
+                ->attrs(['class' => 'form-control', 'data-mask' => '0000', 'placeholder' => 'Ex: 30 dias'])
+                ->required()
                 !!}
             </div>
 
             <div class="col-md-3 col-6">
-                {!!Form::text('valor_minimo_venda', 'Valor mínimo de venda')
-    ->attrs(['class' => 'moeda'])->required()
-    ->value(isset($item) ? __moeda($item->valor_minimo_venda) : '')
+                {!!Form::text('valor_minimo_venda', 'Valor mínimo de venda para gerar')
+                ->attrs(['class' => 'form-control moeda', 'placeholder' => 'R$ 0,00'])
+                ->required()
+                ->value(isset($item) ? __moeda($item->valor_minimo_venda) : '')
                 !!}
-            </div>
-
-            <div class="col-md-8 col-12">
-                {!!Form::text('mensagem_padrao_whatsapp', 'Mensagem padrão do WhatsApp')
-    ->attrs(['class' => ''])->required()
-                !!}
-            </div>
-
-            <div class="col-12">
-                <p class="text-muted fs-12 mb-0">
-                    <i class="ri-information-line me-1 text-primary"></i>
-                    Use <code>{credito}</code> para o valor do crédito, <code>{expiracao}</code> para a data de
-                    expiração e <code>{nome}</code> para o nome do cliente.
-                    <br><span class="text-muted">Exemplo: <em>O valor do seu CashBack é de {credito}, com validade até
-                            {expiracao}, obrigado {nome}</em></span>
-                </p>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modulo-actions">
-    <div class="d-flex gap-2 justify-content-end">
-        <button type="submit" class="btn btn-success px-4" id="btn-store">
-            <i class="ri-save-line align-middle me-1"></i> Salvar Configurações
-        </button>
+{{-- ═══ SEÇÃO: NOTIFICAÇÃO VIA WHATSAPP ═══ --}}
+<div class="card card-secao-fiscal">
+    <div class="card-header">
+        <h5><i class="ri-whatsapp-line text-success"></i> Mensagem Automática de Notificação (WhatsApp)</h5>
     </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label fw-semibold">Texto da Mensagem de Notificação de Crédito</label>
+                {!!Form::textarea('mensagem_padrao_whatsapp', '')
+                ->attrs(['class' => 'form-control', 'rows' => '3', 'placeholder' => 'Digite a mensagem enviada ao cliente após a compra...'])
+                ->required()
+                !!}
+            </div>
+
+            <div class="col-12">
+                <div class="p-3 bg-light rounded-3 border">
+                    <span class="fs-12 fw-bold text-dark d-block mb-1">
+                        <i class="ri-code-s-slash-line text-primary me-1"></i> Variáveis dinâmicas disponíveis para o texto:
+                    </span>
+                    <div class="d-flex align-items-center gap-2 flex-wrap mt-2">
+                        <span><span class="var-badge">{nome}</span> <small class="text-muted">Nome do cliente</small></span>
+                        <span class="ms-2"><span class="var-badge">{credito}</span> <small class="text-muted">Valor em R$ gerado</small></span>
+                        <span class="ms-2"><span class="var-badge">{expiracao}</span> <small class="text-muted">Data limite de uso</small></span>
+                    </div>
+                    <div class="mt-2 pt-2 border-top text-muted fs-12">
+                        <em>Exemplo: "Olá {nome}, você ganhou {credito} de CashBack na sua compra! Aproveite até {expiracao}."</em>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ═══ BOTÃO SALVAR ═══ --}}
+<div class="d-flex align-items-center justify-content-end gap-2 pt-2">
+    <a href="{{ route('home') }}" class="dash-btn dash-btn-light">
+        <i class="ri-close-line me-1"></i> Cancelar
+    </a>
+    <button type="submit" class="dash-btn dash-btn-primary px-5" id="btn-store">
+        <i class="ri-save-line me-1"></i> Salvar Configurações
+    </button>
 </div>

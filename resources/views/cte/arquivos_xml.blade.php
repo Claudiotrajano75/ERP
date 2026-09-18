@@ -83,7 +83,7 @@
         <div class="col-lg-12">
             <div class="card border-0 shadow-sm modulo-form-card">
 
-                {{-- ═══ CABEÇALHO PREMIUM ═══ --}}
+                <!-- ═══ CABEÇALHO PREMIUM ═══ -->
                 <div class="card-header modulo-header-gradient py-3 px-4">
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <div>
@@ -92,12 +92,12 @@
                                 Arquivos XML CTe
                             </h4>
                             <p class="text-muted mb-0 modulo-subtitle fs-13">
-                                Gerencie e faça download dos arquivos XML dos Conhecimentos de Transporte aprovados.
+                                Filtre e baixe os arquivos XML emitidos de Conhecimentos de Transporte Eletrônico em lote.
                             </p>
                         </div>
-                        <div>
-                            <a href="{{ route('cte.index') }}" class="btn btn-light btn-sm px-3 text-dark">
-                                <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
+                        <div class="d-inline-flex align-items-center gap-2">
+                            <a href="{{ route('cte.index') }}" class="dash-btn dash-btn-light">
+                                <i class="ri-arrow-left-line"></i> Voltar
                             </a>
                         </div>
                     </div>

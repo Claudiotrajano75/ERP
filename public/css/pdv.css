@@ -2353,3 +2353,196 @@ input[type="hidden"] {
 .pdv-leitor-toggle .pdv-leitor-label {
     font-weight: 600;
 }
+
+/* ============================================================
+   29. MODAIS DE SELEÇÃO EXPANDIDAS (Cliente e Funcionário)
+   ============================================================ */
+#cliente .modal-body,
+#funcionario .modal-body,
+.modal-select-cliente .modal-body,
+.modal-funcioario .modal-body {
+    min-height: 280px !important;
+    padding: 24px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+#cliente .modal-content,
+#funcionario .modal-content,
+.modal-select-cliente .modal-content,
+.modal-funcioario .modal-content {
+    min-height: 400px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.modal-pdv .select2-container .select2-dropdown {
+    border-radius: 10px !important;
+    border: 1px solid #d0d7de !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+    z-index: 1065 !important;
+    margin-top: 4px !important;
+}
+
+.modal-pdv .select2-container--default .select2-results > .select2-results__options {
+    max-height: 190px !important;
+    overflow-y: auto !important;
+}
+
+/* ============================================================
+   30. OVERLAY DE PROCESSAMENTO EM TELA CHEIA (NFCe / Venda)
+   ============================================================ */
+.pdv-processing-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(15, 23, 42, 0.85) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    z-index: 99999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 20px !important;
+    animation: pdvOverlayFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.pdv-processing-overlay.d-none {
+    display: none !important;
+}
+
+@keyframes pdvOverlayFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.pdv-processing-card {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(59, 130, 246, 0.25);
+    border-radius: 24px;
+    padding: 40px 32px 32px 32px;
+    width: 100%;
+    max-width: 440px;
+    text-align: center;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+}
+
+.pdv-processing-icon-wrapper {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 24px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pdv-processing-spinner-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 4px solid rgba(59, 130, 246, 0.18);
+    border-top-color: #3b82f6;
+    border-right-color: #60a5fa;
+    animation: pdvSpinRing 0.85s linear infinite;
+}
+
+@keyframes pdvSpinRing {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.pdv-processing-icon-box {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    color: #ffffff;
+    box-shadow: 0 0 25px rgba(37, 99, 235, 0.6);
+    transition: all 0.3s ease;
+}
+
+.pdv-processing-icon-box.success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+}
+
+.pdv-processing-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+}
+
+.pdv-processing-msg {
+    font-size: 0.925rem;
+    color: #94a3b8;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.pdv-processing-progress {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.pdv-processing-progress-bar {
+    height: 100%;
+    width: 40%;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6);
+    border-radius: 10px;
+    animation: pdvProgressIndefinite 1.5s infinite ease-in-out;
+}
+
+@keyframes pdvProgressIndefinite {
+    0% {
+        transform: translateX(-100%);
+        width: 30%;
+    }
+    50% {
+        transform: translateX(100%);
+        width: 60%;
+    }
+    100% {
+        transform: translateX(300%);
+        width: 30%;
+    }
+}
+
+.pdv-processing-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 0.775rem;
+    color: #cbd5e1;
+    font-weight: 500;
+}
+

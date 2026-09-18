@@ -1,3 +1,11 @@
+<style>
+    h5 { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:#1f2937 !important; border-bottom:1px solid #eef0f6 !important; padding-bottom:10px; margin-bottom:16px; }
+    h5 i { color:#4f46e5 !important; }
+    .form-label, label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#64748b; }
+    .form-control, .form-select, select, .multi-select { border-radius:10px; border:1px solid #dcdce9 !important; font-size:13.5px; background:#fcfdfe; }
+    .form-control:focus, .form-select:focus { border-color:#4f46e5 !important; box-shadow:0 0 0 3px rgba(79,70,229,.12) !important; background:#fff; }
+</style>
+
 <div class="row g-3 text-dark">
 
     <!-- ═══ SEÇÃO 1: DADOS DO CONTROLE ═══ -->
@@ -46,10 +54,10 @@
     <div class="col-12 mt-4">
         <hr class="text-muted opacity-25">
         <div class="d-flex align-items-center justify-content-end gap-2">
-            <a href="{{ route('controle-acesso.index') }}" class="btn btn-outline-secondary px-4">
+            <a href="{{ route('controle-acesso.index') }}" class="dash-btn dash-btn-light px-4">
                 <i class="ri-close-line align-middle me-1"></i> Cancelar
             </a>
-            <button type="submit" class="btn {{ $formType === 'edit' ? 'btn-primary' : 'btn-success' }} px-5" id="btn-store">
+            <button type="submit" class="dash-btn dash-btn-primary px-5" id="btn-store">
                 <i class="ri-save-line align-middle me-1"></i>
                 {{ $formType === 'edit' ? 'Salvar Alterações' : 'Salvar' }}
             </button>

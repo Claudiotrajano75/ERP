@@ -84,7 +84,7 @@ class NFCeService
 		$stdIde->cUF = Empresa::getCodUF($emitente->cidade->uf); // codigo uf emitente
 		$stdIde->cNF = rand(11111, 99999);
 		// $stdIde->natOp = $venda->natureza->natureza;
-		$stdIde->natOp = $item->natureza->descricao;
+		$stdIde->natOp = $item->natureza?->descricao ?? 'Venda';
 
 		$stdIde->mod = 65;
 		$stdIde->serie = $item->numero_serie;
@@ -208,6 +208,7 @@ class NFCeService
 		$somaEstadual = 0;
 		$somaMunicipal = 0;
 		$somaVICMSST = 0;
+		$VBC = 0;
 
 		foreach ($item->itens as $itemCont => $i) {
 			$itemCont++;
@@ -220,7 +221,13 @@ class NFCeService
 			$stdProd->cEANTrib = $validaEan ? $i->produto->codigo_barras : 'SEM GTIN';
 
 			$stdProd->cProd = $i->produto->id;
-			$stdProd->xProd = $i->descricao();
+			// Rejeição 373 SEFAZ: em ambiente de homologação (tpAmb=2), o PRIMEIRO item
+			// deve obrigatoriamente ter a descrição abaixo, independente do produto real.
+			if ($stdIde->tpAmb == 2 && $itemCont == 1) {
+				$stdProd->xProd = 'NOTA FISCAL EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL';
+			} else {
+				$stdProd->xProd = $i->descricao();
+			}
 			$stdProd->NCM = preg_replace('/[^0-9]/', '', $i->ncm);
 			$ibpt = Ibpt::getItemIbpt($emitente->cidade->uf, preg_replace('/[^0-9]/', '', $i->ncm));
 
@@ -229,6 +236,7 @@ class NFCeService
 			$stdProd->qCom = $i->quantidade;
 			$stdProd->vUnCom = $this->format($i->valor_unitario);
 			$stdProd->vProd = $this->format(($i->quantidade * $i->valor_unitario));
+			$somaProdutos += $stdProd->vProd;
 			$stdProd->uTrib = $i->produto->unidade;
 			$stdProd->qTrib = $i->quantidade;
 			$stdProd->vUnTrib = $this->format($i->valor_unitario);
@@ -377,7 +385,7 @@ class NFCeService
 				}
 
 				if($i->cst_csosn != '60'){
-					$somaProdutos += $stdICMS->vBC;
+					$VBC += $stdICMS->vBC;
 					$somaICMS += $stdICMS->vICMS;
 				}
 				if($i->cst_csosn == 10){
@@ -502,12 +510,12 @@ class NFCeService
 		}
 
 		$stdICMSTot = new \stdClass();
-		$stdICMSTot->vBC = $this->format($somaProdutos);
+		$stdICMSTot->vBC = $this->format($VBC);
 		$stdICMSTot->vICMS = $this->format($somaICMS);
 		$stdICMSTot->vICMSDeson = 0.00;
 		$stdICMSTot->vBCST = 0.00;
-		$stdICMSTot->vST = 0.00;
-		$stdICMSTot->vProd = 0;
+		$stdICMSTot->vST = $this->format($somaVICMSST);
+		$stdICMSTot->vProd = $this->format($somaProdutos);
 		$stdICMSTot->vFrete = 0.00;
 		$stdICMSTot->vSeg = 0.00;
 		$stdICMSTot->vDesc = $this->format($item->desconto);
@@ -515,8 +523,8 @@ class NFCeService
 		$stdICMSTot->vIPI = 0.00;
 		$stdICMSTot->vPIS = 0.00;
 		$stdICMSTot->vCOFINS = 0.00;
-		$stdICMSTot->vOutro = 0.00;
-		$stdICMSTot->vNF = $this->format($item->total  + $somaVICMSST);
+		$stdICMSTot->vOutro = $this->format($item->acrescimo ?? 0);
+		$stdICMSTot->vNF = $this->format($somaProdutos - $item->desconto + ($item->acrescimo ?? 0) + $somaVICMSST);
 
 		$stdICMSTot->vTotTrib = 0.00;
 		$ICMSTot = $nfe->tagICMSTot($stdICMSTot);
@@ -554,66 +562,113 @@ class NFCeService
 
 		$contFatura = 1;
 
-		$stdPag = new \stdClass();
-		if ($item->dinheiro_recebido > 0) {
-			$vPag = $item->dinheiro_recebido;
-			$stdPag->vTroco = $vPag - $item->total;
+		$totalNota = (float) ($item->total + $somaVICMSST);
+		$somaPagamentos = 0;
+		$detPags = [];
+
+		if (sizeof($item->fatura) > 0) {
+			$faturas = $item->fatura;
+			$totalFaturas = 0;
+			foreach ($faturas as $ft) {
+				$totalFaturas += (float)$ft->valor;
+			}
+
+			// Se houver troco registrado no pagamento em dinheiro
+			$trocoAplicado = false;
+			$trocoValor = (float) ($item->troco > 0 ? $item->troco : 0);
+			if ($trocoValor <= 0 && $item->dinheiro_recebido > $totalNota) {
+				$trocoValor = round($item->dinheiro_recebido - $totalNota, 2);
+			}
+
+			$diff = round($totalNota - $totalFaturas, 2);
+			$count = count($faturas);
+			$idx = 0;
+
+			foreach ($faturas as $ft) {
+				$idx++;
+				$vPag = (float)$ft->valor;
+
+				$tPag = $ft->tipo_pagamento;
+				if ($tPag == '30') $tPag = '03';
+				elseif ($tPag == '31') $tPag = '04';
+				elseif ($tPag == '32') $tPag = '17';
+				elseif ($tPag == '06') $tPag = '05';
+
+				// Se for dinheiro ('01') e houver troco, soma o troco no vPag entregue pelo cliente
+				if ($tPag == '01' && $trocoValor > 0 && !$trocoAplicado) {
+					$vPag += $trocoValor;
+					$trocoAplicado = true;
+				} elseif ($idx === $count && $diff > 0 && !$trocoAplicado) {
+					$vPag += $diff;
+				}
+
+				$stdDetPag = new \stdClass();
+				$stdDetPag->tPag = $tPag ?: ($item->tipo_pagamento ?: '01');
+				$stdDetPag->vPag = $this->format($vPag);
+				$stdDetPag->indPag = 1;
+
+				if ($tPag == '03' || $tPag == '04' || $tPag == '17') {
+					$stdDetPag->tBand = $item->bandeira_cartao ?: '01';
+					if ($item->cnpj_cartao) {
+						$stdDetPag->CNPJ = preg_replace('/[^0-9]/', '', $item->cnpj_cartao);
+					}
+					if ($item->cAut_cartao != "") {
+						$stdDetPag->cAut = $item->cAut_cartao;
+					}
+					$stdDetPag->tpIntegra = 2;
+				}
+
+				$somaPagamentos += $vPag;
+				$detPags[] = $stdDetPag;
+			}
+		} else {
+			// Não possui faturas salvas, usa dados da própria NFCe
+			$tPag = $item->tipo_pagamento;
+			if ($tPag == '30') $tPag = '03';
+			elseif ($tPag == '31') $tPag = '04';
+			elseif ($tPag == '32') $tPag = '17';
+			elseif ($tPag == '06') $tPag = '05';
+			if (!$tPag || $tPag == '99') $tPag = '01';
+
+			$vPag = (float) ($item->dinheiro_recebido > 0 && $item->dinheiro_recebido >= $totalNota ? $item->dinheiro_recebido : $totalNota);
+
+			$stdDetPag = new \stdClass();
+			$stdDetPag->tPag = $tPag;
+			$stdDetPag->vPag = $this->format($vPag);
+			$stdDetPag->indPag = 1;
+
+			if ($tPag == '03' || $tPag == '04' || $tPag == '17') {
+				$stdDetPag->tBand = $item->bandeira_cartao ?: '01';
+				if ($item->cnpj_cartao) {
+					$stdDetPag->CNPJ = preg_replace('/[^0-9]/', '', $item->cnpj_cartao);
+				}
+				if ($item->cAut_cartao != "") {
+					$stdDetPag->cAut = $item->cAut_cartao;
+				}
+				$stdDetPag->tpIntegra = 2;
+			}
+
+			$somaPagamentos += $vPag;
+			$detPags[] = $stdDetPag;
 		}
-		// dd($this->format($item->total));
+
+		// Se após tudo a soma dos pagamentos ainda for menor que o total da nota por qualquer motivo:
+		if ($somaPagamentos < $totalNota && count($detPags) > 0) {
+			$diff = round($totalNota - $somaPagamentos, 2);
+			$detPags[count($detPags) - 1]->vPag = $this->format((float)$detPags[count($detPags) - 1]->vPag + $diff);
+			$somaPagamentos += $diff;
+		}
+
+		// Regra SEFAZ Rejeição 869: vTroco deve ser rigorosamente igual a (somaPagamentos - totalNota)
+		$stdPag = new \stdClass();
+		$diffTroco = round($somaPagamentos - $totalNota, 2);
+		if ($diffTroco > 0) {
+			$stdPag->vTroco = $this->format($diffTroco);
+		}
 		$pag = $nfe->tagpag($stdPag);
 
-
-		if ($item->dinheiro_recebido > 0) {
-			$stdDetPag = new \stdClass();
-			$stdDetPag->tPag = $item->tipo_pagamento;
-			if($item->tipo_pagamento == '06'){
-				$stdDetPag->tPag = '05'; 
-			}
-			$stdDetPag->vPag = $this->format($item->dinheiro_recebido);
-			$stdDetPag->indPag = 1;
-			$detPag = $nfe->tagdetPag($stdDetPag);
-		} else {
-
-			if (sizeof($item->fatura) > 0) {
-				foreach ($item->fatura as $ft) {
-
-					$stdDetPag = new \stdClass();
-					if($ft->tipo_pagamento == '30'){
-						$ft->tipo_pagamento = '03';
-					}elseif($ft->tipo_pagamento == '31'){
-						$ft->tipo_pagamento = '04';
-					}elseif($ft->tipo_pagamento == '32'){
-						$ft->tipo_pagamento = '17';
-					}
-
-					$stdDetPag->tPag = $ft->tipo_pagamento;
-					if($ft->tipo_pagamento == '06'){
-						$stdDetPag->tPag = '05'; 
-					}
-					$stdDetPag->vPag = $this->format($ft->valor);
-					$stdDetPag->indPag = 1;
-
-					if($ft->tipo_pagamento == '03' || $ft->tipo_pagamento == '04' || $ft->tipo_pagamento == '17'){
-						
-						$stdDetPag->tBand = $item->bandeira_cartao;
-						if(!$item->bandeira_cartao){
-							$stdDetPag->tBand = '01';
-						}
-
-						if($item->cnpj_cartao){
-							$stdDetPag->CNPJ = preg_replace('/[^0-9]/', '', $item->cnpj_cartao);
-						}
-
-						if($item->cAut_cartao != ""){
-							$stdDetPag->cAut = $item->cAut_cartao;
-						}
-
-
-						$stdDetPag->tpIntegra = 2;
-					}
-					$detPag = $nfe->tagdetPag($stdDetPag);
-				}
-			}
+		foreach ($detPags as $det) {
+			$nfe->tagdetPag($det);
 		}
 
 

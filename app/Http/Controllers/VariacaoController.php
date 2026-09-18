@@ -19,10 +19,17 @@ class VariacaoController extends Controller
     }
 
     public function index(Request $request){
-        $data = VariacaoModelo::where('empresa_id', $request->empresa_id)
-        ->get();
+        $base = VariacaoModelo::where('empresa_id', $request->empresa_id);
 
-        return view('variacao_modelo.index', compact('data'));
+        $data = (clone $base)->get();
+        $stats = [
+            'total'    => (clone $base)->count(),
+            'ativas'   => (clone $base)->where('status', 1)->count(),
+            'inativas' => (clone $base)->where('status', 0)->count(),
+            'valores'  => (clone $base)->withCount('itens')->get()->sum('itens_count'),
+        ];
+
+        return view('variacao_modelo.index', compact('data', 'stats'));
     }
 
     public function create(){

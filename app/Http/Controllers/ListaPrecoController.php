@@ -40,7 +40,12 @@ class ListaPrecoController extends Controller
         ->get();
 
         $totalDeProdutos = Produto::where('empresa_id', $request->empresa_id)->count();
-        return view('lista_preco.index', compact('data', 'totalDeProdutos'));
+        $stats = [
+            'total'         => ListaPreco::where('empresa_id', $request->empresa_id)->count(),
+            'com_pagamento' => ListaPreco::where('empresa_id', $request->empresa_id)->whereNotNull('tipo_pagamento')->count(),
+            'produtos'      => $totalDeProdutos,
+        ];
+        return view('lista_preco.index', compact('data', 'totalDeProdutos', 'stats'));
     }
 
     public function create(){

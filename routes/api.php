@@ -135,7 +135,9 @@ Route::group(['prefix' => 'graficos'], function () {
     Route::get('/grafico-mes-cte', 'GraficoController@graficoMesCte');
     Route::get('/grafico-mes-mdfe', 'GraficoController@graficoMesMdfe');
     Route::get('/dados-cards', 'GraficoController@dadosDards');
+    Route::get('/dados-cards-avancado', 'GraficoController@dadosCardsAvancado');
 });
+
 
 Route::group(['prefix' => 'cardapio'], function () {
     Route::get('/switch-categoria', 'ProdutoCardapioController@switchCategoria');

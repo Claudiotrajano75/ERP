@@ -2,51 +2,176 @@
 
 @section('css')
 <style>
-    .modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-    .modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-    .modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-    .modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.6) !important; font-weight: 400; }
-    .modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-    .modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
-    .modulo-form-card { border: 1px solid #eef0f5; border-radius: 12px; overflow: hidden; }
-    
-    /* Premium Form elements */
-    .modulo-form-card .card-body h5 { color: #302b63; font-weight: 700; margin-top: 15px; margin-bottom: 20px; font-size: 16px; border-bottom: 2px solid #eef0f5; padding-bottom: 10px; }
-    .modulo-form-card .card-body label:not(.form-check-label) { font-weight: 600; font-size: 12px; color: #5a5a7a; margin-bottom: 4px; }
-    .modulo-form-card .form-control, .modulo-form-card .form-select { border-radius: 8px; border-color: #e0e3eb; font-size: 13px; padding: 8px 12px; }
-    .modulo-form-card .form-control:focus, .modulo-form-card .form-select:focus { border-color: #a8b5ff; box-shadow: 0 0 0 0.2rem rgba(168, 181, 255, 0.25); }
+/* ─── Navegação por Abas (Tabs) ─── */
+.nav-tabs-custom {
+    background: #f8fafc;
+    padding: 6px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.nav-tabs-custom .nav-link {
+    flex: 1;
+    min-width: 140px;
+    border-radius: 8px !important;
+    padding: 10px 16px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #64748b;
+    border: none !important;
+    background: transparent;
+    text-align: center;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.nav-tabs-custom .nav-link:hover {
+    color: #334155;
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.nav-tabs-custom .nav-link.active {
+    background: #ffffff !important;
+    color: #4f46e5 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Cards de Seção Interna ─── */
+.card-secao-ecommerce {
+    border: 1px solid #eef2f6 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02) !important;
+    margin-bottom: 20px !important;
+    background: #ffffff;
+}
+
+.card-secao-ecommerce .card-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #edf2f7;
+    padding: 14px 20px;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.card-secao-ecommerce .card-header h5 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-secao-ecommerce .card-body {
+    padding: 20px !important;
+}
+
+/* ─── Logo Preview Box ─── */
+.logo-upload-box {
+    background: #fcfdfe;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+.logo-upload-box:hover {
+    border-color: #4f46e5;
+    background: #f8fafc;
+}
+.logo-preview-wrapper {
+    width: 100%;
+    max-width: 260px;
+    height: 140px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    position: relative;
+    padding: 10px;
+}
+.logo-preview-wrapper img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+.btn-remove-logo {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-remove-logo:hover {
+    transform: scale(1.1);
+    background: #dc2626;
+}
+
+/* ─── Botões de Ação Footer ─── */
+.modulo-actions {
+    background: #f8fafc;
+    border-top: 1px solid #eef0f5;
+    margin: 24px -24px -24px -24px;
+    padding: 20px 24px;
+    border-radius: 0 0 12px 12px;
+}
 </style>
 @endsection
 
 @section('content')
 <div class="mt-3 text-dark">
     <div class="card border-0 shadow-sm modulo-form-card">
+        
+        <!-- ═══ CABEÇALHO ═══ -->
         <div class="card-header modulo-header-gradient py-3 px-4">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div>
                     <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
-                        <i class="ri-store-2-line"></i> Configuração de E-commerce
+                        <i class="ri-store-2-line"></i>
+                        Configuração da Loja Virtual (E-commerce)
                     </h4>
                     <p class="text-muted mb-0 modulo-subtitle fs-13">
-                        Gerencie as configurações visuais, endereço, redes sociais e pagamentos da sua loja virtual.
+                        Gerencie a identidade visual, dados cadastrais, formas de pagamento, políticas e canais de atendimento da sua loja.
                     </p>
                 </div>
                 <div>
                     @if($item)
-                        <a href="{{ route('config-ecommerce.site') }}" target="_blank" class="btn btn-light btn-sm px-3 text-dark d-flex align-items-center gap-1">
-                            <i class="ri-external-link-line fs-16"></i> Acessar Loja
+                        <a href="{{ route('config-ecommerce.site') }}" target="_blank" class="dash-btn dash-btn-light">
+                            <i class="ri-external-link-line"></i> Acessar Loja Virtual
                         </a>
                     @endif
                 </div>
             </div>
         </div>
+
         <div class="card-body p-4">
             {!!Form::open()->fill($item)
             ->post()
             ->route('config-ecommerce.store')
             ->multipart()
             !!}
-            <div class="pl-lg-4">
+            <div>
                 @include('ecommerce_config._forms')
             </div>
             {!!Form::close()!!}

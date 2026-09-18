@@ -58,7 +58,7 @@
                             <p class="text-muted mb-0 modulo-subtitle fs-13">Selecione o arquivo XML original da nota fiscal para gerar a nota de devolução automaticamente.</p>
                         </div>
                         <div>
-                            <a href="{{ route('devolucao.index') }}" class="btn btn-light btn-sm px-3 text-dark">
+                            <a href="{{ route('devolucao.index') }}" class="dash-btn dash-btn-light">
                                 <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
                             </a>
                         </div>

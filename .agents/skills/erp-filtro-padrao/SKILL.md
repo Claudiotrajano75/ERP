@@ -12,17 +12,21 @@ Este guia define o padrão oficial para a criação e modernização de **Filtro
 ## 🎨 Características do Padrão
 1. **Container Limpo (`.modulo-glass-filter-premium`)**: Fundo branco, cantos arredondados (`border-radius: 12px`), borda suave `#eef0f6` e sombra sutil.
 2. **Cabeçalho Interno (`.filtro-premium-header`)**: Título em caixa alta discreta com ícone colorido `#5572f5` e separador.
-3. **Labels com Ícones**: Fontes de 10px em negrito, caixa alta, com ícone Remix Icon em tom neutro e espaçamento correto.
-4. **Inputs Compactos e Uniformes**: Altura de 38px, borda suave `#dcdce9`, foco com anel suave de destaque.
-5. **Botões Alinhados na Base**: Botão **Buscar** com gradiente azul/índigo e botão **Limpar** com ícone compacto `#f1f3f9`.
-6. **Grid Responsivo em 1 ou 2 Linhas**:
+3. **Labels Nítidas com Distância Suave**: 
+   - **Tamanho da Fonte**: `13px` com peso `font-weight: 600` e cor `#374151` (legível e confortável, **nunca** usar fontes minúsculas).
+   - **Distância para o Input**: Apenas `margin-bottom: 4px;` para ficar próximo e harmonioso com o campo.
+   - **Ícone**: Remix Icon com tom neutro e espaçamento de `gap: 5px`.
+4. **Inputs Compactos e Uniformes**: Altura de 38px a 40px, borda suave `#dcdce9`, foco com anel suave de destaque.
+5. **Botões Alinhados na Base**: Botões `.dash-btn.dash-btn-primary` (Buscar) e `.dash-btn.dash-btn-light` (Limpar) ou botões equivalentes com `align-items-end`.
+6. **Alinhamento do Grid (`align-items-end`)**:
+   - `row g-3 align-items-end` para que todos os campos fiquem perfeitamente alinhados na base, inclusive botões e selects.
    - **Campos Largos** (ex: Cliente, Nome, Produto): `col-md-4` ou `col-md-3`.
-   - **Campos Curtos** (ex: Datas, Estado/Status, Tipo): `col-md-2` ou `col-md-3`.
-   - **Ações (Botões)**: `col-md-2` ou `col-md-3` com `ms-auto d-flex align-items-end`.
+   - **Campos Curtos** (ex: Datas, Estado/Status, Tipo): `col-md-2` ou `col-md-3` ou `col-6`.
+   - **Ações (Botões)**: `col-md-2` ou `col-md-3` com `d-flex gap-2`.
 
 ---
 
-## 📦 1. CSS Obrigatório (Adicionar no `@section('css')` da View)
+## 📦 1. CSS Obrigatório (Já em `dashboard-skin.css` e replicável localmente)
 
 ```css
 /* --- Novo Filtro de Pesquisa Premium --- */
@@ -57,21 +61,28 @@ Este guia define o padrão oficial para a criação e modernização de **Filtro
     margin-right: 6px;
 }
 
-/* Customização dos Inputs dentro do Filtro */
-.modulo-glass-filter-premium label {
-    font-size: 10px !important;
-    font-weight: 700 !important;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #8c8ca6 !important;
-    margin-bottom: 6px !important;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+/* Customização e Espaçamento Perfeito dos Labels */
+.modulo-glass-filter-premium label,
+.form-label,
+label:not(.form-check-label):not(.btn) {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    margin-bottom: 4px !important;
+    padding-bottom: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
 }
+
 .modulo-glass-filter-premium label i {
-    font-size: 12px;
-    color: #a8a8c0;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.form-group {
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
 }
 
 .modulo-glass-filter-premium .form-control,
@@ -92,117 +103,69 @@ Este guia define o padrão oficial para a criação e modernização de **Filtro
     background-color: #fff !important;
     box-shadow: 0 0 0 3px rgba(85, 114, 245, 0.12) !important;
 }
-
-/* Botões do Filtro */
-.modulo-glass-filter-premium .btn-pesquisar {
-    background: linear-gradient(135deg, #5572f5 0%, #3d56d4 100%) !important;
-    border: none !important;
-    color: #fff !important;
-    font-weight: 600 !important;
-    height: 38px;
-    border-radius: 8px !important;
-    font-size: 13px !important;
-    transition: all 0.2s ease !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-.modulo-glass-filter-premium .btn-pesquisar:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(85, 114, 245, 0.25) !important;
-}
-
-.modulo-glass-filter-premium .btn-limpar {
-    background: #f1f3f9 !important;
-    border: 1px solid #e2e5ec !important;
-    color: #5a5a7a !important;
-    font-weight: 600 !important;
-    height: 38px;
-    border-radius: 8px !important;
-    font-size: 13px !important;
-    transition: all 0.2s ease !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-.modulo-glass-filter-premium .btn-limpar:hover {
-    background: #e8ebf3 !important;
-    color: #302b63 !important;
-}
 ```
 
 ---
 
-## 📄 2. Template HTML Padrão (Exemplo Geral)
+## 📄 2. Template HTML Padrão (Exemplo Geral Limpo)
 
 ```blade
 <!-- ═══ Filtros de Busca Premium ═══ -->
-<div class="modulo-glass-filter-premium">
+<div class="modulo-glass-filter-premium mb-4">
     <div class="filtro-premium-header">
         <h5 class="filtro-premium-title">
             <i class="ri-search-line"></i> Filtrar Registros
         </h5>
     </div>
 
-    {!!Form::open()->fill(request()->all())->get()!!}
-    <div class="row g-3">
-        <!-- Campo Principal (Nome / Cliente) -->
-        <div class="col-md-4 col-12">
-            <label class="form-label"><i class="ri-user-line"></i> Nome / Cliente</label>
-            {!!Form::text('nome', '')->attrs(['class' => 'form-control', 'placeholder' => 'Digite para pesquisar...'])!!}
-        </div>
+    <form method="get" action="{{ route('modulo.index') }}">
+        <div class="row g-3 align-items-end">
+            <!-- Campo Principal (Nome / Descrição) -->
+            <div class="col-md-4 col-12">
+                <label class="form-label"><i class="ri-search-line"></i> Nome / Descrição</label>
+                <input type="text" name="nome" value="{{ request('nome') }}" class="form-control" placeholder="Digite para pesquisar...">
+            </div>
 
-        <!-- Data Inicial -->
-        <div class="col-md-2 col-6">
-            <label class="form-label"><i class="ri-calendar-line"></i> Data Inicial</label>
-            {!!Form::date('start_date', '')->attrs(['class' => 'form-control'])!!}
-        </div>
+            <!-- Data Inicial -->
+            <div class="col-md-2 col-6">
+                <label class="form-label"><i class="ri-calendar-line"></i> Data Inicial</label>
+                <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control">
+            </div>
 
-        <!-- Data Final -->
-        <div class="col-md-2 col-6">
-            <label class="form-label"><i class="ri-calendar-line"></i> Data Final</label>
-            {!!Form::date('end_date', '')->attrs(['class' => 'form-control'])!!}
-        </div>
+            <!-- Data Final -->
+            <div class="col-md-2 col-6">
+                <label class="form-label"><i class="ri-calendar-line"></i> Data Final</label>
+                <input type="date" name="end_date" value="{{ request('end_date') }}" class="form-control">
+            </div>
 
-        <!-- Status / Estado -->
-        <div class="col-md-2 col-6">
-            <label class="form-label"><i class="ri-equalizer-line"></i> Status</label>
-            {!!Form::select('status', '', [
-                '' => 'Todos',
-                '1' => 'Ativo / Aprovado',
-                '0' => 'Inativo / Pendente'
-            ])->attrs(['class' => 'form-select'])!!}
-        </div>
+            <!-- Status / Estado -->
+            <div class="col-md-2 col-6">
+                <label class="form-label"><i class="ri-equalizer-line"></i> Status</label>
+                <select name="status" class="form-select">
+                    <option value="" @selected(request('status') == '')>Todos</option>
+                    <option value="1" @selected(request('status') === '1')>Ativo / Aprovado</option>
+                    <option value="0" @selected(request('status') === '0')>Inativo / Pendente</option>
+                </select>
+            </div>
 
-        <!-- Localização (Se empresa tiver múltiplos locais) -->
-        @if(__countLocalAtivo() > 1)
-        <div class="col-md-2 col-6">
-            <label class="form-label"><i class="ri-store-2-line"></i> Local</label>
-            {!!Form::select('local_id', '')->options(['' => 'Selecione'] + __getLocaisAtivoUsuario()->pluck('descricao', 'id')->all())->attrs(['class' => 'select2 form-select'])!!}
-        </div>
-        @endif
-
-        <!-- Botões de Ação (Buscar / Limpar) -->
-        <div class="col-md-2 col-12 ms-auto d-flex align-items-end">
-            <div class="d-flex gap-2 w-100">
-                <button class="btn btn-pesquisar flex-grow-1" type="submit">
+            <!-- Botões de Ação (Buscar / Limpar) -->
+            <div class="col-md-2 col-12 d-flex gap-2">
+                <button class="dash-btn dash-btn-primary flex-grow-1" type="submit">
                     <i class="ri-search-line"></i> Buscar
                 </button>
-                <a class="btn btn-limpar px-3" href="{{ route('modulo.index') }}" title="Limpar Filtros">
+                <a class="dash-btn dash-btn-light px-3" href="{{ route('modulo.index') }}" title="Limpar Filtros">
                     <i class="ri-eraser-line"></i>
                 </a>
             </div>
         </div>
-    </div>
-    {!!Form::close()!!}
+    </form>
 </div>
 ```
 
 ---
 
 ## ⚠️ Regras Importantes ao Aplicar
-1. **Evitar variáveis não enviadas pelo Controller**: Use `{!!Form::select('cliente_id', '')->attrs(...)!!}` em vez de tentar acessar variáveis como `$cliente` que podem não ter sido passadas no `compact()`.
-2. **Posição na Tela**: O bloco do filtro deve ficar sempre **abaixo dos KPI Cards** (se houver) e **acima da tabela (`.modulo-table-wrap`)**.
-3. **Manter dentro de `card-body`**: Certifique-se de que a div do filtro está devidamente aninhada dentro de `<div class="card-body p-4">`.
+1. **Evitar Espaços Extras / FormBuilder dentro do Grid**: Utilizar inputs e selects limpos dentro do grid com `align-items-end` para evitar que divs wrappers geradas por bibliotecas criem vãos verticais entre a label e o input.
+2. **Distância Label $\rightarrow$ Input**: Manter sempre `margin-bottom: 4px` para garantir proximidade e clareza visual.
+3. **Tamanho da Fonte das Labels**: Manter `13px` com peso `600`, preservando a legibilidade.
+4. **Posição na Tela**: O bloco do filtro deve ficar sempre **abaixo dos KPI Cards** e **acima da tabela (`.tb-wrap`)**.

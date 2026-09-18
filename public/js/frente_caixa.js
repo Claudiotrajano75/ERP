@@ -188,18 +188,18 @@ $('.btn-vendas-suspensas').click(() => {
 })
 
 $("#inp-produto_id").select2({
-    minimumInputLength: 2,
+    minimumInputLength: 1,
     language: "pt-BR",
     placeholder: "Digite para buscar o produto",
     width: "100%",
     theme: "bootstrap4",
     ajax: {
         cache: true,
+        delay: 300,
         url: path_url + "api/produtos",
         dataType: "json",
         data: function (params) {
             let empresa_id = $('#empresa_id').val()
-            console.clear();
             var query = {
                 pesquisa: params.term,
                 lista_id: $('#lista_id').val(),
@@ -333,11 +333,19 @@ function buscarPorReferencia(barcode) {
     });
 }
 
-function pdvAtualizarCardCliente(razaoSocial) {
+var CLIENTE_VALOR_CREDITO = 0;
+
+function pdvAtualizarCardCliente(razaoSocial, valorCredito) {
+    CLIENTE_VALOR_CREDITO = parseFloat(valorCredito || 0);
     if (razaoSocial && String(razaoSocial).trim() !== '') {
-        $('.cliente_selecionado').text(razaoSocial).removeClass('pdv-card-value-empty').addClass('pdv-card-value');
+        let badgeCredito = '';
+        if (CLIENTE_VALOR_CREDITO > 0) {
+            badgeCredito = ` <span class="badge bg-success" style="font-size: 11px; vertical-align: middle;" title="Saldo de crédito disponível para compras">Crédito: R$ ${convertFloatToMoeda(CLIENTE_VALOR_CREDITO)}</span>`;
+        }
+        $('.cliente_selecionado').html(razaoSocial + badgeCredito).removeClass('pdv-card-value-empty').addClass('pdv-card-value');
         $('.pdv-badge-cliente').removeClass('pdv-badge-pending').addClass('pdv-badge-selected').html('✓ Selecionado');
     } else {
+        CLIENTE_VALOR_CREDITO = 0;
         $('.cliente_selecionado').html('<i class="ri-user-search-line"></i> Nenhum cliente selecionado').removeClass('pdv-card-value').addClass('pdv-card-value-empty');
         $('.pdv-badge-cliente').removeClass('pdv-badge-selected').addClass('pdv-badge-pending').html('○ Pendente');
     }
@@ -363,14 +371,14 @@ $(document).on("change", "#inp-cliente_id", function () {
     let cliente_id = $(this).val()
     
     if (!cliente_id) {
-        pdvAtualizarCardCliente('')
+        pdvAtualizarCardCliente('', 0)
         return;
     }
 
     $.get(path_url + "api/clientes/find/" + cliente_id)
     .done((cliente) => {
         if(cliente && cliente.razao_social) {
-            pdvAtualizarCardCliente(cliente.razao_social);
+            pdvAtualizarCardCliente(cliente.razao_social, cliente.valor_credito);
         }
         if(cliente && cliente.lista_preco){
             $('#lista_id').val(cliente.lista_preco.id)
@@ -1006,10 +1014,12 @@ $("body").on("click", "#btn-incrementa", function () {
             v += 1
             inp.value = convertFloatToMoeda(v)
             calcSubTotal()
+            beepSucesso()
             checkLowStock(row);
         })
         .fail((err) => {
             // console.log(err);
+            beepErro()
             swal("Alerta", err.responseJSON, "warning")
         });
         
@@ -1025,6 +1035,7 @@ $("body").on("click", "#btn-subtrai", function () {
         inp.value = convertFloatToMoeda(v)
 
         calcSubTotal()
+        beepSucesso()
     }
 })
 
@@ -1259,6 +1270,66 @@ $("#inp-tipo_pagamento").change(() => {
         }
     }
 
+    if (tipo == "05") {
+        if (!cliente) {
+            swal("Alerta", "Para utilizar Crédito Loja, selecione o cliente!", "warning");
+            $('#inp-tipo_pagamento').val('').change();
+            return;
+        }
+
+        if (CLIENTE_VALOR_CREDITO <= 0) {
+            swal("Alerta", "O cliente selecionado não possui saldo de crédito disponível!", "warning");
+            $('#inp-tipo_pagamento').val('').change();
+            return;
+        }
+
+        let totalVendaAtual = total_venda - (typeof DESCONTO !== 'undefined' ? DESCONTO : 0) + (typeof VALORACRESCIMO !== 'undefined' ? VALORACRESCIMO : 0);
+        if (totalVendaAtual > 0 && CLIENTE_VALOR_CREDITO < totalVendaAtual) {
+            let valorCreditoUsar = CLIENTE_VALOR_CREDITO;
+            let valorRestante = totalVendaAtual - valorCreditoUsar;
+
+            swal({
+                title: "Crédito Parcial Disponível",
+                text: "O cliente possui R$ " + convertFloatToMoeda(valorCreditoUsar) + " de crédito e o total da venda é R$ " + convertFloatToMoeda(totalVendaAtual) + ".\n\nDeseja abater os R$ " + convertFloatToMoeda(valorCreditoUsar) + " no Crédito e informar os R$ " + convertFloatToMoeda(valorRestante) + " restantes no Pagamento Múltiplo?",
+                icon: "info",
+                buttons: ["Cancelar", "Sim, abater crédito"]
+            }).then((confirmou) => {
+                if (confirmou) {
+                    $(".table-payment tbody").empty();
+                    total_payment = 0;
+
+                    let dataRequest = {
+                        data_vencimento_row: new Date().toISOString().split('T')[0],
+                        valor_integral_row: convertFloatToMoeda(valorCreditoUsar),
+                        obs_row: 'Crédito Troca / Loja',
+                        tipo_pagamento_row: '05'
+                    };
+
+                    $.get(path_url + "api/frenteCaixa/linhaParcelaVenda", dataRequest)
+                    .done((linhaHtml) => {
+                        $(".table-payment tbody").append(linhaHtml);
+                        calcTotalPayment();
+
+                        $('#inp-tipo_pagamento').val('');
+                        $('#inp-tipo_pagamento_row').val('');
+                        $('#inp-valor_row').val(convertFloatToMoeda(valorRestante));
+                        $('#inp-observacao_row').val('');
+
+                        $('#pagamento_multiplo').modal('show');
+                        validateButtonSave();
+                    })
+                    .fail((e) => {
+                        console.log(e);
+                        swal("Erro", "Falha ao gerar linha de pagamento", "error");
+                    });
+                } else {
+                    $('#inp-tipo_pagamento').val('').change();
+                }
+            });
+            return;
+        }
+    }
+
     if (tipo == "99") {
         $("#modal-pag-outros").modal("show");
         $(".div-vencimento").addClass('d-none');
@@ -1355,20 +1426,28 @@ function validateButtonSave() {
 
     let total = convertMoedaToFloat($(".total-venda").text())
     var tipo = $('#inp-tipo_pagamento').val()
-    var tipo_row = $('#inp-tipo_pagamento_row').val()
+    var hasMultiplePayments = $('.table-payment tbody tr').length > 0;
+    var total_multiplo = 0;
+    if (hasMultiplePayments) {
+        $('.table-payment tbody tr').each(function() {
+            var valInput = $(this).find('input[name="valor_integral_row[]"]');
+            if (valInput.length) {
+                total_multiplo += convertMoedaToFloat(valInput.val());
+            }
+        });
+    }
 
     var valor_recebido = convertMoedaToFloat($('#inp-valor_recebido').val())
-    if (total > 0 && (tipo || tipo_row)) {
-
-        if (tipo == '01' && valor_recebido >= total) {
+    if (total > 0) {
+        if (hasMultiplePayments && Math.abs(total_multiplo - total) < 0.05) {
             $('#salvar_venda').removeAttr("disabled")
             $('#editar_venda').removeAttr("disabled")
         }
-        else if (tipo != '01') {
+        else if (tipo == '01' && valor_recebido >= total) {
             $('#salvar_venda').removeAttr("disabled")
             $('#editar_venda').removeAttr("disabled")
         }
-        else if (tipo_row) {
+        else if (tipo && tipo != '01') {
             $('#salvar_venda').removeAttr("disabled")
             $('#editar_venda').removeAttr("disabled")
         }
@@ -1557,11 +1636,34 @@ $(".btn-add-payment").click(() => {
     let valor_integral_row = $("#inp-valor_row").val();
     let obs_row = $("#inp-observacao_row").val();
 
-    validateButtonSave();
-
     let v = convertMoedaToFloat(valor_integral_row);
 
-    if (v + total_payment <= total_venda) {
+    if (tipo_pagamento_row == '05') {
+        let cliente = $("#inp-cliente_id").val();
+        if (!cliente) {
+            swal("Atenção", "Selecione um cliente para utilizar Crédito Loja!", "warning");
+            return;
+        }
+        if (CLIENTE_VALOR_CREDITO <= 0) {
+            swal("Atenção", "Este cliente não possui saldo de crédito disponível!", "warning");
+            return;
+        }
+        // Somar crédito já adicionado na tabela
+        let creditoJaAdicionado = 0;
+        $(".table-payment tbody tr").each(function () {
+            let tp = $(this).find('input[name="tipo_pagamento_row[]"]').val();
+            if (tp == '05') {
+                let vLinha = convertMoedaToFloat($(this).find('input[name="valor_integral_row[]"]').val());
+                creditoJaAdicionado += vLinha;
+            }
+        });
+        if (v + creditoJaAdicionado > CLIENTE_VALOR_CREDITO + 0.01) {
+            swal("Atenção", "O valor de crédito informado (R$ " + convertFloatToMoeda(v + creditoJaAdicionado) + ") é maior que o saldo de crédito do cliente (R$ " + convertFloatToMoeda(CLIENTE_VALOR_CREDITO) + ")!", "warning");
+            return;
+        }
+    }
+
+    if (v + total_payment <= total_venda + 0.05) {
         if (vencimento && valor_integral_row && tipo_pagamento_row) {
             let dataRequest = {
                 data_vencimento_row: vencimento,
@@ -1574,9 +1676,17 @@ $(".btn-add-payment").click(() => {
             .done((e) => {
                 $(".table-payment tbody").append(e);
                 calcTotalPayment();
+
+                // Limpa inputs e sugere restante
+                $('#inp-tipo_pagamento_row').val('');
+                let restante = total_venda - (total_payment + v);
+                $('#inp-valor_row').val(restante > 0 ? convertFloatToMoeda(restante) : '');
+                $('#inp-observacao_row').val('');
+
                 // Aplica cor nos selects da nova linha
                 setTimeout(() => {
                     pdvAtualizarCorPagamento($('#inp-tipo_pagamento_row').get(0));
+                    validateButtonSave();
                 }, 100);
 
             })
@@ -1593,7 +1703,7 @@ $(".btn-add-payment").click(() => {
     } else {
         swal(
             "Atenção",
-            "A soma das parcelas não bate com o valor total da venda",
+            "A soma das parcelas ultrapassa o valor total da venda",
             "warning"
             );
     }
@@ -1734,38 +1844,83 @@ $("body").on("change", "#inp-lista_preco_id", function () {
     });
 })
 
-var emitirNfce = false
+function pdvMostrarProcessingOverlay(titulo, msg, iconClass) {
+    titulo = titulo || 'Processando Venda...';
+    msg = msg || 'Por favor, aguarde enquanto concluímos o pedido.';
+    iconClass = iconClass || 'ri-file-list-3-line';
+
+    // Fecha modais de finalização que estiverem abertas
+    $('#finalizar_venda').modal('hide');
+    $('#cpf_nota').modal('hide');
+
+    $('#pdv_processing_title').text(titulo);
+    $('#pdv_processing_msg').text(msg);
+    $('#pdv_processing_icon').attr('class', iconClass);
+    $('#pdv_processing_icon_box').removeClass('success');
+    
+    // Mostra overlay
+    $('#pdv_processing_overlay').removeClass('d-none');
+}
+
+function pdvAtualizarProcessingOverlay(titulo, msg, iconClass, isSuccess) {
+    if (titulo) $('#pdv_processing_title').text(titulo);
+    if (msg) $('#pdv_processing_msg').text(msg);
+    if (iconClass) $('#pdv_processing_icon').attr('class', iconClass);
+    if (isSuccess) {
+        $('#pdv_processing_icon_box').addClass('success');
+    }
+}
+
+function pdvEsconderProcessingOverlay() {
+    $('#pdv_processing_overlay').addClass('d-none');
+}
+
+var emitirNfce = false;
 $('#btn_fiscal').click(function() {
-    emitirNfce = true
-    // Loading state
-    $(this).addClass('pdv-btn-loading');
-    $("#form-pdv").submit()
-})
+    emitirNfce = true;
+    pdvMostrarProcessingOverlay(
+        'Emitindo Cupom Fiscal (NFCe)',
+        'Comunicando com a SEFAZ e salvando venda... Por favor, aguarde.',
+        'ri-file-list-3-line'
+    );
+    if ($("#form-pdv-update").length && $("#form-pdv-update").is(':visible')) {
+        $("#form-pdv-update").submit();
+    } else {
+        $("#form-pdv").submit();
+    }
+});
 
 $('#btn_nao_fiscal').click(function() {
-    emitirNfce = false
-    // Loading state
-    $(this).addClass('pdv-btn-loading');
-    if($("#form-pdv-update")){
-        $("#form-pdv-update").submit()
+    emitirNfce = false;
+    pdvMostrarProcessingOverlay(
+        'Finalizando Venda',
+        'Processando e salvando a venda... Por favor, aguarde.',
+        'ri-checkbox-circle-line'
+    );
+    if ($("#form-pdv-update").length && $("#form-pdv-update").is(':visible')) {
+        $("#form-pdv-update").submit();
+    } else if ($("#form-pdv").length) {
+        $("#form-pdv").submit();
     }
-    if($("#form-pdv")){
-        $("#form-pdv").submit()
-    }
-})
+});
 
 $("#form-pdv").on("submit", function (e) {
-
     e.preventDefault();
     var $form = $(this);
     var json = $(this).serializeFormJSON();
 
-    json.empresa_id = $('#empresa_id').val()
-    json.usuario_id = $('#usuario_id').val()
+    json.empresa_id = $('#empresa_id').val();
+    json.usuario_id = $('#usuario_id').val();
 
-    json.desconto = convertMoedaToFloat($('#valor_desconto').text())
-    json.acrescimo = convertMoedaToFloat($('#valor_acrescimo').text())
+    json.desconto = convertMoedaToFloat($('#valor_desconto').text());
+    json.acrescimo = convertMoedaToFloat($('#valor_acrescimo').text());
     
+    if ($('#pdv_processing_overlay').hasClass('d-none')) {
+        var titulo = emitirNfce ? 'Emitindo Cupom Fiscal (NFCe)' : 'Finalizando Venda';
+        var msg = emitirNfce ? 'Comunicando com a SEFAZ... Por favor, aguarde.' : 'Processando a venda... Por favor, aguarde.';
+        pdvMostrarProcessingOverlay(titulo, msg, emitirNfce ? 'ri-file-list-3-line' : 'ri-checkbox-circle-line');
+    }
+
     // Loading state nos botões de finalizar
     $('#btn_fiscal, #btn_nao_fiscal').addClass('pdv-btn-loading').prop('disabled', true);
     
@@ -1773,8 +1928,14 @@ $("#form-pdv").on("submit", function (e) {
     .done((success) => {
         PdvSession.clear();
         if (emitirNfce == true) {
-            gerarNfce(success)
+            pdvAtualizarProcessingOverlay(
+                'Transmitindo NFCe para SEFAZ',
+                'Venda salva com sucesso. Autorizando NFCe com a SEFAZ...',
+                'ri-cloud-upload-line'
+            );
+            gerarNfce(success);
         } else {
+            pdvEsconderProcessingOverlay();
             swal({
                 title: "Sucesso",
                 text: "Venda finalizada com sucesso, deseja imprimir o comprovante?",
@@ -1784,22 +1945,33 @@ $("#form-pdv").on("submit", function (e) {
                 dangerMode: true,
             }).then((isConfirm) => {
                 if (isConfirm) {
-                    window.open(path_url + 'frontbox/imprimir-nao-fiscal/' + success.id, "_blank")
+                    var urlComprovante = path_url + 'frontbox/imprimir-nao-fiscal/' + success.id;
+                    window.open(urlComprovante, '_blank');
+                    if (typeof PrintThermal !== 'undefined') {
+                        $.get('/print/configuracao').done(function(config) {
+                            if (config.printer_configured) {
+                                PrintThermal.enviarParaImpressora('/print/cupom/' + success.id, null);
+                            }
+                        });
+                    }
                 }
-                if($('#pedido_delivery_id').length){
-                    location.href = '/pedidos-delivery';
-                }else if($('#pedido_id').length){
-                    location.href = '/pedidos-cardapio';
-                }else{
-                    location.href = '/frontbox/create';
-                }
+                setTimeout(() => {
+                    if($('#pedido_delivery_id').length){
+                        location.href = '/pedidos-delivery';
+                    }else if($('#pedido_id').length){
+                        location.href = '/pedidos-cardapio';
+                    }else{
+                        location.href = '/frontbox/create';
+                    }
+                }, 600);
             });
         }
     }).fail((err) => {
+        pdvEsconderProcessingOverlay();
         $('#btn_fiscal, #btn_nao_fiscal').removeClass('pdv-btn-loading').prop('disabled', false);
-        swal("Erro", err.responseJSON, "error")
-        console.log(err)
-    })
+        swal("Erro", err.responseJSON || "Não foi possível finalizar a venda", "error");
+        console.log(err);
+    });
 });
 
 $("body").on("click", "#btn-suspender", function () {
@@ -1848,15 +2020,26 @@ $("#form-pdv-update").on("submit", function (e) {
 
     json.desconto = convertMoedaToFloat($('#valor_desconto').text())
     json.acrescimo = convertMoedaToFloat($('#valor_acrescimo').text())
+
+    if ($('#pdv_processing_overlay').hasClass('d-none')) {
+        var titulo = emitirNfce ? 'Emitindo Cupom Fiscal (NFCe)' : 'Atualizando Venda';
+        var msg = emitirNfce ? 'Comunicando com a SEFAZ... Por favor, aguarde.' : 'Atualizando os dados da venda... Por favor, aguarde.';
+        pdvMostrarProcessingOverlay(titulo, msg, emitirNfce ? 'ri-file-list-3-line' : 'ri-refresh-line');
+    }
+
     console.log(">>>>>>>> salvando ", json);
     $.post(path_url + 'api/frenteCaixa/update/'+$('#venda_id').val(), json)
     .done((success) => {
 
         if (emitirNfce == true) {
+            pdvAtualizarProcessingOverlay(
+                'Transmitindo NFCe para SEFAZ',
+                'Venda atualizada. Autorizando NFCe com a SEFAZ...',
+                'ri-cloud-upload-line'
+            );
             gerarNfce(success)
         } else {
-            swal("Sucesso", "Venda atualizada com sucesso, deseja imprimir o comprovante?", "success")
-
+            pdvEsconderProcessingOverlay();
             swal({
                 title: "Sucesso",
                 text: "Venda finalizada com sucesso, deseja imprimir o comprovante?",
@@ -1866,54 +2049,84 @@ $("#form-pdv-update").on("submit", function (e) {
                 dangerMode: true,
             }).then((isConfirm) => {
                 if (isConfirm) {
-                    window.open(path_url + 'frontbox/imprimir-nao-fiscal/' + success.id, "_blank")
-                } else {
-                    // location.reload()
-                }
-                if($('#pedido_delivery_id').length){
-                    location.href = '/pedidos-delivery';
-                }else if($('#pedido_id').length){
-                    location.href = '/pedidos-cardapio';
-                }else{
-                    if(update){
-                        location.href = path_url+'frontbox'
-                    }else{
-                        location.reload()
+                    // Abre a aba diretamente (ação do usuário - não bloqueado pelo browser)
+                    var urlComprovante = path_url + 'frontbox/imprimir-nao-fiscal/' + success.id;
+                    window.open(urlComprovante, '_blank');
+                    // Tenta também enviar para impressora térmica se configurada (assíncrono)
+                    if (typeof PrintThermal !== 'undefined') {
+                        $.get('/print/configuracao').done(function(config) {
+                            if (config.printer_configured) {
+                                PrintThermal.enviarParaImpressora('/print/cupom/' + success.id, null);
+                            }
+                        });
                     }
                 }
+                setTimeout(() => {
+                    if($('#pedido_delivery_id').length){
+                        location.href = '/pedidos-delivery';
+                    }else if($('#pedido_id').length){
+                        location.href = '/pedidos-cardapio';
+                    }else{
+                        if(update){
+                            location.href = path_url+'frontbox'
+                        }else{
+                            location.reload()
+                        }
+                    }
+                }, 600);
             });
         }
     }).fail((err) => {
+        pdvEsconderProcessingOverlay();
+        $('#btn_fiscal, #btn_nao_fiscal').removeClass('pdv-btn-loading').prop('disabled', false);
+        swal("Erro", err.responseJSON || "Não foi possível atualizar a venda", "error");
         console.log(err)
     })
 });
 
 function gerarNfce(venda) {
     let empresa_id = $("#empresa_id").val();
-    // Loading nos botões
+    
+    pdvMostrarProcessingOverlay(
+        'Transmitindo NFCe para a SEFAZ',
+        'Aguardando resposta da Secretaria da Fazenda...',
+        'ri-cloud-upload-line'
+    );
     $('#btn_fiscal, #btn_nao_fiscal').addClass('pdv-btn-loading').prop('disabled', true);
 
     $.post(path_url + "api/nfce_painel/emitir", {
         id: venda.id,
     })
     .done((success) => {
+        pdvAtualizarProcessingOverlay(
+            'NFCe Emitida com Sucesso!',
+            'Autorização recebida. Abrindo impressão do cupom...',
+            'ri-checkbox-circle-fill',
+            true
+        );
         $('#btn_fiscal, #btn_nao_fiscal').removeClass('pdv-btn-loading').prop('disabled', false);
-        swal("Sucesso", "NFCe emitida " + success.recibo + " - chave: [" + success.chave + "]", "success")
-        .then(() => {
-            window.open(path_url + 'nfce/imprimir/' + venda.id, "_blank")
-            setTimeout(() => {
-                if(!update){
-                    location.reload()
-                }else{
-                    location.href = path_url+'frontbox'
-                }
-            }, 100)
-        })
+        
+        setTimeout(function() {
+            pdvEsconderProcessingOverlay();
+            swal("Sucesso", "NFCe emitida " + (success.recibo || '') + " - chave: [" + (success.chave || '') + "]", "success")
+            .then(() => {
+                window.open(path_url + 'nfce/imprimir/' + venda.id, "_blank")
+                setTimeout(() => {
+                    if(!update){
+                        location.reload()
+                    }else{
+                        location.href = path_url+'frontbox'
+                    }
+                }, 100)
+            })
+        }, 500);
     })
     .fail((err) => {
+        pdvEsconderProcessingOverlay();
         $('#btn_fiscal, #btn_nao_fiscal').removeClass('pdv-btn-loading').prop('disabled', false);
         console.log(err)
-        swal("Algo deu errado", err.responseJSON, "error")
+        var msgErro = (err.responseJSON && err.responseJSON.message) ? err.responseJSON.message : (err.responseJSON || "Erro ao comunicar com a SEFAZ");
+        swal("Algo deu errado na emissão da NFCe", msgErro, "error")
     })
 }
 
@@ -1970,14 +2183,14 @@ $('.cliente-venda').click(() => {
         $.get(path_url + "api/clientes/find/" + cliente_id)
         .done((cliente) => {
             if (cliente && cliente.razao_social) {
-                pdvAtualizarCardCliente(cliente.razao_social);
+                pdvAtualizarCardCliente(cliente.razao_social, cliente.valor_credito);
             }
         })
         .fail((err) => {
             console.log(err);
         });
     } else {
-        pdvAtualizarCardCliente('');
+        pdvAtualizarCardCliente('', 0);
     }
 });
 
@@ -2051,6 +2264,17 @@ function pdvAtualizarContagemCarrinho(animar) {
 // Utiliza Mousetrap (já incluso na página)
 // ============================================================
 $(function() {
+    // Carrega saldo de crédito se cliente já estiver selecionado na inicialização
+    let initClienteId = $('#inp-cliente_id').val();
+    if (initClienteId) {
+        $.get(path_url + "api/clientes/find/" + initClienteId)
+        .done((cliente) => {
+            if (cliente && cliente.razao_social) {
+                pdvAtualizarCardCliente(cliente.razao_social, cliente.valor_credito);
+            }
+        });
+    }
+
     // Impede que F1 abra ajuda do navegador
     $(document).on('keydown', function(e) {
         if (e.key === 'F1' || e.key === 'F2' || e.key === 'F3' || 

@@ -20,10 +20,20 @@ class TipoDespesaFreteController extends Controller
         ->when(!empty($request->nome), function ($q) use ($request) {
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
+        ->when($request->status !== null && $request->status !== '', function ($q) use ($request) {
+            return $q->where('status', $request->status);
+        })
         ->orderBy('nome')
         ->paginate(env("PAGINACAO"));
 
-        return view('tipo_despesa_frete.index', compact('data'));
+        $baseStats = TipoDespesaFrete::where('empresa_id', request()->empresa_id);
+        $stats = [
+            'total' => (clone $baseStats)->count(),
+            'ativos' => (clone $baseStats)->where('status', 1)->count(),
+            'inativos' => (clone $baseStats)->where('status', 0)->count(),
+        ];
+
+        return view('tipo_despesa_frete.index', compact('data', 'stats'));
     }
 
     public function create()

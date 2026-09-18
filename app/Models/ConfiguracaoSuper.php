@@ -14,7 +14,7 @@ class ConfiguracaoSuper extends Model
         'mercadopago_access_token', 'sms_key', 'token_whatsapp',
         'usuario_correios', 'codigo_acesso_correios', 'cartao_postagem_correios', 'token_auth_nfse',
         'timeout_nfe', 'timeout_nfce', 'timeout_cte', 'timeout_mdfe', 'usar_resp_tecnico',
-        'token_api', 'token_integra_notas', 'logo'
+        'token_api', 'token_integra_notas', 'logo', 'login_banner'
     ];
 
     public function getLogoUrlAttribute()
@@ -23,6 +23,14 @@ class ConfiguracaoSuper extends Model
             return '/uploads/logo/' . $this->logo;
         }
         return '/logo.jpg';
+    }
+
+    public function getLoginBannerUrlAttribute()
+    {
+        if ($this->login_banner && file_exists(public_path('uploads/login/' . $this->login_banner))) {
+            return '/uploads/login/' . $this->login_banner;
+        }
+        return null;
     }
 
 }

@@ -59,7 +59,6 @@ class MDFePainelController extends Controller
                         } else {
                             $config->numero_ultima_mdfe_producao = $mdfe['numero'];
                         }
-                        $config->ultimo_numero_mdfe = $mdfe['numero'];
                         $config->save();
                         $item->save();
                         $file = file_get_contents(public_path('xml_mdfe/') . $resultado['chave'] . '.xml');
@@ -69,7 +68,7 @@ class MDFePainelController extends Controller
 
                         try{
                             $fileDir = public_path('xml_mdfe/').$item->chave.'.xml';
-                            $this->emailUtil->enviarXmlContador($empresa->id, $fileDir, 'MDFe', $item->chave);
+                            $this->emailUtil->enviarXmlContador($item->empresa_id, $fileDir, 'MDFe', $item->chave);
                         }catch(\Exception $e){
 
                         }
@@ -90,16 +89,15 @@ class MDFePainelController extends Controller
 
     public function consultar(Request $request)
     {
-        $mdfe = Mdfe::findOrFail($request->id);
-
-        if ($mdfe->estado_emissao == 'aprovado' || $mdfe->estado_emissao == 'cancelado') {
-            $config = Empresa::where('id', $request->empresa_id)
-            ->first();
+        try {
+            $mdfe = Mdfe::findOrFail($request->id);
+            $empresa_id = $request->empresa_id ?? $mdfe->empresa_id;
+            $config = Empresa::findOrFail($empresa_id);
             $cnpj = preg_replace('/[^0-9]/', '', $config->cpf_cnpj);
 
-            $config = __objetoParaEmissao($config, $item->local_id);
+            $config = __objetoParaEmissao($config, $mdfe->local_id);
             $mdfe_service = new MDFeService([
-                "atualizacao" => date('Y-m-d h:i:s'),
+                "atualizacao" => date('Y-m-d H:i:s'),
                 "tpAmb" => (int)$config->ambiente,
                 "razaosocial" => $config->nome,
                 "siglaUF" => $config->cidade->uf,
@@ -110,12 +108,10 @@ class MDFePainelController extends Controller
                 "versao" => '3.00'
             ], $config);
 
-            $mdfe = Mdfe::find($request->id);
             $result = $mdfe_service->consultar($mdfe->chave);
-
             return response()->json($result, 200);
-        } else {
-            return response()->json("Erro ao consultar", 404);
+        } catch (\Exception $e) {
+            return response()->json("Erro ao consultar na SEFAZ: " . $e->getMessage(), 400);
         }
     }
 }

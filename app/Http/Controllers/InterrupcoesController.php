@@ -14,7 +14,9 @@ class InterrupcoesController extends Controller
     public function index(Request $request)
     {   
         $funcionario_id = $request->funcionario_id;
-        $data = Interrupcoes::where('empresa_id', $request->empresa_id)
+        $base = Interrupcoes::where('empresa_id', $request->empresa_id);
+
+        $data = (clone $base)
         ->when($funcionario_id, function ($q) use ($funcionario_id) {
             return $q->where('funcionario_id', $funcionario_id);
         })
@@ -24,7 +26,13 @@ class InterrupcoesController extends Controller
         ->orderBy('nome', 'asc')
         ->get();
 
-        return view('interrupcoes.index', compact('data', 'funcionarios'));
+        $stats = [
+            'total'    => (clone $base)->count(),
+            'ativos'   => (clone $base)->where('status', 1)->count(),
+            'inativos' => (clone $base)->where('status', 0)->count(),
+        ];
+
+        return view('interrupcoes.index', compact('data', 'funcionarios', 'stats'));
     }
 
     public function create()

@@ -17,9 +17,16 @@ class MargemComissaoController extends Controller
 
     public function index(Request $request){
         $data = MargemComissao::where('empresa_id', request()->empresa_id)
+        ->orderBy('margem', 'asc')
         ->get();
 
-        return view('margem_comissao.index', compact('data'));
+        $stats = [
+            'total' => MargemComissao::where('empresa_id', request()->empresa_id)->count(),
+            'max_margem' => MargemComissao::where('empresa_id', request()->empresa_id)->max('margem') ?? 0,
+            'max_comissao' => MargemComissao::where('empresa_id', request()->empresa_id)->max('percentual') ?? 0,
+        ];
+
+        return view('margem_comissao.index', compact('data', 'stats'));
     }
 
     public function create()

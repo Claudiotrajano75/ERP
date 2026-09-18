@@ -2,37 +2,13 @@
 
 @section('css')
 <style>
-/* ─── Header Gradiente ─── */
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.6) !important; font-weight: 400; }
-.modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-.modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
-
-/* ─── Form Card (Create/Edit) ─── */
-.modulo-form-card { border: 1px solid #eef0f5; border-radius: 12px; overflow: hidden; }
-.modulo-form-card .card-body { background: #fff; }
-.modulo-form-card .form-label,
-.modulo-form-card label:not(.form-check-label) { font-weight: 600; font-size: 12px; color: #5a5a7a; margin-bottom: 4px; }
-.modulo-form-card .form-control,
-.modulo-form-card .form-select { border-radius: 8px; border-color: #e0e3eb; font-size: 13px; padding: 8px 12px; transition: all 0.15s ease; }
-.modulo-form-card .form-control:focus,
-.modulo-form-card .form-select:focus { border-color: #302b63; box-shadow: 0 0 0 3px rgba(48,43,99,0.08); }
-
-/* ─── Premium Table ─── */
-.modulo-table-wrap { border-radius: 12px; border: 1px solid #eef0f5; overflow: hidden; }
-.modulo-table-wrap table { margin-bottom: 0; }
-.modulo-table-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding: 12px 14px; border-bottom: 2px solid #e8eaf6; }
-.modulo-table-wrap tbody td { padding: 12px 14px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; transition: background 0.15s ease; font-size: 13px; }
-.modulo-table-wrap tbody tr { transition: all 0.15s ease; }
-.modulo-table-wrap tbody tr:hover { background: #f5f6fe; }
-.modulo-table-wrap tbody tr:last-child td { border-bottom: none; }
-
-/* ─── Botões de Ação do Formulário ─── */
-.modulo-actions { padding: 16px 0 0; border-top: 1px solid #f0f2f8; margin-top: 24px; }
-.modulo-actions .btn { border-radius: 8px; font-weight: 600; font-size: 13px; padding: 8px 20px; transition: all 0.2s ease; }
-.modulo-actions .btn:hover { transform: translateY(-1px); }
+/* ─── Tabela ─── */
+.tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+.tb-wrap table { margin-bottom: 0; }
+.tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 16px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+.tb-wrap tbody td { padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13px; color: #374151; }
+.tb-wrap tbody tr:hover { background: #f5f6fe; }
+.tb-wrap tbody tr:last-child td { border-bottom: none; }
 </style>
 @endsection
 
@@ -40,9 +16,9 @@
 <div class="mt-3 text-dark">
     <div class="row justify-content-center">
         <div class="col-lg-12">
-            <div class="card border-0 shadow-sm modulo-form-card">
+            <div class="card border-0 shadow-sm text-dark modulo-form-card">
                 
-                <!-- CABEÇALHO PREMIUM -->
+                <!-- CABEÇALHO -->
                 <div class="card-header modulo-header-gradient py-3 px-4">
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <div>
@@ -53,8 +29,8 @@
                             <p class="text-muted mb-0 modulo-subtitle fs-13">Nota Fiscal: <strong class="text-white">{{ $nNf }}</strong> | Chave: <strong class="text-white">{{ $chave }}</strong></p>
                         </div>
                         <div>
-                            <a href="{{ route('manifesto.index') }}" class="btn btn-light btn-sm px-3 text-dark">
-                                <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
+                            <a href="{{ route('manifesto.index') }}" class="dash-btn dash-btn-light">
+                                <i class="ri-arrow-left-line"></i> Voltar
                             </a>
                         </div>
                     </div>
@@ -76,7 +52,7 @@
                     <input type="hidden" name="dfe_id" id="" value="{{$dfe->id}}">
 
                     <!-- Dados do Emitente / Fornecedor -->
-                    <div class="border rounded p-3 mb-4 bg-light">
+                    <div class="card card-secao-fiscal border p-3 rounded-3 mb-4 bg-white">
                         <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
                             <h5 class="m-0 fs-14 fw-bold text-dark"><i class="ri-truck-line me-1 text-primary"></i> Informações do Fornecedor / Distribuidor</h5>
                             @if(count($fornecedor) > 0)
@@ -111,7 +87,7 @@
                             <span class="text-danger fs-12">* Produtos destacados em vermelho não estão catalogados no sistema.</span>
                         </div>
 
-                        <div class="modulo-table-wrap">
+                        <div class="tb-wrap">
                             <div class="table-responsive">
                                 <table class="table table-centered mb-0 align-middle">
                                     <thead>
@@ -158,11 +134,11 @@
                                             <td class="fw-bold text-success">R$ {{__moeda((float) $i['qCom'] * (float) $i['vUnCom'])}}</td>
                                             <td class="text-end">
                                                 @if($i['produtoNovo'])
-                                                <button type="button" class="btn btn-success btn-sm btn-cad-{{$i['codigo']}}" id="th_acao1_{{$i['codigo']}}" onclick="cadProd('{{$i['codigo']}}','{{$i['xProd']}}','{{$i['codBarras']}}','{{$i['NCM']}}','{{$i['CFOP']}}','{{$i['uCom']}}','{{$i['vUnCom']}}','{{$i['qCom']}}', '{{$i['CFOP']}}','{{$i['CEST']}}')" title="Cadastrar Produto">
-                                                    <i class="ri-add-line"></i>
+                                                <button type="button" class="dash-btn dash-btn-primary btn-sm btn-cad-{{$i['codigo']}}" id="th_acao1_{{$i['codigo']}}" onclick="cadProd('{{$i['codigo']}}','{{$i['xProd']}}','{{$i['codBarras']}}','{{$i['NCM']}}','{{$i['CFOP']}}','{{$i['uCom']}}','{{$i['vUnCom']}}','{{$i['qCom']}}', '{{$i['CFOP']}}','{{$i['CEST']}}')" title="Cadastrar Produto" style="padding: 4px 8px; font-size: 12px;">
+                                                    <i class="ri-add-line"></i> Cadastrar
                                                 </button>
                                                 @else
-                                                <span class="badge bg-light text-muted border">Ok</span>
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-11">Vinculado</span>
                                                 @endif
                                             </td>
                                         </tr>
@@ -182,8 +158,8 @@
                         </div>
                         <div>
                             @if($dfe->compra_id == 0)
-                            <button type="submit" disabled id="btn-salvar" class="btn btn-success px-4" style="border-radius: 8px; font-weight: 600;">
-                                <i class="ri-save-line align-middle me-1"></i> Importar e Salvar como Compra
+                            <button type="submit" disabled id="btn-salvar" class="dash-btn dash-btn-primary px-4">
+                                <i class="ri-save-line me-1"></i> Importar e Salvar como Compra
                             </button>
                             @else
                             <span class="badge bg-success border border-success p-2 fs-12" style="border-radius: 8px;"><i class="ri-checkbox-circle-line me-1"></i> Compra já Criada</span>
@@ -206,7 +182,7 @@
 
                         <h5 class="fs-14 fw-bold text-dark mb-3"><i class="ri-wallet-line me-1 text-primary"></i> Programação de Faturamento / Parcelas</h5>
                         
-                        <div class="modulo-table-wrap mb-3">
+                        <div class="tb-wrap mb-3">
                             <div class="table-responsive">
                                 <table class="table table-centered mb-0 align-middle table-dynamic">
                                     <thead>
@@ -243,8 +219,8 @@
                         </div>
 
                         @if($dfe->fatura_salva == 0 && sizeof($fatura) > 0)
-                        <button type="submit" class="btn btn-primary btn-sm px-4" style="border-radius: 8px; font-weight: 600;">
-                            <i class="ri-checkbox-circle-line align-middle me-1"></i> Registrar Fatura no Contas a Pagar
+                        <button type="submit" class="dash-btn dash-btn-primary px-4">
+                            <i class="ri-checkbox-circle-line me-1"></i> Registrar Fatura no Contas a Pagar
                         </button>
                         @else
                         <span class="badge bg-success border border-success p-2 fs-12" style="border-radius: 8px;"><i class="ri-checkbox-circle-line me-1"></i> Fatura Registrada / Indisponível</span>

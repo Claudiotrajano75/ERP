@@ -516,5 +516,5 @@
 
 @section('js')
 <script src="/js/novo_cliente.js"></script>
-<script src="/js/faturamento_avulso.js"></script>
+<script src="/js/faturamento_avulso.js?v={{ time() }}"></script>
 @endsection

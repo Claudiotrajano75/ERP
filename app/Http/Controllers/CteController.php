@@ -57,11 +57,11 @@ class CteController extends Controller
         $estado = $request->get('estado');
         $local_id = $request->get('local_id');
 
-        $data = Cte::where('empresa_id', request()->empresa_id)
+        $query = Cte::where('empresa_id', request()->empresa_id)
         ->when(!empty($start_date), function ($query) use ($start_date) {
             return $query->whereDate('created_at', '>=', $start_date);
         })
-        ->when(!empty($end_date), function ($query) use ($end_date,) {
+        ->when(!empty($end_date), function ($query) use ($end_date) {
             return $query->whereDate('created_at', '<=', $end_date);
         })
         ->when($estado != "", function ($query) use ($estado) {
@@ -72,10 +72,22 @@ class CteController extends Controller
         })
         ->when(!$local_id, function ($query) use ($locais) {
             return $query->whereIn('local_id', $locais);
-        })
-        ->orderBy('created_at', 'desc')
+        });
+
+        $stats = [
+            'total_cte' => (clone $query)->count(),
+            'valor_transporte' => (clone $query)->sum('valor_transporte'),
+            'valor_carga' => (clone $query)->sum('valor_carga'),
+            'aprovado' => (clone $query)->where('estado', 'aprovado')->count(),
+            'cancelado' => (clone $query)->where('estado', 'cancelado')->count(),
+            'novo' => (clone $query)->where('estado', 'novo')->count(),
+            'rejeitado' => (clone $query)->where('estado', 'rejeitado')->count(),
+        ];
+
+        $data = $query->orderBy('created_at', 'desc')
         ->paginate(env("PAGINACAO"));
-        return view('cte.index', compact('data'));
+
+        return view('cte.index', compact('data', 'stats'));
     }
 
     public function create()

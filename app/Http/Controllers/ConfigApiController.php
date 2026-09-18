@@ -12,7 +12,14 @@ class ConfigApiController extends Controller
         $data = ApiConfig::where('empresa_id', $request->empresa_id)
         ->get();
 
-        return view('api_config.index', compact('data'));
+        $stats = [
+            'total' => $data->count(),
+            'ativos' => $data->where('status', 1)->count(),
+            'inativos' => $data->where('status', 0)->count(),
+            'total_logs' => ApiLog::where('empresa_id', $request->empresa_id)->count(),
+        ];
+
+        return view('api_config.index', compact('data', 'stats'));
     }
 
     public function create(){

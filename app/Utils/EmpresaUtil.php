@@ -123,10 +123,11 @@ class EmpresaUtil
 					'localizacao_id' => $localizacao->id
 				]);
 			}
-		}
 
-		$this->initProducts($empresa->id);
-		$this->initRegisters($empresa->id);
+			// Executa a inicialização de produtos e registros APENAS na primeira vez que a localização é criada
+			$this->initProducts($empresa->id);
+			$this->initRegisters($empresa->id);
+		}
 	}
 
 	private function initProducts($empresa_id){

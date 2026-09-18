@@ -6,6 +6,7 @@ use App\Models\Cidade;
 use App\Models\Ciot;
 use App\Models\CTeDescarga;
 use App\Models\Empresa;
+use App\Models\Funcionario;
 use App\Models\InfoDescarga;
 use App\Models\LacreTransporte;
 use App\Models\LacreUnidadeCarga;
@@ -17,6 +18,7 @@ use App\Models\Percurso;
 use App\Models\UnidadeCarga;
 use App\Models\ValePedagio;
 use App\Models\Veiculo;
+use App\Services\MdfeAutoFillService;
 use App\Services\MDFeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -39,7 +41,7 @@ class MdfeController extends Controller
             mkdir(public_path('xml_mdfe_correcao'), 0777, true);
         }
 
-        $this->middleware('permission:mdfe_create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:mdfe_create', ['only' => ['create', 'store', 'importarXml']]);
         $this->middleware('permission:mdfe_edit', ['only' => ['edit', 'update']]);
         $this->middleware('permission:mdfe_view', ['only' => ['show', 'index']]);
         $this->middleware('permission:mdfe_delete', ['only' => ['destroy']]);
@@ -66,13 +68,19 @@ class MdfeController extends Controller
             return $query->whereDate('created_at', '<=', $end_date);
         })
         ->when($estado != "", function ($query) use ($estado) {
+            if ($estado == 'encerrado') {
+                return $query->where('encerrado', 1);
+            }
             return $query->where('estado_emissao', $estado);
         })
         ->when($local_id, function ($query) use ($local_id) {
             return $query->where('local_id', $local_id);
         })
         ->when(!$local_id, function ($query) use ($locais) {
-            return $query->whereIn('local_id', $locais);
+            return $query->where(function ($q) use ($locais) {
+                $q->whereIn('local_id', $locais)
+                  ->orWhereNull('local_id');
+            });
         });
 
         // Query stats (sem filtro de estado para mostrar totais por categoria)
@@ -87,19 +95,24 @@ class MdfeController extends Controller
             return $query->where('local_id', $local_id);
         })
         ->when(!$local_id, function ($query) use ($locais) {
-            return $query->whereIn('local_id', $locais);
+            return $query->where(function ($q) use ($locais) {
+                $q->whereIn('local_id', $locais)
+                  ->orWhereNull('local_id');
+            });
         });
 
         $stats = [
             'total'      => (clone $statsQuery)->count(),
             'aprovadas'  => (clone $statsQuery)->where('estado_emissao', 'aprovado')->count(),
+            'encerrados' => (clone $statsQuery)->where('encerrado', 1)->count(),
             'canceladas' => (clone $statsQuery)->where('estado_emissao', 'cancelado')->count(),
             'valor'      => (clone $statsQuery)->where('estado_emissao', 'aprovado')->sum('valor_carga'),
         ];
 
-        $data = (clone $baseQuery)->orderBy('created_at', 'desc')->paginate(env("PAGINACAO"));
+        $data = (clone $baseQuery)->with(['veiculoTracao', 'localizacao', 'percurso'])->orderBy('created_at', 'desc')->paginate(env("PAGINACAO"));
+        $cidades = Cidade::all();
 
-        return view('mdfe.index', compact('data', 'stats'));
+        return view('mdfe.index', compact('data', 'stats', 'cidades'));
 
     }
 
@@ -108,14 +121,161 @@ class MdfeController extends Controller
      */
     public function create()
     {
-        $veiculos = Veiculo::where('empresa_id', request()->empresa_id)
+        $veiculos = Veiculo::with('funcionario')->where('empresa_id', request()->empresa_id)
+        ->where('status', 1)->get();
+        $funcionarios = Funcionario::where('empresa_id', request()->empresa_id)
         ->where('status', 1)->get();
         $cidades = Cidade::all();
         $empresa = Empresa::findOrFail(request()->empresa_id);
 
         $numeroMDFe = Mdfe::lastNumero($empresa);
 
-        return view('mdfe.create', compact('veiculos', 'cidades', 'numeroMDFe'));
+        return view('mdfe.create', compact('veiculos', 'funcionarios', 'cidades', 'numeroMDFe', 'empresa'));
+    }
+
+    /**
+     * Lê o XML da NF-e enviado no upload e devolve os dados para pré-preencher a emissão.
+     */
+    public function importarXml(Request $request)
+    {
+        $request->validate([
+            'xml' => 'required|array',
+            'xml.*' => 'file|max:2048',
+        ]);
+
+        try {
+            $dados = (new MdfeAutoFillService)->fromUploadedFiles($request->file('xml'));
+
+            __createLog($request->empresa_id, 'MDFe', 'importar xml', $dados['notas'] . ' NF-e lida(s) para pré-preencher a emissão');
+
+            return response()->json($dados, 200);
+        } catch (\Exception $e) {
+            __createLog(request()->empresa_id, 'MDFe', 'erro', 'Importação de XML: ' . $e->getMessage());
+
+            return response()->json(['erro' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Grava os relacionamentos da MDF-e: municípios, CIOT, percurso, vales de pedágio e descarregamento.
+     */
+    private function sincronizaRelacionamentos(Mdfe $mdfe, Request $request)
+    {
+        $mdfe->municipiosCarregamento()->delete();
+        $mdfe->ciots()->delete();
+        $mdfe->percurso()->delete();
+        $mdfe->valesPedagio()->delete();
+        $mdfe->infoDescarga()->delete();
+
+        $municipiosCarregamento = (array) $request->municipiosCarregamento;
+        if (empty(array_filter($municipiosCarregamento))) {
+            $empresa = Empresa::find($mdfe->empresa_id);
+            if ($empresa && $empresa->cidade_id) {
+                $municipiosCarregamento = [$empresa->cidade_id];
+            }
+        }
+
+        foreach ($municipiosCarregamento as $municipioCarregamento) {
+            if (!$municipioCarregamento) {
+                continue;
+            }
+            MunicipioCarregamento::create([
+                'mdfe_id' => $mdfe->id,
+                'cidade_id' => $municipioCarregamento
+            ]);
+        }
+
+        foreach ((array) $request->codigo_ciot as $i => $codigoCiot) {
+            if (!$codigoCiot) {
+                continue;
+            }
+            Ciot::create([
+                'mdfe_id' => $mdfe->id,
+                'cpf_cnpj' => $request->cpf_cnpj[$i] ?? '',
+                'codigo' => $codigoCiot
+            ]);
+        }
+
+        foreach ((array) $request->uf as $ufPercurso) {
+            if (!$ufPercurso) {
+                continue;
+            }
+            Percurso::create([
+                'uf' => $ufPercurso,
+                'mdfe_id' => $mdfe->id
+            ]);
+        }
+
+        foreach ((array) $request->cnpj_fornecedor as $i => $cnpjFornecedor) {
+            if (!$cnpjFornecedor) {
+                continue;
+            }
+            ValePedagio::create([
+                'mdfe_id' => $mdfe->id,
+                'cnpj_fornecedor' => $cnpjFornecedor,
+                'cnpj_fornecedor_pagador' => $request->cnpj_fornecedor_pagador[$i] ?? '',
+                'numero_compra' => $request->numero_compra[$i] ?? 0,
+                'valor' => __convert_value_bd($request->valor_pedagio[$i] ?? 0)
+            ]);
+        }
+
+        foreach ((array) $request->tp_und_transp_row as $i => $tpUnidTransp) {
+            if (!$tpUnidTransp || !isset($request->municipio_descarregamento_row[$i])) {
+                continue;
+            }
+
+            $info = InfoDescarga::create([
+                'mdfe_id' => $mdfe->id,
+                'tp_unid_transp' => $tpUnidTransp,
+                'id_unid_transp' => $request->id_und_transp_row[$i] ?? '',
+                'quantidade_rateio' => __convert_value_bd($request->quantidade_rateio_row[$i] ?? 0),
+                'cidade_id' => $request->municipio_descarregamento_row[$i]
+            ]);
+
+            if ($request->chave_cte_row[$i] ?? null) {
+                CTeDescarga::create([
+                    'info_id' => $info->id,
+                    'chave' => $request->chave_cte_row[$i],
+                    'seg_cod_barras' => ''
+                ]);
+            }
+
+            if ($request->chave_nfe_row[$i] ?? null) {
+                NFeDescarga::create([
+                    'info_id' => $info->id,
+                    'chave' => $request->chave_nfe_row[$i],
+                    'seg_cod_barras' => ''
+                ]);
+            }
+
+            foreach ((array) json_decode($request->lacres_transporte_row[$i] ?? '[]') as $lacre) {
+                if ($lacre == '') {
+                    continue;
+                }
+                LacreTransporte::create([
+                    'info_id' => $info->id,
+                    'numero' => $lacre
+                ]);
+            }
+
+            foreach ((array) json_decode($request->lacres_unidade_row[$i] ?? '[]') as $lacre) {
+                if ($lacre == '') {
+                    continue;
+                }
+                LacreUnidadeCarga::create([
+                    'info_id' => $info->id,
+                    'numero' => $lacre
+                ]);
+            }
+
+            if (($request->quantidade_rateio_carga_row[$i] ?? "") != "") {
+                UnidadeCarga::create([
+                    'info_id' => $info->id,
+                    'id_unidade_carga' => $request->id_und_transp_row[$i] ?? '',
+                    'quantidade_rateio' => __convert_value_bd($request->quantidade_rateio_carga_row[$i])
+                ]);
+            }
+        }
     }
 
     /**
@@ -127,6 +287,9 @@ class MdfeController extends Controller
         try {
             DB::transaction(function () use ($request) {
                 $request->merge([
+                    'cnpj_contratante' => $request->cnpj_contratante ?? '',
+                    'carga_posterior' => $request->carga_posterior ? 1 : 0,
+                    'lac_rodo' => $request->lac_rodo ?? '0',
                     'seguradora_nome' => $request->seguradora_nome ?? '',
                     'seguradora_cnpj' => $request->seguradora_cnpj ?? '',
                     'numero_apolice' => $request->numero_apolice ?? '',
@@ -147,117 +310,36 @@ class MdfeController extends Controller
                     'quantidade_rateio' => __convert_value_bd($request->quantidade_rateio),
                     'quantidade_rateio_carga' => __convert_value_bd($request->quantidade_rateio_carga),
                     'quantidade_carga' => __convert_value_bd($request->quantidade_carga),
+                    'unidade_medida' => $request->unidade_medida ?? 'KG',
+                    'tp_emit' => $request->tp_emit ?? ($request->tp_transp == '2' ? '1' : '2'),
+                    'tp_transp' => $request->tp_transp ?? 1,
+                    'tipo_modal' => $request->modal_tipo ?? $request->tipo_modal ?? '1',
                     'produto_pred_nome' => $request->produto_pred_nome ?? '',
                     'produto_pred_ncm' => preg_replace('/[^0-9]/', '', $request->produto_pred_ncm ?? ''),
                     'produto_pred_cod_barras' => $request->produto_pred_cod_barras ?? '',
                     'cep_carrega' => $request->cep_carrega ?? '',
-                    'tp_carga' => $request->tp_carga ?? '',
+                    'tp_carga' => $request->tp_carga ?? '05',
+                    'condutor_nome' => $request->condutor_nome ?? '',
+                    'condutor_cpf' => $request->condutor_cpf ?? '',
                     'info_complementar' => $request->info_complementar ?? '',
                     'info_adicional_fisco' => $request->info_adicional_fisco ?? '',
-                    'filial_id' => $request->filial_id != -1 ? $request->filial_id : null
+                    'local_id' => $request->local_id ? $request->local_id : ($request->filial_id != -1 && $request->filial_id ? $request->filial_id : (__getLocalAtivo() ? __getLocalAtivo()->id : null))
                 ]);
 
                 $mdfe = Mdfe::create($request->all());
 
-                for ($i = 0; $i < sizeof($request->municipiosCarregamento); $i++) {
-                    MunicipioCarregamento::create([
-                        'mdfe_id' => $mdfe->id,
-                        'cidade_id' => $request->municipiosCarregamento[$i]
-                    ]);
-                }
+                $this->sincronizaRelacionamentos($mdfe, $request);
 
-                for ($i = 0; $i < sizeof($request->codigo_ciot); $i++) {
-                    if ($request->codigo_ciot[$i] != null) {
-                        Ciot::create([
-                            'mdfe_id' => $mdfe->id,
-                            'cpf_cnpj' => $request->cpf_cnpj[$i],
-                            'codigo' => $request->codigo_ciot[$i]
-                        ]);
-                    }
-                }
-
-                for ($i = 0; $i < sizeof($request->uf); $i++) {
-                    if ($request->uf[$i]) {
-                        Percurso::create([
-                            'uf' => $request->uf[$i],
-                            'mdfe_id' => $mdfe->id
-                        ]);
-                    }
-                }
-
-                for ($i = 0; $i < sizeof($request->cnpj_fornecedor); $i++) {
-                    if ($request->cnpj_fornecedor[$i] != null) {
-                        ValePedagio::create([
-                            'mdfe_id' => $mdfe->id,
-                            'cnpj_fornecedor' => $request->cnpj_fornecedor[$i],
-                            'cnpj_fornecedor_pagador' => $request->cnpj_fornecedor_pagador[$i],
-                            'numero_compra' => $request->numero_compra[$i],
-                            'valor' => $request->valor_pedagio[$i]
-                        ]);
-                    }
-                }
-
-                for ($i = 0; $i < sizeof($request->tp_und_transp_row); $i++) {
-                    $info = InfoDescarga::create([
-                        'mdfe_id' => $mdfe->id,
-                        'tp_unid_transp' => $request->tp_und_transp_row[$i],
-                        'id_unid_transp' => $request->id_und_transp_row[$i],
-                        'quantidade_rateio' => __convert_value_bd($request->quantidade_rateio_row[$i]),
-                        'cidade_id' => $request->municipio_descarregamento_row[$i]
-                    ]);
-
-                    if ($request->chave_cte_row[$i]) {
-                        CTeDescarga::create([
-                            'info_id' => $info->id,
-                            'chave' => $request->chave_cte_row[$i],
-                            'seg_cod_barras' => ''
-                        ]);
-                    }
-
-                    if ($request->chave_nfe_row[$i]) {
-                        NFeDescarga::create([
-                            'info_id' => $info->id,
-                            'chave' =>  $request->chave_nfe_row[$i],
-                            'seg_cod_barras' => ''
-                        ]);
-                    }
-
-                    $lacres = json_decode($request->lacres_transporte_row[$i]);
-                    foreach ($lacres as $l) {
-                        LacreTransporte::create([
-                            'info_id' => $info->id,
-                            'numero' => $l
-                        ]);
-                    }
-
-                    $lacres = json_decode($request->lacres_unidade_row[$i]);
-                    foreach ($lacres as $l) {
-                        LacreUnidadeCarga::create([
-                            'info_id' => $info->id,
-                            'numero' => $l
-                        ]);
-                    }
-
-                    if ($request->quantidade_rateio_carga_row[$i] != "") {
-                        UnidadeCarga::create([
-                            'info_id' => $info->id,
-                            'id_unidade_carga' => $request->id_und_transp_row[$i],
-                            'quantidade_rateio' => __convert_value_bd($request->quantidade_rateio_carga_row[$i])
-                        ]);
-                    }
-                }
                 $descricaoLog = "Número: $mdfe->mdfe_numero - R$ " . __moeda($mdfe->valor_carga);
                 __createLog($request->empresa_id, 'MDFe', 'cadastrar', $descricaoLog);
             });
-session()->flash("flash_success", "MDFe adicionada com sucesso!");
-} catch (\Exception $e) {
-    // echo $e->getMessage() . '<br>' . $e->getLine();
-    // die;
-    __createLog(request()->empresa_id, 'MDFe', 'erro', $e->getMessage());
-    session()->flash("flash_erro", "Algo deu errado: " . $e->getMessage());
-}
-return redirect()->route('mdfe.index');
-}
+            session()->flash("flash_success", "MDF-e criada com sucesso!");
+        } catch (\Exception $e) {
+            __createLog(request()->empresa_id, 'MDFe', 'erro', $e->getMessage());
+            session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
+        }
+        return redirect()->route('mdfe.index');
+    }
 
     /**
      * Display the specified resource.
@@ -272,12 +354,23 @@ return redirect()->route('mdfe.index');
      */
     public function edit($id)
     {
-        $item = Mdfe::findOrFail($id);
+        $item = Mdfe::with([
+            'infoDescarga.nfe',
+            'infoDescarga.cte',
+            'infoDescarga.cidade',
+            'municipiosCarregamento.cidade',
+            'percurso',
+            'veiculoTracao.funcionario',
+            'veiculoReboque'
+        ])->findOrFail($id);
 
-        $veiculos = Veiculo::where('empresa_id', request()->empresa_id)
+        $veiculos = Veiculo::with('funcionario')->where('empresa_id', request()->empresa_id)
+        ->where('status', 1)->get();
+        $funcionarios = Funcionario::where('empresa_id', request()->empresa_id)
         ->where('status', 1)->get();
         $cidades = Cidade::all();
-        return view('mdfe.edit', compact('item', 'veiculos', 'cidades'));
+        $empresa = Empresa::findOrFail(request()->empresa_id);
+        return view('mdfe.edit', compact('item', 'veiculos', 'funcionarios', 'cidades', 'empresa'));
     }
 
     /**
@@ -290,16 +383,17 @@ return redirect()->route('mdfe.index');
         $item = Mdfe::findOrFail($id);
         try {
             $request->merge([
+                'cnpj_contratante' => $request->cnpj_contratante ?? '',
+                'carga_posterior' => $request->carga_posterior ? 1 : 0,
+                'lac_rodo' => $request->lac_rodo ?? '0',
                 'seguradora_nome' => $request->seguradora_nome ?? '',
                 'seguradora_cnpj' => $request->seguradora_cnpj ?? '',
                 'numero_apolice' => $request->numero_apolice ?? '',
                 'numero_averbacao' => $request->numero_averbacao ?? '',
                 'numero_compra' => $request->numero_compra ?? 0,
-                'valor' => $request->valor ?? 0,
-                'encerrado' => false,
-                'chave' => '',
-                'seg_cod_barras' => '',
-                'protocolo' => '',
+                'chave' => $request->chave ?? $item->chave ?? '',
+                'seg_cod_barras' => $request->seg_cod_barras ?? $item->seg_cod_barras ?? '',
+                'protocolo' => $request->protocolo ?? $item->protocolo ?? '',
                 'valor_carga' => __convert_value_bd($request->valor_carga),
                 'latitude_carregamento' => $request->latitude_carregamento ?? '',
                 'longitude_carregamento' => $request->longitude_carregamento ?? '',
@@ -308,123 +402,32 @@ return redirect()->route('mdfe.index');
                 'longitude_descarregamento' => $request->longitude_descarregamento ?? '',
                 'quantidade_rateio' => __convert_value_bd($request->quantidade_rateio),
                 'quantidade_rateio_carga' => __convert_value_bd($request->quantidade_rateio_carga),
-                'quantidade_carga' => $request->quantidade_carga,
+                'quantidade_carga' => __convert_value_bd($request->quantidade_carga),
+                'unidade_medida' => $request->unidade_medida ?? 'KG',
+                'tp_emit' => $request->tp_emit ?? ($request->tp_transp == '2' ? '1' : '2'),
+                'tp_transp' => $request->tp_transp ?? 1,
+                'tipo_modal' => $request->modal_tipo ?? $request->tipo_modal ?? '1',
                 'produto_pred_nome' => $request->produto_pred_nome ?? '',
                 'produto_pred_ncm' => preg_replace('/[^0-9]/', '', $request->produto_pred_ncm ?? ''),
                 'produto_pred_cod_barras' => $request->produto_pred_cod_barras ?? '',
                 'cep_carrega' => $request->cep_carrega ?? '',
-                'tp_carga' => $request->tp_carga ?? '',
+                'tp_carga' => $request->tp_carga ?? '05',
+                'condutor_nome' => $request->condutor_nome ?? '',
+                'condutor_cpf' => $request->condutor_cpf ?? '',
                 'info_complementar' => $request->info_complementar ?? '',
                 'info_adicional_fisco' => $request->info_adicional_fisco ?? '',
-                'filial_id' => $request->filial_id != -1 ? $request->filial_id : null
+                'local_id' => $request->local_id ? $request->local_id : ($request->filial_id != -1 && $request->filial_id ? $request->filial_id : $item->local_id)
             ]);
             $item->fill($request->all())->save();
 
-            $item->municipiosCarregamento()->delete();
-            $item->ciots()->delete();
-            $item->percurso()->delete();
-            $item->valesPedagio()->delete();
-            $item->infoDescarga()->delete();
-            $item->infoDescarga()->delete();
+            $this->sincronizaRelacionamentos($item, $request);
 
-            for ($i = 0; $i < sizeof($request->municipiosCarregamento); $i++) {
-                MunicipioCarregamento::create([
-                    'mdfe_id' => $item->id,
-                    'cidade_id' => $request->municipiosCarregamento[$i]
-                ]);
-            }
-
-            for ($i = 0; $i < sizeof($request->codigo_ciot); $i++) {
-                if ($request->codigo_ciot[$i] != null) {
-                    Ciot::create([
-                        'mdfe_id' => $item->id,
-                        'cpf_cnpj' => $request->cpf_cnpj[$i],
-                        'codigo' => $request->codigo_ciot[$i]
-                    ]);
-                }
-            }
-
-            if ($request->uf != null) {
-                for ($i = 0; $i < sizeof($request->uf); $i++) {
-                    if ($request->uf[$i]) {
-                        Percurso::create([
-                            'uf' => $request->uf[$i],
-                            'mdfe_id' => $item->id
-                        ]);
-                    }
-                }
-            }
-
-            for ($i = 0; $i < sizeof($request->cnpj_fornecedor); $i++) {
-                if ($request->cnpj_fornecedor[$i] != null) {
-                    ValePedagio::create([
-                        'mdfe_id' => $item->id,
-                        'cnpj_fornecedor' => $request->cnpj_fornecedor[$i],
-                        'cnpj_fornecedor_pagador' => $request->cnpj_fornecedor_pagador[$i],
-                        'numero_compra' => $request->numero_compra[$i],
-                        'valor' => __convert_value_bd($request->valor_pedagio[$i])
-                    ]);
-                }
-            }
-
-            for ($i = 0; $i < sizeof($request->tp_und_transp_row); $i++) {
-
-                $info = InfoDescarga::create([
-                    'mdfe_id' => $item->id,
-                    'tp_unid_transp' => $request->tp_und_transp_row[$i],
-                    'id_unid_transp' => $request->id_und_transp_row[$i],
-                    'quantidade_rateio' => __convert_value_bd($request->quantidade_rateio_row[$i]),
-                    'cidade_id' => $request->municipio_descarregamento_row[$i]
-                ]);
-
-                if ($request->chave_cte_row[$i]) {
-                    CTeDescarga::create([
-                        'info_id' => $info->id,
-                        'chave' => $request->chave_cte_row[$i],
-                        'seg_cod_barras' => ''
-                    ]);
-                }
-
-                if ($request->chave_nfe_row[$i]) {
-                    NFeDescarga::create([
-                        'info_id' => $info->id,
-                        'chave' =>  $request->chave_nfe_row[$i],
-                        'seg_cod_barras' => ''
-                    ]);
-                }
-
-                $lacres = json_decode($request->lacres_transporte_row[$i]);
-                foreach ($lacres as $l) {
-                    LacreTransporte::create([
-                        'info_id' => $info->id,
-                        'numero' => $l
-                    ]);
-                }
-
-                $lacres = json_decode($request->lacres_unidade_row[$i]);
-                foreach ($lacres as $l) {
-                    LacreUnidadeCarga::create([
-                        'info_id' => $info->id,
-                        'numero' => $l
-                    ]);
-                }
-
-                if ($request->quantidade_rateio_carga_row[$i] != "") {
-                    UnidadeCarga::create([
-                        'info_id' => $info->id,
-                        'id_unidade_carga' => $request->id_und_transp_row[$i],
-                        'quantidade_rateio' => __convert_value_bd($request->quantidade_rateio_carga_row[$i])
-                    ]);
-                }
-            }
             $descricaoLog = "Número: $item->mdfe_numero - R$ " . __moeda($item->valor_carga);
             __createLog($request->empresa_id, 'MDFe', 'editar', $descricaoLog);
-            session()->flash("flash_success", "Mdfe atualizada com sucesso!");
+            session()->flash("flash_success", "MDF-e atualizada com sucesso!");
         } catch (\Exception $e) {
             __createLog(request()->empresa_id, 'MDFe', 'erro', $e->getMessage());
-            // echo $e->getMessage() . '<br>' . $e->getLine();
-            // die;
-            session()->flash("flash_error", "Algo deu errado" . $e->getMessage());
+            session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
         }
         return redirect()->route('mdfe.index');
     }
@@ -506,7 +509,7 @@ return redirect()->route('mdfe.index');
         $cnpj = preg_replace('/[^0-9]/', '', $config->cpf_cnpj);
 
         $mdfe_service = new MDFeService([
-            "atualizacao" => date('Y-m-d h:i:s'),
+            "atualizacao" => date('Y-m-d H:i:s'),
             "tpAmb" => (int)$config->ambiente,
             "razaosocial" => $config->nome,
             "siglaUF" => $config->cidade->uf,
@@ -519,35 +522,38 @@ return redirect()->route('mdfe.index');
         $resultados = $mdfe_service->naoEncerrados();
         $naoEncerrados = [];
 
-        if ($resultados['xMotivo'] != 'Consulta não encerrados não localizou MDF-e nessa situação') {
+        if (is_array($resultados) && isset($resultados['xMotivo']) && $resultados['xMotivo'] != 'Consulta não encerrados não localizou MDF-e nessa situação') {
             if (isset($resultados['infMDFe'])) {
-                // if(sizeof($resultados['infMDFe']) == 2){
-                if (!isset($resultados['infMDFe'][1])) {
+                if (!isset($resultados['infMDFe'][0])) {
                     $array = [
-                        'chave' => $resultados['infMDFe']['chMDFe'],
-                        'protocolo' => $resultados['infMDFe']['nProt'],
+                        'chave' => $resultados['infMDFe']['chMDFe'] ?? '',
+                        'protocolo' => $resultados['infMDFe']['nProt'] ?? '',
                         'numero' => 0,
                         'data' => '',
                         'local' => ''
                     ];
-                    array_push($naoEncerrados, $array);
+                    if ($array['chave']) {
+                        array_push($naoEncerrados, $array);
+                    }
                 } else {
                     foreach ($resultados['infMDFe'] as $inf) {
-
                         $array = [
-                            'chave' => $inf['chMDFe'],
-                            'protocolo' => $inf['nProt'],
+                            'chave' => $inf['chMDFe'] ?? '',
+                            'protocolo' => $inf['nProt'] ?? '',
                             'numero' => 0,
                             'data' => '',
                             'local' => ''
                         ];
-                        array_push($naoEncerrados, $array);
+                        if ($array['chave']) {
+                            array_push($naoEncerrados, $array);
+                        }
                     }
                 }
             }
         }
         $data = $this->percorreDatabaseNaoEncerrados($naoEncerrados);
-        return view('mdfe.nao_encerrados', compact('data'));
+        $cidades = Cidade::all();
+        return view('mdfe.nao_encerrados', compact('data', 'cidades'));
     }
 
     private function percorreDatabaseNaoEncerrados($naoEncerrados)
@@ -558,10 +564,9 @@ return redirect()->route('mdfe.index');
             ->first();
 
             if ($mdfe != null) {
-
                 $naoEncerrados[$aux]['data'] = $mdfe->created_at;
                 $naoEncerrados[$aux]['numero'] = $mdfe->mdfe_numero;
-                $naoEncerrados[$aux]['local'] = $mdfe->filial ? $mdfe->filial->descricao : 'Matriz';
+                $naoEncerrados[$aux]['local'] = $mdfe->localizacao ? $mdfe->localizacao->descricao : 'Matriz';
             }
         }
         return $naoEncerrados;
@@ -573,7 +578,7 @@ return redirect()->route('mdfe.index');
         ->first();
         $cnpj = preg_replace('/[^0-9]/', '', $config->cpf_cnpj);
         $mdfe_service = new MDFeService([
-            "atualizacao" => date('Y-m-d h:i:s'),
+            "atualizacao" => date('Y-m-d H:i:s'),
             "tpAmb" => (int)$config->ambiente,
             "razaosocial" => $config->nome,
             "siglaUF" => $config->cidade->uf,
@@ -583,46 +588,145 @@ return redirect()->route('mdfe.index');
             "schemes" => "PL_MDFe_300a",
             "versao" => '3.00'
         ], $config);
+
         $mdfe = Mdfe::where('chave', $request->chave)
         ->where('empresa_id', request()->empresa_id)
         ->first();
-        $resp = $mdfe_service->encerrar($request->chave, $request->protocolo);
-        if ($resp->infEvento->cStat != 135) {
-            session()->flash("flash_error", $resp->infEvento->xMotivo);
+
+        $cUF = null;
+        $cMun = null;
+        if ($request->municipio_encerramento) {
+            $cidadeEnc = Cidade::find($request->municipio_encerramento);
+            if ($cidadeEnc) {
+                $cUF = Empresa::getCodUF($cidadeEnc->uf);
+                $cMun = $cidadeEnc->codigo;
+            }
+        }
+
+        $resp = $mdfe_service->encerrar($request->chave, $request->protocolo, $cUF, $cMun);
+        
+        $cStat = $resp->infEvento->cStat ?? null;
+        $xMotivo = $resp->infEvento->xMotivo ?? 'Sem resposta da SEFAZ';
+
+        if ($cStat != 135) {
+            if ($request->ajax()) {
+                return response()->json(['status' => 'erro', 'mensagem' => "[$cStat] $xMotivo"], 400);
+            }
+            session()->flash("flash_error", "[$cStat] $xMotivo");
             return redirect()->back();
         }
+
         if ($mdfe != null) {
             $mdfe->encerrado = true;
             $mdfe->save();
         }
-        session()->flash("flash_success", $resp->infEvento->xMotivo);
+
+        if ($request->ajax()) {
+            return response()->json(['status' => 'sucesso', 'mensagem' => "[$cStat] $xMotivo"], 200);
+        }
+
+        session()->flash("flash_success", "[$cStat] $xMotivo");
         return redirect()->back();
     }
 
     public function imprimir($id)
     {
         $item = Mdfe::findOrFail($id);
-        $xml = file_get_contents(public_path('xml_mdfe/') . $item->chave . '.xml');
+        $xmlPath = public_path('xml_mdfe/') . $item->chave . '.xml';
 
-        $config = Empresa::where('id', $item->empresa_id)->first();
+        if (!file_exists($xmlPath)) {
+            // Tenta recuperar/reconstruir o XML autorizado diretamente da SEFAZ
+            if ($item->estado_emissao == 'aprovado' && $item->chave) {
+                try {
+                    $config = Empresa::where('id', $item->empresa_id)->first();
+                    $config = __objetoParaEmissao($config, $item->local_id);
+                    if ($config) {
+                        $cnpj = preg_replace('/[^0-9]/', '', $config->cpf_cnpj);
+                        $mdfe_service = new MDFeService([
+                            "atualizacao" => date('Y-m-d H:i:s'),
+                            "tpAmb" => (int)$config->ambiente,
+                            "razaosocial" => $config->nome,
+                            "siglaUF" => $config->cidade->uf,
+                            "cnpj" => $cnpj,
+                            "inscricaomunicipal" => $config->inscricao_municipal,
+                            "codigomunicipio" => $config->cidade->codigo,
+                            "schemes" => "PL_MDFe_300a",
+                            "versao" => '3.00'
+                        ], $config);
 
-        if ($config->logo) {
-            $logo = 'data://text/plain;base64,' . base64_encode(file_get_contents(@public_path('uploads/logos/' . $config->logo)));
-        } else {
-            $logo = null;
+                        $mdfe_service->recuperarXmlAutorizado($item);
+                    }
+                } catch (\Exception $e) {
+                    // segue para verificação do arquivo
+                }
+            }
         }
 
-        $damdfe = new Damdfe($xml);
-        $pdf = $damdfe->render($logo);
-        return response($pdf)
-        ->header('Content-Type', 'application/pdf');
+        if (!file_exists($xmlPath)) {
+            session()->flash("flash_error", "Arquivo XML do MDF-e não encontrado no servidor ({$item->chave}.xml).");
+            return redirect()->back();
+        }
+
+        $xml = file_get_contents($xmlPath);
+        $config = Empresa::where('id', $item->empresa_id)->first();
+
+        $logo = null;
+        if ($config && $config->logo) {
+            $logoPath = public_path('uploads/logos/' . $config->logo);
+            if (file_exists($logoPath)) {
+                $logo = 'data://text/plain;base64,' . base64_encode(file_get_contents($logoPath));
+            }
+        }
+
+        try {
+            $damdfe = new Damdfe($xml);
+            $pdf = $damdfe->render($logo);
+            return response($pdf)
+                ->header('Content-Type', 'application/pdf');
+        } catch (\Exception $e) {
+            session()->flash("flash_error", "Erro ao gerar DAMDFe: " . $e->getMessage());
+            return redirect()->back();
+        }
     }
 
     public function download($id)
     {
         $item = Mdfe::findOrFail($id);
-        $xml = (public_path('xml_mdfe/') . $item->chave . '.xml');
-        return response()->download($xml);
+        $xmlPath = public_path('xml_mdfe/') . $item->chave . '.xml';
+
+        if (!file_exists($xmlPath)) {
+            if ($item->estado_emissao == 'aprovado' && $item->chave) {
+                try {
+                    $config = Empresa::where('id', $item->empresa_id)->first();
+                    $config = __objetoParaEmissao($config, $item->local_id);
+                    if ($config) {
+                        $cnpj = preg_replace('/[^0-9]/', '', $config->cpf_cnpj);
+                        $mdfe_service = new MDFeService([
+                            "atualizacao" => date('Y-m-d H:i:s'),
+                            "tpAmb" => (int)$config->ambiente,
+                            "razaosocial" => $config->nome,
+                            "siglaUF" => $config->cidade->uf,
+                            "cnpj" => $cnpj,
+                            "inscricaomunicipal" => $config->inscricao_municipal,
+                            "codigomunicipio" => $config->cidade->codigo,
+                            "schemes" => "PL_MDFe_300a",
+                            "versao" => '3.00'
+                        ], $config);
+
+                        $mdfe_service->recuperarXmlAutorizado($item);
+                    }
+                } catch (\Exception $e) {
+                    // segue para verificação
+                }
+            }
+        }
+
+        if (!file_exists($xmlPath)) {
+            session()->flash("flash_error", "Arquivo XML do MDF-e não encontrado no servidor.");
+            return redirect()->back();
+        }
+
+        return response()->download($xmlPath);
     }
 
     public function createByVendas($ids)
@@ -679,18 +783,25 @@ return redirect()->route('mdfe.index');
     public function imprimirCancela($id)
     {
         $item = Mdfe::findOrFail($id);
-        $xml = file_get_contents(public_path('xml_mdfe_cancelada/') . $item->chave . '.xml');
+        $xmlPath = public_path('xml_mdfe_cancelada/') . $item->chave . '.xml';
+
+        if (!file_exists($xmlPath)) {
+            session()->flash("flash_error", "Arquivo XML de cancelamento não encontrado no servidor.");
+            return redirect()->back();
+        }
+
+        $xml = file_get_contents($xmlPath);
         $dadosEmitente = $this->getEmitente($item->empresa);
 
         try {
             $daevento = new Daevento($xml, $dadosEmitente);
             $daevento->debugMode(true);
             $pdf = $daevento->render();
-            header('Content-Type: application/pdf');
             return response($pdf)
-            ->header('Content-Type', 'application/pdf');
-        } catch (InvalidArgumentException $e) {
-            echo "Ocorreu um erro durante o processamento :" . $e->getMessage();
+                ->header('Content-Type', 'application/pdf');
+        } catch (\Exception $e) {
+            session()->flash("flash_error", "Ocorreu um erro durante o processamento: " . $e->getMessage());
+            return redirect()->back();
         }
     }
 

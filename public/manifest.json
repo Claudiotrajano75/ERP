@@ -1,0 +1,41 @@
+{
+  "name": "ERP Web Gestão Empresarial",
+  "short_name": "ERP Web",
+  "description": "Sistema de Gestão Empresarial, Vendas, PDV, Financeiro e Emissão Fiscal",
+  "start_url": "/home",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/images/logo-sm.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["business", "finance", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Frente de Caixa (PDV)",
+      "url": "/frontbox/create",
+      "description": "Abrir PDV rápido"
+    },
+    {
+      "name": "Faturamento NF-e",
+      "url": "/faturamento-nfe",
+      "description": "Central de Faturamento"
+    },
+    {
+      "name": "Fluxo de Caixa",
+      "url": "/fluxo-caixa",
+      "description": "Projeção Financeira & DRE"
+    }
+  ]
+}

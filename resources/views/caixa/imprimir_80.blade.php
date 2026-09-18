@@ -1,380 +1,433 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-	<style type="text/css">
-		.footer {
-			position: fixed;
-			bottom: 0px;
-			padding: 0;
-		}
-		.footer small{
-			color:grey; 
-			font-size: 10px;
-			text-align: left;
-			margin-top: 100px !important;
-		}
-		body{
-			width: 260px;
-			/*background: #000;*/
-			margin-left: -40px;
-			margin-top: -40px;
-		}
-		.mt-20{
-			margin-top: -20px;
-		}
-		.mt-10{
-			margin-top: -10px;
-		}
-		.mt-25{
-			margin-top: -25px;
-		}
-		table th{
-			font-size: 10px;
-			text-align: left;
-		}
+    <meta charset="UTF-8">
+    <title>Relatório de Caixa</title>
+    <style>
+        @page {
+            margin: 10px 15px 0px 10px !important;
+            padding: 0px !important;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-		table td{
-			font-size: 11px;
-		}
+        body {
+            width: 100%;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 10px;
+            color: #000;
+            line-height: 1.3;
+            padding: 0px;
+        }
 
-		strong{
-			color: #3B4CA7;
-		}
+        /* ─── Cabeçalho ─── */
+        .header {
+            text-align: center;
+            padding-bottom: 6px;
+            border-bottom: 2px dashed #000;
+            margin-bottom: 8px;
+        }
 
-	</style>
+        .header .company {
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .header .cnpj {
+            font-size: 9px;
+            margin-top: 2px;
+        }
+
+        .header .title {
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header .date {
+            font-size: 8px;
+            margin-top: 4px;
+            color: #555;
+        }
+
+        /* ─── Separadores ─── */
+        .separator {
+            border: none;
+            border-top: 1px dashed #000;
+            margin: 6px 0;
+        }
+
+        .separator-double {
+            border: none;
+            border-top: 2px solid #000;
+            margin: 6px 0;
+        }
+
+        /* ─── Seções ─── */
+        .section-title {
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 6px;
+            margin-bottom: 4px;
+        }
+
+        /* ─── Info rows ─── */
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            margin: 2px 0;
+        }
+
+        .info-row .label {
+            color: #555;
+        }
+
+        .info-row .value {
+            font-weight: bold;
+        }
+
+        .info-row .value.green {
+            /* monospace - cor não será visível em impressora monocromática */
+        }
+
+        /* ─── Tabelas ─── */
+        .data-table {
+            width: 100%;
+            margin: 4px 0;
+        }
+
+        .data-table th {
+            font-size: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 2px 0;
+            border-bottom: 1px solid #000;
+            text-align: left;
+        }
+
+        .data-table th:last-child,
+        .data-table td:last-child {
+            text-align: right;
+        }
+
+        .data-table td {
+            font-size: 9px;
+            padding: 2px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+
+        /* ─── Itens compactos ─── */
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            padding: 2px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+
+        .item-row .item-left {
+            flex: 1;
+        }
+
+        .item-row .item-right {
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .item-row .item-date {
+            font-size: 8px;
+            color: #555;
+        }
+
+        .item-row .item-desc {
+            font-size: 8px;
+            color: #333;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ─── Totais ─── */
+        .total-box {
+            border: 1px solid #000;
+            padding: 6px 8px;
+            margin: 6px 0;
+        }
+
+        .total-box .total-title {
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        .total-box .total-amount {
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* ─── Resumo ─── */
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            padding: 2px 0;
+        }
+
+        .summary-row .summary-label {
+            color: #555;
+        }
+
+        .summary-row .summary-value {
+            font-weight: bold;
+        }
+
+        /* ─── Assinatura ─── */
+        .signature {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .signature .line {
+            width: 180px;
+            border-top: 1px solid #000;
+            margin: 0 auto;
+            margin-top: 30px;
+            padding-top: 4px;
+        }
+
+        .signature .name {
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .signature .info {
+            font-size: 8px;
+            color: #555;
+        }
+
+        .empty-text {
+            font-size: 9px;
+            color: #999;
+            font-style: italic;
+        }
+    </style>
 </head>
-<header>
-	<div class="headReport">
-	</div>
-</header>
 <body>
-	<h5 style="text-align:center;" class="mt-10">Relatório de caixa</h5>
-	<h5 style="text-align:center;" class="mt-20">{{ $config->nome_fantasia }}</h5>
-	<h5 style="text-align:center;" class="mt-20">{{ __setMask($config->cpf_cnpj) }}</h5>
-	
-	<table>
-		<tbody>
-			<tr>
-				<td>
-					<h6 style="text-align:left; font-size: 9px;" class="mt-20">Total de vendas: <strong>R$ {{ number_format($item->valor_fechamento, 2, ',', '.') }}</strong></h6>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<h6 style="text-align:left; font-size: 9px;" class="mt-25">Abertura: <strong>{{ __data_pt($item->created_at) }}</strong></h6>
-				</td>
-				<td>
-					<h6 style="margin-left:20px; font-size: 9px;" class="mt-25">Fechamento: <strong>{{ __data_pt($item->updated_at_at) }}</strong></h6>
-				</td>
-			</tr>
 
-		</tbody>
-	</table>
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    {{-- CABEÇALHO --}}
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    <div class="header">
+        <div class="company">{{ $config->nome_fantasia }}</div>
+        <div class="cnpj">{{ __setMask($config->cpf_cnpj) }}</div>
+        <div class="title">Relatório de Caixa</div>
+        <div class="date">{{ date('d/m/Y H:i') }}</div>
+    </div>
 
-	<h6 style="text-align:left; border-top: 1px solid #000;" class="mt-20">Total por tipo de pagamento:</h6>
-	<table>
-		<tbody>
-			@foreach($somaTiposPagamento as $key => $tp)
-			@if($tp > 0)
-			<tr>
-				<td>
-					<h6 style="text-align:left; font-size: 9px; width: 150px;" class="mt-25">{{App\Models\Nfce::getTipoPagamento($key)}}</h6>
-				</td>
-				<td>
-					<h6 style="text-align:left; font-size: 9px;" class="mt-25">R$ {{ __moeda($tp) }}</h6>
-				</td>
-			</tr>
-			@endif
-			@endforeach
-		</tbody>
-	</table>
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    {{-- DADOS DO CAIXA --}}
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    <div class="info-row">
+        <span class="label">Total de vendas:</span>
+        <span class="value">R$ {{ number_format($item->valor_fechamento, 2, ',', '.') }}</span>
+    </div>
+    <div class="info-row">
+        <span class="label">Abertura:</span>
+        <span class="value">{{ __data_pt($item->created_at) }}</span>
+    </div>
+    <div class="info-row">
+        <span class="label">Fechamento:</span>
+        <span class="value">{{ __data_pt($item->updated_at) }}</span>
+    </div>
 
-	<h6 style="text-align:left; border-top: 1px solid #000;" class="mt-20">Vendas:</h6>
-	<table>
-		<tbody>
-			<thead>
-				<tr>
-					<th>
-						<h6 style="text-align:left; font-size: 9px; width: 107px;" class="mt-25">CLIENTE</h6>
-					</th>
+    <hr class="separator-double">
 
-					<th>
-						<h6 style="text-align:left; font-size: 9px; width: 70px;" class="mt-25">DATA</h6>
-					</th>
-					<th>
-						<h6 style="text-align:left; font-size: 9px; width: 100px;" class="mt-25">TIPO DE PAG.</h6>
-					</th>
-				</tr>
-				<tr>
-					<th>
-						<h6 style="text-align:left; font-size: 9px; width: 70px;" class="mt-25">ESTADO</h6>
-					</th>
-					<th>
-						<h6 style="text-align:left; font-size: 9px; width: 70px;" class="mt-25">NFCE/NFE</h6>
-					</th>
-					<th>
-						<h6 style="text-align:left; font-size: 9px; width: 70px;" class="mt-25">VALOR</h6>
-					</th>
-				</tr>
-			</thead>
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    {{-- TOTAL POR TIPO DE PAGAMENTO --}}
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    <div class="section-title">Tipo de Pagamento</div>
+    <div class="data-table">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="text-align:left; font-size:8px; border-bottom:1px solid #000; padding:2px 0;">Tipo</th>
+                    <th style="text-align:right; font-size:8px; border-bottom:1px solid #000; padding:2px 0;">Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($somaTiposPagamento as $key => $tp)
+                    @if($tp > 0)
+                    <tr>
+                        <td style="font-size:9px; padding:2px 0; border-bottom:1px dotted #ccc;">{{ App\Models\Nfce::getTipoPagamento($key) }}</td>
+                        <td style="font-size:9px; padding:2px 0; border-bottom:1px dotted #ccc; text-align:right; font-weight:bold;">R$ {{ __moeda($tp) }}</td>
+                    </tr>
+                    @endif
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 
-			<tbody>
-				@php
-				$soma = 0;
-				@endphp
+    <hr class="separator-double">
 
-				@foreach($vendas as $v)
-				<tr>
-					<td>
-						<h6 style="text-align:left; font-size: 9px; width: 107px;" class="mt-25">{{ $v->cliente->razao_social ?? 'NÃO IDENTIFCADO' }}</h6>
-					</td>
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    {{-- VENDAS --}}
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    @php $soma = 0; @endphp
+    <div class="section-title">Vendas ({{ count($vendas) }})</div>
 
-					<td>
-						<h6 style="text-align:left; font-size: 9px; width: 70px;" class="mt-25">{{ __data_pt($v->created_at) }}</h6>
-					</td>
-					<td>
-						<h6 style="text-align:left; font-size: 9px; width: 100px;" class="mt-25">
-							@if($v->tipo_pagamento == '99')
-							Outros
-							@else
-							{{ $v->tipo_pagamento ? $v->getTipoPagamento($v->tipo_pagamento) : 'Pag Múltiplo'}}
-							@endif
-						</h6>
-					</td>
-				</tr>
+    @foreach($vendas as $v)
+    <div class="item-row">
+        <div class="item-left">
+            <div style="font-size:9px; font-weight:bold;">{{ $v->cliente->razao_social ?? 'NÃO IDENTIFICADO' }}</div>
+            <div class="item-date">{{ __data_pt($v->created_at) }}</div>
+            <div style="font-size:8px; color:#555;">
+                @if($v->tipo_pagamento == '99')
+                    Outros
+                @else
+                    {{ $v->tipo_pagamento ? $v->getTipoPagamento($v->tipo_pagamento) : 'Pag Múltiplo' }}
+                @endif
+                · {{ $v->tipo }}
+                @if($v->estado == 'aprovado' && $v->numero > 0)
+                    · #{{ $v->numero }}
+                @endif
+            </div>
+        </div>
+        <div class="item-right">
+            @if($v->tipo != 'OS')
+                R$ {{ __moeda($v->total) }}
+            @else
+                R$ {{ __moeda($v->valor) }}
+            @endif
+        </div>
+    </div>
+    @php
+        $soma += ($v->tipo != 'OS') ? $v->total : $v->valor;
+    @endphp
+    @endforeach
 
-				<tr>
-					<td>
-						<h6 style="text-align:left; font-size: 9px; width: 107px; border-bottom: 1px solid #999;" class="mt-25">{{ $v->tipo != 'OS' ? $v->estado : '' }}</h6>
-					</td>
-					<td>
-						<h6 style="text-align:left; font-size: 9px; width: 70px; border-bottom: 1px solid #999;" class="mt-25">
-							@if($v->estado == 'aprovado')
-							@if($v->tipo == 'Nfe')
-							{{ $v->numero > 0 ? $v->numero : '--' }}
-							@else
-							{{ $v->numero > 0 ? $v->numero : '--' }}
-							@endif
-							@else
-							--
-							@endif
-						</h6>
-					</td>
-					
-					<td>
-						<h6 style="text-align:left; font-size: 9px; width: 70px; border-bottom: 1px solid #999;" class="mt-25">
-							R$@if($v->tipo != 'OS')
-							{{ __moeda($v->total) }}
-							@else
-							{{ __moeda($v->valor) }}
-							@endif
-						</h6>
-					</td>
-				</tr>
+    <div class="total-box">
+        <div class="total-title">Total Geral</div>
+        <div class="total-amount">R$ {{ number_format($soma, 2, ',', '.') }}</div>
+    </div>
 
-				@php
-				if($v->tipo != 'OS'){
-					$soma += $v->total;
-				}else{
-					$soma += $v->valor;
-				}
-				@endphp
-				@endforeach
-			</tbody>
-		</tbody>
-	</table>
-	<table>
-		<tr>
-			<td>
-				<h5 class="mt-25">Soma: <strong style="font-size: 14px">R$ {{number_format($soma, 2, ',', '.')}}</strong></h5>
-			</td>
-		</tr>
-	</table>
+    <hr class="separator-double">
 
-	@php
-	$somaSuprimento = 0;
-	$somaSangria = 0;
-	@endphp
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    {{-- SUPRIMENTOS --}}
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    @php $somaSuprimento = 0; @endphp
+    <div class="section-title">Suprimentos</div>
 
-	<h6 style="text-align:left; border-top: 1px solid #000;" class="mt-20">Suprimentos:</h6>
-	<table>
-		<tbody>
-			@if(sizeof($suprimentos) > 0)
-			@foreach($suprimentos as $s)
+    @if(sizeof($suprimentos) > 0)
+        @foreach($suprimentos as $s)
+            @php $somaSuprimento += $s->valor; @endphp
+            <div class="item-row">
+                <div class="item-left">
+                    <div class="item-date">{{ __data_pt($s->created_at) }}</div>
+                    <div class="item-desc">{{ $s->observacao }}</div>
+                </div>
+                <div class="item-right">R$ {{ __moeda($s->valor) }}</div>
+            </div>
+        @endforeach
+    @else
+        <div class="empty-text">Nenhum suprimento registrado.</div>
+    @endif
 
-			@php
-			$somaSuprimento += $s->valor;
-			@endphp 
-			<tr>
-				<td>
-					<h6 style="text-align:left; font-size: 9px; width: 150px;" class="mt-25">
-						{{ __data_pt($s->created_at) }}
-					</h6>
-				</td>
-				<td>
-					<h6 style="text-align:left; font-size: 9px;" class="mt-25">R$ {{ __moeda($s->valor) }}</h6>
-				</td>
-			</tr>
+    <hr class="separator">
 
-			@endforeach
-			@else
-			<tr>
-				<td>
-					<h6 style="text-align:left; font-size: 9px; width: 150px;" class="mt-25">
-						--
-					</h6>
-				</td>
-				<td>
-					<h6 style="text-align:left; font-size: 9px;" class="mt-25">R$ {{ __moeda(0) }}</h6>
-				</td>
-			</tr>
-			@endif
-		</tbody>
-	</table>
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    {{-- SANGRIAS --}}
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    @php $somaSangria = 0; @endphp
+    <div class="section-title">Sangrias</div>
 
-	<h6 style="text-align:left; border-top: 1px solid #000;" class="mt-20">Sangrias:</h6>
-	<table>
-		<tbody>
-			@if(sizeof($sangrias) > 0)
-			@foreach($sangrias as $s)
+    @if(sizeof($sangrias) > 0)
+        @foreach($sangrias as $s)
+            @php $somaSangria += $s->valor; @endphp
+            <div class="item-row">
+                <div class="item-left">
+                    <div class="item-date">{{ __data_pt($s->created_at) }}</div>
+                    <div class="item-desc">{{ $s->observacao }}</div>
+                </div>
+                <div class="item-right">R$ {{ __moeda($s->valor) }}</div>
+            </div>
+        @endforeach
+    @else
+        <div class="empty-text">Nenhuma sangria registrada.</div>
+    @endif
 
-			@php
-			$somaSangria += $s->valor;
-			@endphp
-			<tr>
-				<td>
-					<h6 style="text-align:left; font-size: 9px; width: 150px;" class="mt-25">
-						{{ __data_pt($s->created_at) }}
-					</h6>
-				</td>
-				<td>
-					<h6 style="text-align:left; font-size: 9px;" class="mt-25">R$ {{ __moeda($s->valor) }}</h6>
-				</td>
-			</tr>
+    <hr class="separator-double">
 
-			@endforeach
-			@else
-			<tr>
-				<td>
-					<h6 style="text-align:left; font-size: 9px; width: 150px;" class="mt-25">
-						--
-					</h6>
-				</td>
-				<td>
-					<h6 style="text-align:left; font-size: 9px;" class="mt-25">R$ {{ __moeda(0) }}</h6>
-				</td>
-			</tr>
-			@endif
-		</tbody>
-	</table>
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    {{-- RESUMO FINANCEIRO --}}
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    <div class="section-title">Resumo Financeiro</div>
 
-	<table>
-		<tbody>
-			<tr>
-				<td style="width: 115px;">
-					<h6 style="text-align:left; font-size: 9px;" class="mt-20">
-						Soma de vendas: <strong>R$ {{ __moeda($soma) }}</strong>
-					</h6>
-				</td>
-				<td style="width: 130px;">
-					<h6 style="float: right; font-size: 9px;" class="mt-20">Soma de sangria: 
-						<strong>R$ {{ __moeda($somaSangria) }}</strong>
-					</h6>
-				</td>
-			</tr>
-			<tr>
-				<td style="width: 115px;">
-					<h6 style="text-align:left; font-size: 9px;" class="mt-20">
-						Soma de suprimento: <strong>R$ {{ __moeda($somaSuprimento) }}</strong>
-					</h6>
-				</td>
-				<td style="width: 130px;">
-					<h6 style="float: right; font-size: 9px;" class="mt-20">Valor em caixa: 
-						<strong>R$ {{ __moeda($somaSuprimento + $soma - $somaSangria) }}</strong>
-					</h6>
-				</td>
-			</tr>
-			<tr>
-				<td style="width: 115px;">
-					<h6 style="text-align:left; font-size: 9px;" class="mt-20">
-						Contagem gaveta: <strong>R$ {{ __moeda($item->valor_dinheiro) }}</strong>
-					</h6>
-				</td>
-				<td style="width: 130px;">
-					<h6 style="float: right; font-size: 9px;" class="mt-20">Soma de serviços: 
-						<strong>R$ {{ __moeda($somaServicos) }}</strong>
-					</h6>
-				</td>
-			</tr>
+    <div class="summary-row">
+        <span class="summary-label">Vendas:</span>
+        <span class="summary-value">R$ {{ __moeda($soma) }}</span>
+    </div>
+    <div class="summary-row">
+        <span class="summary-label">Sangrias:</span>
+        <span class="summary-value">R$ {{ __moeda($somaSangria) }}</span>
+    </div>
+    <div class="summary-row">
+        <span class="summary-label">Suprimentos:</span>
+        <span class="summary-value">R$ {{ __moeda($somaSuprimento) }}</span>
+    </div>
+    <div class="summary-row" style="border-top: 1px solid #000; padding-top: 4px; margin-top: 4px;">
+        <span class="summary-label" style="font-weight:bold;">Valor em Caixa:</span>
+        <span class="summary-value" style="font-size: 11px;">R$ {{ __moeda($somaSuprimento + $soma - $somaSangria) }}</span>
+    </div>
+    <div class="summary-row">
+        <span class="summary-label">Contagem Gaveta:</span>
+        <span class="summary-value">R$ {{ __moeda($item->valor_dinheiro) }}</span>
+    </div>
+    <div class="summary-row">
+        <span class="summary-label">Serviços:</span>
+        <span class="summary-value">R$ {{ __moeda($somaServicos) }}</span>
+    </div>
 
-		</tbody>
-	</table>
-	<h6 style="text-align:left; border-top: 1px solid #000;" class="mt-10">PRODUTO VENDIDOS:</h6>
-	<table>
+    <hr class="separator-double">
 
-		<thead>
-			<tr>
-				<th>
-					<h6 style="text-align:left; font-size: 9px; width: 147px;" class="mt-25">PRODUTO</h6>
-				</th>
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    {{-- PRODUTOS VENDIDOS --}}
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    <div class="section-title">Produtos Vendidos</div>
 
-				<th>
-					<h6 style="text-align:left; font-size: 9px; width: 107px;" class="mt-25">QUANTIDADE</h6>
-				</th>
+    @foreach($produtos as $p)
+    <div class="item-row">
+        <div class="item-left">
+            <div style="font-size:9px;">{{ $p['nome'] }}</div>
+            <div style="font-size:8px; color:#555;">Qtd: {{ $p['quantidade'] }}</div>
+        </div>
+        <div class="item-right" style="text-align:right;">
+            <div style="font-size:9px;">Venda: R$ {{ __moeda($p['valor_venda']) }}</div>
+            <div style="font-size:8px; color:#555;">Compra: R$ {{ __moeda($p['valor_compra']) }}</div>
+        </div>
+    </div>
+    @endforeach
 
-			</tr>
-			<tr>
-				<th>
-					<h6 style="text-align:left; font-size: 9px; width: 127px;" class="mt-25">VALOR VENDA</h6>
-				</th>
-				<th>
-					<h6 style="text-align:left; font-size: 9px; width: 107px;" class="mt-25">VALOR COMPRA</h6>
-				</th>
-
-			</tr>
-		</thead>
-		<tbody>
-			@foreach($produtos as $p)
-			<tr>
-				<td>
-					<h6 style="text-align:left; font-size: 9px; width: 147px;" class="mt-25">
-						{{ $p['nome'] }}
-					</h6>
-				</td>
-				<td>
-					<h6 style="text-align:left; font-size: 9px; width: 107px;" class="mt-25">
-						{{ $p['quantidade'] }}
-					</h6>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<h6 style="text-align:left; font-size: 9px; width: 147px; border-bottom: 1px solid #999;" class="mt-25">
-						{{ __moeda($p['valor_venda']) }}
-					</h6>
-				</td>
-				<td>
-					<h6 style="text-align:left; font-size: 9px; width: 107px; border-bottom: 1px solid #999;" class="mt-25">
-						{{ __moeda($p['valor_compra']) }}
-					</h6>
-				</td>
-			</tr>
-			@endforeach
-		</tbody>
-
-	</table>
-	<br>
-	<table>
-        <tr>
-            <td>
-                ________________________________________
-            </td>
-        </tr>
-        <tr>
-            <td>
-                {{$usuario->name}} - {{ date('d/m/Y H:i') }}
-            </td>
-        </tr>
-    </table>
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    {{-- ASSINATURA --}}
+    {{-- ═══════════════════════════════════════════════════════════ --}}
+    <div class="signature">
+        <div class="line"></div>
+        <div class="name">{{ $usuario->name }}</div>
+        <div class="info">Operador(a) — {{ date('d/m/Y H:i') }}</div>
+    </div>
 
 </body>
+</html>

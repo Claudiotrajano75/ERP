@@ -3,6 +3,9 @@
 /.env
 /.idea
 /.vscode
+/.phpunit.result.cache
+
+# Laravel Storage & Cache
 /storage/framework/cache/data/*
 /storage/framework/cache/data
 /storage/framework/sessions/*
@@ -14,9 +17,63 @@
 /public/storage
 /public/hot
 /public/build
+
+# Sistema Operacional e Temporários
 .DS_Store
 Thumbs.db
 *.log
 /__MACOSX
 nul
 *.zip
+
+# ─── Pastas de Documentos Fiscais Dinâmicos (Produção) ───
+/public/xml_cte/*
+/public/xml_cte_cancelada/*
+/public/xml_cte_correcao/*
+/public/xml_cte_correcao_os/*
+/public/xml_cte_os/*
+/public/xml_cte_os_cancelada/*
+/public/xml_dfe/*
+/public/xml_entrada/*
+/public/xml_filtros/*
+/public/xml_mdfe/*
+/public/xml_mdfe_cancelada/*
+/public/xml_mdfe_correcao/*
+/public/xml_nfce/*
+/public/xml_nfce_cancelada/*
+/public/xml_nfce_contigencia/*
+/public/xml_nfe/*
+/public/xml_nfe_cancelada/*
+/public/xml_nfe_correcao/*
+/public/xml_nota_servico/*
+/public/xml_nota_servico_cancelada/*
+
+# PDFs Fiscais e Temporários
+/public/danfe/*
+/public/danfe_cancelamento/*
+/public/danfe_correcao/*
+/public/danfe_temp/*
+/public/danfce/*
+/public/dacte/*
+/public/dacte_cancelamento/*
+/public/dacte_os/*
+/public/dacte_temp/*
+/public/dacte_temp_os/*
+/public/nfse_temp/*
+
+# ─── Uploads e Arquivos de Clientes (Produção) ───
+/public/uploads/**
+/public/uploads/*
+/public/uploadsimage_temp/**
+/public/uploadsimage_temp/*
+/public/logos/*
+/public/food-files/*
+/public/files/*
+/public/boletos_pdf/*
+/public/remessas_boleto/*
+/public/sintegra_files/*
+/public/sped_files/*
+/public/tef_comprovante/*
+/public/zips/*
+/public/extract/*
+/public/barcode/*

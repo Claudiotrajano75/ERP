@@ -1,86 +1,53 @@
-@extends('layouts.app', ['title' => 'MDF-e - Documentos não encerrados'])
-
-@section('css')
-<style>
-/* ─── Header Gradiente ─── */
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.6) !important; font-weight: 400; }
-.modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-.modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
-
-/* ─── Premium Table ─── */
-.modulo-table-wrap { border-radius: 12px; border: 1px solid #eef0f5; overflow: hidden; }
-.modulo-table-wrap table { margin-bottom: 0; }
-.modulo-table-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding: 12px 14px; border-bottom: 2px solid #e8eaf6; white-space: nowrap; }
-.modulo-table-wrap tbody td { padding: 12px 14px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; transition: background 0.15s ease; font-size: 13px; }
-.modulo-table-wrap tbody tr { transition: all 0.15s ease; }
-.modulo-table-wrap tbody tr:hover { background: #f5f6fe; }
-.modulo-table-wrap tbody tr:last-child td { border-bottom: none; }
-
-/* ─── Empty State ─── */
-.modulo-empty { padding: 48px 20px; text-align: center; }
-.modulo-empty i { font-size: 48px; color: #c5cae9; margin-bottom: 12px; display: block; }
-.modulo-empty p { color: #9e9eb8; font-size: 14px; margin: 0; }
-</style>
-@endsection
+@extends('layouts.app', ['title' => 'MDF-e — Documentos Não Encerrados'])
 
 @section('content')
-<div class="mt-3 text-dark">
+<div class="mt-3">
     <div class="row">
-        <div class="card border-0 shadow-sm text-dark">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
 
-            {{-- ═══ CABEÇALHO PREMIUM ═══ --}}
-            <div class="card-header modulo-header-gradient py-3 px-4">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div>
-                        <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
-                            <i class="ri-alert-line"></i>
-                            MDF-e — Não Encerrados
-                        </h4>
-                        <p class="text-muted mb-0 modulo-subtitle fs-13">
-                            Documentos autorizados que ainda não foram encerrados no ambiente da SEFAZ.
-                        </p>
-                    </div>
-                    <div>
-                        <a href="{{ route('mdfe.index') }}" class="btn btn-light btn-sm px-3 text-dark">
-                            <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
-                        </a>
+                <!-- ═══ CABEÇALHO PREMIUM ═══ -->
+                <div class="card-header modulo-header-gradient py-3 px-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div>
+                            <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
+                                <i class="ri-alert-line"></i>
+                                MDF-e — Manifestos Não Encerrados
+                            </h4>
+                            <p class="text-muted mb-0 modulo-subtitle fs-13">
+                                Documentos autorizados que ainda não foram encerrados no ambiente da SEFAZ.
+                            </p>
+                        </div>
+                        <div class="d-inline-flex align-items-center gap-2">
+                            <a href="{{ route('mdfe.index') }}" class="dash-btn dash-btn-light">
+                                <i class="ri-arrow-left-line"></i> Voltar
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="card-body p-4">
-                
-                @if(count($data) > 0)
-                    <div class="modulo-table-wrap">
+                <div class="card-body p-4">
+                    @if(count($data) > 0)
+                    <div class="tb-wrap mb-3">
                         <div class="table-responsive">
-                            <table class="table table-centered table-hover align-middle mb-0 text-dark">
+                            <table class="table table-centered table-hover align-middle mb-0">
                                 <thead>
                                     <tr>
-                                        <th>Chave</th>
-                                        <th>Protocolo</th>
-                                        <th class="text-end" style="width: 150px;">Ação</th>
+                                        <th>Chave de Acesso MDF-e</th>
+                                        <th>Protocolo de Autorização</th>
+                                        <th class="text-end" style="width: 160px;">Ação</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($data as $m)
                                     <tr>
-                                        <td class="fs-12 text-muted fw-medium">{{ $m['chave'] }}</td>
-                                        <td>
-                                            <span class="badge bg-secondary-subtle text-secondary px-2 py-1 fs-11">
-                                                {{ $m['protocolo'] }}
-                                            </span>
-                                        </td>
+                                        <td class="fs-13 text-dark font-monospace fw-bold">{{ $m['chave'] }}</td>
+                                        <td class="fs-13 text-secondary font-monospace">{{ $m['protocolo'] }}</td>
                                         <td class="text-end">
-                                            <form action="{{ route('mdfe.encerrar') }}" method="get" class="m-0 d-inline-block">
-                                                <input type="hidden" value="{{ $m['chave'] }}" name="chave">
-                                                <input type="hidden" value="{{ $m['protocolo'] }}" name="protocolo">
-                                                <button class="btn btn-danger btn-sm btn-confirm px-3">
-                                                    <i class="ri-close-circle-line me-1 align-middle"></i> Encerrar
-                                                </button>
-                                            </form>
+                                            <button type="button" class="dash-btn dash-btn-danger"
+                                                    onclick="encerrar('{{ $m['chave'] }}', '{{ $m['protocolo'] }}')">
+                                                <i class="ri-stop-circle-line"></i> Encerrar MDF-e
+                                            </button>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -88,15 +55,51 @@
                             </table>
                         </div>
                     </div>
-                @else
-                    <div class="modulo-empty">
-                        <i class="ri-checkbox-circle-line text-success"></i>
-                        <p>Nenhum manifesto pendente de encerramento encontrado.</p>
+                    @else
+                    <div class="text-center py-5">
+                        <i class="ri-checkbox-circle-line text-success" style="font-size: 52px;"></i>
+                        <h5 class="mt-3 text-dark">Nenhum MDF-e pendente de encerramento!</h5>
+                        <p class="text-muted fs-13">Todos os manifestos autorizados já foram devidamente encerrados na SEFAZ.</p>
                     </div>
-                @endif
+                    @endif
+                </div>
 
             </div>
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="modal-encerrar" aria-labelledby="modal-encerrar-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title text-white" id="modal-encerrar-label"><i class="ri-stop-circle-line me-1"></i> Encerrar MDF-e</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold fs-13"><i class="ri-map-pin-line me-1"></i> Município de Encerramento</label>
+                        <select name="municipio_encerramento" id="municipio_encerramento" class="select2 form-select">
+                            <option value="">Selecione o município de encerramento</option>
+                            @foreach($cidades as $c)
+                            <option value="{{ $c->id }}">{{ $c->info }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="dash-btn dash-btn-light" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" id="btn-encerrar" class="dash-btn dash-btn-danger">
+                    <i class="ri-stop-circle-line"></i> Confirmar Encerramento
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('js')
+<script type="text/javascript" src="/js/mdfe_transmitir.js"></script>
 @endsection

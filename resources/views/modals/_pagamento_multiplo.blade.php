@@ -34,7 +34,7 @@
                     <div class="col-md-4 col-12">
                         <div class="pdv-modal-stat">
                             <span class="pdv-modal-stat-label"><i class="ri-shopping-cart-line me-1"></i>Total da Venda</span>
-                            <strong class="pdv-modal-stat-value">
+                            <strong class="pdv-modal-stat-value total-venda-modal">
                                 @isset($item)
                                     {{__moeda($item->valor_total)}}
                                 @else

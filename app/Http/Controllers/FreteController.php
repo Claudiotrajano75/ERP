@@ -65,7 +65,18 @@ class FreteController extends Controller
         if($cliente_id){
             $cliente = Cliente::findOrFail($cliente_id);
         }
-        return view('fretes.index', compact('data', 'veiculo', 'cliente'));
+
+        $baseStats = Frete::where('empresa_id', request()->empresa_id);
+        $stats = [
+            'total_valor' => (clone $baseStats)->sum('total'),
+            'total_despesas' => (clone $baseStats)->sum('total_despesa'),
+            'lucro' => (clone $baseStats)->sum('total') - (clone $baseStats)->sum('total_despesa'),
+            'total_registros' => (clone $baseStats)->count(),
+            'em_viagem' => (clone $baseStats)->where('estado', 'em_viagem')->count(),
+            'finalizados' => (clone $baseStats)->where('estado', 'finalizado')->count(),
+        ];
+
+        return view('fretes.index', compact('data', 'veiculo', 'cliente', 'stats'));
     }
 
     public function create()

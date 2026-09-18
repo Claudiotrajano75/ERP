@@ -38,12 +38,14 @@ class OrdemServicoController extends Controller
         $start_date = $request->get('start_date');
         $codigo = $request->get('codigo');
 
-        $data = OrdemServico::where('empresa_id', request()->empresa_id)
+        $base = OrdemServico::where('empresa_id', request()->empresa_id);
+
+        $data = (clone $base)
         ->when(!empty($cliente_id), function ($query) use ($cliente_id) {
             return $query->where('cliente_id', $cliente_id);
         })
         ->when(!empty($start_date), function ($query) use ($start_date) {
-            return $query->whereDate('created_at', $start_date);
+            return $query->whereDate('data_inicio', $start_date);
         })
         ->when(!empty($codigo), function ($query) use ($codigo) {
             return $query->where('codigo_sequencial', $codigo);
@@ -51,19 +53,20 @@ class OrdemServicoController extends Controller
         ->orderBy('id', 'desc')
         ->paginate(env("PAGINACAO"));
 
-        $totalPendentes = OrdemServico::where('empresa_id', request()->empresa_id)
-            ->where('estado', 'pd')->count();
-        $totalFinalizadas = OrdemServico::where('empresa_id', request()->empresa_id)
-            ->where('estado', 'fz')->count();
-        $totalReprovadas = OrdemServico::where('empresa_id', request()->empresa_id)
-            ->where('estado', 'rp')->count();
+        $stats = [
+            'total'       => (clone $base)->count(),
+            'pendentes'   => (clone $base)->where('estado', 'pd')->count(),
+            'aprovadas'   => (clone $base)->where('estado', 'ap')->count(),
+            'finalizadas' => (clone $base)->where('estado', 'fz')->count(),
+            'reprovadas'  => (clone $base)->where('estado', 'rp')->count(),
+        ];
 
         $cliente = null;
         if (!empty($cliente_id)) {
             $cliente = \App\Models\Cliente::find($cliente_id);
         }
 
-        return view('ordem_servico.index', compact('data', 'totalPendentes', 'totalFinalizadas', 'totalReprovadas', 'cliente'));
+        return view('ordem_servico.index', compact('data', 'stats', 'cliente'));
     }
 
     public function create()

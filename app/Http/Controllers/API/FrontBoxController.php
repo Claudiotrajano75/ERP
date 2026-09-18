@@ -37,6 +37,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Utils\WhatsAppUtil;
 use App\Models\RegistroTef;
+use App\Models\CreditoCliente;
 
 class FrontBoxController extends Controller
 {
@@ -427,6 +428,41 @@ class FrontBoxController extends Controller
         return 0;
     }
 
+    /**
+     * Valida se o cliente tem saldo suficiente para pagamento com Crédito Loja (05)
+     */
+    private function validaCreditoLoja($request)
+    {
+        if (!$request->cliente_id) {
+            return;
+        }
+
+        $valorCreditoUsado = 0;
+
+        // Pagamento único com Crédito Loja
+        if ($request->tipo_pagamento == '05') {
+            $valorCreditoUsado = __convert_value_bd($request->valor_total);
+        }
+
+        // Pagamento múltiplo - verificar se alguma parcela usa Crédito Loja
+        if ($request->tipo_pagamento_row) {
+            for ($i = 0; $i < sizeof($request->tipo_pagamento_row); $i++) {
+                if ($request->tipo_pagamento_row[$i] == '05') {
+                    $valorCreditoUsado += __convert_value_bd($request->valor_integral_row[$i]);
+                }
+            }
+        }
+
+        if ($valorCreditoUsado > 0) {
+            $cliente = Cliente::findOrFail($request->cliente_id);
+            if ($cliente->valor_credito < $valorCreditoUsado) {
+                throw new \Exception('Saldo de crédito insuficiente! Saldo: R$ ' . 
+                    number_format($cliente->valor_credito, 2, ',', '.') . 
+                    ' - Necessário: R$ ' . number_format($valorCreditoUsado, 2, ',', '.'));
+            }
+        }
+    }
+
     public function store(Request $request)
     {
 
@@ -436,6 +472,11 @@ class FrontBoxController extends Controller
             if($retornoCredito != 0){
                 return response()->json($retornoCredito, 401);
             }
+
+            // ═══════════════════════════════════════════════════════════
+            // VALIDAÇÃO PRÉVIA - Crédito Loja (tipo_pagamento = 05)
+            // ═══════════════════════════════════════════════════════════
+            $this->validaCreditoLoja($request);
 
             $nfce = DB::transaction(function () use ($request) {
                 // $caixa = __isCaixaAberto();
@@ -597,10 +638,11 @@ class FrontBoxController extends Controller
                     }
                     for ($i = 0; $i < sizeof($request->tipo_pagamento_row); $i++) {
                         if ($request->tipo_pagamento_row[$i]) {
+                            $dataVenc = !empty($request->data_vencimento_row[$i]) ? $request->data_vencimento_row[$i] : date('Y-m-d');
                             FaturaNfce::create([
                                 'nfce_id' => $nfce->id,
                                 'tipo_pagamento' => $request->tipo_pagamento_row[$i],
-                                'data_vencimento' => $request->data_vencimento_row[$i],
+                                'data_vencimento' => $dataVenc,
                                 'valor' => __convert_value_bd($request->valor_integral_row[$i])
                             ]);
                         }
@@ -686,6 +728,47 @@ class FrontBoxController extends Controller
                     $vendaSuspensa = VendaSuspensa::findOrfail($request->venda_suspensa_id);
                     $vendaSuspensa->itens()->delete();
                     $vendaSuspensa->delete();
+                }
+
+                // ═══════════════════════════════════════════════════════════
+                // CRÉDITO LOJA (tipo_pagamento = 05) - Débito do saldo
+                // ═══════════════════════════════════════════════════════════
+                $valorCreditoUsado = 0;
+                
+                // Pagamento único com Crédito Loja
+                if ($request->tipo_pagamento == '05' && $nfce->cliente_id) {
+                    $valorCreditoUsado = __convert_value_bd($request->valor_total);
+                }
+                
+                // Pagamento múltiplo - verificar se algum parcela usa Crédito Loja
+                if ($request->tipo_pagamento_row && $nfce->cliente_id) {
+                    for ($i = 0; $i < sizeof($request->tipo_pagamento_row); $i++) {
+                        if ($request->tipo_pagamento_row[$i] == '05') {
+                            $valorCreditoUsado += __convert_value_bd($request->valor_integral_row[$i]);
+                        }
+                    }
+                }
+                
+                if ($valorCreditoUsado > 0 && $nfce->cliente_id) {
+                    $cliente = $nfce->cliente;
+                    
+                    // Verificar se o cliente tem saldo suficiente
+                    if ($cliente->valor_credito < $valorCreditoUsado) {
+                        throw new \Exception('Saldo de crédito insuficiente! Saldo atual: R$ ' . number_format($cliente->valor_credito, 2, ',', '.') . ' - Valor necessário: R$ ' . number_format($valorCreditoUsado, 2, ',', '.'));
+                    }
+                    
+                    // Debitar o crédito do cliente
+                    $cliente->valor_credito -= $valorCreditoUsado;
+                    $cliente->save();
+                    
+                    // Registrar a movimentação de crédito (valor negativo = débito)
+                    CreditoCliente::create([
+                        'cliente_id' => $nfce->cliente_id,
+                        'valor' => -$valorCreditoUsado
+                    ]);
+                    
+                    __createLog($request->empresa_id, 'PDV Crédito', 'débito', 
+                        'Cliente: ' . $cliente->razao_social . ' | Valor: R$ ' . number_format($valorCreditoUsado, 2, ',', '.') . ' | Venda #' . $nfce->numero_sequencial);
                 }
 
                 return $nfce;
@@ -816,10 +899,11 @@ public function update(Request $request, $id){
                 }
                 for ($i = 0; $i < sizeof($request->tipo_pagamento_row); $i++) {
                     if ($request->tipo_pagamento_row[$i]) {
+                        $dataVenc = !empty($request->data_vencimento_row[$i]) ? $request->data_vencimento_row[$i] : date('Y-m-d');
                         FaturaNfce::create([
                             'nfce_id' => $item->id,
                             'tipo_pagamento' => $request->tipo_pagamento_row[$i],
-                            'data_vencimento' => $request->data_vencimento_row[$i],
+                            'data_vencimento' => $dataVenc,
                             'valor' => __convert_value_bd($request->valor_integral_row[$i])
                         ]);
                     }

@@ -33,17 +33,23 @@ class CategoriaServicoController extends Controller
     {
         $this->insertHash();
         
-        $data = CategoriaServico::where('empresa_id', request()->empresa_id)
+        $base = CategoriaServico::where('empresa_id', request()->empresa_id);
+
+        $data = (clone $base)
         ->when(!empty($request->nome), function ($q) use ($request) {
             return $q->where('nome', 'LIKE', "%$request->nome%");
         })
         ->paginate(env("PAGINACAO"));
 
-        $totalMarketplace = CategoriaServico::where('empresa_id', request()->empresa_id)
-            ->where('marketplace', 1)
-            ->count();
+        $stats = [
+            'total'           => (clone $base)->count(),
+            'marketplace'     => (clone $base)->where('marketplace', 1)->count(),
+            'sem_marketplace' => (clone $base)->where(function($q) {
+                $q->where('marketplace', 0)->orWhereNull('marketplace');
+            })->count(),
+        ];
 
-        return view('categoria_servico.index', compact('data', 'totalMarketplace'));
+        return view('categoria_servico.index', compact('data', 'stats'));
     }
 
     public function show($id)

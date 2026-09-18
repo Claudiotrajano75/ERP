@@ -40,7 +40,23 @@ class ContaReceberController extends Controller
         $ordem = $request->ordem;
         $local_id = $request->get('local_id');
 
-        $data = ContaReceber::where('empresa_id', request()->empresa_id)
+        $baseQuery = ContaReceber::where('empresa_id', request()->empresa_id)
+        ->when($local_id, function ($query) use ($local_id) {
+            return $query->where('local_id', $local_id);
+        })
+        ->when(!$local_id, function ($query) use ($locais) {
+            return $query->whereIn('local_id', $locais);
+        });
+
+        $stats = [
+            'total_contas'   => (clone $baseQuery)->count(),
+            'total_integral' => (clone $baseQuery)->sum('valor_integral'),
+            'total_recebido' => (clone $baseQuery)->where('status', 1)->sum('valor_recebido'),
+            'total_pendente' => (clone $baseQuery)->where('status', 0)->sum('valor_integral'),
+            'total_atrasadas'=> (clone $baseQuery)->where('status', 0)->whereDate('data_vencimento', '<', date('Y-m-d'))->count(),
+        ];
+
+        $data = (clone $baseQuery)
         ->when(!empty($cliente_id), function ($query) use ($cliente_id) {
             return $query->where('cliente_id', $cliente_id);
         })
@@ -50,12 +66,6 @@ class ContaReceberController extends Controller
         ->when(!empty($end_date), function ($query) use ($end_date) {
             return $query->whereDate('data_vencimento', '<=', $end_date);
         })
-        ->when($local_id, function ($query) use ($local_id) {
-            return $query->where('local_id', $local_id);
-        })
-        ->when(!$local_id, function ($query) use ($locais) {
-            return $query->whereIn('local_id', $locais);
-        })
         ->when($status != '', function ($query) use ($status) {
             return $query->where('status', $status);
         })
@@ -63,7 +73,7 @@ class ContaReceberController extends Controller
             return $query->orderBy('data_vencimento', 'asc');
         })
         ->when($ordem == '', function ($query) use ($ordem) {
-            return $query->orderBy('created_at', 'asc');
+            return $query->orderBy('created_at', 'desc');
         })
         ->paginate(env("PAGINACAO"));
 
@@ -71,7 +81,7 @@ class ContaReceberController extends Controller
         if($cliente_id){
             $cliente = Cliente::findOrFail($cliente_id);
         }
-        return view('conta-receber.index', compact('data', 'cliente'));
+        return view('conta-receber.index', compact('data', 'cliente', 'stats'));
     }
 
     public function create(Request $request)

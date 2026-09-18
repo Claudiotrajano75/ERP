@@ -60,16 +60,49 @@ function validateButtonSave() {
     $('.alerts').html('')
 
     let tp_emit = $('#inp-tp_emit').val()
+    let tp_transp = $('#inp-tp_transp').val()
     let veiculo_tracao_id = $('#inp-veiculo_tracao_id').val()
     let municipio = $('.class-municipio').val()
     let descarregamento = $(".table-descarregamento tbody tr").length
+    let unidade_medida = $('#inp-unidade_medida').val()
 
     if (!tp_emit) {
         alertCreate("Selecione um tipo de emitente!")
     }
+    
+    // Validação de seguro para prestador de serviço de transporte
+    if (tp_emit == '1') {
+        let responsavel_seguro = $('#inp-responsavel_seguro').val()
+        let seguradora_nome = $('#inp-seguradora_nome').val()
+        let seguradora_cnpj = $('#inp-seguradora_cnpj').val()
+        let numero_apolice = $('#inp-numero_apolice').val()
+        
+        if (!responsavel_seguro || !seguradora_nome || !seguradora_cnpj || !numero_apolice) {
+            alertCreate("Informe todos os dados da Seguradora (Obrigatório para Prestador de Serviço)!")
+        }
+    }
+    
+    // Validação Pagamento Frete para TAC/ETC
+    if (tp_emit == '1' || tp_emit == '2') {
+        // Regras mais brandas ou rigorosas dependendo da transportadora
+        let infpag_nome_contratante = $('#inp-infpag_nome_contratante').val()
+        let infpag_cnpj_contratante = $('#inp-infpag_cnpj_contratante').val()
+        
+        if (tp_transp == '1' || tp_transp == '2') {
+            if (!infpag_nome_contratante || !infpag_cnpj_contratante) {
+                alertCreate("Informe os dados de Pagamento do Frete (Contratante)!")
+            }
+        }
+    }
+
     if (!veiculo_tracao_id) {
         alertCreate("Informe o veículo de tração!")
     }
+    
+    if (!unidade_medida) {
+        alertCreate("Selecione a Unidade de Medida da carga (KG ou TON)!")
+    }
+
     if (municipio == '') {
         alertCreate("Selecione um município de carregamento!")
     }
@@ -85,7 +118,6 @@ function validateButtonSave() {
     if (descarregamento == 0) {
         alertCreate("Informe dados do descarregamento!")
     }
-
 
     setTimeout(() => {
         if ($('.alerts').html() == "") {

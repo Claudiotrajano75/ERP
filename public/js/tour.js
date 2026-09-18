@@ -1,4 +1,6 @@
+// Auto-start do Tour desabilitado para evitar travamento de tela em novos acessos
 $(function () {
+    /*
     setTimeout(() => {
         if ($("#step1").length && $("#step2").length && $("#step3").length && $("#step4").length && $("#step5").length && $("#step6").length){
             let toutVar = window.localStorage.getItem('tour-app-sym');
@@ -9,6 +11,7 @@ $(function () {
             }
         }
     }, 200);
+    */
 });
 
 var steps = [

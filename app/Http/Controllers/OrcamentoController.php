@@ -31,11 +31,22 @@ class OrcamentoController extends Controller
         $estado = $request->get('estado');
         $tpNF = $request->get('tpNF');
 
-        $data = Nfe::where('empresa_id', request()->empresa_id)->where('tpNF', 1)->where('orcamento', 1)
+        $baseQuery = Nfe::where('empresa_id', request()->empresa_id)
+            ->where('tpNF', 1)
+            ->where('orcamento', 1);
+
+        $stats = [
+            'total'       => (clone $baseQuery)->count(),
+            'valor_total' => (clone $baseQuery)->sum('total'),
+            'mes'         => (clone $baseQuery)->whereMonth('created_at', date('m'))->whereYear('created_at', date('Y'))->count(),
+            'hoje'        => (clone $baseQuery)->whereDate('created_at', date('Y-m-d'))->count(),
+        ];
+
+        $data = (clone $baseQuery)
         ->when(!empty($start_date), function ($query) use ($start_date) {
             return $query->whereDate('created_at', '>=', $start_date);
         })
-        ->when(!empty($end_date), function ($query) use ($end_date,) {
+        ->when(!empty($end_date), function ($query) use ($end_date) {
             return $query->whereDate('created_at', '<=', $end_date);
         })
         ->when(!empty($cliente_id), function ($query) use ($cliente_id) {
@@ -46,7 +57,8 @@ class OrcamentoController extends Controller
         })
         ->orderBy('created_at', 'desc')
         ->paginate(env("PAGINACAO"));
-        return view('orcamento.index', compact('data'));
+
+        return view('orcamento.index', compact('data', 'stats'));
     }
 
 

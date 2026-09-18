@@ -1,145 +1,249 @@
-@extends('layouts.app', ['title' => 'Contingência'])
+@extends('layouts.app', ['title' => 'Contingência Fiscal'])
 
 @section('css')
 <style>
-/* ─── Header Gradiente ─── */
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.6) !important; font-weight: 400; }
-.modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-.modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+/* ─── Botões de Ação Squircle ─── */
+.act-group { display: inline-flex; gap: 6px; align-items: center; justify-content: flex-end; }
+.act-btn { 
+    height: 34px; 
+    border-radius: 10px; 
+    border: 1px solid transparent; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 13px; 
+    font-weight: 600;
+    text-decoration: none; 
+    cursor: pointer; 
+    transition: all .2s ease; 
+    padding: 0 14px;
+    gap: 6px;
+}
+.act-btn:hover { transform: translateY(-2px); text-decoration: none; }
+.act-del  { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+.act-del:hover  { background: #fee2e2; color: #b91c1c; box-shadow: 0 4px 12px rgba(220,38,38,.2); }
 
-/* ─── Glass Filters ─── */
-.modulo-glass-filter { background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8) !important; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.04); }
-.modulo-glass-filter label { font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #5a5a7a; margin-bottom: 2px; }
-.modulo-glass-filter .form-control,
-.modulo-glass-filter .form-select { height: 38px; }
-.modulo-glass-filter .btn { border-radius: 8px; font-weight: 600; font-size: 13px; height: 38px; padding-top: 0; padding-bottom: 0; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
-.modulo-glass-filter .btn:hover { transform: translateY(-1px); }
+/* ─── Cards de Estatística (KPIs) ─── */
+.stat-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    border: 1px solid #edf2f7;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 4px;
+}
+.stat-indigo::before  { background: linear-gradient(180deg, #4f46e5, #818cf8); }
+.stat-rose::before    { background: linear-gradient(180deg, #e11d48, #fb7185); }
+.stat-emerald::before { background: linear-gradient(180deg, #059669, #34d399); }
 
-/* ─── Premium Table ─── */
-.modulo-table-wrap { border-radius: 12px; border: 1px solid #eef0f5; overflow: hidden; }
-.modulo-table-wrap table { margin-bottom: 0; }
-.modulo-table-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding: 12px 14px; border-bottom: 2px solid #e8eaf6; }
-.modulo-table-wrap tbody td { padding: 12px 14px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; transition: background 0.15s ease; font-size: 13px; }
-.modulo-table-wrap tbody tr { transition: all 0.15s ease; }
-.modulo-table-wrap tbody tr:hover { background: #f5f6fe; }
-.modulo-table-wrap tbody tr:last-child td { border-bottom: none; }
+.stat-indigo .stat-icon  { background: #eef2ff; color: #4f46e5; }
+.stat-rose .stat-icon    { background: #fff1f2; color: #e11d48; }
+.stat-emerald .stat-icon { background: #ecfdf5; color: #059669; }
 
-/* ─── Action Buttons — SEMPRE lado a lado ─── */
-.modulo-action-group { display: inline-flex; gap: 4px; flex-wrap: nowrap; align-items: center; }
-.modulo-action-group .btn { border-radius: 8px; padding: 4px 10px; font-size: 13px; transition: all 0.15s ease; }
-.modulo-action-group .btn:hover { transform: translateY(-1px); }
+.stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+.stat-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+.stat-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+/* ─── Tabela ─── */
+.tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+.tb-wrap table { margin-bottom: 0; }
+.tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 16px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+.tb-wrap tbody td { padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13.5px; color: #374151; }
+.tb-wrap tbody tr:hover { background: #f5f6fe; }
+.tb-wrap tbody tr:last-child td { border-bottom: none; }
+
+/* ─── Badges de Status ─── */
+.modulo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+.modulo-badge-active { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+.modulo-badge-inactive { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
 
 /* ─── Empty State ─── */
 .modulo-empty { padding: 48px 20px; text-align: center; }
-.modulo-empty i { font-size: 48px; color: #c5cae9; margin-bottom: 12px; display: block; }
-.modulo-empty p { color: #9e9eb8; font-size: 14px; margin: 0; }
-
-/* ─── Footer da Tabela ─── */
-.modulo-footer { padding: 16px 0 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.modulo-empty i { font-size: 44px; color: #cbd5e1; margin-bottom: 10px; display: block; }
+.modulo-empty p { color: #94a3b8; font-size: 14px; margin: 0; }
 </style>
 @endsection
 
 @section('content')
 <div class="mt-3 text-dark">
     <div class="row">
-        <div class="card border-0 shadow-sm text-dark">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm text-dark modulo-form-card">
 
-            <!-- ═══ CABEÇALHO PREMIUM ═══ -->
-            <div class="card-header modulo-header-gradient py-3 px-4">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div>
-                        <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
-                            <i class="ri-wifi-off-line"></i>
-                            Contingência
-                        </h4>
-                        <p class="text-muted mb-0 modulo-subtitle fs-13">
-                            Gerenciamento do modo de contingência para notas fiscais.
-                        </p>
-                    </div>
-                    <div class="d-inline-flex gap-2">
-                        @can('contigencia_create')
-                        <a href="{{ route('contigencia.create') }}" class="btn btn-light btn-sm px-3 text-dark">
-                            <i class="ri-add-circle-line align-middle me-1"></i> Ativar contingência
-                        </a>
-                        @endcan
+                <!-- ═══ CABEÇALHO ═══ -->
+                <div class="card-header modulo-header-gradient py-3 px-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div>
+                            <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
+                                <i class="ri-wifi-off-line"></i>
+                                Contingência Fiscal
+                            </h4>
+                            <p class="text-muted mb-0 modulo-subtitle fs-13">
+                                Gerencie e acompanhe a ativação e desativação do modo de contingência para NFe e NFCe.
+                            </p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="{{ route('config.index') }}" class="dash-btn dash-btn-light">
+                                <i class="ri-settings-4-line"></i> Config. Fiscais
+                            </a>
+                            @can('contigencia_create')
+                            <a href="{{ route('contigencia.create') }}" class="dash-btn dash-btn-primary">
+                                <i class="ri-add-circle-line"></i> Ativar Contingência
+                            </a>
+                            @endcan
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="card-body p-4">
+                <div class="card-body p-4">
 
-                <!-- ═══ TABELA PREMIUM ═══ -->
-                <div class="modulo-table-wrap">
-                    <div class="table-responsive">
-                        <table class="table table-centered table-hover align-middle mb-0 text-dark">
-                            <thead>
-                                <tr>
-                                    <th>Data</th>
-                                    <th>Motivo</th>
-                                    <th>Tipo</th>
-                                    <th>Documento</th>
-                                    <th>Status</th>
-                                    <th class="text-end" style="width: 120px;">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($data as $item)
-                                <tr>
-                                    <td>
-                                        <span class="fw-semibold text-dark d-block">{{ __data_pt($item->created_at) }}</span>
-                                    </td>
-                                    <td>{{ $item->motivo }}</td>
-                                    <td>
-                                        <span class="badge bg-secondary">{{ $item->tipo }}</span>
-                                    </td>
-                                    <td>{{ $item->documento }}</td>
-                                    <td>
-                                        @if($item->status)
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-11">
-                                            <i class="ri-checkbox-circle-line me-1"></i>Ativo
-                                        </span>
-                                        @else
-                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fs-11">
-                                            <i class="ri-close-circle-line me-1"></i>Desativado
-                                        </span>
-                                        @endif
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="modulo-action-group">
+                    <!-- ═══ CARDS DE ESTATÍSTICA (KPIS) ═══ -->
+                    @if(isset($stats))
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4 col-12">
+                            <div class="stat-card stat-indigo">
+                                <div>
+                                    <div class="stat-label">Total de Eventos</div>
+                                    <div class="stat-value mt-1">{{ $stats['total'] }}</div>
+                                </div>
+                                <div class="stat-icon"><i class="ri-history-line"></i></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-6">
+                            <div class="stat-card stat-rose">
+                                <div>
+                                    <div class="stat-label">Contingências Ativas</div>
+                                    <div class="stat-value mt-1">{{ $stats['ativas'] }}</div>
+                                </div>
+                                <div class="stat-icon"><i class="ri-alarm-warning-line"></i></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-6">
+                            <div class="stat-card stat-emerald">
+                                <div>
+                                    <div class="stat-label">Desativadas / Histórico</div>
+                                    <div class="stat-value mt-1">{{ $stats['desativadas'] }}</div>
+                                </div>
+                                <div class="stat-icon"><i class="ri-checkbox-circle-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- ═══ TABELA ═══ -->
+                    <div class="tb-wrap">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 text-dark">
+                                <thead>
+                                    <tr>
+                                        <th>Data / Hora</th>
+                                        <th>Documento</th>
+                                        <th>Tipo de Contingência</th>
+                                        <th>Motivo Declarado</th>
+                                        <th>Status Atual</th>
+                                        <th class="text-end" style="width: 140px;">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($data as $item)
+                                    <tr>
+                                        <td>
+                                            <span class="fw-bold text-dark d-block fs-13">{{ __data_pt($item->created_at) }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border px-2 py-1 fs-12 fw-semibold">
+                                                <i class="ri-file-text-line text-muted me-1"></i> {{ $item->documento }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary-subtle text-primary border border-primary px-2 py-1 fs-11 fw-semibold">
+                                                {{ $item->tipo }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="text-dark">{{ $item->motivo }}</span>
+                                        </td>
+                                        <td>
                                             @if($item->status)
-                                            <a href="{{ route('contigencia.desactive', [$item->id]) }}" class="btn btn-danger btn-sm text-white" title="Desativar">
-                                                <i class="ri-power-line align-middle me-1"></i> Desativar
-                                            </a>
+                                                <span class="modulo-badge modulo-badge-active">
+                                                    <i class="ri-alarm-warning-fill"></i> Ativa (Em Contingência)
+                                                </span>
+                                            @else
+                                                <span class="modulo-badge modulo-badge-inactive">
+                                                    <i class="ri-checkbox-circle-line"></i> Desativada
+                                                </span>
                                             @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="6">
-                                        <div class="modulo-empty">
-                                            <i class="ri-inbox-2-line"></i>
-                                            <p>Nenhum registro encontrado.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                        </td>
+                                        <td class="text-end">
+                                            @if($item->status)
+                                                <div class="act-group">
+                                                    <a href="{{ route('contigencia.desactive', [$item->id]) }}" class="act-btn act-del" title="Desativar Contingência">
+                                                        <i class="ri-power-line"></i> Desativar
+                                                    </a>
+                                                </div>
+                                            @else
+                                                <span class="text-muted fs-12">--</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="6">
+                                            <div class="modulo-empty">
+                                                <i class="ri-wifi-off-line"></i>
+                                                <p>Nenhum registro de contingência encontrado.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
 
-                <!-- ═══ FOOTER ═══ -->
-                <div class="modulo-footer">
-                    <div></div>
-                    <div>
-                        <!-- Se houver paginação futuramente -->
-                    </div>
                 </div>
-
             </div>
         </div>
     </div>

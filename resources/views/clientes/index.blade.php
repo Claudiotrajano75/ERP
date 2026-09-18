@@ -190,22 +190,117 @@
             border-bottom: none;
         }
 
-        .modulo-action-group {
-            display: inline-flex;
-            gap: 4px;
-            flex-wrap: nowrap;
-            align-items: center;
-        }
-
-        .modulo-action-group .btn {
+        /* ─── Dropdown de Ações Moderno com Submenus ─── */
+        .btn-action-trigger {
+            color: #4f46e5;
+            background: #eef0ff;
+            border-color: #e3e4ff;
+            width: 34px;
+            height: 34px;
             border-radius: 8px;
-            padding: 4px 10px;
-            font-size: 13px;
-            transition: all 0.15s ease;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s ease;
+            padding: 0;
+        }
+        .btn-action-trigger:hover, 
+        .btn-action-trigger:focus,
+        .dropdown-action-menu.show .btn-action-trigger {
+            color: #4f46e5;
+            background: #eef0ff;
+            border-color: #e3e4ff;
+            background: #f1f5f9;
+            color: #3b82f6;
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
         }
 
-        .modulo-action-group .btn:hover {
-            transform: translateY(-1px);
+        .action-dropdown-card {
+            min-width: 240px;
+            border-radius: 14px !important;
+            border: 1px solid rgba(0,0,0,0.06) !important;
+            padding: 8px !important;
+            background: #ffffff;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(15, 23, 42, 0.06) !important;
+            z-index: 1060;
+        }
+
+        .action-menu-item {
+            display: flex !important;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 10px !important;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.18s ease;
+            background: transparent;
+            cursor: pointer;
+        }
+        .action-menu-item:hover {
+            background-color: #f8fafc !important;
+            transform: translateX(2px);
+        }
+        .action-menu-item:active {
+            background-color: #f1f5f9 !important;
+        }
+
+        .action-item-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+            transition: all 0.18s ease;
+        }
+
+        .action-item-icon.icon-primary { background: #eff6ff; color: #2563eb; }
+        .action-item-icon.icon-info { background: #f0f9ff; color: #0284c7; }
+        .action-item-icon.icon-purple { background: #faf5ff; color: #7c3aed; }
+        .action-item-icon.icon-teal { background: #f0fdfa; color: #0d9488; }
+        .action-item-icon.icon-success { background: #f0fdf4; color: #16a34a; }
+        .action-item-icon.icon-warning { background: #fffbeb; color: #d97706; }
+        .action-item-icon.icon-danger { background: #fef2f2; color: #dc2626; }
+
+        .action-menu-item:hover .action-item-icon {
+            transform: scale(1.08);
+        }
+
+        .action-item-content {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            line-height: 1.2;
+        }
+        .action-item-title {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #1e293b;
+            letter-spacing: -0.1px;
+        }
+        .action-item-desc {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 2px;
+            font-weight: 400;
+        }
+
+        .action-menu-item:hover .action-item-title {
+            color: #0f172a;
+        }
+
+        .action-menu-item.text-danger:hover {
+            background-color: #fef2f2 !important;
+        }
+        .action-menu-item.text-danger:hover .action-item-title {
+            color: #b91c1c !important;
         }
 
         .modulo-empty {
@@ -240,7 +335,38 @@
                 font-size: 18px;
             }
         }
-    </style>
+    
+    .stat-card { border:0; border-radius:16px; padding:18px 20px; height:100%; color:#fff; position:relative; overflow:hidden; transition:transform .18s ease, box-shadow .18s ease; }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-card::after { content:''; position:absolute; top:-44px; right:-44px; width:130px; height:130px; border-radius:50%; background:rgba(255,255,255,.12); }
+    .stat-indigo { background:linear-gradient(135deg,#6366f1,#4f46e5); box-shadow:0 6px 18px rgba(79,70,229,.32); }
+    .stat-green  { background:linear-gradient(135deg,#24c98a,#109f61); box-shadow:0 6px 18px rgba(16,185,129,.32); }
+    .stat-red    { background:linear-gradient(135deg,#fb7185,#dc2626); box-shadow:0 6px 18px rgba(239,68,68,.32); }
+    .stat-blue   { background:linear-gradient(135deg,#4d94ff,#1d4ed8); box-shadow:0 6px 18px rgba(37,99,235,.32); }
+    .stat-card .st-label { font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:rgba(255,255,255,.85); }
+    .stat-card .st-value { font-size:26px; font-weight:800; color:#fff; margin-top:4px; line-height:1.1; }
+    .stat-card .st-sub { font-size:11.5px; color:rgba(255,255,255,.75); margin-top:4px; }
+    .stat-card .st-icon { width:46px; height:46px; border-radius:13px; background:rgba(255,255,255,.22); color:#fff; display:flex; align-items:center; justify-content:center; font-size:20px; }
+    .filter-wrap { background:#fff; border:1px solid #e9ecf3; border-radius:14px; box-shadow:0 1px 2px rgba(16,24,40,.04); padding:18px 20px; margin-bottom:18px; }
+    .filter-title { font-size:13px; font-weight:700; color:#3f3e6a; text-transform:uppercase; letter-spacing:.5px; }
+    .filter-title i { color:#4f46e5; margin-right:6px; }
+    .filter-wrap label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#8c8ca6; margin-bottom:6px; }
+    .filter-wrap label i { color:#a8a8c0; }
+    .filter-wrap .form-control, .filter-wrap .form-select { height:40px; border-radius:10px; border:1px solid #dcdce9; font-size:13.5px; color:#1f2937; background:#fcfdfe; transition:all .15s ease; }
+    .filter-wrap .form-control:focus, .filter-wrap .form-select:focus { border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79,70,229,.12); background:#fff; }
+    .tb-wrap { border-radius:14px; border:1px solid #eef0f5; overflow:hidden; background:#fff; }
+    .tb-wrap table { margin-bottom:0; }
+    .tb-wrap thead th { background:#f8f9fc; color:#5a5a7a; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:.4px; padding:13px 14px; border-bottom:1px solid #e8eaf6; white-space:nowrap; }
+    .tb-wrap tbody td { padding:13px 14px; vertical-align:middle; border-bottom:1px solid #f0f2f8; font-size:13.5px; color:#374151; }
+    .tb-wrap tbody tr:hover { background:#f5f6fe; }
+    .tb-wrap tbody tr:last-child td { border-bottom:none; }
+    .pill { display:inline-flex; align-items:center; gap:5px; border-radius:8px; padding:4px 10px; font-size:11.5px; font-weight:700; }
+    .pill-ok { background:#dcfce7; color:#15803d; }
+    .pill-no { background:#fee2e2; color:#b91c1c; }
+    .empty-state { padding:52px 20px; text-align:center; }
+    .empty-state i { font-size:52px; color:#c5cae9; display:block; margin-bottom:12px; }
+    .empty-state p { color:#9e9eb8; font-size:14px; margin:0; }
+</style>
 @endsection
 
 @section('content')
@@ -258,10 +384,10 @@
                         </div>
                         <div class="d-flex gap-2">
                             @can('clientes_create')
-                                <a href="{{ route('clientes.create') }}" class="btn btn-light btn-sm px-3 text-dark"><i
-                                        class="ri-add-circle-line align-middle me-1"></i> Novo Cliente</a>
-                                <a href="{{ route('clientes.import') }}" class="btn btn-light btn-sm px-3 text-dark"><i
-                                        class="ri-file-upload-line align-middle me-1"></i> Importar</a>
+                                <a href="{{ route('clientes.create') }}" class="dash-btn dash-btn-primary"><i
+                                        class="ri-add-line"></i> Novo Cliente</a>
+                                <a href="{{ route('clientes.import') }}" class="dash-btn dash-btn-light"><i
+                                        class="ri-file-upload-line"></i> Importar</a>
                             @endcan
                         </div>
                     </div>
@@ -269,10 +395,26 @@
 
                 <div class="card-body p-4">
 
-                    <!-- ═══ Filtros de Busca Premium ═══ -->
-                    <div class="modulo-glass-filter-premium">
+                    {{-- Cards de Estatísticas --}}
+                    <div class="row g-3 mb-3">
+                        <div class="col-6 col-xl-3">
+                            <div class="stat-card stat-indigo"><div class="d-flex justify-content-between align-items-start"><div><div class="st-label">Total de Clientes</div><div class="st-value">{{ $stats['total'] }}</div><div class="st-sub">cadastrados no sistema</div></div><div class="st-icon"><i class="ri-user-follow-line"></i></div></div></div>
+                        </div>
+                        <div class="col-6 col-xl-3">
+                            <div class="stat-card stat-green"><div class="d-flex justify-content-between align-items-start"><div><div class="st-label">Ativos</div><div class="st-value">{{ $stats['ativos'] }}</div><div class="st-sub">clientes ativos</div></div><div class="st-icon"><i class="ri-checkbox-circle-line"></i></div></div></div>
+                        </div>
+                        <div class="col-6 col-xl-3">
+                            <div class="stat-card stat-red"><div class="d-flex justify-content-between align-items-start"><div><div class="st-label">Inativos</div><div class="st-value">{{ $stats['inativos'] }}</div><div class="st-sub">clientes inativos</div></div><div class="st-icon"><i class="ri-close-circle-line"></i></div></div></div>
+                        </div>
+                        <div class="col-6 col-xl-3">
+                            <div class="stat-card stat-blue"><div class="d-flex justify-content-between align-items-start"><div><div class="st-label">Nesta Página</div><div class="st-value">{{ $data->count() }}</div><div class="st-sub">registros exibidos</div></div><div class="st-icon"><i class="ri-list-check"></i></div></div></div>
+                        </div>
+                    </div>
+
+                                        <!-- ═══ Filtros de Busca Premium ═══ -->
+                    <div class="filter-wrap">
                         <div class="filtro-premium-header">
-                            <h5 class="filtro-premium-title">
+                            <h5 class="filter-title mb-0">
                                 <i class="ri-search-line"></i> Filtrar Clientes
                             </h5>
                         </div>
@@ -297,10 +439,10 @@
                             </div>
                             <div class="col-md-3 col-12 ms-auto d-flex align-items-end">
                                 <div class="d-flex gap-2 w-100">
-                                    <button class="btn btn-pesquisar flex-grow-1" type="submit">
+                                    <button class="btn btn-primary flex-grow-1" style="border-radius:10px;" type="submit">
                                         <i class="ri-search-line"></i> Buscar
                                     </button>
-                                    <a class="btn btn-limpar px-3" href="{{ route('clientes.index') }}"
+                                    <a class="btn btn-light border px-3" style="border-radius:10px;" href="{{ route('clientes.index') }}"
                                         title="Limpar Filtros">
                                         <i class="ri-eraser-line"></i>
                                     </a>
@@ -310,7 +452,7 @@
                         {!!Form::close()!!}
                     </div>
 
-                    <div class="modulo-table-wrap">
+                    <div class="tb-wrap">
                         <div class="table-responsive">
                             <table class="table">
                                 <thead>
@@ -328,7 +470,7 @@
                                         <th>CEP</th>
                                         <th>Status</th>
                                         <th>Cadastro</th>
-                                        <th class="text-end" style="width:170px;">Ações</th>
+                                        <th class="text-end" style="width:80px;">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -347,36 +489,74 @@
                                             <td class="text-muted fs-12">{{ $item->cep ?: '--' }}</td>
                                             <td>
                                                 @if($item->status)
-                                                    <span
-                                                        class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-11"><i
-                                                            class="ri-check-line me-1"></i>Ativo</span>
+                                                                                            <span class="pill pill-ok"><i class="ri-check-line"></i> Ativo</span>
                                                 @else
-                                                    <span
-                                                        class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fs-11"><i
-                                                            class="ri-close-line me-1"></i>Inativo</span>
+                                                                                            <span class="pill pill-no"><i class="ri-close-line"></i> Inativo</span>
                                                 @endif
                                             </td>
                                             <td class="text-muted fs-12">{{ __data_pt($item->created_at) }}</td>
                                             <td class="text-end">
                                                 <form action="{{ route('clientes.destroy', $item->id) }}" method="post"
-                                                    id="form-{{$item->id}}" class="m-0">
+                                                    id="form-{{$item->id}}" class="m-0 d-inline">
                                                     @method('delete') @csrf
-                                                    <div class="modulo-action-group">
-                                                        @can('clientes_edit')
-                                                            <a class="btn btn-warning btn-sm text-white"
-                                                                href="{{ route('clientes.edit', [$item->id]) }}" title="Editar"><i
-                                                                    class="ri-pencil-line"></i></a>
-                                                        @endcan
-                                                        <a title="Cashback" class="btn btn-dark btn-sm text-white"
-                                                            href="{{ route('clientes.cash-back', [$item->id]) }}"><i
-                                                                class="ri-coins-line"></i></a>
-                                                        <a title="Histórico" class="btn btn-info btn-sm text-white"
-                                                            href="{{ route('clientes.historico', [$item->id]) }}"><i
-                                                                class="ri-file-list-3-line"></i></a>
-                                                        @can('clientes_delete')
-                                                            <button type="button" class="btn btn-danger btn-delete btn-sm"
-                                                                title="Excluir"><i class="ri-delete-bin-line"></i></button>
-                                                        @endcan
+                                                    <div class="dropdown dropdown-action-menu d-inline-block">
+                                                        <button type="button" class="btn btn-action-trigger" data-bs-toggle="dropdown" aria-expanded="false" title="Opções do Cliente">
+                                                            <i class="ri-more-2-fill"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end action-dropdown-card shadow-lg">
+                                                            @can('clientes_edit')
+                                                            <li>
+                                                                <a class="dropdown-item action-menu-item" href="{{ route('clientes.edit', [$item->id]) }}">
+                                                                    <div class="action-item-icon icon-primary">
+                                                                        <i class="ri-pencil-line"></i>
+                                                                    </div>
+                                                                    <div class="action-item-content">
+                                                                        <span class="action-item-title">Editar Cliente</span>
+                                                                        <span class="action-item-desc">Alterar dados e cadastro</span>
+                                                                    </div>
+                                                                </a>
+                                                            </li>
+                                                            @endcan
+
+                                                            <li>
+                                                                <a class="dropdown-item action-menu-item" href="{{ route('clientes.cash-back', [$item->id]) }}">
+                                                                    <div class="action-item-icon icon-purple">
+                                                                        <i class="ri-coins-line"></i>
+                                                                    </div>
+                                                                    <div class="action-item-content">
+                                                                        <span class="action-item-title">Cashback</span>
+                                                                        <span class="action-item-desc">Consultar saldo e extrato</span>
+                                                                    </div>
+                                                                </a>
+                                                            </li>
+
+                                                            <li>
+                                                                <a class="dropdown-item action-menu-item" href="{{ route('clientes.historico', [$item->id]) }}">
+                                                                    <div class="action-item-icon icon-info">
+                                                                        <i class="ri-file-list-3-line"></i>
+                                                                    </div>
+                                                                    <div class="action-item-content">
+                                                                        <span class="action-item-title">Histórico</span>
+                                                                        <span class="action-item-desc">Ver histórico de compras</span>
+                                                                    </div>
+                                                                </a>
+                                                            </li>
+
+                                                            @can('clientes_delete')
+                                                            <li><hr class="dropdown-divider my-1"></li>
+                                                            <li>
+                                                                <button type="button" class="dropdown-item action-menu-item btn-delete text-danger w-100 border-0 bg-transparent">
+                                                                    <div class="action-item-icon icon-danger">
+                                                                        <i class="ri-delete-bin-line"></i>
+                                                                    </div>
+                                                                    <div class="action-item-content">
+                                                                        <span class="action-item-title text-danger">Excluir Cliente</span>
+                                                                        <span class="action-item-desc text-danger-emphasis">Remover registro</span>
+                                                                    </div>
+                                                                </button>
+                                                            </li>
+                                                            @endcan
+                                                        </ul>
                                                     </div>
                                                 </form>
                                             </td>
@@ -384,7 +564,7 @@
                                     @empty
                                         <tr>
                                             <td colspan="{{ (Auth::user()->can('clientes_delete') ? 1 : 0) + 8 }}">
-                                                <div class="modulo-empty"><i class="ri-inbox-2-line"></i>
+                                                <div class="empty-state"><i class="ri-inbox-2-line"></i>
                                                     <p>Nenhum cliente cadastrado.</p>
                                                 </div>
                                             </td>
@@ -396,13 +576,13 @@
                     </div>
 
                     <div class="modulo-footer">
-                        <div>
+                        <div class="d-flex gap-2 flex-wrap">
                             @can('clientes_delete')
                                 <form action="{{ route('clientes.destroy-select') }}" method="post" id="form-delete-select"
                                     class="m-0">
                                     @method('delete') @csrf
-                                    <button type="button" class="btn btn-outline-danger btn-sm btn-delete-all" disabled><i
-                                            class="ri-delete-bin-line align-middle me-1"></i> Remover Selecionados</button>
+                                    <button type="button" class="dash-btn dash-btn-light btn-delete-all" style="color:#dc2626;" disabled><i
+                                            class="ri-delete-bin-2-line"></i> Remover Selecionados</button>
                                 </form>
                             @endcan
                         </div>

@@ -59,7 +59,13 @@ class TransferenciaEstoqueController extends Controller
         })
         ->paginate(env("PAGINACAO"));
 
-        return view('transferencia_estoque.index', compact('data'));
+        $all = TransferenciaEstoque::where('empresa_id', $request->empresa_id)->withCount('itens');
+        $stats = [
+            'total' => (clone $all)->count(),
+            'itens' => (clone $all)->get()->sum('itens_count'),
+        ];
+
+        return view('transferencia_estoque.index', compact('data', 'stats'));
     }
 
     public function create(){

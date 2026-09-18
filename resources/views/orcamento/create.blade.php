@@ -1,28 +1,42 @@
 @extends('layouts.app', ['title' => 'Novo Orçamento'])
-@section('content')
 
-<div class="card mt-1">
-    <div class="card-header">
-        <h4>Novo Orçamento</h4>
-        <div style="text-align: right; margin-top: -35px;">
-            <a href="{{ route('orcamentos.index') }}" class="btn btn-danger btn-sm px-3">
-                <i class="ri-arrow-left-double-fill"></i>Voltar
-            </a>
+@section('content')
+<div class="mt-3">
+    <div class="row">
+        <div class="card border-0 shadow-sm modulo-form-card">
+            <div class="card-header modulo-header-gradient py-3 px-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
+                            <i class="ri-file-list-3-line"></i>
+                            Novo Orçamento
+                        </h4>
+                        <p class="text-muted mb-0 modulo-subtitle fs-13">Preencha os dados abaixo para gerar uma nova proposta comercial para o cliente.</p>
+                    </div>
+                    <div>
+                        <a href="{{ route('orcamentos.index') }}" class="dash-btn dash-btn-light">
+                            <i class="ri-arrow-left-line"></i> Voltar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                {!!Form::open()
+                ->post()
+                ->route('nfe.store')
+                ->multipart()
+                !!}
+                <div class="pl-lg-4">
+                    @include('nfe._forms')
+                </div>
+                {!!Form::close()!!}
+            </div>
         </div>
-    </div>
-    <div class="card-body">
-        {!!Form::open()
-        ->post()
-        ->route('nfe.store')
-        ->multipart()
-        !!}
-        <div class="pl-lg-4">
-            @include('nfe._forms')
-        </div>
-        {!!Form::close()!!}
     </div>
 </div>
-@section('js')
-<script src="/js/nfe.js"></script>
 @endsection
+
+@section('js')
+<script src="/js/nfe.js?v={{ time() }}"></script>
 @endsection

@@ -3,25 +3,54 @@ name: erp-layout-modernization
 description: Guia completo de padronização de layouts do ERP. Define o padrão visual premium para todas as telas (Index, Create, Edit, Show), com templates prontos para copiar e regras de compatibilidade técnica.
 ---
 
-# 🎨 Padrão de Layout Premium — ERP
+# 🎨 Padrão de Layout Premium — ERP (v2)
 
 > **Objetivo**: Qualquer IA que ler este arquivo deve ser capaz de criar ou atualizar qualquer tela do ERP seguindo exatamente o mesmo padrão visual, sem precisar ver outras telas como referência.
 
 ---
 
-## 📋 REGRAS GERAIS (LEIA ANTES DE QUALQUER COISA)
+## 🧭 IMPORTANTE — DUAS CAMADAS DE ESTILO
 
-| Regra | Detalhe |
-|-------|---------|
-| **Botão Limpar** | SEMPRE com texto: `<i class="ri-eraser-line me-1"></i> Limpar` |
-| **Paginação** | Limite de **10 linhas** por página (chave `.env`: `PAGINACAO=10`) |
-| **CPF/CNPJ** | Nunca exibir em coluna separada — colocar em `<span class="text-muted fs-11">` abaixo do nome |
-| **Botões de ação** | SEMPRE lado a lado, nunca empilhados (`flex-wrap: nowrap`) |
-| **Ícones** | Usar exclusivamente a biblioteca **Remix Icon** (`ri-*`) |
-| **IDs de inputs** | NUNCA alterar IDs gerados pelo FormBuilder (ver seção de compatibilidade) |
-| **Form de exclusão** | `<form>` com `@method('delete')` + `@csrf` + classe `btn-delete` no botão |
-| **⚠️ Botões duplicados** | Antes de adicionar `modulo-actions` no `create`/`edit`, **SEMPRE ler o `_forms.blade.php`** para verificar se ele já tem botões Salvar/Cancelar. Se tiver, NÃO adicionar os botões na view pai — apenas fazer `@include('modulo._forms')` |
-| **📊 KPI Cards no Index** | SEMPRE verificar se há dados agregáveis no controller (count por estado, somas de valores). Se houver, **obrigatoriamente** incluir o bloco de KPI cards entre os filtros e a tabela, usando `widget-icon-box`. Ver seção "📊 PADRÃO DE KPI CARDS" |
+O sistema tem **2 camadas** de estilo. Você deve entender as duas antes de mexer em qualquer view:
+
+### 1. Camada Global (NÃO copiar para as views)
+
+O arquivo **`public/css/dashboard-skin.css`** é carregado no `layouts/app.blade.php` e aplica o tema premium a **TODAS** as telas. Ele já cuida de:
+
+- **Header das telas** (`.modulo-header-gradient`) → fundo índigo claro discreto + título escuro (via `!important`). **NÃO redefine o gradiente escuro na view.**
+- **Topbar** (busca, chip de plano, botões Upgrade/Tour/PDV, ícones).
+- **Sidebar** (item ativo em pílula roxa, card do usuário).
+- **Cards** (borda, raio 16px, sombra suave) e **botões** `.dash-btn`, `.seg-control`, `.page-title`.
+
+> Como o skin sobrescreve `.modulo-header-gradient` globalmente, basta a view usar `class="card-header modulo-header-gradient"` e os títulos `.modulo-title` / `.modulo-subtitle` — a aparência (fundo claro + texto escuro) já vem do skin.
+
+### 2. Camada Local (por view)
+
+Cada view adiciona seu próprio CSS no `@section('css')` para os componentes **específicos** do módulo: cards de estatística, tabela, filtro, action buttons, seções de formulário. **Estes CSS são os que você deve copiar de exemplo.**
+
+---
+
+## 🎨 DESIGN TOKENS (use estes valores)
+
+| Token | Valor | Uso |
+|-------|-------|-----|
+| `--skin-primary` | `#4f46e5` | Cor principal (índigo) — botões, ativo, destaque |
+| `--skin-primary-hover` | `#4338ca` | Hover do primário |
+| `--skin-primary-soft` | `#eef0ff` | Fundo suave índigo (filtros, chips) |
+| `--skin-bg` | `#f3f5fa` | Fundo da página |
+| `--skin-surface` | `#ffffff` | Fundo de cards |
+| `--skin-border` | `#e9ecf3` | Bordas |
+| `--skin-text` | `#1f2937` | Texto principal |
+| `--skin-muted` | `#64748b` | Texto secundário |
+| `--skin-soft` | `#94a3b8` | Texto discreto / placeholder |
+| `--skin-primary-soft` | `#eef0ff` | Hover suave |
+
+Cores dos cards de estatística (gradientes):
+- índigo `linear-gradient(135deg,#6366f1,#4f46e5)`
+- verde `linear-gradient(135deg,#24c98a,#109f61)`
+- vermelho `linear-gradient(135deg,#fb7185,#dc2626)`
+- azul `linear-gradient(135deg,#4d94ff,#1d4ed8)`
+- âmbar `linear-gradient(135deg,#fbbf24,#d97706)`
 
 ---
 
@@ -30,20 +59,67 @@ description: Guia completo de padronização de layouts do ERP. Define o padrão
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  TELA DE LISTAGEM (Index) — ordem obrigatória:              │
-│  1. Cabeçalho: GRADIENTE ESCURO (.modulo-header-gradient)   │
-│  2. KPI Cards: widget-icon-box  ← ACIMA dos filtros         │
-│  3. Filtros: .modulo-glass-filter                           │
-│  4. Tabela: .modulo-table-wrap                              │
-│  5. Footer: paginação (.modulo-footer)                      │
+│  1. Cabeçalho: .modulo-header-gradient (via skin, claro)    │
+│  2. Cards de estatística: .stat-card (coloridos)            │
+│  3. Filtros: .filter-wrap                                   │
+│  4. Tabela: .tb-wrap (coluna com avatar + action grid)      │
+│  5. Footer: contagem + paginação                            │
 ├─────────────────────────────────────────────────────────────┤
-│  TELAS DE FORMULÁRIO (Create / Edit / Show)                 │
-│  → Cabeçalho: GRADIENTE ESCURO (.modulo-header-gradient)   │
-│  → Botão Voltar: btn-light btn-sm text-dark                 │
-│  → Botão Salvar: btn-success (create) / btn-primary (edit) │
+│  TELAS DE FORMULÁRIO (Create / Edit)                        │
+│  → Cabeçalho: .modulo-header-gradient                       │
+│  → Botão Voltar: .dash-btn.dash-btn-light                   │
+│  → Form: abrir no pai, campos no `_forms`, botões no _forms │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-> **Nota**: O padrão de header gradiente escuro é usado em TODAS as telas (Index, Create, Edit e Show). Os KPI cards ficam **SEMPRE acima dos filtros** — nunca entre filtros e tabela.
+---
+
+## 🧭 FLUXO DE TRABALHO (como modernizar uma tela — passo a passo)
+
+> **Use SEMPRE este roteiro.** Quando o usuário passar uma rota, modernize **TODAS as telas vinculadas** (index, create, edit, show, `_forms` e parciais usados). Faça **um módulo por vez**, para não quebrar regras/calculos.
+
+### Passo 1 — Mapear
+- Liste as views em `resources/views/<modulo>/` e leia o controller (`index`, `create`, `edit`) para saber o que é passado (`compact(...)`).
+- Identifique rotas, JS, IDs de inputs e máscaras que **não podem mudar**.
+
+### Passo 2 — Controller (SÓ adicionar `$stats`)
+- No `index`, crie uma query base e **conte as métricas SEMPRE no controller** (nunca `->where()` em cima do paginador).
+- Padrão:
+  ```php
+  $base = Modelo::where('empresa_id', request()->empresa_id);
+  $data = (clone $base)
+      ->when(!empty($request->nome), fn($q) => $q->where('nome','like',"%$request->nome%"))
+      ->paginate(env("PAGINACAO"));
+  $stats = [
+      'total'  => (clone $base)->count(),
+      'ativos' => (clone $base)->where('status',1)->count(),   // apenas campos que existem
+  ];
+  return view('modulo.index', compact('data','stats'));
+  ```
+- ⚠️ Se não houver 2+ métricas seguras, use `total` + `$data->count()` (nesta página).
+- ⚠️ **Nunca** use `whereHas` em relação quebrada/suspeita (ex.: um `hasMany` apontando para o modelo errado).
+- ⚠️ Se usar `Auth::user()->empresa` no controller, **adicione `use Illuminate\Support\Facades\Auth;`** no topo (senão vira `App\Http\Controllers\Auth` → 500).
+
+### Passo 3 — Index
+- Header: `card-header modulo-header-gradient` + botões `dash-btn` (ação principal `dash-btn-primary`; demais `dash-btn-light`).
+- KPI: `.stat-card` coloridos. Filtro: `.filter-wrap` (label + input + Buscar `btn-primary` + Limpar).
+- Tabela: `.tb-wrap`; badges → `.pill`; ações → `.act-group`/`.act-btn` **ou** dropdown (veja "Posição da Coluna de Ações").
+- Footer: contagem "Exibindo X de Y" + `{!! $data->appends(request()->all())->links() !!}`.
+
+### Passo 4 — Create / Edit
+- Cabeçalho + **Voltar** `dash-btn dash-btn-light`; focus dos inputs índigo (`#4f46e5`).
+- `@include('modulo._forms')`. Botões Salvar/Cancelar ficam **no `_forms`** (`.uf-actions`).
+
+### Passo 5 — `_forms`
+- Seções `.uf-section-title`, campos `.uf-field`, rodapé `.uf-actions` (Cancelar `dash-btn-light` + Salvar `dash-btn-primary`).
+- **NÃO alterar** IDs `inp-*`, classes JS, máscaras nem `@section('js')`.
+
+### Passo 6 — Validar (obrigatório antes de entregar)
+```
+php artisan view:cache   # compila o Blade — pega erro `??`/sintaxe
+php -l app/Http/Controllers/<Modulo>Controller.php
+```
+Confirme que não sobrou `{{-- ??? }}` nem CSS "solto" fora de `<style>`, e que a TELA não dá 500.
 
 ---
 
@@ -54,23 +130,19 @@ description: Guia completo de padronização de layouts do ERP. Define o padrão
 
 @section('css')
 <style>
-/* Cole aqui o CSS Completo do bloco "📦 CSS Completo" abaixo */
+/* CSS local do módulo (copiar dos exemplos abaixo) */
 </style>
 @endsection
 
 @section('content')
-<div class="mt-3 text-dark">
+<div class="mt-3">
     <div class="row">
-        <div class="card border-0 shadow-sm text-dark">
+        <div class="card border-0 shadow-sm">
             <!-- CABEÇALHO -->
             <!-- CORPO -->
         </div>
     </div>
 </div>
-@endsection
-
-@section('js')
-<script src="/js/meu_modulo.js"></script>
 @endsection
 ```
 
@@ -78,221 +150,140 @@ description: Guia completo de padronização de layouts do ERP. Define o padrão
 
 ## 📄 TEMPLATE COMPLETO — TELA INDEX (Listagem)
 
----
-
-## 📊 PADRÃO DE KPI CARDS (obrigatório no Index quando há dados agregáveis)
-
-### Quando incluir?
-
-Ao modernizar qualquer tela Index, **SEMPRE verificar o controller** para identificar campos que permitem agregações úteis:
-- Campos de **status/estado** → `count()` por valor (`aprovado`, `cancelado`, `rejeitado`, `novo`, `ativo`, `inativo`...)
-- Campos de **valor monetário** → `sum('valor_xxx')` filtrado por estado aprovado
-- Campos de **quantidade** → `sum('quantidade_xxx')`
-
-Se houver ao menos **2 métricas interessantes**, inclua o bloco de KPI cards.
-
-### Padrão no Controller (`index` method)
-
-```php
-// 1. Crie uma $statsQuery com os mesmos filtros da listagem, MAS SEM filtro de estado
-//    (para os cards sempre mostrarem totais por categoria, independente do filtro)
-$statsQuery = Modelo::where('empresa_id', request()->empresa_id)
-->when(...filtros de data, local, etc...);
-
-// 2. Monte o array $stats com clone para não contaminar a query
-$stats = [
-    'total'      => (clone $statsQuery)->count(),
-    'aprovadas'  => (clone $statsQuery)->where('estado_emissao', 'aprovado')->count(),
-    'canceladas' => (clone $statsQuery)->where('estado_emissao', 'cancelado')->count(),
-    'valor'      => (clone $statsQuery)->where('estado_emissao', 'aprovado')->sum('valor_campo'),
-];
-
-// 3. Envie $stats junto com $data
-return view('modulo.index', compact('data', 'stats'));
-```
-
-### Padrão na View (entre `modulo-glass-filter` e `modulo-table-wrap`)
-
-```blade
-{{-- ═══ KPI CARDS ═══ --}}
-<div class="row g-3 mb-4">
-    <div class="col-md-3 col-6">
-        <div class="card widget-icon-box text-bg-info mb-0">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div class="flex-grow-1 overflow-hidden">
-                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Total</h4>
-                        <h3 class="my-2 text-white fs-18">{{ $stats['total'] }}</h3>
-                        <p class="mb-0 text-white-50 fs-11">Registros no período</p>
-                    </div>
-                    <div class="avatar-sm flex-shrink-0">
-                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                            <i class="ri-file-list-3-line"></i>
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {{-- Repetir para cada métrica: text-bg-success (aprovadas), text-bg-danger (canceladas), text-bg-warning (valor) --}}
-</div>
-```
-
-**Cores recomendadas por tipo de métrica:**
-
-| Métrica | Cor Bootstrap | Ícone sugerido |
-|---------|---------------|----------------|
-| Total geral | `text-bg-info` | `ri-file-list-3-line` |
-| Aprovados/Ativos | `text-bg-success` | `ri-checkbox-circle-line` |
-| Cancelados/Inativos | `text-bg-danger` | `ri-close-circle-line` |
-| Valor monetário | `text-bg-warning` | `ri-money-dollar-circle-line` |
-| Pendentes/Novos | `text-bg-primary` | `ri-time-line` |
-| Quantidade/Volume | `text-bg-dark` | `ri-stack-line` |
-
----
-
+> Baseado no padrão da tela **Usuários**. Copie e adapte.
 
 ```blade
 @extends('layouts.app', ['title' => 'Nome do Módulo'])
 
 @section('css')
 <style>
-/* Cole aqui o CSS Completo (ver seção 📦 CSS Completo) */
+    /* 📌 Cole o bloco "CSS COMPLETO DA LISTAGEM" (final do arquivo) */
 </style>
 @endsection
 
 @section('content')
-<div class="mt-3 text-dark">
+<div class="mt-3">
     <div class="row">
-        <div class="card">
+        <div class="card border-0 shadow-sm">
 
-            <!-- ═══ CABEÇALHO PREMIUM ═══ -->
-            <div class="card-header modulo-header-gradient">
+            <!-- ═══ CABEÇALHO ═══ -->
+            <div class="card-header modulo-header-gradient py-3 px-4">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div>
-                        <h4 class="modulo-title text-white">
+                        <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
                             <i class="ri-ICONE-DA-TELA-line"></i>
                             Nome do Módulo
                         </h4>
-                        <p class="modulo-subtitle">
-                            Breve descrição do propósito desta tela de listagem.
-                        </p>
+                        <p class="text-muted mb-0 modulo-subtitle fs-13">Descrição do propósito desta tela.</p>
                     </div>
-                    <div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ route('modulo.index') }}" class="dash-btn dash-btn-light"><i class="ri-refresh-line"></i> Atualizar</a>
                         @can('modulo_create')
-                        <a href="{{ route('modulo.create') }}" class="btn btn-success">
-                            <i class="ri-add-circle-fill"></i> Novo Registro
-                        </a>
+                        <a href="{{ route('modulo.create') }}" class="dash-btn dash-btn-primary"><i class="ri-add-line"></i> Novo Registro</a>
                         @endcan
                     </div>
                 </div>
             </div>
 
-            <div class="card-body">
+            <div class="card-body p-4">
 
-                <!-- ═══ FILTROS PREMIUM ═══ -->
-                <div class="modulo-glass-filter-premium">
-                    <div class="filtro-premium-header">
-                        <h5 class="filtro-premium-title">
-                            <i class="ri-search-line"></i> Filtrar Registros
-                        </h5>
-                    </div>
-
-                    {!!Form::open()->fill(request()->all())->get()!!}
-                    <div class="row g-3">
-                        <div class="col-md-4 col-12">
-                            <label class="form-label"><i class="ri-user-line"></i> Nome / Descrição</label>
-                            {!!Form::text('nome', '')->attrs(['class' => 'form-control', 'placeholder' => 'Digite para pesquisar...'])!!}
-                        </div>
-                        <div class="col-md-2 col-6">
-                            <label class="form-label"><i class="ri-calendar-line"></i> Data Inicial</label>
-                            {!!Form::date('start_date', '')->attrs(['class' => 'form-control'])!!}
-                        </div>
-                        <div class="col-md-2 col-6">
-                            <label class="form-label"><i class="ri-calendar-line"></i> Data Final</label>
-                            {!!Form::date('end_date', '')->attrs(['class' => 'form-control'])!!}
-                        </div>
-                        <div class="col-md-2 col-6">
-                            <label class="form-label"><i class="ri-equalizer-line"></i> Status</label>
-                            {!!Form::select('status', '', ['' => 'Todos', '1' => 'Ativo', '0' => 'Inativo'])->attrs(['class' => 'form-select'])!!}
-                        </div>
-                        <div class="col-md-2 col-12 ms-auto d-flex align-items-end">
-                            <div class="d-flex gap-2 w-100">
-                                <button class="btn btn-pesquisar flex-grow-1" type="submit">
-                                    <i class="ri-search-line"></i> Buscar
-                                </button>
-                                <a class="btn btn-limpar px-3" href="{{ route('modulo.index') }}" title="Limpar Filtros">
-                                    <i class="ri-eraser-line"></i>
-                                </a>
+                <!-- ═══ CARDS DE ESTATÍSTICA ═══ -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-indigo">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Total</div>
+                                    <div class="st-value">{{ $stats['total'] }}</div>
+                                    <div class="st-sub">descrição curta</div>
+                                </div>
+                                <div class="st-icon"><i class="ri-file-list-3-line"></i></div>
                             </div>
                         </div>
                     </div>
-                    {!!Form::close()!!}
+                    {{-- repita com stat-green / stat-blue / stat-amber conforme as métricas --}}
                 </div>
 
-                <!-- ═══ TABELA PREMIUM ═══ -->
-                <div class="col-12">
-                    <div class="table-responsive-sm">
-                        <table class="table table-centered">
+                <!-- ═══ FILTROS ═══ -->
+                <div class="filter-wrap">
+                    <h5 class="filter-title mb-0"><i class="ri-search-line"></i> Filtrar Registros</h5>
+                    <div class="mt-3">
+                        {!!Form::open()->fill(request()->all())->get()!!}
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-8 col-12">
+                                <label class="form-label"><i class="ri-user-line"></i> Nome / Descrição</label>
+                                {!!Form::text('nome', '')->attrs(['class' => 'form-control', 'placeholder' => 'Digite para pesquisar...'])!!}
+                            </div>
+                            <div class="col-md-3 col-12 ms-auto">
+                                <div class="d-flex gap-2 w-100">
+                                    <button class="btn btn-primary flex-grow-1" type="submit" style="border-radius:10px;">
+                                        <i class="ri-search-line"></i> Buscar
+                                    </button>
+                                    <a class="btn btn-light border px-3" href="{{ route('modulo.index') }}" title="Limpar Filtros" style="border-radius:10px;">
+                                        <i class="ri-eraser-line"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {!!Form::close()!!}
+                    </div>
+                </div>
+
+                <!-- ═══ TABELA ═══ -->
+                <div class="tb-wrap">
+                    <div class="table-responsive">
+                        <table class="table table-centered table-hover align-middle mb-0">
                             <thead>
                                 <tr>
-                                    @can('modulo_delete')
-                                    <th style="width: 40px;">
-                                        <div class="form-check mb-0">
-                                            <input class="form-check-input" type="checkbox" id="select-all-checkbox">
-                                        </div>
-                                    </th>
-                                    @endcan
                                     <th>Nome</th>
                                     <th>Status</th>
-                                    <th width="10%">Ações</th>
+                                    @if(existe coluna extra) <th>Extra</th> @endif
+                                    <th class="text-end" style="width: 170px;">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    @can('modulo_delete')
                                     <td>
-                                        <div class="form-check mb-0">
-                                            <input class="form-check-input check-delete" type="checkbox"
-                                                   name="item_delete[]" value="{{ $item->id }}">
+                                        <div class="d-flex align-items-center">
+                                            <img class="rounded-circle border bg-light me-2 shadow-sm" src="{{ $item->img ?? '/imgs/no-image.png' }}"
+                                                 alt="" style="width: 36px; height: 36px; object-fit: cover;">
+                                            <div>
+                                                <div class="fw-semibold" style="color:#1f2937;">{{ $item->nome }}</div>
+                                                {{-- Dado secundário SEMPRE abaixo do nome --}}
+                                                <div class="fs-12" style="color:#94a3b8;">{{ $item->cpf_cnpj ?? '' }}</div>
+                                            </div>
                                         </div>
                                     </td>
-                                    @endcan
-                                    <td>
-                                        <strong>{{ $item->nome }}</strong>
-                                        {{-- CPF/CNPJ ou dado secundário SEMPRE em span abaixo, nunca em coluna separada --}}
-                                        <span class="text-muted d-block fs-11">{{ $item->cpf_cnpj ?? '' }}</span>
-                                    </td>
-                                    <td>
-                                        @if($item->ativo)
-                                        <span class="badge bg-success-subtle"><i class="ri-checkbox-circle-line"></i> Ativo</span>
-                                        @else
-                                        <span class="badge bg-danger-subtle"><i class="ri-close-circle-line"></i> Inativo</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <form action="{{ route('modulo.destroy', $item->id) }}" method="post"
-                                              id="form-{{$item->id}}" class="d-flex align-items-center gap-1" style="width: auto;">
+                                    <td>@include badge @endtd</td>
+                                    <td class="text-end">
+                                        @if(__isAdmin())
+                                        <form action="{{ route('modulo.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="m-0">
                                             @method('delete')
                                             @csrf
-                                            @can('modulo_edit')
-                                            <a class="btn btn-warning btn-sm text-white"
-                                               href="{{ route('modulo.edit', $item->id) }}" title="Editar">
-                                                <i class="ri-pencil-fill"></i>
-                                            </a>
-                                            @endcan
-                                            @can('modulo_delete')
-                                            <button type="button" class="btn btn-delete btn-sm btn-danger" title="Excluir">
-                                                <i class="ri-delete-bin-line"></i>
-                                            </button>
-                                            @endcan
+                                            <div class="act-group">
+                                                @can('modulo_edit')
+                                                <a class="act-btn act-edit" href="{{ route('modulo.edit', $item->id) }}" title="Editar"><i class="ri-pencil-line"></i></a>
+                                                @endcan
+                                                @can('modulo_show')
+                                                <a class="act-btn act-view" href="{{ route('modulo.show', $item->id) }}" title="Visualizar"><i class="ri-eye-line"></i></a>
+                                                @endcan
+                                                @can('modulo_delete')
+                                                <button type="button" class="act-btn act-del btn-delete" title="Excluir"><i class="ri-delete-bin-line"></i></button>
+                                                @endcan
+                                            </div>
                                         </form>
+                                        @endif
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-4">Nenhum registro encontrado.</td>
+                                    <td colspan="99">
+                                        <div class="empty-state">
+                                            <i class="ri-inbox-2-line"></i>
+                                            <p>Nenhum registro encontrado.</p>
+                                        </div>
+                                    </td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -300,22 +291,12 @@ return view('modulo.index', compact('data', 'stats'));
                     </div>
                 </div>
 
-                <!-- ═══ FOOTER (Lote + Paginação) ═══ -->
+                <!-- ═══ FOOTER ═══ -->
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
-                    <div>
-                        @can('modulo_delete')
-                        <form action="{{ route('modulo.destroy-select') }}" method="post" id="form-delete-select" class="m-0">
-                            @method('delete')
-                            @csrf
-                            <button type="button" class="btn btn-outline-danger btn-sm btn-delete-all" disabled>
-                                <i class="ri-delete-bin-line align-middle me-1"></i> Remover Selecionados
-                            </button>
-                        </form>
-                        @endcan
+                    <div class="fs-12" style="color:#94a3b8;">
+                        Exibindo <strong>{{ $data->count() }}</strong> de <strong>{{ $data->total() }}</strong> registros
                     </div>
-                    <div>
-                        {!! $data->appends(request()->all())->links() !!}
-                    </div>
+                    <div>{!! $data->appends(request()->all())->links() !!}</div>
                 </div>
 
             </div>
@@ -323,634 +304,328 @@ return view('modulo.index', compact('data', 'stats'));
     </div>
 </div>
 @endsection
-
-@section('js')
-<script type="text/javascript" src="/js/delete_selecionados.js"></script>
-@endsection
 ```
 
 ---
 
-## 📝 TEMPLATE COMPLETO — TELA CREATE (Cadastro)
+## 📊 CARDS DE ESTATÍSTICA — PADRÃO NO CONTROLLER
 
+No método `index` do controller, monte um `$stats` com as agregações (usando `clone` para não contaminar a query de listagem):
+
+```php
+public function index(Request $request)
+{
+    $base = Modelo::where('empresa_id', request()->empresa_id)
+        ->when(!empty($request->nome), fn($q) => $q->where('nome', 'like', "%$request->nome%"));
+
+    $data = (clone $base)->paginate(env("PAGINACAO"));
+
+    $stats = [
+        'total'      => (clone $base)->count(),
+        'ativos'     => (clone $base)->where('ativo', 1)->count(),
+        'aprovados'  => (clone $base)->where('estado', 'aprovado')->count(),
+        'valor'      => (clone $base)->sum('total'),
+    ];
+
+    return view('modulo.index', compact('data', 'stats'));
+}
+```
+
+**Dica (usuario_empresas):** quando a tabela usa `belongsToMany`/join com a empresa, use `$base = Modelo::where('usuario_empresas.empresa_id', request()->empresa_id)->join('usuario_empresas', 'modelos.id', '=', 'usuario_empresas.modelo_id')->select('modelos.*');` e `->whereHas('roles')` / `->whereDoesntHave('locais')` conforme a métrica.
+
+---
+
+## 📝 TEMPLATE COMPLETO — TELA CREATE / EDIT
+
+> As views `create`/`edit` quase só abrem o `Form` + `@include('modulo._forms')`. Toda a responsabilidade visual dos campos fica no `_forms`.
+
+**create.blade.php:**
 ```blade
 @extends('layouts.app', ['title' => 'Novo Registro'])
 
-@section('css')
-<style>
-/* Cole aqui o CSS Completo (ver seção 📦 CSS Completo) */
-</style>
-@endsection
-
 @section('content')
-<div class="mt-3 text-dark">
-    <div class="row justify-content-center">
-        <div class="col-lg-12">
-            <div class="card border-0 shadow-sm modulo-form-card">
+<div class="mt-3">
+    <div class="row">
+        <div class="card border-0 shadow-sm">
 
-                <!-- ═══ CABEÇALHO PREMIUM ═══ -->
-                <div class="card-header modulo-header-gradient py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                        <div>
-                            <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
-                                <i class="ri-add-circle-line"></i>
-                                Novo Registro
-                            </h4>
-                            <p class="text-muted mb-0 modulo-subtitle fs-13">
-                                Preencha os campos abaixo para cadastrar um novo registro.
-                            </p>
-                        </div>
-                        <div>
-                            <a href="{{ route('modulo.index') }}" class="btn btn-light btn-sm px-3 text-dark">
-                                <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
-                            </a>
-                        </div>
+            <div class="card-header modulo-header-gradient py-3 px-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <h4 class="mb-1 modulo-title d-flex align-items-center gap-2"><i class="ri-add-circle-line"></i> Novo Registro</h4>
+                        <p class="text-muted mb-0 modulo-subtitle fs-13">Preencha os campos abaixo para cadastrar.</p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ route('modulo.index') }}" class="dash-btn dash-btn-light"><i class="ri-arrow-left-line"></i> Voltar</a>
                     </div>
                 </div>
-
-                <!-- ═══ CORPO DO FORMULÁRIO ═══ -->
-                <div class="card-body p-4">
-                    {!!Form::open()->post()->route('modulo.store')->multipart()!!}
-
-                    @include('modulo._forms')
-
-                    {{--
-                        ⚠️ ATENÇÃO — BOTÕES DUPLICADOS:
-                        Antes de adicionar o bloco modulo-actions abaixo,
-                        SEMPRE verifique se o _forms.blade.php já tem botões Salvar/Cancelar.
-                        Se o _forms já tiver, NÃO inclua o bloco abaixo.
-                        Se o _forms NÃO tiver botões, use o bloco abaixo:
-                    --}}
-
-                    {{-- Só adicionar este bloco se o _forms.blade.php NÃO tiver botões --}}
-                    <div class="modulo-actions">
-                        <div class="d-flex gap-2 justify-content-end">
-                            <a href="{{ route('modulo.index') }}" class="btn btn-outline-secondary">
-                                <i class="ri-close-line align-middle me-1"></i> Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-success px-4" id="btn-store">
-                                <i class="ri-save-line align-middle me-1"></i> Salvar
-                            </button>
-                        </div>
-                    </div>
-
-                    {!!Form::close()!!}
-                </div>
-
             </div>
+
+            <div class="card-body p-4">
+                {!!Form::open()->post()->route('modulo.store')->multipart()!!}
+                @include('modulo._forms')
+                {!!Form::close()!!}
+            </div>
+
         </div>
     </div>
 </div>
 @endsection
 ```
 
+**edit.blade.php:** igual, mudando `->put()->route('modulo.update', [$item->id])` e `title => 'Editar Registro'`, botão Voltar igual.
+
+> ⚠️ **Regra**: Os botões Salvar/Cancelar vivem no **`_forms`** (`.uf-actions`). **NÃO** duplicar botões na view pai. Apenas `@include('modulo._forms')`.
+
 ---
 
-## ✏️ TEMPLATE COMPLETO — TELA EDIT (Edição)
+## 🧩 PADRÃO DO `_forms.blade.php` (campos alinhados)
+
+> Sections com título + ícone, grade equilibrada (`col-md-6` para campos grandes, `col-md-4` para médios, `col-md-3` para pequenos), labels em caixa alta.
 
 ```blade
-@extends('layouts.app', ['title' => 'Editar Registro'])
-
-@section('css')
 <style>
-/* Cole aqui o CSS Completo (ver seção 📦 CSS Completo) */
+    /* 📌 Cole o bloco "CSS DO FORMULÁRIO" (final do arquivo) */
 </style>
-@endsection
 
-@section('content')
-<div class="mt-3 text-dark">
-    <div class="row justify-content-center">
-        <div class="col-lg-12">
-            <div class="card border-0 shadow-sm modulo-form-card">
+<div class="row g-4">
 
-                <!-- ═══ CABEÇALHO PREMIUM ═══ -->
-                <div class="card-header modulo-header-gradient py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                        <div>
-                            <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
-                                <i class="ri-edit-line"></i>
-                                Editar Registro
-                            </h4>
-                            <p class="text-muted mb-0 modulo-subtitle fs-13">
-                                Atualize os dados do registro selecionado.
-                            </p>
-                        </div>
-                        <div>
-                            <a href="{{ route('modulo.index') }}" class="btn btn-light btn-sm px-3 text-dark">
-                                <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ═══ CORPO DO FORMULÁRIO ═══ -->
-                <div class="card-body p-4">
-                    {!!Form::open()->fill($item)->put()->route('modulo.update', [$item->id])->multipart()!!}
-
-                    @include('modulo._forms')
-
-                    <!-- Botões de Ação -->
-                    <div class="modulo-actions">
-                        <div class="d-flex gap-2 justify-content-end">
-                            <a href="{{ route('modulo.index') }}" class="btn btn-outline-secondary">
-                                <i class="ri-close-line align-middle me-1"></i> Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-primary px-4" id="btn-store">
-                                <i class="ri-save-line align-middle me-1"></i> Salvar Alterações
-                            </button>
-                        </div>
-                    </div>
-
-                    {!!Form::close()!!}
-                </div>
-
-            </div>
+    <!-- SEÇÃO 1 -->
+    <div class="col-12 uf-section">
+        <div class="uf-section-title">
+            <span class="uf-ico"><i class="ri-ICONE-line"></i></span>
+            1. Nome da Seção
+            <small>descrição curta</small>
         </div>
-    </div>
-</div>
-@endsection
-```
-
----
-
-## 👁️ TEMPLATE COMPLETO — TELA SHOW (Visualização/Detalhes)
-
-```blade
-@extends('layouts.app', ['title' => 'Detalhes do Registro'])
-
-@section('css')
-<style>
-/* Cole aqui o CSS Completo (ver seção 📦 CSS Completo) */
-</style>
-@endsection
-
-@section('content')
-<div class="mt-3 text-dark">
-    <div class="row justify-content-center">
-        <div class="col-lg-12">
-            <div class="card border-0 shadow-sm modulo-form-card">
-
-                <!-- ═══ CABEÇALHO PREMIUM ═══ -->
-                <div class="card-header modulo-header-gradient py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                        <div>
-                            <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
-                                <i class="ri-eye-line"></i>
-                                Detalhes do Registro #{{ $item->id }}
-                            </h4>
-                            <p class="text-muted mb-0 modulo-subtitle fs-13">
-                                Visualização completa dos dados do registro.
-                            </p>
-                        </div>
-                        <div class="d-inline-flex gap-2">
-                            @can('modulo_edit')
-                            <a href="{{ route('modulo.edit', $item->id) }}" class="btn btn-warning btn-sm text-white">
-                                <i class="ri-pencil-line align-middle me-1"></i> Editar
-                            </a>
-                            @endcan
-                            <a href="{{ route('modulo.index') }}" class="btn btn-light btn-sm px-3 text-dark">
-                                <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ═══ CORPO ═══ -->
-                <div class="card-body p-4">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="fw-bold text-muted fs-12 text-uppercase">Nome</label>
-                            <p class="mb-0 text-dark fw-semibold">{{ $item->nome }}</p>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="fw-bold text-muted fs-12 text-uppercase">Status</label>
-                            <p class="mb-0">
-                                @if($item->ativo)
-                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Ativo</span>
-                                @else
-                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Inativo</span>
-                                @endif
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-</div>
-@endsection
-```
-
----
-
-## 🧩 COMPONENTES REUTILIZÁVEIS
-
-### Badges de Status (Sim/Não — para campos booleanos)
-
-```html
-<!-- SIM -->
-<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-11">Sim</span>
-
-<!-- NÃO -->
-<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fs-11">Não</span>
-
-<!-- ATIVO -->
-<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-11">
-    <i class="ri-check-line me-1"></i>Ativo
-</span>
-
-<!-- INATIVO -->
-<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fs-11">
-    <i class="ri-close-line me-1"></i>Inativo
-</span>
-```
-
-### Grupo de Botões de Ação (na tabela)
-
-> **⚠️ Regra crítica**: `flex-wrap: nowrap` para NUNCA empilhar botões verticalmente.
-
-```html
-<form action="{{ route('modulo.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="m-0">
-    @method('delete')
-    @csrf
-    <div class="modulo-action-group">
-        @can('modulo_show')
-        <a class="btn btn-info btn-sm text-white" href="{{ route('modulo.show', $item->id) }}" title="Visualizar">
-            <i class="ri-eye-line"></i>
-        </a>
-        @endcan
-        @can('modulo_edit')
-        <a class="btn btn-warning btn-sm text-white" href="{{ route('modulo.edit', $item->id) }}" title="Editar">
-            <i class="ri-pencil-line"></i>
-        </a>
-        @endcan
-        @can('modulo_delete')
-        <button type="button" class="btn btn-danger btn-sm btn-delete" title="Excluir">
-            <i class="ri-delete-bin-line"></i>
-        </button>
-        @endcan
-    </div>
-</form>
-```
-
-### KPI Cards (Cards de Resumo no topo da listagem)
-
-O ERP utiliza os cards de resumo no padrão de widgets da página principal (`widget-icon-box`). Esse estilo possui fundos coloridos, cantos arredondados, texto com boa legibilidade e ícones destacados de forma moderna.
-
-```html
-<div class="row g-3 mb-4">
-    <div class="col-md-3 col-6">
-        <div class="card widget-icon-box text-bg-info mb-0">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div class="flex-grow-1 overflow-hidden">
-                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Total de Contas</h4>
-                        <h3 class="my-2 text-white fs-18">10</h3>
-                    </div>
-                    <div class="avatar-sm flex-shrink-0">
-                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                            <i class="ri-file-text-line"></i>
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-```
-
-**Cores de fundo disponíveis (Bootstrap)**: `text-bg-info` (azul) | `text-bg-success` (verde) | `text-bg-danger` (vermelho) | `text-bg-warning` (amarelo) | `text-bg-primary` (índigo) | `text-bg-dark` (cinza escuro)
-
-### Seções em Formulários Longos (`_forms.blade.php`)
-
-```html
-<div class="row g-3 text-dark">
-    <!-- Seção 1 -->
-    <div class="col-12 mt-4">
-        <h5 class="section-title"><i class="ri-information-line"></i> 1. Informações Básicas</h5>
         <div class="row g-3">
-            <div class="col-md-6 col-12">
-                {!!Form::text('nome', 'Nome')->attrs(['class' => 'form-control'])->required()!!}
+            <div class="col-md-6 col-12 uf-field">
+                {!!Form::text('nome', 'Nome')->placeholder('Ex: ...')->required()->attrs(['class' => 'form-control'])!!}
             </div>
-            <div class="col-md-3 col-6">
+            <div class="col-md-6 col-12 uf-field">
+                {!!Form::text('email', 'E-mail')->placeholder('...')->required()->attrs(['class' => 'form-control'])!!}
+            </div>
+        </div>
+        <div class="row g-3 mt-1">
+            <div class="col-md-4 col-12 uf-field">
                 {!!Form::select('status', 'Status', [1 => 'Ativo', 0 => 'Inativo'])->attrs(['class' => 'form-select'])!!}
             </div>
-        </div>
-    </div>
-
-    <!-- Seção 2: Inputs Complexos -->
-    <div class="col-12 mt-4">
-        <h5 class="section-title"><i class="ri-lock-password-line"></i> 2. Segurança e API</h5>
-        <div class="row g-3">
-            <div class="col-md-4">
-                <label class="form-label required">Senha</label>
+            <div class="col-md-4 col-12 uf-field">
+                <label class="form-label required uf-required"><i class="ri-lock-line"></i> Senha</label>
                 <div class="input-group" id="show_hide_password">
-                    <input required type="password" class="form-control" name="password" autocomplete="off">
-                    <a class="input-group-text" style="cursor: pointer;"><i class='ri-eye-line'></i></a>
+                    <input required type="password" class="form-control" name="password" autocomplete="off" placeholder="Digite a senha">
+                    <button type="button" class="btn btn-outline-secondary input-group-text"><i class="ri-eye-line"></i></button>
                 </div>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Token API</label>
-                <div class="input-group">
-                    <input readonly type="text" class="form-control" id="api_token" name="token">
-                    <button type="button" class="btn btn-info" id="btn_token"><i class="ri-refresh-line text-white"></i></button>
+            <div class="col-md-4 col-12 d-flex align-items-end">
+                <div class="w-100 p-3 rounded-2" style="background:#f8fafc;border:1px solid #eef0f6;">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="ri-information-line" style="color:#4f46e5;font-size:18px;"></i>
+                        <div>
+                            <div class="fw-semibold" style="font-size:12.5px;color:#1f2937;">Título do aviso</div>
+                            <div style="font-size:11.5px;color:#94a3b8;">Texto curto explicativo.</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Seção 3 -->
-    <div class="col-12 mt-4">
-        <h5 class="section-title"><i class="ri-map-pin-line"></i> 3. Endereço</h5>
-        <div class="row g-3">
-            <!-- campos aqui -->
+    {{-- mais seções --}}
+
+    <!-- RODAPÉ COM BOTÕES -->
+    <div class="col-12">
+        <div class="uf-actions">
+            <a href="{{ route('modulo.index') }}" class="dash-btn dash-btn-light px-4"><i class="ri-close-line"></i> Cancelar</a>
+            <button type="submit" class="dash-btn dash-btn-primary px-4" id="btn-store">
+                <i class="ri-save-line"></i> {{ $formType === 'edit' ? 'Salvar Alterações' : 'Salvar' }}
+            </button>
         </div>
     </div>
+
 </div>
+
+@section('js')
+{{-- scripts específicos do formulário --}}
+@endsection
 ```
 
 ---
 
-## 📦 CSS COMPLETO (copie inteiro para o `@section('css')`)
+## 📦 CSS COMPLETO DA LISTAGEM (copiar para `@section('css')` do Index)
 
 ```css
-/* ─── Estilos Personalizados para a Página ─── */
-.card {
-    border: 1px solid rgba(0, 0, 0, 0.06) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
-    border-radius: 16px !important;
-    overflow: hidden;
-    background: #fff;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    margin-bottom: 24px;
-}
+/* ─── Cards de Estatísticas ─── */
+.stat-card { border: 0; border-radius: 16px; padding: 18px 20px; height: 100%; color: #fff; position: relative; overflow: hidden; transition: transform .18s ease, box-shadow .18s ease; }
+.stat-card:hover { transform: translateY(-3px); }
+.stat-card::after { content: ''; position: absolute; top: -44px; right: -44px; width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,.12); }
+.stat-indigo { background: linear-gradient(135deg,#6366f1,#4f46e5); box-shadow: 0 6px 18px rgba(79,70,229,.32); }
+.stat-green  { background: linear-gradient(135deg,#24c98a,#109f61); box-shadow: 0 6px 18px rgba(16,185,129,.32); }
+.stat-blue   { background: linear-gradient(135deg,#4d94ff,#1d4ed8); box-shadow: 0 6px 18px rgba(37,99,235,.32); }
+.stat-amber  { background: linear-gradient(135deg,#fbbf24,#d97706); box-shadow: 0 6px 18px rgba(245,158,11,.32); }
+.stat-card .st-label { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: rgba(255,255,255,.85); }
+.stat-card .st-value { font-size: 26px; font-weight: 800; color: #fff; margin-top: 4px; line-height: 1.1; }
+.stat-card .st-sub { font-size: 11.5px; color: rgba(255,255,255,.75); margin-top: 4px; }
+.stat-card .st-icon { width: 46px; height: 46px; border-radius: 13px; background: rgba(255,255,255,.22); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05) !important;
-}
+/* ─── Filtro ─── */
+.filter-wrap { background: #fff; border: 1px solid #e9ecf3; border-radius: 14px; box-shadow: 0 1px 2px rgba(16,24,40,.04); padding: 18px 20px; margin-bottom: 18px; }
+.filter-title { font-size: 13px; font-weight: 700; color: #3f3e6a; text-transform: uppercase; letter-spacing: .5px; }
+.filter-title i { color: #4f46e5; margin-right: 6px; }
+.filter-wrap label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #8c8ca6; }
+.filter-wrap .form-control { height: 40px; border-radius: 10px; border: 1px solid #dcdce9; font-size: 13.5px; background: #fcfdfe; }
+.filter-wrap .form-control:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.12); background: #fff; }
 
-.card-body {
-    padding: 24px !important;
-}
+/* ─── Tabela ─── */
+.tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+.tb-wrap table { margin-bottom: 0; }
+.tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 16px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+.tb-wrap tbody td { padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13.5px; color: #374151; }
+.tb-wrap tbody tr:hover { background: #f5f6fe; }
+.tb-wrap tbody tr:last-child td { border-bottom: none; }
 
-/* ─── Cabeçalho de Gradiente Premium ─── */
-.modulo-header-gradient {
-    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%) !important;
-    border-radius: 12px 12px 0 0 !important;
-    border-bottom: none !important;
-    padding: 20px 24px !important;
-}
+/* ─── Grade de botões de ação ─── */
+.act-group { display: inline-flex; gap: 6px; align-items: center; }
+.act-btn { width: 34px; height: 34px; border-radius: 10px; border: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; text-decoration: none; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+.act-btn:hover { transform: translateY(-2px); text-decoration: none; }
+.act-edit { background: #eef0ff; color: #4f46e5; }
+.act-edit:hover { box-shadow: 0 4px 12px rgba(79,70,229,.3); }
+.act-view { background: #e0f2fe; color: #0284c7; }
+.act-view:hover { box-shadow: 0 4px 12px rgba(2,132,199,.3); }
+.act-profile { background: #dcfce7; color: #16a34a; }
+.act-profile:hover { box-shadow: 0 4px 12px rgba(22,163,74,.3); }
+.act-del { background: #fee2e2; color: #dc2626; }
+.act-del:hover { box-shadow: 0 4px 12px rgba(220,38,38,.3); }
 
-.modulo-header-gradient .modulo-title {
-    color: #fff !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.3px !important;
-    margin: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px !important;
-}
+/* ─── Badges (pills) ─── */
+.pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 8px; padding: 4px 10px; font-size: 11.5px; font-weight: 700; }
+.pill-ok { background: #dcfce7; color: #15803d; }
+.pill-no { background: #f1f5f9; color: #64748b; }
+.pill-role { background: #eef0ff; color: #4f46e5; }
+.pill-amber { background: #fef3c7; color: #b45309; }
+.pill-red { background: #fee2e2; color: #b91c1c; }
 
-.modulo-header-gradient .modulo-title i {
-    background: rgba(255, 255, 255, 0.1) !important;
-    padding: 8px !important;
-    border-radius: 10px !important;
-    color: #a8b5ff !important;
-    font-size: 20px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-.modulo-header-gradient .modulo-subtitle {
-    color: rgba(255, 255, 255, 0.6) !important;
-    font-weight: 400 !important;
-    font-size: 13px !important;
-    margin-top: 4px !important;
-    margin-bottom: 0 !important;
-}
-
-/* ─── Formulários de Filtro ─── */
-.form-control, select {
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 10px !important;
-    padding: 10px 14px !important;
-    font-size: 13px !important;
-    color: #334155 !important;
-    transition: all 0.2s ease !important;
-    box-shadow: none !important;
-}
-
-.form-control:focus, select:focus {
-    border-color: #4f46e5 !important;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
-}
-
-.form-label, label {
-    font-weight: 600 !important;
-    color: #475569 !important;
-    font-size: 13px !important;
-    margin-bottom: 6px !important;
-}
-
-/* ─── Botões ─── */
-.btn {
-    border-radius: 10px !important;
-    font-weight: 500 !important;
-    font-size: 13px !important;
-    padding: 10px 20px !important;
-    transition: all 0.2s ease !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-
-.btn-sm {
-    padding: 6px 12px !important;
-    font-size: 12px !important;
-    border-radius: 8px !important;
-}
-
-.btn-success {
-    background-color: #10b981 !important;
-    border-color: #10b981 !important;
-    color: #fff !important;
-}
-
-.btn-success:hover {
-    background-color: #059669 !important;
-    border-color: #059669 !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
-}
-
-.btn-primary {
-    background-color: #4f46e5 !important;
-    border-color: #4f46e5 !important;
-    color: #fff !important;
-}
-
-.btn-primary:hover {
-    background-color: #4338ca !important;
-    border-color: #4338ca !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2) !important;
-}
-
-.btn-danger {
-    background-color: #ef4444 !important;
-    border-color: #ef4444 !important;
-    color: #fff !important;
-}
-
-.btn-danger:hover {
-    background-color: #dc2626 !important;
-    border-color: #dc2626 !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2) !important;
-}
-
-.btn-info {
-    background-color: #0ea5e9 !important;
-    border-color: #0ea5e9 !important;
-    color: #fff !important;
-    border-radius: 10px !important;
-}
-
-.btn-info:hover {
-    background-color: #0284c7 !important;
-    border-color: #0284c7 !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2) !important;
-}
-
-/* ─── Input Groups (Senha / Tokens) ─── */
-.input-group .form-control {
-    border-top-right-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-}
-
-.input-group-text {
-    border: 1px solid #e2e8f0 !important;
-    border-left: none !important;
-    border-top-right-radius: 10px !important;
-    border-bottom-right-radius: 10px !important;
-    background-color: #ffffff !important;
-    color: #475569 !important;
-    display: flex;
-    align-items: center;
-    padding: 0 14px !important;
-}
-
-/* ─── Upload Customizado ─── */
-.file-certificado label {
-    padding: 10px 16px;
-    width: 100%;
-    background-color: #8833ff;
-    color: #fff;
-    text-transform: uppercase;
-    text-align: center;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 20px;
-    cursor: pointer;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 13px;
-    transition: all 0.2s ease;
-}
-
-.file-certificado label:hover {
-    background-color: #7026db;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(136, 51, 255, 0.2);
-}
-
-.file-certificado input[type="file"] {
-    display: none;
-}
-
-/* ─── Tabelas ─── */
-.table-responsive, .table-responsive-sm {
-    border-radius: 12px;
-    overflow-x: auto !important;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.table {
-    margin-bottom: 0 !important;
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.table thead th {
-    background-color: #f8fafc !important;
-    color: #475569 !important;
-    font-size: 11px !important;
-    font-weight: 600 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.06em !important;
-    padding: 14px 20px !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
-    border-top: none !important;
-}
-
-.table tbody tr {
-    transition: background-color 0.2s ease;
-}
-
-.table tbody tr:hover {
-    background-color: #f8fafc !important;
-}
-
-.table tbody td {
-    padding: 14px 20px !important;
-    vertical-align: middle !important;
-    font-size: 13px !important;
-    color: #334155 !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
-}
-
-.table tbody tr:last-child td {
-    border-bottom: none !important;
-}
-
-/* ─── Badges Modernizados (Pills) ─── */
-.badge {
-    padding: 6px 12px !important;
-    border-radius: 9999px !important;
-    font-size: 11px !important;
-    font-weight: 600 !important;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    box-shadow: none !important;
-    border: 1px solid transparent;
-}
-
-.bg-success-subtle {
-    background-color: #ecfdf5 !important;
-    color: #047857 !important;
-    border-color: #a7f3d0 !important;
-}
-
-.bg-danger-subtle {
-    background-color: #fef2f2 !important;
-    color: #b91c1c !important;
-    border-color: #fecaca !important;
-}
-
-/* ─── Responsivo ─── */
-@media (max-width: 768px) {
-    .modulo-header-gradient .modulo-title { font-size: 18px; }
-    .modulo-kpi-card .kpi-value { font-size: 18px; }
-}
+/* ─── Estado vazio ─── */
+.empty-state { padding: 52px 20px; text-align: center; }
+.empty-state i { font-size: 52px; color: #c5cae9; display: block; margin-bottom: 12px; }
+.empty-state p { color: #9e9eb8; font-size: 14px; margin: 0; }
 ```
+
+---
+
+## 📦 CSS DO FORMULÁRIO (copiar para o topo do `_forms.blade.php` ou no `@section('css')`)
+
+```css
+/* ─── Seções do formulário ─── */
+.uf-section-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: #1f2937; border-bottom: 1px solid #eef0f6; padding-bottom: 10px; margin-bottom: 16px; }
+.uf-section-title .uf-ico { width: 30px; height: 30px; border-radius: 9px; background: #eef0ff; color: #4f46e5; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; }
+.uf-section-title small { font-weight: 500; color: #94a3b8; font-size: 12px; margin-left: auto; }
+
+/* ─── Campos ─── */
+.uf-field label, .uf-field .form-label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
+.uf-field .form-label i, .uf-field label i { color: #a8a8c0; font-size: 12px; }
+.uf-field .form-control, .uf-field .form-select, .uf-field .input-group .form-control { height: 40px; border-radius: 10px; border: 1px solid #dcdce9; font-size: 13.5px; color: #1f2937; background: #fcfdfe; transition: all .15s ease; }
+.uf-field .form-control:focus, .uf-field .form-select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.12); background: #fff; }
+.uf-field .input-group-text { border-radius: 0 10px 10px 0; background: #fff; border-color: #dcdce9; color: #64748b; cursor: pointer; }
+.uf-field .form-text { font-size: 11.5px; color: #94a3b8; }
+.uf-required::after { content: ' *'; color: #dc2626; font-weight: 700; }
+
+/* ─── Rodapé de ações ─── */
+.uf-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; border-top: 1px solid #eef0f6; padding-top: 16px; margin-top: 20px; }
+```
+
+---
+
+## 🎛️ COMPONENTES REUTILIZÁVEIS (templates prontos)
+
+### Botões `.dash-btn` (globais — SEM CSS na view)
+```blade
+<a href="{{ route('modulo.index') }}" class="dash-btn dash-btn-light"><i class="ri-refresh-line"></i> Atualizar</a>
+<a href="{{ route('modulo.create') }}" class="dash-btn dash-btn-primary"><i class="ri-add-line"></i> Novo</a>
+```
+> `.dash-btn` / `.dash-btn-light` / `.dash-btn-primary` já vêm do `dashboard-skin.css`. Use direto. `dash-btn-light` = branco/borda; `dash-btn-primary` = índigo.
+
+### Badges de Status
+```blade
+@if($item->ativo)
+<span class="pill pill-ok"><i class="ri-checkbox-circle-line"></i> Ativo</span>
+@else
+<span class="pill pill-no"><i class="ri-close-circle-line"></i> Inativo</span>
+@endif
+```
+
+### Grade de Ações (substitui o dropdown de 3 pontinhos)
+```blade
+<div class="act-group">
+    <a class="act-btn act-edit" href="{{ route('modulo.edit', $item->id) }}" title="Editar"><i class="ri-pencil-line"></i></a>
+    <a class="act-btn act-view" href="{{ route('modulo.show', $item->id) }}" title="Visualizar"><i class="ri-eye-line"></i></a>
+    <a class="act-btn act-profile" href="{{ route('modulo.profile', $item->id) }}" title="Perfil"><i class="ri-user-3-line"></i></a>
+    <button type="button" class="act-btn act-del btn-delete" title="Excluir"><i class="ri-delete-bin-line"></i></button>
+</div>
+```
+
+### 📍 Coluna de Ações: posição e largura
+
+Por padrão a coluna de ações é a **última**. Mas quando o pedido for que ela fique **antes do nome** (ex.: compras, devolução, PDV), mova **no cabeçalho** e **em cada linha**. Depois **estreite** a coluna (ex.: `width: 70px`) e alinhe à esquerda (`th`/`td` **sem** `text-end`), para não sobrar vão no início.
+
+```blade
+<th style="width: 70px;">Ações</th>
+...
+<td style="white-space: nowrap;">
+    <form action="{{ route('modulo.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="m-0">
+        @method('delete') @csrf
+        <div class="act-group"> ...botões... </div>
+    </form>
+</td>
+```
+
+**Quando usar DROPDOWN em vez da grade de botões:** se o módulo tem **muitas ações (6+)**, use o menu dropdown de submenus (`btn-action-trigger` + `action-dropdown-card` + `action-menu-item` + `action-item-icon`), que já é o padrão premium existente — ex.: produtos, clientes, PDV, compras, devolução. Para módulos com **poucas ações (2–3)**, use a **grade `act-group`/`act-btn`**.
+
+> ⚠️ Se houver um botão **fora** do dropdown (ex.: "Transmitir" em destaque) e o mesmo item já existir **dentro** do menu, **remova o de fora** para não duplicar e não desalinhar.
+
+### Upload de imagem (foto/perfil)
+```blade
+<div class="col-md-3 col-12 uf-field">
+    <div class="card border shadow-sm" style="border-radius:14px;">
+        <div class="card-body p-2 text-center">
+            <div class="preview mb-2 bg-light rounded d-flex align-items-center justify-content-center border"
+                 style="height: 140px; position: relative; overflow: hidden;">
+                <img id="file-ip-1-preview" src="{{ isset($item) ? $item->img : '/imgs/no-image.png' }}" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <label for="file-ip-1" class="btn btn-primary btn-sm w-100 mb-0" style="border-radius:9px;"><i class="ri-upload-cloud-line me-1"></i> Selecionar Foto</label>
+            <input type="file" class="d-none" id="file-ip-1" name="image" accept="image/*" onchange="showPreview(event);">
+        </div>
+    </div>
+</div>
+```
+> Requer `/js/uploadImagem.js` no `@section('js')`.
+
+### Seletor de período (quando a tela usa filtro por período)
+```blade
+<div class="seg-control">
+    <button type="button" class="seg-btn" data-periodo="1">Hoje</button>
+    <button type="button" class="seg-btn" data-periodo="7">Semana</button>
+    <button type="button" class="seg-btn active" data-periodo="30">Mês</button>
+    <button type="button" class="seg-btn" data-periodo="365">Ano</button>
+</div>
+```
+> Estilos em `dashboard-skin.css`. Complementar com `#inp-periodo` hidden e o JS que chama o endpoint.
+
+---
+
+## 🛑 ERROS COMUNS QUE CAUSAM 500 (EVITAR!)
+
+| Erro | Sintoma | Causa | Correção |
+|------|---------|-------|----------|
+| `Class "App\Http\Controllers\Auth" not found` | 500 no index | Usou `Auth::user()` no controller sem importar | `use Illuminate\Support\Facades\Auth;` |
+| `syntax error, unexpected token "??"` | 500 em várias telas | Comentário Blade malformado `{{-- ??? }}` (sem `--` de fechamento) | Use comentário válido `{{-- texto --}}` ou remova |
+| `Call to a member function count() on array` | 500 | `$data->count()` onde `$data` é **array** (a view recebe array, não coleção) | Use `count($data)` |
+| Layout diferente após modernizar | tela "estranha"/CSS quebrado | Substituiu **todo** o `@section('css')` e perdeu classes específicas (`.status-badge`, `.unidade-nome`, `.unicode-badge`, `.transacao-badge`, `.div-overflow`, `.codigo-unico-badge`) | **ADICIONE** o CSS premium **antes de `</style>`** — NUNCA substitua o bloco inteiro |
+| Título do header invisível | texto "transparente" | A view redefiniu `.modulo-header-gradient` escuro (white text) mesmo com o skin claro | Não redefina o gradient escuro. Se precisar vencer, use prefixo `body .modulo-header-gradient` (mais específico) |
+| KPI `where` no paginador | 500 / erro | `$data->where('status',1)->count()` (paginator não tem `where`) | Calcule no **controller** (`$stats`) e use `$stats['...']` |
+
+**Regra de ouro:**
+- NUNCA altere IDs `inp-*`, classes JS (`moeda`, `cpf_cnpj`, `cep`, `check-delete`, `btn-delete`, `btn-delete-all`, `select2`, `show_hide_password`), rotas, nomes de campos, nem `@section('js')`.
+- NUNCA reescreva a lógica de negócio dos controllers — apenas **adicione contagens** (`$stats`).
+- Para inserir CSS de premium: **sempre** `s.replace("</style>", NEW_CSS + "</style>")` (incrementar), preservando o CSS antigo do módulo.
 
 ---
 
@@ -967,6 +642,7 @@ O FormBuilder gera IDs automáticos (`inp-nome_do_campo`). Estes IDs são usados
 - `inp-fornecedor_id`, `inp-cliente_id` → Pesquisa rápida
 - `inp-carteira`, `inp-convenio`, `inp-tipo` → Cálculo de taxas de boleto
 - `inp-local_id` → Vínculo de estabelecimentos
+- `inp-periodo` → Período dos dashboard/relatórios
 
 ### Classes JS — NUNCA REMOVER
 
@@ -976,45 +652,44 @@ O FormBuilder gera IDs automáticos (`inp-nome_do_campo`). Estes IDs são usados
 | `cpf_cnpj` | Máscara de documento |
 | `cep` | Máscara de CEP |
 | `check-delete` | Checkbox de seleção em lote |
-| `btn-delete` | Gatilho de confirmação de exclusão |
+| `btn-delete` | Gatilho de confirmação de exclusão (SweetAlert) |
 | `btn-delete-all` | Gatilho de exclusão em lote |
+| `show_hide_password` | Mostrar/ocultar senha |
+| `select2` / `.select2-multiple` | Selects com busca |
 
-### Select2 com Bootstrap 5
-
-**NÃO use** `theme: "bootstrap4"` na inicialização do Select2 — o tema quebra o layout no Bootstrap 5:
-
-```js
-// ✅ CORRETO
-$("#inp-campo_id").select2({
-    minimumInputLength: 2,
-    language: "pt-BR",
-    width: "100%",
-    ajax: { /* ... */ }
-});
-
-// ❌ ERRADO — não usar theme
-$("#inp-campo_id").select2({
-    theme: "bootstrap4", // REMOVER
-    // ...
-});
-```
-
-Para Select2 em formulários, adicionar as classes corretas:
-
-```html
-{{-- ✅ CORRETO --}}
-<select class="select2 form-control" style="width: 100%">
-```
-
-### Blade — Evitar Diretivas Inline em Loops
-
-Nunca escrever `@if` e `@endif` na mesma linha dentro de `@foreach`:
-
+### Form de exclusão — SEMPRE assim
 ```blade
-{{-- ❌ ERRADO — causa erro 500 de compilação --}}
+<form action="{{ route('modulo.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="m-0">
+    @method('delete')
+    @csrf
+    <button type="button" class="act-btn act-del btn-delete" title="Excluir"><i class="ri-delete-bin-line"></i></button>
+</form>
+```
+
+### Select2 com Bootstrap 5 — NÃO usar `theme: "bootstrap4"`
+```js
+// ✅ CORRETO (sem theme)
+$("#inp-campo_id").select2({ width: "100%", language: "pt-BR", ajax: {} });
+// ❌ ERRADO
+$("#inp-campo_id").select2({ theme: "bootstrap4" });
+```
+
+### Select2 no filtro (alinhar à altura dos outros campos)
+Inputs Select2 têm altura própria e ficam desalinhados dos campos comuns. Adicione no CSS da view:
+
+```css
+.filter-wrap .select2-container .select2-selection--single { height: 40px !important; line-height: 40px !important; border: 1px solid #dcdce9 !important; border-radius: 10px !important; background: #fcfdfe !important; font-size: 13.5px; }
+.filter-wrap .select2-container .select2-selection--single .select2-selection__rendered { line-height: 38px !important; color: #1f2937; padding-left: 12px; }
+.filter-wrap .select2-container .select2-selection--single .select2-selection__arrow { height: 38px !important; }
+.filter-wrap .select2-container .select2-selection--single .select2-selection__arrow b { display: none; }
+```
+
+### Blade — Evitar diretivas inline em loops (causa erro 500)
+```blade
+{{-- ❌ ERRADO --}}
 @foreach($items as $item) @if($item->ativo) <span>Ativo</span> @endif @endforeach
 
-{{-- ✅ CORRETO — sempre multilinha --}}
+{{-- ✅ CORRETO --}}
 @foreach($items as $item)
     @if($item->ativo)
         <span>Ativo</span>
@@ -1022,26 +697,51 @@ Nunca escrever `@if` e `@endif` na mesma linha dentro de `@foreach`:
 @endforeach
 ```
 
-### Scripts JS no Final
+### Paginação
+- Limite de **`env("PAGINACAO")`** (ex.: 10/20) por página.
+- Sempre `{!! $data->appends(request()->all())->links() !!}` para manter o filtro na paginação.
 
+### Ícones — Somente Remix Icon (`ri-*`)
+
+### Scripts no final
 ```blade
 @section('js')
-<script type="text/javascript" src="/js/meu_modulo.js"></script>
+<script type="text/javascript" src="/js/uploadImagem.js"></script>
 <script type="text/javascript" src="/js/delete_selecionados.js"></script>
 @endsection
+```
+
+### JS de mostrar/ocultar senha (necessário no `_forms` com campo senha)
+```js
+$("#show_hide_password button").on('click', function (e) {
+    e.preventDefault();
+    let input = $('#show_hide_password input'), icon = $('#show_hide_password i');
+    if (input.attr("type") === "text") { input.attr('type', 'password'); icon.addClass("ri-eye-line").removeClass("ri-eye-off-line"); }
+    else { input.attr('type', 'text'); icon.removeClass("ri-eye-line").addClass("ri-eye-off-line"); }
+});
 ```
 
 ---
 
 ## 🔍 CHECKLIST RÁPIDO ANTES DE ENTREGAR UMA TELA
 
-- [ ] Header usa `.modulo-header-gradient` com título branco e ícone com fundo translúcido
-- [ ] Botão de ação principal "Novo Registro" usa a classe `btn btn-success` no header, alinhado à direita
-- [ ] Filtros em colunas Bootstrap dentro do `.card-body`, sem o wrapper `.modulo-glass-filter`
-- [ ] Botão Limpar tem texto e ícone visível: `<i class="ri-eraser-fill"></i> Limpar`
-- [ ] Tabela usa `.table-responsive-sm` e as classes de tabela nativas do Bootstrap
-- [ ] CPF/CNPJ ou dado secundário em `<span class="text-muted d-block fs-11">` abaixo do nome, não em coluna separada
-- [ ] Ações na tabela alinhadas lado a lado (`d-flex align-items-center gap-1`)
-- [ ] Form de exclusão com `@method('delete')` + `@csrf` + `btn-delete` no botão
-- [ ] `@section('css')` com todo o CSS da seção "📦 CSS Completo"
-- [ ] Paginação: 10 itens por página
+- [ ] Header usa `card-header modulo-header-gradient` (claro via skin) — **não** definir gradiente escuro na view
+- [ ] Botão de ação principal "Novo Registro" = `.dash-btn.dash-btn-primary` (índigo), à direita
+- [ ] Botão "Atualizar"/"Voltar" = `.dash-btn.dash-btn-light`
+- [ ] **Index**: Cards de estatística `.stat-card` (coloridos) **acima** do filtro
+- [ ] Filtro em `.filter-wrap` com label + input + Buscar (btn-primary) + Limpar
+- [ ] Tabela em `.tb-wrap` com thead estilizado; 1ª coluna = avatar + nome + dado secundário
+- [ ] **Grade de botões** `.act-group` / `.act-btn` (poucas ações) OU dropdown de submenus (muitas ações) — escolha conforme o nº de ações
+- [ ] Se o pedido for a coluna de ações **antes do nome**: mova no `<thead>` e no `<tbody>`, estreite (≈70px) e alinhe à esquerda (sem `text-end`)
+- [ ] Badges de status em `.pill` (ok/no/role/amber/red)
+- [ ] Form de exclusão com `@method('delete')` + `@csrf` + `btn-delete`
+- [ ] **Create/Edit**: `@include('modulo._forms')`; botões Salvar/Cancelar **no `_forms`** (`.uf-actions`), nunca duplicados na view pai
+- [ ] Campos do `_forms` alinhados: `.uf-section-title` com ícone + grade `col-md-6`/`col-md-4`/`col-md-3` + `.uf-field`
+- [ ] `$formType` usado para alternar "Salvar" / "Salvar Alterações"
+- [ ] Controller: `$stats` calculado no controller e passado via `compact()` — nunca `->where()` no paginador
+- [ ] If usou `Auth::` no controller → `use Illuminate\Support\Facades\Auth;`
+- [ ] Não alterar IDs `inp-*` nem classes JS (`moeda`, `cpf_cnpj`, `btn-delete`, `btn-delete-all`, `select2`, `check-delete`, `show_hide_password`)
+- [ ] Select2 do filtro alinhado (altura 40px) — ver seção "Select2 no filtro"
+- [ ] Paginação: `env("PAGINACAO")` e `appends(request()->all())`
+- [ ] Rodapé do Index: contagem "Exibindo X de Y" + paginação à direita
+- [ ] ⚠️ Validar ANTES de entregar: `php artisan view:cache` e `php -l <Controller>`; conferir que não há `{{-- ??? }}` e que a tela NÃO retorna 500

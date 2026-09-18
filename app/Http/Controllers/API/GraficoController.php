@@ -196,6 +196,191 @@ class GraficoController extends Controller
         return response()->json($data, 200);
     }
 
+    /**
+     * Retorna dados avançados do dashboard:
+     * - variação % vs mês anterior para cada KPI
+     * - Top 5 produtos mais vendidos no período
+     * - Alertas de estoque abaixo do mínimo
+     * - Contas vencendo hoje/amanhã
+     */
+    public function dadosCardsAvancado(Request $request)
+    {
+        $empresa_id  = $request->empresa_id;
+        $periodo     = $request->periodo ?? 30;
+        $local_id    = $request->local_id;
+        $usuario_id  = $request->usuario_id;
+
+        // Locais do usuário
+        $locais = Localizacao::where('usuario_localizacaos.usuario_id', $usuario_id)
+            ->select('localizacaos.*')
+            ->join('usuario_localizacaos', 'usuario_localizacaos.localizacao_id', '=', 'localizacaos.id')
+            ->where('localizacaos.status', 1)->get()->pluck('id');
+
+        // ── Helper: soma vendas NFe + NFCe no período ──────────────────────
+        $somaVendasPeriodo = function ($mesOffset = 0) use ($empresa_id, $periodo, $local_id, $locais) {
+            $mesRef  = date('m') - $mesOffset;
+            $anoRef  = date('Y');
+            if ($mesRef <= 0) { $mesRef += 12; $anoRef--; }
+
+            $nfe = Nfe::where('empresa_id', $empresa_id)
+                ->where('tpNF', 1)->where('orcamento', 0)
+                ->where('estado', '!=', 'cancelado')
+                ->when($periodo == 1  && $mesOffset == 0, fn($q) => $q->whereDate('created_at', date('Y-m-d')))
+                ->when($periodo == 7  && $mesOffset == 0, fn($q) => $q->whereRaw('WEEK(created_at) = ' . (date('W') - 1)))
+                ->when($periodo == 30 || $mesOffset > 0,  fn($q) => $q->whereMonth('created_at', $mesRef)->whereYear('created_at', $anoRef))
+                ->when($periodo == 365 && $mesOffset == 0, fn($q) => $q->whereYear('created_at', date('Y')))
+                ->when($local_id, fn($q) => $q->where('local_id', $local_id))
+                ->when(!$local_id, fn($q) => $q->whereIn('local_id', $locais))
+                ->sum('total');
+
+            $nfce = Nfce::where('empresa_id', $empresa_id)
+                ->where('estado', '!=', 'cancelado')
+                ->when($periodo == 1  && $mesOffset == 0, fn($q) => $q->whereDate('created_at', date('Y-m-d')))
+                ->when($periodo == 7  && $mesOffset == 0, fn($q) => $q->whereRaw('WEEK(created_at) = ' . (date('W') - 1)))
+                ->when($periodo == 30 || $mesOffset > 0,  fn($q) => $q->whereMonth('created_at', $mesRef)->whereYear('created_at', $anoRef))
+                ->when($periodo == 365 && $mesOffset == 0, fn($q) => $q->whereYear('created_at', date('Y')))
+                ->when($local_id, fn($q) => $q->where('local_id', $local_id))
+                ->when(!$local_id, fn($q) => $q->whereIn('local_id', $locais))
+                ->sum('total');
+
+            return $nfe + $nfce;
+        };
+
+        // ── Vendas atual vs anterior ────────────────────────────────────────
+        $vendasAtual    = $somaVendasPeriodo(0);
+        $vendasAnterior = $somaVendasPeriodo(1);
+        $vendasVariacao = $vendasAnterior > 0
+            ? round((($vendasAtual - $vendasAnterior) / $vendasAnterior) * 100, 1)
+            : ($vendasAtual > 0 ? 100 : 0);
+
+        // ── Contas a Receber: atual vs anterior ────────────────────────────
+        $receberAtual = \App\Models\ContaReceber::where('empresa_id', $empresa_id)
+            ->where('status', 0)->whereMonth('data_vencimento', date('m'))->sum('valor_integral');
+        $receberAnterior = \App\Models\ContaReceber::where('empresa_id', $empresa_id)
+            ->where('status', 0)->whereMonth('data_vencimento', date('m') - 1 ?: 12)->sum('valor_integral');
+        $receberVariacao = $receberAnterior > 0
+            ? round((($receberAtual - $receberAnterior) / $receberAnterior) * 100, 1)
+            : ($receberAtual > 0 ? 100 : 0);
+
+        // ── Contas a Pagar: atual vs anterior ──────────────────────────────
+        $pagarAtual = \App\Models\ContaPagar::where('empresa_id', $empresa_id)
+            ->where('status', 0)->whereMonth('data_vencimento', date('m'))->sum('valor_integral');
+        $pagarAnterior = \App\Models\ContaPagar::where('empresa_id', $empresa_id)
+            ->where('status', 0)->whereMonth('data_vencimento', date('m') - 1 ?: 12)->sum('valor_integral');
+        $pagarVariacao = $pagarAnterior > 0
+            ? round((($pagarAtual - $pagarAnterior) / $pagarAnterior) * 100, 1)
+            : ($pagarAtual > 0 ? 100 : 0);
+
+        // ── Clientes: atual vs anterior ────────────────────────────────────
+        $clientesAtual    = \App\Models\Cliente::where('empresa_id', $empresa_id)->whereMonth('created_at', date('m'))->count();
+        $clientesAnterior = \App\Models\Cliente::where('empresa_id', $empresa_id)->whereMonth('created_at', date('m') - 1 ?: 12)->count();
+        $clientesVariacao = $clientesAnterior > 0
+            ? round((($clientesAtual - $clientesAnterior) / $clientesAnterior) * 100, 1)
+            : ($clientesAtual > 0 ? 100 : 0);
+
+        // ── Top 5 Produtos mais vendidos (NFe + NFCe) ──────────────────────
+        $topProdutos = [];
+        try {
+            $topNfe = \Illuminate\Support\Facades\DB::table('item_nves')
+                ->join('nves', 'nves.id', '=', 'item_nves.nfe_id')
+                ->join('produtos', 'produtos.id', '=', 'item_nves.produto_id')
+                ->where('nves.empresa_id', $empresa_id)
+                ->where('nves.tpNF', 1)
+                ->where('nves.estado', '!=', 'cancelado')
+                ->when($periodo == 1,  fn($q) => $q->whereDate('nves.created_at', date('Y-m-d')))
+                ->when($periodo == 7,  fn($q) => $q->whereRaw('WEEK(nves.created_at) = ' . (date('W') - 1)))
+                ->when($periodo == 30, fn($q) => $q->whereMonth('nves.created_at', date('m'))->whereYear('nves.created_at', date('Y')))
+                ->when($periodo == 365,fn($q) => $q->whereYear('nves.created_at', date('Y')))
+                ->select('produtos.nome as descricao', \Illuminate\Support\Facades\DB::raw('SUM(item_nves.quantidade) as total_qtd'), \Illuminate\Support\Facades\DB::raw('SUM(item_nves.sub_total) as total_valor'))
+                ->groupBy('produtos.id', 'produtos.nome')
+                ->get();
+
+            $topNfce = \Illuminate\Support\Facades\DB::table('item_nfces')
+                ->join('nfces', 'nfces.id', '=', 'item_nfces.nfce_id')
+                ->join('produtos', 'produtos.id', '=', 'item_nfces.produto_id')
+                ->where('nfces.empresa_id', $empresa_id)
+                ->where('nfces.estado', '!=', 'cancelado')
+                ->when($periodo == 1,  fn($q) => $q->whereDate('nfces.created_at', date('Y-m-d')))
+                ->when($periodo == 7,  fn($q) => $q->whereRaw('WEEK(nfces.created_at) = ' . (date('W') - 1)))
+                ->when($periodo == 30, fn($q) => $q->whereMonth('nfces.created_at', date('m'))->whereYear('nfces.created_at', date('Y')))
+                ->when($periodo == 365,fn($q) => $q->whereYear('nfces.created_at', date('Y')))
+                ->select('produtos.nome as descricao', \Illuminate\Support\Facades\DB::raw('SUM(item_nfces.quantidade) as total_qtd'), \Illuminate\Support\Facades\DB::raw('SUM(item_nfces.sub_total) as total_valor'))
+                ->groupBy('produtos.id', 'produtos.nome')
+                ->get();
+
+            $topMap = [];
+            foreach ($topNfe->concat($topNfce) as $item) {
+                $desc = $item->descricao;
+                if (!isset($topMap[$desc])) {
+                    $topMap[$desc] = ['descricao' => $desc, 'total_qtd' => 0, 'total_valor' => 0];
+                }
+                $topMap[$desc]['total_qtd'] += (float)$item->total_qtd;
+                $topMap[$desc]['total_valor'] += (float)$item->total_valor;
+            }
+            usort($topMap, fn($a, $b) => $b['total_valor'] <=> $a['total_valor']);
+            $topProdutos = array_values(array_slice($topMap, 0, 5));
+        } catch (\Throwable $e) {
+            $topProdutos = [];
+        }
+
+        // ── Alertas de Estoque Mínimo ──────────────────────────────────────
+        $alertasEstoque = [];
+        try {
+            $alertasEstoque = Produto::where('empresa_id', $empresa_id)
+                ->where('status', 1)
+                ->where('estoque_minimo', '>', 0)
+                ->with('estoque')
+                ->get()
+                ->filter(function ($p) {
+                    $qtd = $p->estoque ? (float)$p->estoque->quantidade : 0;
+                    return $qtd <= (float)$p->estoque_minimo;
+                })
+                ->take(10)
+                ->map(function ($p) {
+                    return [
+                        'id'             => $p->id,
+                        'nome'           => $p->nome,
+                        'estoque'        => $p->estoque ? (float)$p->estoque->quantidade : 0,
+                        'estoque_minimo' => (float)$p->estoque_minimo,
+                    ];
+                })
+                ->values();
+        } catch (\Throwable $e) {
+            $alertasEstoque = [];
+        }
+
+        // ── Contas vencendo hoje e amanhã ──────────────────────────────────
+        $contasVencendoHoje = 0;
+        $contasVencidas = 0;
+        try {
+            $contasVencendoHoje = \App\Models\ContaPagar::where('empresa_id', $empresa_id)
+                ->where('status', 0)
+                ->whereDate('data_vencimento', date('Y-m-d'))
+                ->count();
+
+            $contasVencidas = \App\Models\ContaPagar::where('empresa_id', $empresa_id)
+                ->where('status', 0)
+                ->whereDate('data_vencimento', '<', date('Y-m-d'))
+                ->count();
+        } catch (\Throwable $e) {
+            $contasVencendoHoje = 0;
+            $contasVencidas = 0;
+        }
+
+        return response()->json([
+            'variacoes' => [
+                'vendas'   => ['valor' => $vendasAtual,    'variacao' => $vendasVariacao,    'anterior' => $vendasAnterior],
+                'receber'  => ['valor' => $receberAtual,   'variacao' => $receberVariacao,   'anterior' => $receberAnterior],
+                'pagar'    => ['valor' => $pagarAtual,     'variacao' => $pagarVariacao,     'anterior' => $pagarAnterior],
+                'clientes' => ['valor' => $clientesAtual,  'variacao' => $clientesVariacao,  'anterior' => $clientesAnterior],
+            ],
+            'top_produtos'        => $topProdutos,
+            'alertas_estoque'     => $alertasEstoque,
+            'contas_vencendo_hoje'=> $contasVencendoHoje,
+            'contas_vencidas'     => $contasVencidas,
+        ], 200);
+    }
+
     public function graficoVendasMes(Request $request)
     {
 

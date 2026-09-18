@@ -25,7 +25,14 @@ class EventoFuncionarioController extends Controller
             });
         })
         ->paginate(env("PAGINACAO"));
-        return view('eventos.index', compact('data'));
+
+        $stats = [
+            'total' => EventoSalario::where('empresa_id', request()->empresa_id)->count(),
+            'proventos' => EventoSalario::where('empresa_id', request()->empresa_id)->where('condicao', 'soma')->count(),
+            'descontos' => EventoSalario::where('empresa_id', request()->empresa_id)->where('condicao', 'diminui')->count(),
+        ];
+
+        return view('eventos.index', compact('data', 'stats'));
     }
 
     public function create()

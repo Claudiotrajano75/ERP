@@ -55,8 +55,8 @@ class ProdutoController extends Controller
     $this->utilWocommerce = $utilWocommerce;
 
         $this->middleware('permission:produtos_create', ['only' => ['create', 'store']]);
-        $this->middleware('permission:produtos_edit', ['only' => ['edit', 'update']]);
-        $this->middleware('permission:produtos_view', ['only' => ['show', 'index']]);
+        $this->middleware('permission:produtos_edit', ['only' => ['edit', 'update', 'buscarImagemUnsplash', 'buscarImagemInteligente', 'processarImagemLoteItem']]);
+        $this->middleware('permission:produtos_view', ['only' => ['show', 'index', 'getProdutosParaBuscaImagem']]);
         $this->middleware('permission:produtos_delete', ['only' => ['destroy']]);
     }
 
@@ -1209,7 +1209,9 @@ public function removeImagem($id){
         session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
     }
     return redirect()->back();
-}    public function buscarImagemUnsplash($id){
+}
+
+    public function buscarImagemUnsplash($id){
         $item = Produto::findOrFail($id);
         __validaObjetoEmpresa($item);
 
@@ -1233,6 +1235,114 @@ public function removeImagem($id){
         return response()->json([
             'success' => false,
             'message' => 'Nenhuma imagem encontrada para \"' . $item->nome . '\" no Unsplash.'
+        ]);
+    }
+
+    public function buscarImagemInteligente($id){
+        $item = Produto::findOrFail($id);
+        __validaObjetoEmpresa($item);
+
+        $fileName = $this->produtoImagemService->searchAndDownloadImage($item->nome, $item->codigo_barras);
+
+        if ($fileName) {
+            if ($item->imagem) {
+                $this->util->unlinkImage($item, '/produtos');
+            }
+            $item->imagem = $fileName;
+            $item->save();
+
+            return response()->json([
+                'success' => true,
+                'imagem' => url('uploads/produtos/' . $fileName),
+                'message' => 'Imagem encontrada e salva com sucesso!'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Nenhuma imagem encontrada para \"' . $item->nome . '\".'
+        ]);
+    }
+
+    public function getProdutosParaBuscaImagem(Request $request){
+        $empresa_id = $request->empresa_id ?? request()->empresa_id;
+        $modo = $request->modo ?? 'sem_imagem'; // 'sem_imagem' ou 'todos'
+
+        $query = Produto::where('empresa_id', $empresa_id)
+            ->where('status', 1)
+            ->whereNotNull('nome')
+            ->where('nome', '!=', '');
+
+        if ($modo === 'sem_imagem') {
+            $query->where(function($q) {
+                $q->whereNull('imagem')->orWhere('imagem', '');
+            });
+        }
+
+        if ($request->has('ids') && !empty($request->ids)) {
+            $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+            $query->whereIn('id', $ids);
+        }
+
+        $produtos = $query->select('id', 'nome', 'codigo_barras', 'imagem')->get();
+
+        return response()->json([
+            'success' => true,
+            'total' => $produtos->count(),
+            'produtos' => $produtos
+        ]);
+    }
+
+    public function processarImagemLoteItem(Request $request){
+        $produto_id = $request->produto_id;
+        $substituir = filter_var($request->substituir ?? false, FILTER_VALIDATE_BOOLEAN);
+
+        $item = Produto::find($produto_id);
+        if (!$item) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Produto não encontrado.'
+            ], 404);
+        }
+        __validaObjetoEmpresa($item);
+
+        // Se já tem imagem e não pediu para substituir, pula
+        if (!empty($item->imagem) && !$substituir) {
+            return response()->json([
+                'success' => true,
+                'status' => 'mantido',
+                'produto_id' => $item->id,
+                'nome' => $item->nome,
+                'imagem' => url('uploads/produtos/' . $item->imagem),
+                'message' => 'Produto já possui imagem.'
+            ]);
+        }
+
+        $fileName = $this->produtoImagemService->searchAndDownloadImage($item->nome, $item->codigo_barras);
+
+        if ($fileName) {
+            if ($item->imagem && $item->imagem !== $fileName) {
+                $this->util->unlinkImage($item, '/produtos');
+            }
+            $item->imagem = $fileName;
+            $item->save();
+
+            return response()->json([
+                'success' => true,
+                'status' => 'encontrado',
+                'produto_id' => $item->id,
+                'nome' => $item->nome,
+                'imagem' => url('uploads/produtos/' . $fileName),
+                'message' => 'Imagem encontrada e associada!'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'status' => 'nao_encontrado',
+            'produto_id' => $item->id,
+            'nome' => $item->nome,
+            'message' => 'Nenhuma imagem encontrada na web.'
         ]);
     }
 
@@ -1663,6 +1773,11 @@ public function etiquetaStore(Request $request, $id){
         return redirect()->back();
     }
 
+    $refText = '';
+    if (!empty($item->referencia)) {
+        $refText = 'REF: ' . trim($item->referencia);
+    }
+
     $data = [
         'nome_empresa' => $request->nome_empresa ? true : false,
         'nome_produto' => $request->nome_produto ? true : false,
@@ -1671,10 +1786,12 @@ public function etiquetaStore(Request $request, $id){
         'tipo' => $request->tipo,
         'codigo_barras_numerico' => $request->codigo_barras_numerico ? true : false,
         'nome' => $nome,
-        'codigo' => $item->id . ($item->referencia != '' ? ' | REF'.$item->referencia : ''),
+        'codigo' => $item->id,
+        'referencia' => $item->referencia ?? '',
+        'referencia_formatada' => $refText,
         'valor' => $valor,
         'unidade' => $unidade,
-        'empresa' => $item->empresa->nome
+        'empresa' => $item->empresa ? $item->empresa->nome : ''
     ];
     $generatorPNG = new \Picqer\Barcode\BarcodeGeneratorPNG();
 

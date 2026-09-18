@@ -152,9 +152,9 @@
     <div class="col-12 mt-4">
         <hr class="text-muted opacity-25">
         <div class="d-flex align-items-center justify-content-end gap-2">
-            <a href="{{ route('conta-receber.index') }}" class="btn btn-light px-4">Cancelar</a>
-            <button type="submit" class="btn btn-success px-4" id="btn-store">
-                <i class="ri-save-line align-middle me-1"></i> Salvar Conta
+            <a href="{{ route('conta-receber.index') }}" class="dash-btn dash-btn-light">Cancelar</a>
+            <button type="submit" class="dash-btn dash-btn-primary" id="btn-store">
+                <i class="ri-save-line"></i> Salvar Conta
             </button>
         </div>
     </div>

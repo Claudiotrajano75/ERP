@@ -131,6 +131,57 @@
                     {!!Form::close()!!}
                 </div>
 
+                <!-- ═══ UPLOAD: IMAGEM DA TELA DE LOGIN ═══ -->
+                <div class="card-body p-4 border-top" style="border-color:#eef0f5 !important;">
+                    {!!Form::open()->post()->route('config-geral-admin.update-login-banner')->multipart()!!}
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <h5 class="text-dark border-bottom pb-2 mb-3">
+                                <i class="ri-login-box-line text-primary me-2 align-middle fs-18"></i>
+                                Imagem da Tela de Login
+                            </h5>
+
+                            <p class="text-muted fs-13 mb-4">
+                                Envie uma imagem do software para o painel esquerdo da tela de login. Recomendado: proporção vertical (~1200x1400) ou uma imagem de software/dashboard. Se não enviar, fica o gradiente padrão.
+                            </p>
+
+                            <div class="row align-items-center g-4">
+                                <div class="col-md-6 col-12">
+                                    <div class="logo-preview-container">
+                                        @if(isset($item) && $item->login_banner)
+                                            <img id="previewBanner" class="logo-preview-img" src="{{ $item->login_banner_url }}" alt="Imagem do Login" style="max-height:200px;">
+                                        @else
+                                            <div id="placeholderBanner" class="logo-preview-placeholder">
+                                                <i class="ri-image-line d-block mb-2"></i>
+                                                <span class="fs-12 text-muted">Nenhuma imagem personalizada do login cadastrada.</span>
+                                            </div>
+                                            <img id="previewBanner" class="logo-preview-img d-none" src="#" alt="Nova Imagem">
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 col-12">
+                                    <div class="mb-3">
+                                        <label for="login_banner_input" class="form-label">Selecionar Imagem</label>
+                                        <input type="file" name="login_banner" id="login_banner_input" class="form-control" accept="image/*">
+                                        <div class="form-text text-muted fs-11 mt-1">
+                                            Formatos: PNG, JPG, JPEG ou WEBP. Tamanho máximo: 5MB.
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary px-4">
+                                            <i class="ri-upload-2-line align-middle me-1"></i> Enviar Imagem
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {!!Form::close()!!}
+                </div>
+
             </div>
         </div>
     </div>
@@ -150,6 +201,20 @@
             
             if (placeholder) {
                 placeholder.classList.add('d-none');
+            }
+        }
+    }
+
+    const bannerInput = document.getElementById('login_banner_input');
+    if (bannerInput) {
+        bannerInput.onchange = evt => {
+            const [file] = evt.target.files;
+            if (file) {
+                const preview = document.getElementById('previewBanner');
+                const placeholder = document.getElementById('placeholderBanner');
+                preview.src = URL.createObjectURL(file);
+                preview.classList.remove('d-none');
+                if (placeholder) placeholder.classList.add('d-none');
             }
         }
     }

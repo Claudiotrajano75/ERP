@@ -26,6 +26,8 @@ $(document).ready(function () {
                 $.each(response, function (i, v) {
                     var o = {};
                     o.id = v.id;
+                    o.nome = v.nome;
+                    o.codigo_barras = v.codigo_barras || '';
                     o.text = v.nome;
                     if(v.codigo_barras){
                         o.text += ' [' + v.codigo_barras  + ']';
@@ -40,10 +42,24 @@ $(document).ready(function () {
         }
     });
 
+    // Evento ao abrir o modal
+    $('#modal_lancamento_produto').on('show.bs.modal', function () {
+        if (editingIndex === null) {
+            limparModalItem();
+        }
+    });
+
     // Evento de seleção de produto no modal (carregar dados e impostos)
     $("#modal-produto_id").on("change", function () {
         let product_id = $(this).val();
         if (product_id) {
+            // Guarda dados imediatos do Select2 se existirem
+            let selectData = $("#modal-produto_id").select2('data');
+            if (selectData && selectData.length > 0 && selectData[0].nome) {
+                $("#modal-produto_id").data('nome', selectData[0].nome);
+                $("#modal-produto_id").data('codigo_barras', selectData[0].codigo_barras || '');
+            }
+
             $.get(path_url + "api/produtos/find", {
                 produto_id: product_id,
                 usuario_id: $('#usuario_id').val(),
@@ -51,6 +67,14 @@ $(document).ready(function () {
                 entrada: 0
             })
             .done((e) => {
+                // Guarda nome e código de barras retornados pela API
+                if (e.nome) {
+                    $("#modal-produto_id").data('nome', e.nome);
+                }
+                if (e.codigo_barras) {
+                    $("#modal-produto_id").data('codigo_barras', e.codigo_barras);
+                }
+
                 // Preencher campos básicos
                 $("#modal-cfop").val(e.cfop_atual || "5102");
                 $("#modal-ncm").val(e.ncm || "");
@@ -89,7 +113,6 @@ $(document).ready(function () {
     // Salvar produto do modal
     $("#btn-gravar-produto-modal").on("click", function () {
         let product_id = $("#modal-produto_id").val();
-        let product_nome = $("#modal-produto_id select2-modal option:selected").text() || $("#modal-produto_id").text();
         let quantidade = convertMoedaToFloat($("#modal-quantidade").val());
         let valor_unitario = convertMoedaToFloat($("#modal-valor_unitario").val());
         let cfop = $("#modal-cfop").val();
@@ -100,10 +123,24 @@ $(document).ready(function () {
             return;
         }
 
+        // Resolução precisa do nome do produto selecionado
+        let product_nome = $("#modal-produto_id").data('nome');
+        let product_cod_barras = $("#modal-produto_id").data('codigo_barras') || '';
+
+        if (!product_nome) {
+            let selectData = $("#modal-produto_id").select2('data');
+            if (selectData && selectData.length > 0 && selectData[0].text) {
+                product_nome = selectData[0].text.split(" - R$")[0];
+            } else {
+                product_nome = $("#modal-produto_id option:selected").text().split(" - R$")[0];
+            }
+        }
+
         // Criar objeto do item
         let item = {
             produto_id: product_id,
-            nome: product_nome.split(" - R$")[0], // Remove preço do nome
+            codigo_barras: product_cod_barras,
+            nome: product_nome,
             quantidade: quantidade,
             valor_unitario: valor_unitario,
             sub_total: (quantidade * valor_unitario),
@@ -270,7 +307,9 @@ function atualizarSubtotalModal() {
 
 // Limpar modal
 function limparModalItem() {
-    $("#modal-produto_id").val("").change();
+    editingIndex = null;
+    $("#modal-produto_id").removeData('nome').removeData('codigo_barras');
+    $("#modal-produto_id").empty().val(null).trigger("change.select2");
     $("#modal-quantidade").val("1,00");
     $("#modal-valor_unitario").val("0,00");
     $("#modal-sub_total").val("0,00");
@@ -302,13 +341,15 @@ function renderTableProdutos() {
     } else {
         $.each(itensNfe, function(index, item) {
             totalProdutos += item.sub_total;
+            let codDisplay = item.codigo_barras ? item.codigo_barras : item.produto_id;
             html += `
                 <tr>
-                    <td class="fw-bold text-secondary">${item.produto_id}</td>
+                    <td class="fw-bold text-secondary">${codDisplay}</td>
                     <td>
-                        ${item.nome}
+                        <strong>${item.nome}</strong>
                         <!-- Inputs ocultos para submissão POST -->
                         <input type="hidden" name="item_produto_id[]" value="${item.produto_id}">
+                        <input type="hidden" name="item_nome[]" value="${item.nome}">
                         <input type="hidden" name="item_quantidade[]" value="${item.quantidade}">
                         <input type="hidden" name="item_valor_unitario[]" value="${item.valor_unitario}">
                         <input type="hidden" name="item_sub_total[]" value="${item.sub_total}">
@@ -379,9 +420,11 @@ function editarItem(index) {
     editingIndex = index;
     
     // Repopular modal
-    // Criamos uma opção temporária para o select2 carregar o produto
+    $("#modal-produto_id").empty();
     let newOption = new Option(item.nome, item.produto_id, true, true);
     $("#modal-produto_id").append(newOption).trigger('change.select2');
+    $("#modal-produto_id").data('nome', item.nome);
+    $("#modal-produto_id").data('codigo_barras', item.codigo_barras || '');
     
     $("#modal-quantidade").val(convertFloatToMoeda(item.quantidade));
     $("#modal-valor_unitario").val(convertFloatToMoeda(item.valor_unitario));

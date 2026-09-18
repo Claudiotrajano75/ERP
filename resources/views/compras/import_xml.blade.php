@@ -75,6 +75,8 @@
                     ->post()
                     ->route('compras.finish-xml')
                     ->multipart()
+                    ->id('form-nfe')
+                    ->attrs(['novalidate' => 'novalidate'])
                     !!}
                     
                     <div class="pl-lg-2">
@@ -93,4 +95,15 @@
 @section('js')
 <script src="/js/nfe.js"></script>
 <script src="/js/import_xml.js"></script>
+<script type="text/javascript">
+    // Remove o handler genérico do nfe.js e valida antes de enviar.
+    // O botão Salvar não enviava nada porque campos required em abas ocultas
+    // (ex.: Natureza de Operação) bloqueavam o submit nativo sem feedback visual.
+    $('.btn-salvar-nfe').off('click').on('click', function (e) {
+        e.preventDefault();
+        if (addClassRequired()) {
+            $('#form-nfe').submit();
+        }
+    });
+</script>
 @endsection

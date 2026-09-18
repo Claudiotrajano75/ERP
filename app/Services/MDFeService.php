@@ -95,11 +95,18 @@ class MDFeService{
 			$mdfex->taginfMunCarrega($infMunCarrega);
 		}
 
-		foreach($mdfe->percurso as $p){
+		$ufIni = strtoupper(trim($mdfe->uf_inicio ?? ''));
+		$ufFim = strtoupper(trim($mdfe->uf_fim ?? ''));
 
-			$infPercurso = new \stdClass();
-			$infPercurso->UFPer = $p->uf;
-			$mdfex->taginfPercurso($infPercurso);
+		if ($ufIni != '' && $ufFim != '' && $ufIni != $ufFim && !$this->estadosLimitrofes($ufIni, $ufFim)) {
+			foreach($mdfe->percurso as $p){
+				$ufPer = strtoupper(trim($p->uf ?? ''));
+				if ($ufPer != '' && $ufPer != $ufIni && $ufPer != $ufFim) {
+					$infPercurso = new \stdClass();
+					$infPercurso->UFPer = $ufPer;
+					$mdfex->taginfPercurso($infPercurso);
+				}
+			}
 		}
 
 		$std = new \stdClass();
@@ -135,7 +142,7 @@ class MDFeService{
 
 		/* Grupo infANTT */
 		$infANTT = new \stdClass();
-		if($mdfe->veiculoTracao->rntrc != ''){
+		if($mdfe->veiculoTracao->rntrc != '' && $mdfe->veiculoTracao->rntrc != '0' && $mdfe->veiculoTracao->rntrc != 0){
 			$infANTT->RNTRC = $mdfe->veiculoTracao->rntrc; 
 			// pega antt do veiculo de tracao
 		}
@@ -168,16 +175,17 @@ class MDFeService{
 			$mdfex->tagdisp($valePed);
 		}
 
-		$infContratante = new \stdClass();
+		$doc = preg_replace('/[^0-9]/', '', $mdfe->cnpj_contratante ?? '');
 
-		$doc = preg_replace('/[^0-9]/', '', $mdfe->cnpj_contratante);
-
-		if(strlen($doc) == 11){
-			$infContratante->CPF = $doc;
-		}else{
-			$infContratante->CNPJ = $doc;
+		if (strlen($doc) == 11 || strlen($doc) == 14) {
+			$infContratante = new \stdClass();
+			if (strlen($doc) == 11) {
+				$infContratante->CPF = $doc;
+			} else {
+				$infContratante->CNPJ = $doc;
+			}
+			$mdfex->taginfContratante($infContratante);
 		}
-		$mdfex->taginfContratante($infContratante);
 
 		/* Grupo veicTracao */
 		$veicTracao = new \stdClass();
@@ -203,7 +211,7 @@ class MDFeService{
 		if(strlen($doc) == 11) $prop->CPF = $doc;
 		else $prop->CNPJ = $doc;
 		
-		if($mdfe->veiculoTracao->rntrc != ''){
+		if($mdfe->veiculoTracao->rntrc != '' && $mdfe->veiculoTracao->rntrc != '0' && $mdfe->veiculoTracao->rntrc != 0){
 			$prop->RNTRC = $mdfe->veiculoTracao->rntrc;
 		}
 		$prop->xNome = $mdfe->veiculoTracao->proprietario_nome;
@@ -499,32 +507,38 @@ class MDFeService{
 				$prodPred->NCM = null;
 			}
 
+			$cepCarrega = preg_replace('/[^0-9]/', '', $mdfe->cep_carrega ?? '');
+			$cepDescarrega = preg_replace('/[^0-9]/', '', $mdfe->cep_descarrega ?? '');
+
+			$temLocalCarrega = false;
 			$localCarrega = new \stdClass();
-			if($mdfe->cep_carrega != ''){
-				$localCarrega->CEP = $mdfe->cep_carrega;
-			}
-			if($mdfe->latitude_carregamento != ''){
+			if(strlen($cepCarrega) == 8){
+				$localCarrega->CEP = $cepCarrega;
+				$temLocalCarrega = true;
+			}elseif(!empty($mdfe->latitude_carregamento) && !empty($mdfe->longitude_carregamento)){
 				$localCarrega->latitude = $this->preparaCordenada($mdfe->latitude_carregamento);
 				$localCarrega->longitude = $this->preparaCordenada($mdfe->longitude_carregamento);
+				$temLocalCarrega = true;
 			}
 
+			$temLocalDescarrega = false;
 			$localDescarrega = new \stdClass();
-			$localDescarrega->CEP = $mdfe->cep_descarrega;
-			if($mdfe->latitude_descarregamento != ''){
+			if(strlen($cepDescarrega) == 8){
+				$localDescarrega->CEP = $cepDescarrega;
+				$temLocalDescarrega = true;
+			}elseif(!empty($mdfe->latitude_descarregamento) && !empty($mdfe->longitude_descarregamento)){
 				$localDescarrega->latitude = $this->preparaCordenada($mdfe->latitude_descarregamento);
 				$localDescarrega->longitude = $this->preparaCordenada($mdfe->longitude_descarregamento);
+				$temLocalDescarrega = true;
 			}
 
-
-			$lotacao = new \stdClass();
-			$lotacao->infLocalCarrega = $localCarrega;
-			$lotacao->infLocalDescarrega = $localDescarrega;
-
-			if(isset($lotacao->infLocalCarrega)){
+			if($temLocalCarrega && $temLocalDescarrega){
+				$lotacao = new \stdClass();
+				$lotacao->infLocalCarrega = $localCarrega;
+				$lotacao->infLocalDescarrega = $localDescarrega;
 				$prodPred->infLotacao = $lotacao;
 			}
-			// print_r($prodPred);
-			// die();
+
 			$mdfex->tagprodPred($prodPred);
 		}
 		
@@ -532,7 +546,17 @@ class MDFeService{
 		/* grupo de totais */
 		$std = new \stdClass();
 		$std->vCarga = $this->format($mdfe->valor_carga);
-		$std->cUnid = '02';
+
+		$cUnid = $mdfe->unidade_medida ?? '01';
+		if ($cUnid == 'KG' || $cUnid == '01' || $cUnid == '1') {
+			$cUnid = '01';
+		} elseif ($cUnid == 'TON' || $cUnid == '02' || $cUnid == '2') {
+			$cUnid = '02';
+		} else {
+			$cUnid = '01';
+		}
+		$std->cUnid = $cUnid;
+
 		if($contNFe > 0){
 			$std->qNFe = $contNFe;
 		}
@@ -548,6 +572,19 @@ class MDFeService{
 			$std->CNPJ = $cnpj;
 			$mdfex->tagautXML($std);
 		}
+		
+		$respTec = ConfiguracaoSuper::first();
+		if ($respTec != null && $respTec->usar_resp_tecnico == 1) {
+			$stdResp = new \stdClass();
+			$doc = preg_replace('/[^0-9]/', '', $respTec->cpf_cnpj);
+			if (strlen($doc) == 14) $stdResp->CNPJ = $doc;
+			else $stdResp->CPF = $doc;
+
+			$stdResp->xContato = $respTec->name;
+			$stdResp->email = $respTec->email;
+			$stdResp->fone = preg_replace('/[^0-9]/', '', $respTec->telefone);
+			$mdfex->taginfRespTec($stdResp);
+		}
 
 		try{
 			$xml = $mdfex->getXML();
@@ -560,6 +597,44 @@ class MDFeService{
 			return ['erros_xml' => $mdfex->getErrors()];
 		}
 
+	}
+
+	private function estadosLimitrofes($uf1, $uf2)
+	{
+		$fronteiras = [
+			'AC' => ['AM', 'RO'],
+			'AL' => ['PE', 'SE', 'BA'],
+			'AP' => ['PA'],
+			'AM' => ['AC', 'RR', 'PA', 'MT', 'RO'],
+			'BA' => ['SE', 'AL', 'PE', 'PI', 'TO', 'GO', 'MG', 'ES'],
+			'CE' => ['PI', 'RN', 'PB', 'PE'],
+			'DF' => ['GO', 'MG'],
+			'ES' => ['RJ', 'MG', 'BA'],
+			'GO' => ['DF', 'TO', 'BA', 'MG', 'MS', 'MT'],
+			'MA' => ['PA', 'TO', 'PI'],
+			'MT' => ['RO', 'AM', 'PA', 'TO', 'GO', 'MS'],
+			'MS' => ['MT', 'GO', 'MG', 'SP', 'PR'],
+			'MG' => ['SP', 'RJ', 'ES', 'BA', 'GO', 'DF', 'MS'],
+			'PA' => ['AP', 'AM', 'MT', 'TO', 'MA', 'RR'],
+			'PB' => ['RN', 'CE', 'PE'],
+			'PR' => ['SP', 'MS', 'SC'],
+			'PE' => ['CE', 'PB', 'AL', 'SE', 'BA', 'PI'],
+			'PI' => ['MA', 'TO', 'BA', 'PE', 'CE'],
+			'RJ' => ['SP', 'MG', 'ES'],
+			'RN' => ['CE', 'PB'],
+			'RS' => ['SC'],
+			'RO' => ['AC', 'AM', 'MT'],
+			'RR' => ['AM', 'PA'],
+			'SC' => ['RS', 'PR'],
+			'SP' => ['RJ', 'MG', 'MS', 'PR'],
+			'SE' => ['AL', 'BA'],
+			'TO' => ['MA', 'PI', 'BA', 'GO', 'MT', 'PA'],
+		];
+
+		if (isset($fronteiras[$uf1]) && in_array($uf2, $fronteiras[$uf1])) {
+			return true;
+		}
+		return false;
 	}
 
 	private function preparaCordenada($cordenada){
@@ -698,6 +773,9 @@ class MDFeService{
 
 			if($cStat == '100'){
 				$xml = Complements::toAuthorize($signXml, $resp);
+				if (!is_dir(public_path('xml_mdfe'))) {
+					mkdir(public_path('xml_mdfe'), 0777, true);
+				}
 				file_put_contents(public_path('xml_mdfe/').$chave.'.xml', $xml);
 				return [
 					'chave' => $chave, 
@@ -738,13 +816,17 @@ class MDFeService{
 		}
 	}
 
-	public function encerrar($chave, $protocolo){
+	public function encerrar($chave, $protocolo, $cUF = null, $cMun = null){
 		try {
 			$emitente = Empresa::where('id', request()->empresa_id)->first();
 			$chave = $chave;
 			$nProt = $protocolo;
-			$cUF = Empresa::getCodUF($emitente->cidade->uf);
-			$cMun = $emitente->cidade->codigo;
+			if(!$cUF){
+				$cUF = Empresa::getCodUF($emitente->cidade->uf);
+			}
+			if(!$cMun){
+				$cMun = $emitente->cidade->codigo;
+			}
 			$dtEnc = date('Y-m-d'); // Opcional, caso nao seja preenchido pegara HOJE
 			$resp = $this->tools->sefazEncerra($chave, $nProt, $cUF, $cMun, $dtEnc);
 
@@ -772,6 +854,32 @@ class MDFeService{
 		}
 	}
 
+	public function recuperarXmlAutorizado($mdfe)
+	{
+		try {
+			$chave = $mdfe->chave;
+			$resp = $this->tools->sefazConsultaChave($chave);
+			$st = new Standardize();
+			$std = $st->toStd($resp);
+
+			if (isset($std->protMDFe) && ($std->protMDFe->infProt->cStat == 100 || $std->protMDFe->infProt->cStat == '100')) {
+				$mdfeArray = $this->gerar($mdfe);
+				if (!isset($mdfeArray['erros_xml'])) {
+					$signed = $this->sign($mdfeArray['xml']);
+					$xmlAutorizado = Complements::toAuthorize($signed, $resp);
+					if (!is_dir(public_path('xml_mdfe'))) {
+						mkdir(public_path('xml_mdfe'), 0777, true);
+					}
+					file_put_contents(public_path('xml_mdfe/') . $chave . '.xml', $xmlAutorizado);
+					return $xmlAutorizado;
+				}
+			}
+			return null;
+		} catch (\Exception $e) {
+			return null;
+		}
+	}
+
 	public function cancelar($chave, $protocolo, $justificativa){
 		try {
 			$xJust = $justificativa;
@@ -792,6 +900,9 @@ class MDFeService{
 
 			if ($cStat == '101' || $cStat == '135' || $cStat == '155') {
 				$xml = Complements::toAuthorize($this->tools->lastRequest, $resp);
+				if (!is_dir(public_path('xml_mdfe_cancelada'))) {
+					mkdir(public_path('xml_mdfe_cancelada'), 0777, true);
+				}
 				file_put_contents(public_path('xml_mdfe_cancelada/').$chave.'.xml',$xml);
 			}
 			return $std;

@@ -39,17 +39,19 @@ class AgendamentoController extends Controller
 
         $funcionario_id = $request->funcionario_id;
 
-        $data = Agendamento::where('empresa_id', $request->empresa_id)
+        $query = Agendamento::where('empresa_id', $request->empresa_id)
         ->when(!empty($funcionario_id), function ($q) use ($funcionario_id) {
             return $q->where('funcionario_id', $funcionario_id);
-        })
+        });
+
+        $data = (clone $query)
         ->limit(200)
         ->orderBy('data', 'desc')->get();
         $agendamentos = [];
 
         foreach($data as $item){
             $a = [
-                'title' => $item->cliente->razao_social,
+                'title' => $item->cliente ? $item->cliente->razao_social : 'Cliente',
                 'start' => $item->data . " " . $item->inicio,
                 'end' => $item->data . " " . $item->termino,
                 'className' => $item->getPrioridade(),
@@ -60,10 +62,24 @@ class AgendamentoController extends Controller
 
         $funcionario = null;
         if($funcionario_id){
-            $funcionario = Funcionario::findOrFail($funcionario_id);
+            $funcionario = Funcionario::find($funcionario_id);
         }
 
-        return view('agendamento.index', compact('agendamentos', 'servicos', 'funcionario', 'funcionarios'));
+        $hoje = date('Y-m-d');
+        $baseStats = Agendamento::where('empresa_id', $request->empresa_id);
+        if(!empty($funcionario_id)){
+            $baseStats->where('funcionario_id', $funcionario_id);
+        }
+
+        $stats = [
+            'total' => (clone $baseStats)->count(),
+            'hoje' => (clone $baseStats)->where('data', $hoje)->count(),
+            'pendentes' => (clone $baseStats)->where('status', 0)->count(),
+            'finalizados' => (clone $baseStats)->where('status', 1)->count(),
+            'total_valor' => (clone $baseStats)->sum('total') ?? 0,
+        ];
+
+        return view('agendamento.index', compact('agendamentos', 'servicos', 'funcionario', 'funcionarios', 'stats'));
     }
 
     public function store(Request $request){

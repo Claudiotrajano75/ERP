@@ -49,9 +49,11 @@ class UsuarioController extends Controller
 
     public function index(Request $request)
     {
-        $data = User::where('usuario_empresas.empresa_id', request()->empresa_id)
+        $base = User::where('usuario_empresas.empresa_id', request()->empresa_id)
         ->join('usuario_empresas', 'users.id', '=', 'usuario_empresas.usuario_id')
-        ->select('users.*')
+        ->select('users.*');
+
+        $data = (clone $base)
         ->when(!empty($request->name), function ($q) use ($request) {
             return  $q->where(function ($quer) use ($request) {
                 return $quer->where('name', 'LIKE', "%$request->name%");
@@ -59,7 +61,14 @@ class UsuarioController extends Controller
         })
         ->paginate(env("PAGINACAO"));
 
-        return view('usuarios.index', compact('data'));
+        $stats = [
+            'total'        => (clone $base)->count(),
+            'admins'       => (clone $base)->where('users.admin', 1)->count(),
+            'comPermissao' => (clone $base)->whereHas('roles')->count(),
+            'semLocal'     => (clone $base)->whereDoesntHave('locais')->count(),
+        ];
+
+        return view('usuarios.index', compact('data', 'stats'));
     }
 
     public function create(Request $request)

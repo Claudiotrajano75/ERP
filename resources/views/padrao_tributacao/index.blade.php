@@ -2,42 +2,46 @@
 
 @section('css')
 <style>
-/* ─── Header Gradiente ─── */
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.6) !important; font-weight: 400; }
-.modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-.modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+    .modulo-footer { padding: 16px 0 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 
-/* ─── Premium Table ─── */
-.modulo-table-wrap { border-radius: 12px; border: 1px solid #eef0f5; overflow: hidden; }
-.modulo-table-wrap table { margin-bottom: 0; }
-.modulo-table-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding: 12px 10px; border-bottom: 2px solid #e8eaf6; }
-.modulo-table-wrap tbody td { padding: 10px 10px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; transition: background 0.15s ease; font-size: 12px; }
-.modulo-table-wrap tbody tr { transition: all 0.15s ease; }
-.modulo-table-wrap tbody tr:hover { background: #f5f6fe; }
-.modulo-table-wrap tbody tr:last-child td { border-bottom: none; }
+    /* ─── Cards de Estatísticas ─── */
+    .stat-card { border: 0; border-radius: 16px; padding: 18px 20px; height: 100%; color: #fff; position: relative; overflow: hidden; transition: transform .18s ease, box-shadow .18s ease; }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-card::after { content: ''; position: absolute; top: -44px; right: -44px; width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,.12); }
+    .stat-indigo { background: linear-gradient(135deg,#6366f1,#4f46e5); box-shadow: 0 6px 18px rgba(79,70,229,.32); }
+    .stat-green  { background: linear-gradient(135deg,#24c98a,#109f61); box-shadow: 0 6px 18px rgba(16,185,129,.32); }
+    .stat-blue   { background: linear-gradient(135deg,#4d94ff,#1d4ed8); box-shadow: 0 6px 18px rgba(37,99,235,.32); }
+    .stat-card .st-label { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: rgba(255,255,255,.85); }
+    .stat-card .st-value { font-size: 26px; font-weight: 800; color: #fff; margin-top: 4px; line-height: 1.1; }
+    .stat-card .st-sub { font-size: 11.5px; color: rgba(255,255,255,.75); margin-top: 4px; }
+    .stat-card .st-icon { width: 46px; height: 46px; border-radius: 13px; background: rgba(255,255,255,.22); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
-/* ─── Action Buttons ─── */
-.modulo-action-group { display: inline-flex; gap: 4px; flex-wrap: nowrap; align-items: center; }
-.modulo-action-group .btn { border-radius: 8px; padding: 4px 10px; font-size: 13px; transition: all 0.15s ease; }
-.modulo-action-group .btn:hover { transform: translateY(-1px); }
+    /* ─── Tabela ─── */
+    .tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+    .tb-wrap table { margin-bottom: 0; }
+    .tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 10px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+    .tb-wrap tbody td { padding: 12px 10px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 12.5px; color: #374151; }
+    .tb-wrap tbody tr:hover { background: #f5f6fe; }
+    .tb-wrap tbody tr:last-child td { border-bottom: none; }
 
-/* ─── Empty State ─── */
-.modulo-empty { padding: 48px 20px; text-align: center; }
-.modulo-empty i { font-size: 48px; color: #c5cae9; margin-bottom: 12px; display: block; }
-.modulo-empty p { color: #9e9eb8; font-size: 14px; margin: 0; }
+    /* ─── Ações ─── */
+    .act-group { display: inline-flex; gap: 6px; align-items: center; }
+    .act-btn { width: 34px; height: 34px; border-radius: 10px; border: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; text-decoration: none; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+    .act-btn:hover { transform: translateY(-2px); text-decoration: none; }
+    .act-edit { background: #eef0ff; color: #4f46e5; }
+    .act-edit:hover { box-shadow: 0 4px 12px rgba(79,70,229,.3); }
+    .act-del { background: #fee2e2; color: #dc2626; }
+    .act-del:hover { box-shadow: 0 4px 12px rgba(220,38,38,.3); }
 
-/* ─── Footer ─── */
-.modulo-footer { padding: 16px 0 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    /* ─── Pills ─── */
+    .pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 8px; padding: 4px 10px; font-size: 11.5px; font-weight: 700; }
+    .pill-ok { background: #dcfce7; color: #15803d; }
+    .pill-no { background: #f1f5f9; color: #64748b; }
+    .pill-info { background: #eef0ff; color: #4f46e5; }
 
-/* ─── Badges ─── */
-.badge { font-weight: 500; font-size: 11px; }
-
-@media (max-width: 768px) {
-    .modulo-header-gradient .modulo-title { font-size: 18px; }
-}
+    .empty-state { padding: 52px 20px; text-align: center; }
+    .empty-state i { font-size: 52px; color: #c5cae9; display: block; margin-bottom: 12px; }
+    .empty-state p { color: #9e9eb8; font-size: 14px; margin: 0; }
 </style>
 @endsection
 
@@ -60,13 +64,13 @@
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
                         @can('config_produto_fiscal_create')
-                        <a href="{{ route('produtopadrao-tributacao.create') }}" class="btn btn-light btn-sm px-3 text-dark">
-                            <i class="ri-add-circle-line align-middle me-1"></i> Novo Padrão
+                        <a href="{{ route('produtopadrao-tributacao.create') }}" class="dash-btn dash-btn-primary">
+                            <i class="ri-add-line"></i> Novo Padrão
                         </a>
                         @endcan
                         @can('config_produto_fiscal_edit')
-                        <a href="{{ route('produtopadrao-tributacao.alterar') }}" class="btn btn-light btn-sm px-3 text-dark">
-                            <i class="ri-refresh-line align-middle me-1"></i> Alterar Tributação
+                        <a href="{{ route('produtopadrao-tributacao.alterar') }}" class="dash-btn dash-btn-light">
+                            <i class="ri-refresh-line"></i> Alterar Tributação
                         </a>
                         @endcan
                     </div>
@@ -75,8 +79,36 @@
 
             <div class="card-body p-4">
 
-                <!-- ═══ TABELA PREMIUM ═══ -->
-                <div class="modulo-table-wrap">
+                {{-- ═══ CARDS DE ESTATÍSTICA ═══ --}}
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-xl-4">
+                        <div class="stat-card stat-indigo">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Padrões de Tributação</div><div class="st-value">{{ $stats['total'] }}</div><div class="st-sub">templates cadastrados</div></div>
+                                <div class="st-icon"><i class="ri-scales-3-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-4">
+                        <div class="stat-card stat-green">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Padrão Ativo</div><div class="st-value">{{ $stats['padrao'] }}</div><div class="st-sub">usado por padrão no cadastro</div></div>
+                                <div class="st-icon"><i class="ri-checkbox-circle-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-4">
+                        <div class="stat-card stat-blue">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Outros</div><div class="st-value">{{ $stats['total'] - $stats['padrao'] }}</div><div class="st-sub">templates opcionais</div></div>
+                                <div class="st-icon"><i class="ri-stack-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                                <!-- ═══ TABELA PREMIUM ═══ -->
+                <div class="tb-wrap">
                     <div class="table-responsive">
                         <table class="table table-centered table-hover align-middle mb-0 text-dark">
                             <thead>
@@ -118,11 +150,9 @@
                                     </td>
                                     <td>
                                         @if($item->padrao)
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                                            <i class="ri-check-line me-1"></i>Sim
-                                        </span>
+                                        <span class="pill pill-ok"><i class="ri-check-line"></i> Sim</span>
                                         @else
-                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">Não</span>
+                                        <span class="pill pill-no">Não</span>
                                         @endif
                                     </td>
                                     <td class="text-muted fs-12">{{ $item->ncm ?? '--' }}</td>
@@ -130,26 +160,21 @@
                                     <td>{{ $item->perc_pis }}%</td>
                                     <td>{{ $item->perc_cofins }}%</td>
                                     <td>{{ $item->perc_ipi }}%</td>
-                                    <td><span class="badge bg-light text-dark border px-2 py-1 fs-11">{{ $item->cst_csosn }}</span></td>
-                                    <td><span class="badge bg-light text-dark border px-2 py-1 fs-11">{{ $item->cst_pis }}</span></td>
-                                    <td><span class="badge bg-light text-dark border px-2 py-1 fs-11">{{ $item->cst_cofins }}</span></td>
-                                    <td><span class="badge bg-light text-dark border px-2 py-1 fs-11">{{ $item->cst_ipi }}</span></td>
+                                    <td><span class="pill pill-info">{{ $item->cst_csosn }}</span></td>
+                                    <td><span class="pill pill-info">{{ $item->cst_pis }}</span></td>
+                                    <td><span class="pill pill-info">{{ $item->cst_cofins }}</span></td>
+                                    <td><span class="pill pill-info">{{ $item->cst_ipi }}</span></td>
                                     <td class="text-end">
                                         <form action="{{ route('produtopadrao-tributacao.destroy', $item->id) }}" method="post"
                                               id="form-{{$item->id}}" class="m-0">
                                             @method('delete')
                                             @csrf
-                                            <div class="modulo-action-group">
+                                            <div class="act-group">
                                                 @can('config_produto_fiscal_edit')
-                                                <a class="btn btn-warning btn-sm text-white"
-                                                   href="{{ route('produtopadrao-tributacao.edit', [$item->id]) }}" title="Editar Padrão">
-                                                    <i class="ri-pencil-line"></i>
-                                                </a>
+                                                <a class="act-btn act-edit" href="{{ route('produtopadrao-tributacao.edit', [$item->id]) }}" title="Editar Padrão"><i class="ri-pencil-line"></i></a>
                                                 @endcan
                                                 @can('config_produto_fiscal_delete')
-                                                <button type="button" class="btn btn-danger btn-sm btn-delete" title="Excluir Padrão">
-                                                    <i class="ri-delete-bin-line"></i>
-                                                </button>
+                                                <button type="button" class="act-btn act-del btn-delete" title="Excluir Padrão"><i class="ri-delete-bin-line"></i></button>
                                                 @endcan
                                             </div>
                                         </form>
@@ -158,7 +183,7 @@
                                 @empty
                                 <tr>
                                     <td colspan="{{ (Auth::user()->can('config_produto_fiscal_delete') ? 13 : 12) }}">
-                                        <div class="modulo-empty">
+                                        <div class="empty-state">
                                             <i class="ri-inbox-2-line"></i>
                                             <p>Nenhum padrão de tributação cadastrado.</p>
                                         </div>
@@ -172,20 +197,17 @@
 
                 <!-- ═══ FOOTER (Lote + Paginação) ═══ -->
                 <div class="modulo-footer">
-                    <div>
+                    <div class="d-flex gap-2 flex-wrap">
                         @can('config_produto_fiscal_delete')
                         <form action="{{ route('produtopadrao-tributacao.destroy-select') }}" method="post" id="form-delete-select" class="m-0">
                             @method('delete')
                             @csrf
-                            <button type="button" class="btn btn-outline-danger btn-sm btn-delete-all" disabled>
-                                <i class="ri-delete-bin-line align-middle me-1"></i> Remover Selecionados
-                            </button>
+                            <button type="button" class="dash-btn dash-btn-light btn-delete-all" style="color:#dc2626;" disabled><i class="ri-delete-bin-2-line"></i> Remover Selecionados</button>
                         </form>
                         @endcan
                     </div>
-                    <div>
-                        {!! $data->appends(request()->all())->links() !!}
-                    </div>
+                    <div class="fs-12" style="color:#94a3b8;">Exibindo <strong>{{ $data->count() }}</strong> de <strong>{{ $data->total() }}</strong> padrões</div>
+                    <div>{!! $data->appends(request()->all())->links() !!}</div>
                 </div>
 
             </div>

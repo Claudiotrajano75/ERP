@@ -2,133 +2,52 @@
 
 @section('css')
 <style>
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.6) !important; font-weight: 400; }
-.modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-.modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
-/* --- Novo Filtro de Pesquisa Premium --- */
-.modulo-glass-filter-premium {
-    background: #ffffff;
-    border: 1px solid #eef0f6 !important;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-    padding: 20px !important;
-    margin-bottom: 24px;
-}
+    .modulo-footer { padding: 16px 0 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 
-/* Título e Header do Filtro */
-.filtro-premium-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #f1f3f9;
-    padding-bottom: 12px;
-    margin-bottom: 16px;
-}
-.filtro-premium-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: #3f3e6a;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0;
-}
-.filtro-premium-title i {
-    color: #5572f5;
-    margin-right: 6px;
-}
+    /* ─── Cards de Estatísticas ─── */
+    .stat-card { border: 0; border-radius: 16px; padding: 18px 20px; height: 100%; color: #fff; position: relative; overflow: hidden; transition: transform .18s ease, box-shadow .18s ease; }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-card::after { content: ''; position: absolute; top: -44px; right: -44px; width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,.12); }
+    .stat-indigo { background: linear-gradient(135deg,#6366f1,#4f46e5); box-shadow: 0 6px 18px rgba(79,70,229,.32); }
+    .stat-green  { background: linear-gradient(135deg,#24c98a,#109f61); box-shadow: 0 6px 18px rgba(16,185,129,.32); }
+    .stat-amber  { background: linear-gradient(135deg,#fbbf24,#d97706); box-shadow: 0 6px 18px rgba(245,158,11,.32); }
+    .stat-red    { background: linear-gradient(135deg,#fb7185,#dc2626); box-shadow: 0 6px 18px rgba(239,68,68,.32); }
+    .stat-card .st-label { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: rgba(255,255,255,.85); }
+    .stat-card .st-value { font-size: 26px; font-weight: 800; color: #fff; margin-top: 4px; line-height: 1.1; }
+    .stat-card .st-sub { font-size: 11.5px; color: rgba(255,255,255,.75); margin-top: 4px; }
+    .stat-card .st-icon { width: 46px; height: 46px; border-radius: 13px; background: rgba(255,255,255,.22); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
-/* Customização dos Inputs dentro do Filtro */
-.modulo-glass-filter-premium label {
-    font-size: 10px !important;
-    font-weight: 700 !important;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #8c8ca6 !important;
-    margin-bottom: 6px !important;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-.modulo-glass-filter-premium label i {
-    font-size: 12px;
-    color: #a8a8c0;
-}
+    /* ─── Filtro ─── */
+    .filter-wrap { background: #fff; border: 1px solid #e9ecf3; border-radius: 14px; box-shadow: 0 1px 2px rgba(16,24,40,.04); padding: 18px 20px; margin-bottom: 18px; }
+    .filter-title { font-size: 13px; font-weight: 700; color: #3f3e6a; text-transform: uppercase; letter-spacing: .5px; }
+    .filter-title i { color: #4f46e5; margin-right: 6px; }
+    .filter-wrap label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #8c8ca6; margin-bottom: 6px; }
+    .filter-wrap label i { color: #a8a8c0; }
+    .filter-wrap .form-control, .filter-wrap .form-select { height: 40px; border-radius: 10px; border: 1px solid #dcdce9; font-size: 13.5px; color: #1f2937; background: #fcfdfe; transition: all .15s ease; }
+    .filter-wrap .form-control:focus, .filter-wrap .form-select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.12); background: #fff; }
 
-.modulo-glass-filter-premium .form-control,
-.modulo-glass-filter-premium .form-select {
-    height: 38px !important;
-    border-radius: 8px !important;
-    border: 1px solid #dcdce9 !important;
-    font-size: 13px !important;
-    padding: 6px 12px !important;
-    color: #374151 !important;
-    background-color: #fcfdfe !important;
-    transition: all 0.2s ease;
-}
+    /* ─── Tabela ─── */
+    .tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+    .tb-wrap table { margin-bottom: 0; }
+    .tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 16px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+    .tb-wrap tbody td { padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13.5px; color: #374151; }
+    .tb-wrap tbody tr:hover { background: #f5f6fe; }
+    .tb-wrap tbody tr:last-child td { border-bottom: none; }
 
-.modulo-glass-filter-premium .form-control:focus,
-.modulo-glass-filter-premium .form-select:focus {
-    border-color: #5572f5 !important;
-    background-color: #fff !important;
-    box-shadow: 0 0 0 3px rgba(85, 114, 245, 0.12) !important;
-}
+    /* ─── Ações ─── */
+    .act-group { display: inline-flex; gap: 6px; align-items: center; }
+    .act-btn { width: 34px; height: 34px; border-radius: 10px; border: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; text-decoration: none; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+    .act-btn:hover { transform: translateY(-2px); text-decoration: none; }
+    .act-edit { background: #eef0ff; color: #4f46e5; }
+    .act-edit:hover { box-shadow: 0 4px 12px rgba(79,70,229,.3); }
+    .act-profile { background: #dcfce7; color: #16a34a; }
+    .act-profile:hover { box-shadow: 0 4px 12px rgba(22,163,74,.3); }
+    .act-del { background: #fee2e2; color: #dc2626; }
+    .act-del:hover { box-shadow: 0 4px 12px rgba(220,38,38,.3); }
 
-/* Botões do Filtro */
-.modulo-glass-filter-premium .btn-pesquisar {
-    background: linear-gradient(135deg, #5572f5 0%, #3d56d4 100%) !important;
-    border: none !important;
-    color: #fff !important;
-    font-weight: 600 !important;
-    height: 38px;
-    border-radius: 8px !important;
-    font-size: 13px !important;
-    transition: all 0.2s ease !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-.modulo-glass-filter-premium .btn-pesquisar:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(85, 114, 245, 0.25) !important;
-}
-
-.modulo-glass-filter-premium .btn-limpar {
-    background: #f1f3f9 !important;
-    border: 1px solid #e2e5ec !important;
-    color: #5a5a7a !important;
-    font-weight: 600 !important;
-    height: 38px;
-    border-radius: 8px !important;
-    font-size: 13px !important;
-    transition: all 0.2s ease !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-.modulo-glass-filter-premium .btn-limpar:hover {
-    background: #e8ebf3 !important;
-    color: #302b63 !important;
-}
-.modulo-table-wrap { border-radius: 12px; border: 1px solid #eef0f5; overflow: hidden; }
-.modulo-table-wrap table { margin-bottom: 0; }
-.modulo-table-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding: 12px 14px; border-bottom: 2px solid #e8eaf6; }
-.modulo-table-wrap tbody td { padding: 12px 14px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; transition: background 0.15s ease; font-size: 13px; }
-.modulo-table-wrap tbody tr { transition: all 0.15s ease; }
-.modulo-table-wrap tbody tr:hover { background: #f5f6fe; }
-.modulo-table-wrap tbody tr:last-child td { border-bottom: none; }
-.modulo-action-group { display: inline-flex; gap: 4px; flex-wrap: nowrap; align-items: center; }
-.modulo-action-group .btn { border-radius: 8px; padding: 4px 10px; font-size: 13px; transition: all 0.15s ease; }
-.modulo-action-group .btn:hover { transform: translateY(-1px); }
-.modulo-empty { padding: 48px 20px; text-align: center; }
-.modulo-empty i { font-size: 48px; color: #c5cae9; margin-bottom: 12px; display: block; }
-.modulo-empty p { color: #9e9eb8; font-size: 14px; margin: 0; }
-.modulo-footer { padding: 16px 0 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-@media (max-width: 768px) { .modulo-header-gradient .modulo-title { font-size: 18px; } }
+    .empty-state { padding: 52px 20px; text-align: center; }
+    .empty-state i { font-size: 52px; color: #c5cae9; display: block; margin-bottom: 12px; }
+    .empty-state p { color: #9e9eb8; font-size: 14px; margin: 0; }
 </style>
 @endsection
 
@@ -149,10 +68,10 @@
                     </div>
                     <div class="d-inline-flex gap-2">
                         @can('estoque_create')
-                        <a href="{{ route('estoque.create') }}" class="btn btn-light btn-sm px-3 text-dark">
-                            <i class="ri-add-circle-line align-middle me-1"></i> Adicionar Estoque
+                        <a href="{{ route('estoque.create') }}" class="dash-btn dash-btn-primary">
+                            <i class="ri-add-line"></i> Adicionar Estoque
                         </a>
-                        <a href="{{ route('apontamento.create') }}" class="btn btn-light btn-sm px-3 text-dark">
+                        <a href="{{ route('apontamento.create') }}" class="dash-btn dash-btn-light">
                             <i class="ri-settings-3-line align-middle me-1"></i> Apontamento
                         </a>
                         @endcan
@@ -163,85 +82,45 @@
             <div class="card-body p-4">
 
                 {{-- ═══ KPI CARDS ═══ --}}
-                <div class="row g-3 mb-4">
-                    <div class="col-md-3 col-6">
-                        <div class="card widget-icon-box text-bg-info mb-0">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Produtos</h4>
-                                        <h3 class="my-2 text-white fs-18">{{ $stats['total_produtos'] }}</h3>
-                                        <p class="mb-0 text-white-50 fs-11">Produtos em estoque</p>
-                                    </div>
-                                    <div class="avatar-sm flex-shrink-0">
-                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                                            <i class="ri-box-3-line"></i>
-                                        </span>
-                                    </div>
-                                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-indigo">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Produtos</div><div class="st-value">{{ $stats['total_produtos'] }}</div><div class="st-sub">Produtos em estoque</div></div>
+                                <div class="st-icon"><i class="ri-box-3-line"></i></div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 col-6">
-                        <div class="card widget-icon-box text-bg-success mb-0">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Itens</h4>
-                                        <h3 class="my-2 text-white fs-18">{{ number_format($stats['total_itens'], 0) }}</h3>
-                                        <p class="mb-0 text-white-50 fs-11">Quantidade total</p>
-                                    </div>
-                                    <div class="avatar-sm flex-shrink-0">
-                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                                            <i class="ri-stack-line"></i>
-                                        </span>
-                                    </div>
-                                </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-green">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Itens</div><div class="st-value">{{ number_format($stats['total_itens'], 0) }}</div><div class="st-sub">Quantidade total</div></div>
+                                <div class="st-icon"><i class="ri-stack-line"></i></div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 col-6">
-                        <div class="card widget-icon-box text-bg-warning mb-0">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Valor Estimado</h4>
-                                        <h3 class="my-2 text-white fs-18">R$ {{ __moeda($stats['valor_estoque']) }}</h3>
-                                        <p class="mb-0 text-white-50 fs-11">Valor de venda em estoque</p>
-                                    </div>
-                                    <div class="avatar-sm flex-shrink-0">
-                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                                            <i class="ri-money-dollar-circle-line"></i>
-                                        </span>
-                                    </div>
-                                </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-amber">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Valor Estimado</div><div class="st-value">R$ {{ __moeda($stats['valor_estoque']) }}</div><div class="st-sub">Valor de venda em estoque</div></div>
+                                <div class="st-icon"><i class="ri-money-dollar-circle-line"></i></div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 col-6">
-                        <div class="card widget-icon-box text-bg-danger mb-0">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Estoque Baixo</h4>
-                                        <h3 class="my-2 text-white fs-18">{{ $stats['estoque_baixo'] }}</h3>
-                                        <p class="mb-0 text-white-50 fs-11">Abaixo do mínimo</p>
-                                    </div>
-                                    <div class="avatar-sm flex-shrink-0">
-                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                                            <i class="ri-alert-line"></i>
-                                        </span>
-                                    </div>
-                                </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-red">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div><div class="st-label">Estoque Baixo</div><div class="st-value">{{ $stats['estoque_baixo'] }}</div><div class="st-sub">Abaixo do mínimo</div></div>
+                                <div class="st-icon"><i class="ri-alert-line"></i></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ═══ Filtros de Busca Premium ═══ -->
-                <div class="modulo-glass-filter-premium">
+                                <!-- ═══ Filtros de Busca Premium ═══ -->
+                <div class="filter-wrap">
                     <div class="filtro-premium-header">
-                        <h5 class="filtro-premium-title">
+                        <h5 class="filter-title mb-0">
                             <i class="ri-search-line"></i> Filtrar Estoque
                         </h5>
                     </div>
@@ -254,10 +133,10 @@
                         </div>
                         <div class="col-md-3 col-12 ms-auto d-flex align-items-end">
                             <div class="d-flex gap-2 w-100">
-                                <button class="btn btn-pesquisar flex-grow-1" type="submit">
+                                <button class="btn btn-primary flex-grow-1" style="border-radius:10px;" type="submit">
                                     <i class="ri-search-line"></i> Buscar
                                 </button>
-                                <a class="btn btn-limpar px-3" href="{{ route('estoque.index') }}" title="Limpar Filtros">
+                                <a class="btn btn-light border px-3" style="border-radius:10px;" href="{{ route('estoque.index') }}" title="Limpar Filtros">
                                     <i class="ri-eraser-line"></i>
                                 </a>
                             </div>
@@ -267,14 +146,14 @@
                 </div>
 
                 <!-- ═══ Tabela Premium ═══ -->
-                <div class="modulo-table-wrap">
+                <div class="tb-wrap">
                     <div class="table-responsive">
                         <table class="table table-centered table-hover align-middle mb-0 text-dark">
                             <thead>
                                 <tr>
                                     <th style="width: 60px;">Imagem</th>
                                     <th>Produto</th>
-                                    <th>Quantidade Atual</th>
+                                    <th class="text-center">Quantidade Atual</th>
                                     <th>Valor de Venda</th>
                                     <th class="text-end" style="width: 150px;">Ações</th>
                                 </tr>
@@ -292,29 +171,41 @@
                                         <span class="text-muted fs-11">Unidade: {{ $item->produto->unidade }}</span>
                                     </td>
 
-                                    <td>
+                                    <td class="text-center">
                                         @if(__countLocalAtivo() == 1)
-                                            <strong class="text-primary fs-14">
-                                                @if($item->produto->unidade == 'UN' || $item->produto->unidade == 'UNID')
-                                                {{ number_format($item->quantidade, 0) }}
-                                                @else
-                                                {{ number_format($item->quantidade, 3, '.', '') }}
-                                                @endif
-                                            </strong>
+                                            @php
+                                                $qtd = (float)$item->quantidade;
+                                                $qtdFormatada = ($item->produto->unidade == 'UN' || $item->produto->unidade == 'UNID') 
+                                                    ? number_format($item->quantidade, 0) 
+                                                    : number_format($item->quantidade, 3, '.', '');
+                                            @endphp
+                                            @if($qtd <= 0)
+                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fs-12 fw-bold" title="Estoque zerado ou negativo">
+                                                    <i class="ri-alert-line me-1"></i>{{ $qtdFormatada }}
+                                                </span>
+                                            @elseif($item->produto->estoque_minimo > 0 && $qtd <= $item->produto->estoque_minimo)
+                                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1 fs-12 fw-bold" title="Estoque baixo (Mínimo: {{ $item->produto->estoque_minimo }})">
+                                                    <i class="ri-error-warning-line me-1"></i>{{ $qtdFormatada }}
+                                                </span>
+                                            @else
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 fs-12 fw-bold" title="Estoque disponível">
+                                                    <i class="ri-box-3-line me-1"></i>{{ $qtdFormatada }}
+                                                </span>
+                                            @endif
                                         @else
-                                            <div class="fs-12 text-muted">
+                                            <div class="fs-11 text-muted d-inline-flex flex-wrap gap-1 justify-content-center" style="min-width: 120px;">
                                                 @foreach($item->produto->estoqueLocais as $e)
-                                                @if($e->local)
-                                                {{ $e->local->descricao }}:
-                                                <strong class="text-success">
-                                                    @if($item->produto->unidade == 'UN' || $item->produto->unidade == 'UNID')
-                                                    {{ number_format($e->quantidade, 0) }}
-                                                    @else
-                                                    {{ number_format($e->quantidade, 3) }}
+                                                    @if($e->local)
+                                                        @php
+                                                            $qtdLocal = (float)$e->quantidade;
+                                                            $qtdLocalFormatada = ($item->produto->unidade == 'UN' || $item->produto->unidade == 'UNID')
+                                                                ? number_format($e->quantidade, 0)
+                                                                : number_format($e->quantidade, 3);
+                                                        @endphp
+                                                        <span class="badge {{ $qtdLocal <= 0 ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-light text-dark border' }} py-1 px-2">
+                                                            {{ $e->local->descricao }}: <strong class="{{ $qtdLocal <= 0 ? 'text-danger' : 'text-success' }}">{{ $qtdLocalFormatada }}</strong>
+                                                        </span>
                                                     @endif
-                                                </strong>
-                                                @endif
-                                                @if(!$loop->last) | @endif
                                                 @endforeach
                                             </div>
                                         @endif
@@ -329,26 +220,15 @@
                                               id="form-{{$item->id}}" class="m-0">
                                             @method('delete')
                                             @csrf
-                                            <div class="modulo-action-group">
+                                            <div class="act-group">
                                                 @can('estoque_edit')
-                                                <a class="btn btn-dark btn-sm text-white"
-                                                   href="{{ route('estoque.edit', [$item->id]) }}"
-                                                   title="Editar quantidade de estoque">
-                                                    <i class="ri-pencil-line"></i>
-                                                </a>
+                                                <a class="act-btn act-edit" href="{{ route('estoque.edit', [$item->id]) }}" title="Editar quantidade de estoque"><i class="ri-pencil-line"></i></a>
                                                 @endcan
                                                 @can('produtos_edit')
-                                                <a class="btn btn-warning btn-sm text-white"
-                                                   href="{{ route('produtos.edit', [$item->produto_id]) }}"
-                                                   title="Editar dados cadastrais do produto">
-                                                    <i class="ri-box-3-line"></i>
-                                                </a>
+                                                <a class="act-btn act-profile" href="{{ route('produtos.edit', [$item->produto_id]) }}" title="Editar dados cadastrais do produto"><i class="ri-box-3-line"></i></a>
                                                 @endcan
                                                 @can('estoque_delete')
-                                                <button type="button" class="btn btn-danger btn-sm btn-delete"
-                                                        title="Remover registro de estoque">
-                                                    <i class="ri-delete-bin-line"></i>
-                                                </button>
+                                                <button type="button" class="act-btn act-del btn-delete" title="Remover registro de estoque"><i class="ri-delete-bin-line"></i></button>
                                                 @endcan
                                             </div>
                                         </form>
@@ -357,7 +237,7 @@
                                 @empty
                                 <tr>
                                     <td colspan="5">
-                                        <div class="modulo-empty">
+                                        <div class="empty-state">
                                             <i class="ri-store-3-line"></i>
                                             <p>Nenhum registro de estoque encontrado.</p>
                                         </div>
@@ -371,10 +251,8 @@
 
                 <!-- ═══ Footer / Paginação ═══ -->
                 <div class="modulo-footer">
-                    <div></div>
-                    <div>
-                        {!! $data->appends(request()->all())->links() !!}
-                    </div>
+                    <div class="fs-12" style="color:#94a3b8;">Exibindo <strong>{{ $data->count() }}</strong> de <strong>{{ $data->total() }}</strong> registros</div>
+                    <div>{!! $data->appends(request()->all())->links() !!}</div>
                 </div>
 
             </div>

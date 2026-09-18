@@ -35,9 +35,15 @@ class NfeEntradaXmlController extends Controller
 
         }
 
+        $stats = [
+            'total_sistema' => Nfe::where('empresa_id', request()->empresa_id)->where('orcamento', 0)->where('tpNF', 0)->where('estado', 'aprovado')->count(),
+            'total_periodo' => is_countable($data) ? count($data) : 0,
+            'valor_total' => is_countable($data) ? collect($data)->sum('total') : 0,
+        ];
+
         $escritorio = EscritorioContabil::where('empresa_id', $request->empresa_id)
         ->first();
-        return view('compras.arquivos_xml', compact('data', 'escritorio'));
+        return view('compras.arquivos_xml', compact('data', 'escritorio', 'stats'));
     }
 
     public function download(Request $request){

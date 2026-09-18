@@ -20,13 +20,26 @@ class VeiculoController extends Controller
     {
         $data = Veiculo::where('empresa_id', request()->empresa_id)
         ->when(!empty($request->placa), function ($q) use ($request) {
-            return  $q->where(function ($quer) use ($request) {
-                return $quer->where('placa', 'LIKE', "%$request->placa%");
+            return $q->where(function ($quer) use ($request) {
+                return $quer->where('placa', 'LIKE', "%$request->placa%")
+                            ->orWhere('modelo', 'LIKE', "%$request->placa%")
+                            ->orWhere('proprietario_nome', 'LIKE', "%$request->placa%");
             });
+        })
+        ->when($request->status !== null && $request->status !== '', function ($q) use ($request) {
+            return $q->where('status', $request->status);
         })
         ->orderBy('created_at', 'desc')
         ->paginate(env("PAGINACAO"));
-        return view('veiculos.index', compact('data'));
+
+        $baseStats = Veiculo::where('empresa_id', request()->empresa_id);
+        $stats = [
+            'total' => (clone $baseStats)->count(),
+            'ativos' => (clone $baseStats)->where('status', 1)->count(),
+            'inativos' => (clone $baseStats)->where('status', 0)->count(),
+        ];
+
+        return view('veiculos.index', compact('data', 'stats'));
     }
 
    

@@ -45,7 +45,11 @@ class ConfigGeralController extends Controller
 
             $request->merge([
                 'margem_combo' => $request->margem_combo ? __convert_value_bd($request->margem_combo) : 50,
-                'percentual_lucro_produto' => $request->percentual_lucro_produto ?? 0
+                'percentual_lucro_produto' => $request->percentual_lucro_produto ?? 0,
+                // Impressora termica - checkbox nao envia quando desmarcado
+                'printer_status' => $request->has('printer_status') ? 1 : 0,
+                'printer_porta' => $request->printer_porta ?? 9100,
+                'printer_largura' => $request->printer_largura ?? '80',
             ]);
 
             if ($item == null) {

@@ -1,7 +1,7 @@
 @foreach($item->eventosAtivos as $ev)
 <tr class="datatable-row dynamic-form align-middle">
-    <td>
-        <button type="button" class="btn btn-sm btn-danger btn-delete-row" title="Remover Linha">
+    <td class="text-center">
+        <button type="button" class="act-btn act-del btn-delete-row" title="Remover Linha">
             <i class="ri-delete-bin-line"></i>
         </button>
     </td>
@@ -15,9 +15,9 @@
     <td>
         <select required name="condicao[]" class="form-select condicao_chave select-disabled" readonly>
             @if($ev->condicao == "soma")
-            <option value="soma">Soma</option>
+            <option value="soma">Soma (Provento)</option>
             @else
-            <option value="diminui">Diminui</option>
+            <option value="diminui">Diminui (Desconto)</option>
             @endif
         </select>
     </td>

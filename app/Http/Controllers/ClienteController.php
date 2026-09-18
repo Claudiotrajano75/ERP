@@ -29,7 +29,8 @@ class ClienteController extends Controller
     {
         $start_date = $request->get('start_date');
         $end_date = $request->get('end_date');
-        $data = Cliente::where('empresa_id', request()->empresa_id)
+        $base = Cliente::where('empresa_id', request()->empresa_id);
+        $data = (clone $base)
         ->when(!empty($request->razao_social), function ($q) use ($request) {
             return  $q->where(function ($quer) use ($request) {
                 return $quer->where('razao_social', 'LIKE', "%$request->razao_social%");
@@ -47,8 +48,13 @@ class ClienteController extends Controller
             return $query->whereDate('created_at', '<=', $end_date);
         })
         ->paginate(env("PAGINACAO"));
-        
-        return view('clientes.index', compact('data'));
+        $stats = [
+            'total'    => (clone $base)->count(),
+            'ativos'   => (clone $base)->where('status', 1)->count(),
+            'inativos' => (clone $base)->where('status', 0)->count(),
+        ];
+
+        return view('clientes.index', compact('data', 'stats'));
     }
 
     public function create()

@@ -20,14 +20,21 @@ class ContaEmpresaController extends Controller
 
     public function index(Request $request){
         $local_id = $request->local_id;
-        $data = ContaEmpresa::
-        where('empresa_id', $request->empresa_id)
+        $baseQuery = ContaEmpresa::where('empresa_id', $request->empresa_id)
         ->when($local_id, function ($query) use ($local_id) {
             return $query->where('local_id', $local_id);
-        })
-        ->get();
+        });
 
-        return view('conta_empresa.index', compact('data'));
+        $stats = [
+            'saldo_total'  => (clone $baseQuery)->sum('saldo'),
+            'total_contas' => (clone $baseQuery)->count(),
+            'ativas'       => (clone $baseQuery)->where('status', 1)->count(),
+            'inativas'     => (clone $baseQuery)->where('status', 0)->count(),
+        ];
+
+        $data = (clone $baseQuery)->orderBy('nome', 'asc')->get();
+
+        return view('conta_empresa.index', compact('data', 'stats'));
     }
 
     public function create(Request $request){

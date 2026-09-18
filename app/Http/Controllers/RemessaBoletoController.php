@@ -35,20 +35,28 @@ class RemessaBoletoController extends Controller
         $end_date = $request->get('end_date');
         $conta_boleto_id = $request->get('conta_boleto_id');
 
-        $data = RemessaBoleto::where('empresa_id', $request->empresa_id)
+        $baseQuery = RemessaBoleto::where('empresa_id', $request->empresa_id)
         ->when(!empty($start_date), function ($query) use ($start_date) {
             return $query->whereDate('created_at', '>=', $start_date);
         })
-        ->when(!empty($end_date), function ($query) use ($end_date,) {
+        ->when(!empty($end_date), function ($query) use ($end_date) {
             return $query->whereDate('created_at', '<=', $end_date);
         })
         ->when(!empty($conta_boleto_id), function ($query) use ($conta_boleto_id) {
             return $query->where('conta_boleto_id', $conta_boleto_id);
-        })
+        });
+
+        $stats = [
+            'total_remessas' => (clone $baseQuery)->count(),
+            'ultimo_arquivo' => (clone $baseQuery)->latest('id')->first(),
+            'total_itens'    => RemessaBoletoItem::whereIn('remessa_id', (clone $baseQuery)->pluck('id'))->count(),
+        ];
+
+        $data = (clone $baseQuery)
         ->orderBy('created_at', 'desc')
         ->paginate(env("PAGINACAO"));
 
-        return view('remessa_boletos.index', compact('data', 'contasBoleto'));
+        return view('remessa_boletos.index', compact('data', 'contasBoleto', 'stats'));
     }
 
     public function create(Request $request){

@@ -38,12 +38,11 @@ class BoletoController extends Controller
             $cliente = Cliente::findOrFail($cliente_id);
         }
 
-        $data = Boleto::where('boletos.empresa_id', $request->empresa_id)
-        ->select('boletos.*')
+        $baseQuery = Boleto::where('boletos.empresa_id', $request->empresa_id)
         ->when(!empty($start_date), function ($query) use ($start_date) {
             return $query->whereDate('boletos.vencimento', '>=', $start_date);
         })
-        ->when(!empty($end_date), function ($query) use ($end_date,) {
+        ->when(!empty($end_date), function ($query) use ($end_date) {
             return $query->whereDate('boletos.vencimento', '<=', $end_date);
         })
         ->when(!empty($cliente_id), function ($query) use ($cliente_id) {
@@ -52,10 +51,20 @@ class BoletoController extends Controller
         })
         ->when(!empty($banco), function ($query) use ($banco) {
             return $query->where('boletos.conta_boleto_id', $banco);
-        })
+        });
+
+        $stats = [
+            'total_boletos'  => (clone $baseQuery)->count(),
+            'total_valor'    => (clone $baseQuery)->sum('boletos.valor'),
+            'total_recebido' => (clone $baseQuery)->whereHas('contaReceber', function($q){ $q->where('status', 1); })->sum('boletos.valor'),
+            'total_pendente' => (clone $baseQuery)->whereHas('contaReceber', function($q){ $q->where('status', 0); })->sum('boletos.valor'),
+        ];
+
+        $data = (clone $baseQuery)
+        ->select('boletos.*')
         ->orderBy('boletos.created_at', 'desc')
         ->paginate(env("PAGINACAO"));
-        return view('boletos.index', compact('data', 'contasBoleto', 'cliente'));
+        return view('boletos.index', compact('data', 'contasBoleto', 'cliente', 'stats'));
     }
 
     public function create($id){

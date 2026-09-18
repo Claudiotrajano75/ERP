@@ -20,7 +20,9 @@ use Illuminate\Support\Facades\DB;
 class CarrinhoController extends Controller
 {
     public function __construct(){
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
     }
 
     private function _getCarrinho(){

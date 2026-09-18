@@ -24,6 +24,9 @@ use App\Models\ProdutoUnico;
 use App\Utils\EstoqueUtil;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProdutoLocalizacao;
+use App\Services\DFeService;
+use NFePHP\NFe\Common\Standardize;
+use NFePHP\DA\NFe\Danfe;
 
 class CompraController extends Controller
 {
@@ -124,7 +127,16 @@ class CompraController extends Controller
         ->paginate(env("PAGINACAO"));
 
         $contigencia = $this->getContigencia($request->empresa_id);
-        return view('compras.index', compact('data', 'fornecedores', 'contigencia'));
+
+        $base = Nfe::where('empresa_id', request()->empresa_id)->where('tpNF', 0);
+        $stats = [
+            'total'     => (clone $base)->count(),
+            'aprovadas' => (clone $base)->where('estado', 'aprovado')->count(),
+            'canceladas'=> (clone $base)->where('estado', 'cancelado')->count(),
+            'valor'     => (clone $base)->where('estado', 'aprovado')->sum('total'),
+        ];
+
+        return view('compras.index', compact('data', 'fornecedores', 'contigencia', 'stats'));
     }
 
     /**
@@ -208,22 +220,339 @@ class CompraController extends Controller
         //
     }
 
-    public function xml()
+    public function xml(Request $request)
     {
         if (!__isCaixaAberto()) {
             session()->flash("flash_warning", "Abrir caixa antes de continuar!");
             return redirect()->route('caixa.create');
         }
-        return view('compras.xml');
+
+        $empresa = Empresa::findOrFail($request->empresa_id);
+
+        $start_date = $request->get('start_date');
+        $end_date   = $request->get('end_date');
+        $pesquisa   = $request->get('pesquisa');
+        $status     = $request->get('status');
+
+        $query = ManifestoDfe::where('empresa_id', $request->empresa_id)
+            ->when(!empty($start_date), function ($q) use ($start_date) {
+                return $q->whereDate('data_emissao', '>=', $start_date);
+            })
+            ->when(!empty($end_date), function ($q) use ($end_date) {
+                return $q->whereDate('data_emissao', '<=', $end_date);
+            })
+            ->when(!empty($pesquisa), function ($q) use ($pesquisa) {
+                $pesquisaLimpa = preg_replace('/[^0-9]/', '', $pesquisa);
+                return $q->where(function ($sub) use ($pesquisa, $pesquisaLimpa) {
+                    $sub->where('nome', 'like', "%{$pesquisa}%")
+                        ->orWhere('chave', 'like', "%{$pesquisa}%");
+                    if (!empty($pesquisaLimpa)) {
+                        $sub->orWhere('documento', 'like', "%{$pesquisaLimpa}%");
+                    }
+                });
+            })
+            ->when($status === 'pendentes', function ($q) {
+                return $q->where(function ($sub) {
+                    $sub->whereNull('compra_id')->orWhere('compra_id', 0);
+                });
+            })
+            ->when($status === 'importadas', function ($q) {
+                return $q->where('compra_id', '>', 0);
+            });
+
+        $data = (clone $query)->orderBy('data_emissao', 'desc')->paginate(getenv("PAGINACAO") ?: 15);
+
+        $statsQuery = ManifestoDfe::where('empresa_id', $request->empresa_id);
+        $stats = [
+            'total'      => (clone $statsQuery)->count(),
+            'pendentes'  => (clone $statsQuery)->where(function ($q) {
+                $q->whereNull('compra_id')->orWhere('compra_id', 0);
+            })->count(),
+            'importadas' => (clone $statsQuery)->where('compra_id', '>', 0)->count(),
+            'valor'      => (clone $statsQuery)->sum('valor'),
+        ];
+
+        return view('compras.xml', compact('data', 'stats', 'empresa'));
+    }
+
+    public function consultarSefaz(Request $request)
+    {
+        $empresa = Empresa::findOrFail($request->empresa_id);
+
+        if (!$empresa->arquivo || !$empresa->senha) {
+            session()->flash('flash_error', 'Certificado Digital A1 não configurado ou senha inválida no cadastro da empresa!');
+            return redirect()->back();
+        }
+
+        $cnpj = preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj);
+
+        try {
+            $dfe_service = new DFeService([
+                "atualizacao" => date('Y-m-d H:i:s'),
+                "tpAmb" => 1,
+                "razaosocial" => $empresa->nome,
+                "siglaUF" => $empresa->cidade ? $empresa->cidade->uf : 'CE',
+                "cnpj" => $cnpj,
+                "schemes" => "PL_009_V4",
+                "versao" => "4.00",
+                "tokenIBPT" => "AAAAAAA",
+                "CSC" => $empresa->csc,
+                "CSCid" => $empresa->csc_id
+            ], $empresa);
+
+            $ultimoManifesto = ManifestoDfe::where('empresa_id', $empresa->id)
+                ->orderBy('nsu', 'desc')
+                ->first();
+
+            $nsu = $ultimoManifesto ? $ultimoManifesto->nsu : 0;
+            $docs = $dfe_service->novaConsulta($nsu);
+
+            if (is_array($docs) && !isset($docs['erro'])) {
+                $novosCount = 0;
+                foreach ($docs as $d) {
+                    $existe = ManifestoDfe::where('empresa_id', $empresa->id)
+                        ->where('chave', $d['chave'])
+                        ->exists();
+
+                    if (!$existe && isset($d['valor']) && $d['valor'] > 0 && !empty($d['nome'])) {
+                        ManifestoDfe::create($d);
+                        $novosCount++;
+                    }
+                }
+
+                if ($novosCount > 0) {
+                    session()->flash('flash_success', "Consulta realizada com sucesso! {$novosCount} nova(s) nota(s) encontrada(s) na SEFAZ.");
+                } else {
+                    session()->flash('flash_info', 'Consulta concluída: Nenhuma nova nota fiscal emitida recentemente para esta empresa na SEFAZ.');
+                }
+            } else {
+                $msg = isset($docs['message']) ? $docs['message'] : 'Não foi possível obter retorno da SEFAZ no momento.';
+                session()->flash('flash_warning', "Aviso da SEFAZ: {$msg}");
+            }
+        } catch (\Exception $e) {
+            session()->flash('flash_error', 'Erro ao consultar SEFAZ: ' . $e->getMessage());
+        }
+
+        return redirect()->route('compras.xml');
+    }
+
+    public function importarDfeXml($id)
+    {
+        if (!__isCaixaAberto()) {
+            session()->flash("flash_warning", "Abrir caixa antes de continuar!");
+            return redirect()->route('caixa.create');
+        }
+
+        $naturezaPadrao = NaturezaOperacao::where('empresa_id', request()->empresa_id)->first();
+        if ($naturezaPadrao == null) {
+            session()->flash('flash_error', 'Cadastre pelo menos uma natureza de operação antes de importar notas!');
+            return redirect()->route('natureza-operacao.create');
+        }
+
+        $empresa = Empresa::findOrFail(request()->empresa_id);
+        $dfe = ManifestoDfe::findOrFail($id);
+
+        if ($dfe->compra_id > 0) {
+            session()->flash('flash_warning', 'Esta nota fiscal já foi importada anteriormente!');
+            return redirect()->route('compras.show', $dfe->compra_id);
+        }
+
+        $chave = $dfe->chave;
+        $cnpj = preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj);
+
+        if (!is_dir(public_path('xml_entrada'))) {
+            mkdir(public_path('xml_entrada'), 0777, true);
+        }
+        if (!is_dir(public_path('xml_dfe'))) {
+            mkdir(public_path('xml_dfe'), 0777, true);
+        }
+
+        $xmlPathEntrada = public_path("xml_entrada/{$chave}.xml");
+        $xmlPathDfe = public_path("xml_dfe/{$chave}.xml");
+
+        $xmlContent = null;
+
+        if (file_exists($xmlPathEntrada)) {
+            $xmlContent = file_get_contents($xmlPathEntrada);
+        } elseif (file_exists($xmlPathDfe)) {
+            $xmlContent = file_get_contents($xmlPathDfe);
+            file_put_contents($xmlPathEntrada, $xmlContent);
+        } else {
+            // Tenta baixar da SEFAZ
+            try {
+                $dfe_service = new DFeService([
+                    "atualizacao" => date('Y-m-d H:i:s'),
+                    "tpAmb" => 1,
+                    "razaosocial" => $empresa->nome,
+                    "siglaUF" => $empresa->cidade ? $empresa->cidade->uf : 'CE',
+                    "cnpj" => $cnpj,
+                    "schemes" => "PL_009_V4",
+                    "versao" => "4.00",
+                    "tokenIBPT" => "AAAAAAA",
+                    "CSC" => $empresa->csc,
+                    "CSCid" => $empresa->csc_id
+                ], $empresa);
+
+                // Se ainda não tiver ciência (tipo = 0), manifesta ciência para liberar o download do XML completo
+                if ($dfe->tipo == 0) {
+                    $manifestaRes = $dfe_service->manifesta($chave, 1);
+                    if (isset($manifestaRes['retEvento']['infEvento']['cStat']) && in_array($manifestaRes['retEvento']['infEvento']['cStat'], ['135', '136'])) {
+                        $dfe->tipo = 1;
+                        $dfe->sequencia_evento = 1;
+                        $dfe->save();
+                    }
+                }
+
+                $response = $dfe_service->download($chave);
+                $stz = new Standardize($response);
+                $std = $stz->toStd();
+
+                if ($std != null && $std->cStat != 138) {
+                    session()->flash("flash_error", "Documento não retornado pela SEFAZ. [$std->cStat] $std->xMotivo");
+                    return redirect()->back();
+                }
+
+                if (isset($std->loteDistDFeInt->docZip)) {
+                    $zip = $std->loteDistDFeInt->docZip;
+                    $xmlContent = gzdecode(base64_decode($zip));
+                    file_put_contents($xmlPathDfe, $xmlContent);
+                    file_put_contents($xmlPathEntrada, $xmlContent);
+                }
+            } catch (\Exception $e) {
+                session()->flash('flash_error', 'Erro ao baixar XML da SEFAZ: ' . $e->getMessage());
+                return redirect()->back();
+            }
+        }
+
+        if (!$xmlContent || strlen($xmlContent) < 100) {
+            session()->flash('flash_error', 'Não foi possível obter o arquivo XML desta nota da SEFAZ. Aguarde alguns instantes e tente novamente.');
+            return redirect()->back();
+        }
+
+        return $this->processarXmlString($xmlContent, $chave);
+    }
+
+    public function danfeDfe($id)
+    {
+        $dfe = ManifestoDfe::findOrFail($id);
+        $empresa = Empresa::findOrFail(request()->empresa_id);
+        $chave = $dfe->chave;
+
+        $xmlPathEntrada = public_path("xml_entrada/{$chave}.xml");
+        $xmlPathDfe = public_path("xml_dfe/{$chave}.xml");
+
+        $xmlContent = null;
+        if (file_exists($xmlPathEntrada)) {
+            $xmlContent = file_get_contents($xmlPathEntrada);
+        } elseif (file_exists($xmlPathDfe)) {
+            $xmlContent = file_get_contents($xmlPathDfe);
+        } else {
+            $cnpj = preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj);
+            $dfe_service = new DFeService([
+                "atualizacao" => date('Y-m-d H:i:s'),
+                "tpAmb" => 1,
+                "razaosocial" => $empresa->nome,
+                "siglaUF" => $empresa->cidade ? $empresa->cidade->uf : 'CE',
+                "cnpj" => $cnpj,
+                "schemes" => "PL_009_V4",
+                "versao" => "4.00",
+                "tokenIBPT" => "AAAAAAA",
+                "CSC" => $empresa->csc,
+                "CSCid" => $empresa->csc_id
+            ], $empresa);
+
+            try {
+                $response = $dfe_service->download($chave);
+                $stz = new Standardize($response);
+                $std = $stz->toStd();
+                if (isset($std->loteDistDFeInt->docZip)) {
+                    $zip = $std->loteDistDFeInt->docZip;
+                    $xmlContent = gzdecode(base64_decode($zip));
+                    file_put_contents($xmlPathDfe, $xmlContent);
+                    file_put_contents($xmlPathEntrada, $xmlContent);
+                }
+            } catch (\Exception $e) {
+                session()->flash('flash_error', 'Erro ao buscar DANFE: ' . $e->getMessage());
+                return redirect()->back();
+            }
+        }
+
+        if (!$xmlContent) {
+            session()->flash('flash_error', 'XML da nota ainda não disponível para impressão do DANFE.');
+            return redirect()->back();
+        }
+
+        try {
+            $danfe = new Danfe($xmlContent);
+            $pdf = $danfe->render();
+            return response($pdf)->header('Content-Type', 'application/pdf');
+        } catch (\Exception $e) {
+            session()->flash('flash_error', 'Erro ao renderizar DANFE: ' . $e->getMessage());
+            return redirect()->back();
+        }
+    }
+
+    public function manifestarDfe(Request $request)
+    {
+        $empresa = Empresa::findOrFail($request->empresa_id);
+        $cnpj = preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj);
+
+        $dfe_service = new DFeService([
+            "atualizacao" => date('Y-m-d H:i:s'),
+            "tpAmb" => 1,
+            "razaosocial" => $empresa->nome,
+            "siglaUF" => $empresa->cidade ? $empresa->cidade->uf : 'CE',
+            "cnpj" => $cnpj,
+            "schemes" => "PL_009_V4",
+            "versao" => "4.00",
+            "tokenIBPT" => "AAAAAAA",
+            "CSC" => $empresa->csc,
+            "CSCid" => $empresa->csc_id
+        ], $empresa);
+
+        $evento = $request->tipo;
+        $chave = $request->chave;
+        $justificativa = $request->justificativa ?? '';
+
+        $manifesto = ManifestoDfe::where('empresa_id', $request->empresa_id)
+            ->where('chave', $chave)
+            ->first();
+
+        $numEvento = $manifesto ? ((int)$manifesto->sequencia_evento + 1) : 1;
+
+        try {
+            if ($evento == 1) {
+                $res = $dfe_service->manifesta($chave, $numEvento);
+            } else if ($evento == 2) {
+                $res = $dfe_service->confirmacao($chave, $numEvento);
+            } else if ($evento == 3) {
+                $res = $dfe_service->desconhecimento($chave, $numEvento, $justificativa);
+            } else if ($evento == 4) {
+                $res = $dfe_service->operacaoNaoRealizada($chave, $numEvento, $justificativa);
+            }
+
+            if (isset($res['retEvento']['infEvento']['cStat']) && in_array($res['retEvento']['infEvento']['cStat'], ['135', '136'])) {
+                if ($manifesto) {
+                    $manifesto->sequencia_evento = $numEvento;
+                    $manifesto->tipo = $evento;
+                    $manifesto->save();
+                }
+                session()->flash('flash_success', $res['retEvento']['infEvento']['xMotivo']);
+            } else {
+                $motivo = $res['retEvento']['infEvento']['xMotivo'] ?? 'Não foi possível registrar o evento na SEFAZ.';
+                session()->flash('flash_error', $motivo);
+            }
+        } catch (\Exception $e) {
+            session()->flash('flash_error', 'Erro ao manifestar: ' . $e->getMessage());
+        }
+
+        return redirect()->route('compras.xml');
     }
 
     public function storeXml(Request $request)
     {
         if ($request->hasFile('file')) {
-
-            $arquivo = $request->hasFile('file');
             $file = $request->file;
-
             $xml = simplexml_load_file($request->file);
 
             if ($xml->NFe->infNFe == null) {
@@ -232,227 +561,214 @@ class CompraController extends Controller
             }
 
             $chave = substr($xml->NFe->infNFe->attributes()->Id, 3, 44);
-            $file->move(public_path('xml_entrada'), $chave . ".xml");
-
-            $cidade = Cidade::where('codigo', $xml->NFe->infNFe->emit->enderEmit->cMun)
-            ->first();
-
-            $doc = $xml->NFe->infNFe->emit->CNPJ ? $xml->NFe->infNFe->emit->CNPJ : $xml->NFe->infNFe->emit->CPF;
-            $doc = trim($doc);
-            $mask = '##.###.###/####-##';
-            if (strlen($doc) == 11) {
-                $mask = '###.###.###-##';
-            }
-            $doc = __mask($doc, $mask);
-
-            $dataFornecedor = [
-
-                'empresa_id' => $request->empresa_id,
-                'razao_social' => $xml->NFe->infNFe->emit->xNome,
-                'nome_fantasia' => $xml->NFe->infNFe->emit->xFant,
-                'cpf_cnpj' => $doc,
-                'ie' => $xml->NFe->infNFe->emit->IE,
-                'contribuinte' => $xml->NFe->infNFe->emit->IE != '' ? 1 : 0,
-                'consumidor_final' => 0,
-                'email' => $xml->NFe->infNFe->emit->enderEmit->xBairro,
-                'telefone' => $xml->NFe->infNFe->emit->enderEmit->fone,
-                'cidade_id' => $cidade->id,
-                'rua' => $xml->NFe->infNFe->emit->enderEmit->xLgr,
-                'cep' => $xml->NFe->infNFe->emit->enderEmit->CEP,
-                'numero' => $xml->NFe->infNFe->emit->enderEmit->nro,
-                'bairro' => $xml->NFe->infNFe->emit->enderEmit->xBairro,
-                'complemento' => $xml->NFe->infNFe->emit->enderEmit->xBairro
-            ];
-
-            $fornecedor = $this->cadastraFornecedor($dataFornecedor);
-            $vFrete = (float)$xml->NFe->infNFe->total->ICMSTot->vFrete;
-            $vDesc = (float)$xml->NFe->infNFe->total->ICMSTot->vDesc;
-
-            $itens = [];
-            $contSemRegistro = 0;
-            foreach ($xml->NFe->infNFe->det as $item) {
-
-                $produto = Produto::verificaCadastrado(
-                    $item->prod->cEAN,
-                    $item->prod->xProd,
-                    $item->prod->cProd,
-                    $request->empresa_id
-                );
-
-                // if($produto == null){
-                //     dd($item->prod->xProd);
-                // }
-
-                $vIpi = 0;
-                $vICMSST = 0;
-                if (isset($item->imposto->IPI)) {
-                    $valor = (float)$item->imposto->IPI->IPITrib->vIPI;
-                    if ($valor > 0)
-                        $vIpi = $valor / (float)$item->prod->qCom;
-                }
-
-                if (isset($item->imposto->ICMS)) {
-                    $arr = (array_values((array)$item->imposto->ICMS));
-                    $cst = $arr[0]->CST ? $arr[0]->CST : $arr[0]->CSOSN;
-                    $valor = (float)$arr[0]->vICMSST ?? 0;
-                    if ($valor > 0)
-                        $vICMSST = $valor / $item->prod->qCom;
-                }
-
-                $nomeProduto = $item->prod->xProd;
-                $nomeProduto = str_replace("'", "", $nomeProduto);
-                $codigo = preg_replace('/[^0-9]/', '', $item->prod->cProd);
-
-                if ($produto == null) {
-                    $contSemRegistro++;
-                }
-
-                $prod = new \stdClass();
-
-                $prod->id = $produto != null ? $produto->id : 0;
-                $prod->codigo = $codigo;
-                $prod->xProd = $produto == null ? $nomeProduto : $produto->nome;
-                $prod->ncm = (string)$item->prod->NCM;
-                $prod->cest = (string)$item->prod->CEST;
-                $prod->cfop = (string)$item->prod->CFOP;
-                $prod->unidade = (string)$item->prod->uCom;
-                $prod->valor_unitario = number_format((float)$item->prod->vUnCom + $vIpi + $vICMSST, 2, '.', '');
-                $prod->quantidade = (float)$item->prod->qCom;
-                $prod->sub_total = $prod->valor_unitario*$prod->quantidade;
-                $prod->codigo_barras = (string)$item->prod->cEAN;
-                $prod->valor_venda = $produto == null ? 0 : $produto->valor_venda;
-                $prod->valor_compra = $produto == null ? 0 : $produto->valor_compra;
-
-                $arr = (array_values((array)$item->imposto->ICMS));
-                $cst = (string)($arr[0]->CST ? $arr[0]->CST : $arr[0]->CSOSN);
-                $pICMS = (float)$arr[0]->pICMS ?? 0;
-
-                $prod->perc_red_bc = 0;
-                $prod->perc_icms = $pICMS;
-                $prod->cst_csosn = $cst;
-
-                $arr = (array_values((array)$item->imposto->PIS));
-
-                $prod->cst_pis = (string)$arr[0]->CST;
-                $prod->perc_pis = (float)$arr[0]->pPIS ?? 0;
-
-                $arr = (array_values((array)$item->imposto->COFINS));
-                $prod->cst_cofins = (string)$arr[0]->CST;
-                $pCOFINS = $arr[0]->COFINS ?? 0;
-                if ($pCOFINS == 0) {
-                    $pCOFINS = $arr[0]->pCOFINS ?? 0;
-                }
-                $prod->perc_cofins = $arr[0]->pPIS ?? 0;
-
-                $prod = $this->relacaoDadosFornecedor($prod);
-                // dd($prod);
-                $arr = (array_values((array)$item->imposto->IPI));
-                if (isset($arr[1])) {
-
-                    $cst_ipi = $arr[1]->CST ?? '99';
-                    $pIPI = $arr[0]->IPI ?? 0;
-                    if ($pIPI == 0) {
-                        $pIPI = $arr[0]->pIPI ?? 0;
-                    }
-
-                    if (isset($arr[1]->pIPI)) {
-                        $pIPI = $arr[1]->pIPI ?? 0;
-                    } else {
-                        if (isset($arr[4]->pIPI)) {
-                            $ipi = $arr[4]->CST;
-                            $pIPI = $arr[4]->pIPI;
-                        } else {
-                            $pIPI = 0;
-                        }
-                    }
-                } else {
-                    $cst_ipi = '99';
-                    $pIPI = 0;
-                }
-
-                $prod->perc_ipi = $pIPI;
-                $prod->cst_ipi = $cst_ipi;
-
-                $prod->codigo_beneficio_fiscal = '';
-
-                array_push($itens, $prod);
-            }
-
-            $dadosXml = [
-                'chave' => $chave,
-                'vProd' => (float)$xml->NFe->infNFe->total->ICMSTot->vNF,
-                'indPag' => (int)$xml->NFe->infNFe->ide->indPag,
-                'nNf' => (int)$xml->NFe->infNFe->ide->nNF,
-                'vFrete' => $vFrete,
-                'vDesc' => $vDesc,
-                'contSemRegistro' => $contSemRegistro,
-                'data_emissao' => substr($xml->NFe->infNFe->ide->dhEmi[0], 0, 16),
-                'itens' => $itens
-            ];
 
             if (!is_dir(public_path('xml_entrada'))) {
                 mkdir(public_path('xml_entrada'), 0777, true);
             }
 
-            $fatura = [];
-            $tPag = null;
+            $file->move(public_path('xml_entrada'), $chave . ".xml");
+            $xmlContent = file_get_contents(public_path('xml_entrada/') . $chave . ".xml");
 
-            if (!empty($xml->NFe->infNFe->pag->detPag)) {
-                $tPag = (string) $xml->NFe->infNFe->pag->detPag->tPag;
-            }
-
-            if (!empty($xml->NFe->infNFe->cobr->dup)) {
-                foreach ($xml->NFe->infNFe->cobr->dup as $dup) {
-                    $titulo = $dup->nDup;
-                    $vencimento = $dup->dVenc;
-                    $valor_parcela = number_format((float) $dup->vDup, 2, ".", "");
-                    $parcela = [
-                        'numero' => (int)$titulo,
-                        'vencimento' => $vencimento,
-                        'valor_parcela' => $valor_parcela,
-                        'rand' => rand(0, 10000),
-                        'tipo_pagamento' => $tPag
-                    ];
-                    array_push($fatura, $parcela);
-                }
-            } else {
-                $vencimento = substr($xml->NFe->infNFe->ide->dhEmi[0], 0, 10);
-                $parcela = [
-                    'numero' => 1,
-                    'vencimento' => $vencimento,
-                    'valor_parcela' => (float)$xml->NFe->infNFe->total->ICMSTot->vProd,
-                    'rand' => rand(0, 10000),
-                    'tipo_pagamento' => $tPag
-                ];
-                array_push($fatura, $parcela);
-            }
-
-            $dadosXml['fatura'] = $fatura;
-
-            $transportadoras = Transportadora::where('empresa_id', request()->empresa_id)->get();
-            $cidades = Cidade::all();
-            $naturezas = NaturezaOperacao::where('empresa_id', request()->empresa_id)->get();
-            if (sizeof($naturezas) == 0) {
-                session()->flash("flash_warning", "Primeiro cadastre um natureza de operação!");
-                return redirect()->route('natureza-operacao.create');
-            }
-
-            $caixa = __isCaixaAberto();
-
-            $lucroPadraoProduto = 0;
-            $configGeral = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
-            if($configGeral != null){
-                $lucroPadraoProduto = $configGeral->percentual_lucro_produto;
-            }
-
-            $isCompra = 1;
-
-            return view('compras.import_xml', compact('dadosXml', 'transportadoras', 'cidades', 'naturezas', 'fornecedor', 'caixa', 
-                'lucroPadraoProduto', 'isCompra'));
+            return $this->processarXmlString($xmlContent, $chave);
         } else {
-            session()->flash('flash_error', 'XML inválido!');
+            session()->flash('flash_error', 'Selecione um arquivo XML válido!');
             return redirect()->back();
         }
+    }
+
+    private function processarXmlString($xmlString, $chaveDfe = null)
+    {
+        $xml = simplexml_load_string($xmlString);
+
+        if ($xml->NFe->infNFe == null) {
+            session()->flash('flash_error', 'Este XML parece inválido!');
+            return redirect()->back();
+        }
+
+        $chave = substr($xml->NFe->infNFe->attributes()->Id, 3, 44);
+
+        if (!is_dir(public_path('xml_entrada'))) {
+            mkdir(public_path('xml_entrada'), 0777, true);
+        }
+
+        file_put_contents(public_path('xml_entrada/') . $chave . ".xml", $xmlString);
+
+        $cidade = Cidade::where('codigo', $xml->NFe->infNFe->emit->enderEmit->cMun)->first();
+
+        $doc = $xml->NFe->infNFe->emit->CNPJ ? $xml->NFe->infNFe->emit->CNPJ : $xml->NFe->infNFe->emit->CPF;
+        $doc = trim($doc);
+        $mask = strlen($doc) == 11 ? '###.###.###-##' : '##.###.###/####-##';
+        $doc = __mask($doc, $mask);
+
+        $dataFornecedor = [
+            'empresa_id'       => request()->empresa_id,
+            'razao_social'     => (string)$xml->NFe->infNFe->emit->xNome,
+            'nome_fantasia'    => (string)($xml->NFe->infNFe->emit->xFant ?: $xml->NFe->infNFe->emit->xNome),
+            'cpf_cnpj'         => $doc,
+            'ie'               => (string)$xml->NFe->infNFe->emit->IE,
+            'contribuinte'     => $xml->NFe->infNFe->emit->IE != '' ? 1 : 0,
+            'consumidor_final' => 0,
+            'email'            => (string)($xml->NFe->infNFe->emit->enderEmit->xBairro ?? ''),
+            'telefone'         => (string)($xml->NFe->infNFe->emit->enderEmit->fone ?? ''),
+            'cidade_id'        => $cidade ? $cidade->id : null,
+            'rua'              => (string)$xml->NFe->infNFe->emit->enderEmit->xLgr,
+            'cep'              => (string)$xml->NFe->infNFe->emit->enderEmit->CEP,
+            'numero'           => (string)$xml->NFe->infNFe->emit->enderEmit->nro,
+            'bairro'           => (string)$xml->NFe->infNFe->emit->enderEmit->xBairro,
+            'complemento'      => (string)($xml->NFe->infNFe->emit->enderEmit->xCpl ?? '')
+        ];
+
+        $fornecedor = $this->cadastraFornecedor($dataFornecedor);
+        $vFrete = (float)$xml->NFe->infNFe->total->ICMSTot->vFrete;
+        $vDesc = (float)$xml->NFe->infNFe->total->ICMSTot->vDesc;
+
+        $itens = [];
+        $contSemRegistro = 0;
+        foreach ($xml->NFe->infNFe->det as $item) {
+            $produto = Produto::verificaCadastrado(
+                $item->prod->cEAN,
+                $item->prod->xProd,
+                $item->prod->cProd,
+                request()->empresa_id
+            );
+
+            $vIpi = 0;
+            $vICMSST = 0;
+            if (isset($item->imposto->IPI)) {
+                $valor = (float)($item->imposto->IPI->IPITrib->vIPI ?? 0);
+                if ($valor > 0 && (float)$item->prod->qCom > 0)
+                    $vIpi = $valor / (float)$item->prod->qCom;
+            }
+
+            if (isset($item->imposto->ICMS)) {
+                $arr = (array_values((array)$item->imposto->ICMS));
+                $cst = isset($arr[0]->CST) ? $arr[0]->CST : ($arr[0]->CSOSN ?? '');
+                $valor = (float)($arr[0]->vICMSST ?? 0);
+                if ($valor > 0 && (float)$item->prod->qCom > 0)
+                    $vICMSST = $valor / (float)$item->prod->qCom;
+            }
+
+            $nomeProduto = str_replace("'", "", (string)$item->prod->xProd);
+            $codigo = preg_replace('/[^0-9]/', '', (string)$item->prod->cProd);
+
+            if ($produto == null) {
+                $contSemRegistro++;
+            }
+
+            $prod = new \stdClass();
+            $prod->id = $produto != null ? $produto->id : 0;
+            $prod->codigo = $codigo;
+            $prod->xProd = $produto == null ? $nomeProduto : $produto->nome;
+            $prod->ncm = (string)$item->prod->NCM;
+            $prod->cest = (string)($item->prod->CEST ?? '');
+            $prod->cfop = (string)$item->prod->CFOP;
+            $prod->unidade = (string)$item->prod->uCom;
+            $prod->valor_unitario = number_format((float)$item->prod->vUnCom + $vIpi + $vICMSST, 2, '.', '');
+            $prod->quantidade = (float)$item->prod->qCom;
+            $prod->sub_total = $prod->valor_unitario * $prod->quantidade;
+            $prod->codigo_barras = (string)($item->prod->cEAN ?? '');
+            $prod->valor_venda = $produto == null ? 0 : $produto->valor_venda;
+            $prod->valor_compra = $produto == null ? 0 : $produto->valor_compra;
+
+            $arr = (array_values((array)$item->imposto->ICMS));
+            $cst = (string)(isset($arr[0]->CST) ? $arr[0]->CST : ($arr[0]->CSOSN ?? ''));
+            $pICMS = (float)($arr[0]->pICMS ?? 0);
+
+            $prod->perc_red_bc = 0;
+            $prod->perc_icms = $pICMS;
+            $prod->cst_csosn = $cst;
+
+            $arr = (array_values((array)$item->imposto->PIS));
+            $prod->cst_pis = (string)($arr[0]->CST ?? '');
+            $prod->perc_pis = (float)($arr[0]->pPIS ?? 0);
+
+            $arr = (array_values((array)$item->imposto->COFINS));
+            $prod->cst_cofins = (string)($arr[0]->CST ?? '');
+            $prod->perc_cofins = (float)($arr[0]->pCOFINS ?? 0);
+
+            $prod = $this->relacaoDadosFornecedor($prod);
+
+            $arr = (array_values((array)$item->imposto->IPI));
+            if (isset($arr[1])) {
+                $cst_ipi = $arr[1]->CST ?? '99';
+                $pIPI = $arr[0]->IPI ?? ($arr[0]->pIPI ?? 0);
+                if (isset($arr[1]->pIPI)) {
+                    $pIPI = $arr[1]->pIPI ?? 0;
+                } elseif (isset($arr[4]->pIPI)) {
+                    $pIPI = $arr[4]->pIPI;
+                }
+            } else {
+                $cst_ipi = '99';
+                $pIPI = 0;
+            }
+
+            $prod->perc_ipi = $pIPI;
+            $prod->cst_ipi = $cst_ipi;
+            $prod->codigo_beneficio_fiscal = '';
+
+            array_push($itens, $prod);
+        }
+
+        $dadosXml = [
+            'chave'           => $chave,
+            'vProd'           => (float)$xml->NFe->infNFe->total->ICMSTot->vNF,
+            'indPag'          => (int)($xml->NFe->infNFe->ide->indPag ?? 0),
+            'nNf'             => (int)$xml->NFe->infNFe->ide->nNF,
+            'vFrete'          => $vFrete,
+            'vDesc'           => $vDesc,
+            'contSemRegistro' => $contSemRegistro,
+            'data_emissao'    => substr($xml->NFe->infNFe->ide->dhEmi[0], 0, 16),
+            'itens'           => $itens,
+            'chave_dfe'       => $chaveDfe
+        ];
+
+        $fatura = [];
+        $tPag = !empty($xml->NFe->infNFe->pag->detPag) ? (string)$xml->NFe->infNFe->pag->detPag->tPag : null;
+
+        if (!empty($xml->NFe->infNFe->cobr->dup)) {
+            foreach ($xml->NFe->infNFe->cobr->dup as $dup) {
+                $fatura[] = [
+                    'numero'         => (int)$dup->nDup,
+                    'vencimento'     => (string)$dup->dVenc,
+                    'valor_parcela'  => number_format((float)$dup->vDup, 2, ".", ""),
+                    'rand'           => rand(0, 10000),
+                    'tipo_pagamento' => $tPag
+                ];
+            }
+        } else {
+            $vencimento = substr($xml->NFe->infNFe->ide->dhEmi[0], 0, 10);
+            $fatura[] = [
+                'numero'         => 1,
+                'vencimento'     => $vencimento,
+                'valor_parcela'  => (float)$xml->NFe->infNFe->total->ICMSTot->vProd,
+                'rand'           => rand(0, 10000),
+                'tipo_pagamento' => $tPag
+            ];
+        }
+
+        $dadosXml['fatura'] = $fatura;
+
+        $transportadoras = Transportadora::where('empresa_id', request()->empresa_id)->get();
+        $cidades = Cidade::all();
+        $naturezas = NaturezaOperacao::where('empresa_id', request()->empresa_id)->get();
+        if (sizeof($naturezas) == 0) {
+            session()->flash("flash_warning", "Primeiro cadastre uma natureza de operação!");
+            return redirect()->route('natureza-operacao.create');
+        }
+
+        $caixa = __isCaixaAberto();
+        $lucroPadraoProduto = 0;
+        $configGeral = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
+        if ($configGeral != null) {
+            $lucroPadraoProduto = $configGeral->percentual_lucro_produto;
+        }
+
+        $isCompra = 1;
+
+        return view('compras.import_xml', compact(
+            'dadosXml', 'transportadoras', 'cidades', 'naturezas',
+            'fornecedor', 'caixa', 'lucroPadraoProduto', 'isCompra'
+        ));
     }
 
     private function getCfopEntrada($cfop)
@@ -507,6 +823,31 @@ class CompraController extends Controller
         return $fornecedor;
     }
 
+    /**
+     * Cadastra um novo fornecedor a partir dos dados do formulário de importação XML.
+     */
+    private function cadastrarFornecedor($request)
+    {
+        $fornecedor = Fornecedor::create([
+            'empresa_id' => $request->empresa_id,
+            'razao_social' => $request->fornecedor_nome,
+            'nome_fantasia' => $request->nome_fantasia,
+            'cpf_cnpj' => $request->fornecedor_cpf_cnpj,
+            'ie' => $request->ie,
+            'contribuinte' => $request->contribuinte,
+            'consumidor_final' => $request->consumidor_final,
+            'email' => $request->email ?? '',
+            'telefone' => $request->telefone ?? '',
+            'cidade_id' => $request->fornecedor_cidade,
+            'rua' => $request->fornecedor_rua,
+            'cep' => $request->cep,
+            'numero' => $request->fornecedor_numero,
+            'bairro' => $request->fornecedor_bairro,
+            'complemento' => $request->complemento ?? ''
+        ]);
+        return $fornecedor->id;
+    }
+
     public function finishXml(Request $request)
     {
         try {
@@ -532,6 +873,9 @@ class CompraController extends Controller
                 $config = Empresa::find($request->empresa_id);
 
                 $caixa = __isCaixaAberto();
+                if ($caixa == null) {
+                    throw new \Exception("Abrir caixa antes de continuar!");
+                }
 
                 $tipoPagamento = $request->tipo_pagamento;
                 $request->merge([
@@ -852,9 +1196,14 @@ public function etiquetaStore(Request $request, $id){
             unlink($file); 
         }
     }
+    if (!$request->has('produto') || empty($request->produto)) {
+        session()->flash('flash_error', 'Selecione pelo menos um produto para gerar as etiquetas.');
+        return redirect()->back();
+    }
+
     $selecionados = [];
-    for($i=0; $i<sizeof($request->produto); $i++){
-        $selecionados[] = $request->produto[$i];
+    foreach ($request->produto as $prod_id) {
+        $selecionados[] = $prod_id;
     }
 
     $item = Nfe::findOrFail($id);
@@ -873,28 +1222,33 @@ public function etiquetaStore(Request $request, $id){
             }
 
             $rand = rand(1000, 9999);
+            // Quantidade: usa o que o usuário digitou no formulário (por produto), caso exista; senão usa a da NF
+            $qtd_key = 'qtd_produto_' . $i->produto_id;
+            $qtd = ($request->has($qtd_key) && (int)$request->$qtd_key > 0)
+                ? (int)$request->$qtd_key
+                : (int)$i->quantidade;
+
             $obj = [
-                'nome_empresa' => $request->nome_empresa ? true : false,
-                'nome_produto' => $request->nome_produto ? true : false,
-                'valor_produto' => $request->valor_produto ? true : false,
-                'cod_produto' => $request->codigo_produto ? true : false,
-                'tipo' => $request->tipo,
-                'codigo_barras_numerico' => $request->codigo_barras_numerico ? true : false,
-                'nome' => $nome,
-                'codigo' => $item->id . ($item->referencia != '' ? ' | REF'.$item->referencia : ''),
-                'valor' => $valor,
-                'unidade' => $unidade,
-                'rand' => $rand,
-                'empresa' => $item->empresa->nome
+                'nome_empresa'          => $request->nome_empresa ? true : false,
+                'nome_produto'          => $request->nome_produto ? true : false,
+                'valor_produto'         => $request->valor_produto ? true : false,
+                'cod_produto'           => $request->codigo_produto ? true : false,
+                'tipo'                  => $request->tipo,
+                'codigo_barras_numerico'=> $request->codigo_barras_numerico ? true : false,
+                'nome'                  => $nome,
+                'codigo'                => $i->produto->codigo ?? $i->produto_id,
+                'codigo_barras'         => $codigo,
+                'valor'                 => $valor,
+                'unidade'               => $unidade,
+                'rand'                  => $rand,
+                'empresa'               => $item->empresa->nome
             ];
 
             $generatorPNG = new \Picqer\Barcode\BarcodeGeneratorPNG();
-
             $bar_code = $generatorPNG->getBarcode($codigo, $generatorPNG::TYPE_EAN_13);
-
             file_put_contents(public_path("barcode")."/$rand.png", $bar_code);
-            $qtd = (int)$i->quantidade;
-            for($i=0; $i<$qtd; $i++){
+
+            for($k = 0; $k < $qtd; $k++){
                 array_push($data, $obj);
             }
         }
@@ -909,8 +1263,7 @@ public function etiquetaStore(Request $request, $id){
     $distancia_lateral = $request->distancia_etiquetas_lateral;
     $tamanho_fonte = $request->tamanho_fonte;
     $tamanho_codigo = $request->tamanho_codigo_barras;
-        // dd($data);
-    return view('compras.etiqueta_print', compact('altura', 'largura', 'rand', 'codigo', 'quantidade', 'distancia_topo',
+    return view('compras.etiqueta_print', compact('altura', 'largura', 'quantidade', 'distancia_topo',
         'distancia_lateral', 'quantidade_por_linhas', 'tamanho_fonte', 'tamanho_codigo', 'data'));
 
 

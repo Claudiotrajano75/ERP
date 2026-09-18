@@ -118,7 +118,13 @@
                                 <select required class="form-control select2 cidade_id" name="fornecedor_cidade" id="inp-fornecedor_cidade">
                                     <option value="">Selecione..</option>
                                     @foreach ($cidades as $c)
-                                    <option @isset($item) @if($item->cliente->cidade_id == $c->id) selected @endif @endisset value="{{$c->id}}">{{$c->nome}} - {{$c->uf}}</option>
+                                    <option @isset($item)
+                                                @if($item->cliente->cidade_id == $c->id) selected @endif
+                                            @endisset
+                                            @isset($fornecedor)
+                                                @if(!isset($item) && $fornecedor->cidade_id == $c->id) selected @endif
+                                            @endisset
+                                            value="{{$c->id}}">{{$c->nome}} - {{$c->uf}}</option>
                                     @endforeach
                                 </select>
                             </div>

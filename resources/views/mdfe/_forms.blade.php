@@ -1059,9 +1059,16 @@ document.addEventListener('DOMContentLoaded', function() {
     $('#inp-edit-valor-carga').on('blur', function() {
         let val = $(this).val().trim();
         if (val) {
-            if (!val.startsWith('R$')) val = 'R$ ' + val;
+            let numStr = val.replace('R$', '').trim();
+            if (!val.startsWith('R$')) val = 'R$ ' + numStr;
             $('#disp-valor-carga').text(val);
-            $('#inp-valor_carga').val(val.replace('R$', '').trim());
+            $('#inp-valor_carga').val(numStr);
+
+            if (window.mdfeDocumentos && window.mdfeDocumentos.length > 0) {
+                if (window.mdfeDocumentos.length === 1) {
+                    window.mdfeDocumentos[0].valor = numStr;
+                }
+            }
         }
         $('#box-edit-valor-carga').hide();
         $('#view-valor-carga').show();
@@ -1082,6 +1089,23 @@ document.addEventListener('DOMContentLoaded', function() {
             val = val.replace('Kg', '').replace('kg', '').trim();
             $('#disp-peso-total').text(val + ' Kg');
             $('#inp-quantidade_carga').val(val);
+
+            // Sincroniza imediatamente com os documentos importados
+            if (window.mdfeDocumentos && window.mdfeDocumentos.length > 0) {
+                if (window.mdfeDocumentos.length === 1) {
+                    window.mdfeDocumentos[0].quantidade_rateio = val;
+                } else {
+                    let pesoNum = parseFloat(val.replace(/\./g, '').replace(',', '.').trim()) || 0;
+                    let pesoPorDoc = (pesoNum / window.mdfeDocumentos.length).toFixed(2).replace('.', ',');
+                    window.mdfeDocumentos.forEach(doc => {
+                        doc.quantidade_rateio = pesoPorDoc;
+                    });
+                }
+                // Atualiza os inputs hidden do formulário
+                window.mdfeDocumentos.forEach((doc, idx) => {
+                    $(`input[name="quantidade_rateio_row[]"]`).eq(idx).val(doc.quantidade_rateio);
+                });
+            }
         }
         $('#box-edit-peso-total').hide();
         $('#view-peso-total').show();

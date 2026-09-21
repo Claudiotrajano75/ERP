@@ -558,7 +558,7 @@ class FrontBoxController extends Controller
                         $codigo_transacao = $nfce->id;
                         $tipo_transacao = 'venda_nfce';
 
-                        $this->util->movimentacaoProduto($product->id, __convert_value_bd($request->quantidade[$i]), $tipo, $codigo_transacao, $tipo_transacao, $request->usuario_id, $variacao_id);
+                        $this->util->movimentacaoProduto($product->id, __convert_value_bd($request->quantidade[$i]), $tipo, $codigo_transacao, $tipo_transacao, $request->usuario_id, $variacao_id, $caixa->local_id);
                     }
                 }
 
@@ -865,7 +865,7 @@ public function update(Request $request, $id){
                     $codigo_transacao = $item->id;
                     $tipo_transacao = 'venda_nfce';
 
-                    $this->util->movimentacaoProduto($product->id, __convert_value_bd($request->quantidade[$i]), $tipo, $codigo_transacao, $tipo_transacao, $request->usuario_id);
+                    $this->util->movimentacaoProduto($product->id, __convert_value_bd($request->quantidade[$i]), $tipo, $codigo_transacao, $tipo_transacao, $request->usuario_id, null, $item->local_id);
                 }
             }
 

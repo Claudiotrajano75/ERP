@@ -559,12 +559,12 @@ class NfeController extends Controller
                         $tipo = 'incremento';
                         $codigo_transacao = $nfe->id;
                         $tipo_transacao = 'compra';
-                        $this->util->movimentacaoProduto($product->id, __convert_value_bd($request->quantidade[$i]), $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $variacao_id);
+                        $this->util->movimentacaoProduto($product->id, __convert_value_bd($request->quantidade[$i]), $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $variacao_id, $local_id);
                     } else {
                         $tipo = 'reducao';
                         $codigo_transacao = $nfe->id;
                         $tipo_transacao = 'venda_nfe';
-                        $this->util->movimentacaoProduto($product->id, __convert_value_bd($request->quantidade[$i]), $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $variacao_id);
+                        $this->util->movimentacaoProduto($product->id, __convert_value_bd($request->quantidade[$i]), $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $variacao_id, $local_id);
                     }
                 }
 

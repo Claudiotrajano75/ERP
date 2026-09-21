@@ -123,7 +123,7 @@ class FaturamentoAvulsoController extends Controller
                         // Movimentação de estoque (OPCIONAL)
                         if ($request->baixar_estoque && $product->gerenciar_estoque) {
                             $this->utilEstoque->reduzEstoque($product->id, __convert_value_bd($request->item_quantidade[$i]), $request->item_variacao_id[$i] ?? null, $local_id);
-                            $this->utilEstoque->movimentacaoProduto($product->id, __convert_value_bd($request->item_quantidade[$i]), 'reducao', $nfe->id, 'venda_nfe', \Auth::user()->id, $request->item_variacao_id[$i] ?? null);
+                            $this->utilEstoque->movimentacaoProduto($product->id, __convert_value_bd($request->item_quantidade[$i]), 'reducao', $nfe->id, 'venda_nfe', \Auth::user()->id, $request->item_variacao_id[$i] ?? null, $local_id);
                         }
                     }
                 }

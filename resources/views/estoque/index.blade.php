@@ -48,6 +48,18 @@
     .empty-state { padding: 52px 20px; text-align: center; }
     .empty-state i { font-size: 52px; color: #c5cae9; display: block; margin-bottom: 12px; }
     .empty-state p { color: #9e9eb8; font-size: 14px; margin: 0; }
+
+    /* ─── Modal Entrada/Saída ─── */
+    #modal_estoque_ajuste .modal-content { border-radius: 16px; border: 0; }
+    #modal_estoque_ajuste .modal-header { border-bottom: 1px solid #eef0f6; padding: 18px 22px; }
+    #modal_estoque_ajuste .modal-title { font-size: 16px; font-weight: 700; color: #1f2937; }
+    #modal_estoque_ajuste .modal-title i { color: #4f46e5; }
+    #modal_estoque_ajuste .modal-body { padding: 20px 22px; }
+    #modal_estoque_ajuste .modal-footer { border-top: 1px solid #eef0f6; padding: 14px 22px; }
+    #modal_estoque_ajuste .form-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #8c8ca6; }
+    #modal_estoque_ajuste .form-control, #modal_estoque_ajuste .form-select { height: 40px; border-radius: 10px; border: 1px solid #dcdce9; font-size: 13.5px; background: #fcfdfe; }
+    #modal_estoque_ajuste .form-control:focus, #modal_estoque_ajuste .form-select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.12); background: #fff; }
+    #modal_estoque_ajuste textarea.form-control { height: auto; }
 </style>
 @endsection
 
@@ -71,8 +83,16 @@
                         <a href="{{ route('estoque.create') }}" class="dash-btn dash-btn-primary">
                             <i class="ri-add-line"></i> Adicionar Estoque
                         </a>
+                        <a href="#" class="dash-btn dash-btn-light" data-bs-toggle="modal" data-bs-target="#modal_estoque_ajuste">
+                            <i class="ri-swap-line align-middle me-1"></i> Entrada/Saída
+                        </a>
                         <a href="{{ route('apontamento.create') }}" class="dash-btn dash-btn-light">
                             <i class="ri-settings-3-line align-middle me-1"></i> Apontamento
+                        </a>
+                        @endcan
+                        @can('estoque_view')
+                        <a href="{{ route('estoque.movimentacoes') }}" class="dash-btn dash-btn-light">
+                            <i class="ri-history-line align-middle me-1"></i> Movimentações
                         </a>
                         @endcan
                     </div>
@@ -259,4 +279,44 @@
         </div>
     </div>
 </div>
+
+@include('estoque._modal_ajuste')
+@endsection
+
+@section('js')
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#estoque_ajuste_produto_id').select2({
+            minimumInputLength: 2,
+            language: 'pt-BR',
+            placeholder: 'Digite para buscar o produto',
+            width: '100%',
+            dropdownParent: $('#modal_estoque_ajuste'),
+            ajax: {
+                cache: true,
+                url: path_url + 'api/produtos',
+                dataType: 'json',
+                data: function (params) {
+                    return {
+                        pesquisa: params.term,
+                        empresa_id: $('#empresa_id').val()
+                    };
+                },
+                processResults: function (response) {
+                    var results = [];
+                    $.each(response, function (i, v) {
+                        var o = {};
+                        o.id = v.id;
+                        o.text = v.nome;
+                        if (v.codigo_barras) {
+                            o.text += ' [' + v.codigo_barras + ']';
+                        }
+                        results.push(o);
+                    });
+                    return { results: results };
+                }
+            }
+        });
+    });
+</script>
 @endsection

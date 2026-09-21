@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Estoque;
+use App\Models\Produto;
+use App\Models\MovimentacaoProduto;
 use App\Utils\EstoqueUtil;
 use App\Models\ProdutoLocalizacao;
 use App\Models\Localizacao;
@@ -17,9 +19,9 @@ class EstoqueController extends Controller
     public function __construct(EstoqueUtil $util)
     {
         $this->util = $util;
-        $this->middleware('permission:estoque_create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:estoque_create', ['only' => ['create', 'store', 'ajuste']]);
         $this->middleware('permission:estoque_edit', ['only' => ['edit', 'update']]);
-        $this->middleware('permission:estoque_view', ['only' => ['show', 'index']]);
+        $this->middleware('permission:estoque_view', ['only' => ['show', 'index', 'movimentacoes']]);
         $this->middleware('permission:estoque_delete', ['only' => ['destroy']]);
     }
 
@@ -55,6 +57,43 @@ class EstoqueController extends Controller
         return view('estoque.index', compact('data', 'stats'));
     }
 
+    public function movimentacoes(Request $request){
+
+        $query = MovimentacaoProduto::query()
+        ->join('produtos', 'produtos.id', '=', 'movimentacao_produtos.produto_id')
+        ->where('produtos.empresa_id', $request->empresa_id)
+        ->when(!empty($request->produto), function ($q) use ($request) {
+            return $q->where('produtos.nome', 'LIKE', "%$request->produto%");
+        })
+        ->when(!empty($request->tipo), function ($q) use ($request) {
+            return $q->where('movimentacao_produtos.tipo', $request->tipo);
+        })
+        ->when(!empty($request->tipo_transacao), function ($q) use ($request) {
+            return $q->where('movimentacao_produtos.tipo_transacao', $request->tipo_transacao);
+        })
+        ->when(!empty($request->start_date), function ($q) use ($request) {
+            return $q->whereDate('movimentacao_produtos.created_at', '>=', $request->start_date);
+        })
+        ->when(!empty($request->end_date), function ($q) use ($request) {
+            return $q->whereDate('movimentacao_produtos.created_at', '<=', $request->end_date);
+        })
+        ->select('movimentacao_produtos.*');
+
+        $stats = [
+            'total' => (clone $query)->count(),
+            'entradas' => (clone $query)->where('movimentacao_produtos.tipo', 'incremento')->sum('movimentacao_produtos.quantidade'),
+            'saidas' => (clone $query)->where('movimentacao_produtos.tipo', 'reducao')->sum('movimentacao_produtos.quantidade'),
+            'ajustes' => (clone $query)->where('movimentacao_produtos.tipo_transacao', 'alteracao_estoque')->count(),
+        ];
+
+        $data = (clone $query)
+        ->with(['produto', 'user', 'produtoVariacao'])
+        ->orderBy('movimentacao_produtos.id', 'desc')
+        ->paginate(env("PAGINACAO"));
+
+        return view('estoque.movimentacoes', compact('data', 'stats'));
+    }
+
     public function create()
     {
         return view('estoque.create');
@@ -77,6 +116,23 @@ class EstoqueController extends Controller
         $descricaoLog = $item->produto->nome;
 
         try {
+            // Estorna a movimentação antes de remover o registro, para que a
+            // exclusão deixe rastro na trilha de auditoria. O saldo resultante
+            // do local após a remoção é 0.
+            if ((float)$item->quantidade != 0) {
+                $this->util->movimentacaoProduto(
+                    $item->produto_id,
+                    $item->quantidade,
+                    'reducao',
+                    $item->id,
+                    'alteracao_estoque',
+                    \Auth::user()->id,
+                    $item->produto_variacao_id,
+                    $item->local_id,
+                    0
+                );
+            }
+
             $item->delete();
             session()->flash("flash_success", "estoque removido com sucesso!");
             __createLog(request()->empresa_id, 'Estoque', 'excluir', $descricaoLog);
@@ -104,7 +160,7 @@ class EstoqueController extends Controller
             $codigo_transacao = $transacao->id;
             $tipo_transacao = 'alteracao_estoque';
 
-            $this->util->movimentacaoProduto($request->produto_id, $request->quantidade, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $request->produto_variacao_id);
+            $this->util->movimentacaoProduto($request->produto_id, $request->quantidade, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $request->produto_variacao_id, $request->local_id);
 
             __createLog($request->empresa_id, 'Estoque', 'cadastrar', $transacao->produto->nome . " - quantidade " . $request->quantidade);
             session()->flash("flash_success", "Estoque adicionado com sucesso!");
@@ -114,6 +170,76 @@ class EstoqueController extends Controller
             __createLog($request->empresa_id, 'Estoque', 'erro', $e->getMessage());
             session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
         }
+        return redirect()->route('estoque.index');
+    }
+
+    public function ajuste(Request $request)
+    {
+        try {
+            $request->validate([
+                'produto_id' => 'required',
+                'tipo' => 'required|in:entrada,saida',
+                'quantidade' => 'required',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            session()->flash('flash_error', 'Informe o produto, o tipo e a quantidade.');
+            return redirect()->back();
+        }
+
+        $produto_id = $request->produto_id;
+        $quantidade = (float)__convert_value_bd($request->quantidade);
+        $local_id = $request->local_id ?: $this->util->localAtual();
+        $observacao = $request->observacao ? trim($request->observacao) : null;
+
+        if ($quantidade <= 0) {
+            session()->flash('flash_error', 'A quantidade deve ser maior que zero.');
+            return redirect()->back();
+        }
+
+        $produto = Produto::findOrFail($produto_id);
+        __validaObjetoEmpresa($produto);
+
+        try {
+            if ($request->tipo == 'entrada') {
+                $this->util->incrementaEstoque($produto_id, $quantidade, null, $local_id);
+                $tipo = 'incremento';
+            } else {
+                $estoque = Estoque::where('produto_id', $produto_id)
+                ->where('local_id', $local_id)
+                ->first();
+                $disponivel = $estoque ? (float)$estoque->quantidade : 0;
+
+                if ($quantidade > $disponivel) {
+                    session()->flash('flash_error', 'Estoque insuficiente. Disponível: ' . number_format($disponivel, 3, ',', '.'));
+                    return redirect()->back();
+                }
+
+                $this->util->reduzEstoque($produto_id, $quantidade, null, $local_id);
+                $tipo = 'reducao';
+            }
+
+            $this->util->movimentacaoProduto(
+                $produto_id,
+                $quantidade,
+                $tipo,
+                0,
+                'alteracao_estoque',
+                \Auth::user()->id,
+                null,
+                $local_id,
+                null,
+                $observacao
+            );
+
+            $acao = $request->tipo == 'entrada' ? 'Entrada' : 'Saída';
+            __createLog($request->empresa_id, 'Estoque', 'cadastrar', $acao . " avulsa - " . $produto->nome . " - quantidade " . $quantidade);
+
+            session()->flash('flash_success', 'Movimentação lançada com sucesso!');
+        } catch (\Exception $e) {
+            __createLog($request->empresa_id, 'Estoque', 'erro', $e->getMessage());
+            session()->flash('flash_error', 'Algo deu errado: ' . $e->getMessage());
+        }
+
         return redirect()->route('estoque.index');
     }
 
@@ -143,7 +269,7 @@ class EstoqueController extends Controller
                     $codigo_transacao = $item->id;
                     $tipo_transacao = 'alteracao_estoque';
 
-                    $this->util->movimentacaoProduto($item->produto_id, $diferenca, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
+                    $this->util->movimentacaoProduto($item->produto_id, $diferenca, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, null, $item->local_id);
 
                     if(isset($request->novo_estoque)){
 
@@ -172,7 +298,7 @@ class EstoqueController extends Controller
                 $codigo_transacao = $item->id;
                 $tipo_transacao = 'alteracao_estoque';
 
-                $this->util->movimentacaoProduto($item->produto_id, $diferenca, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
+                $this->util->movimentacaoProduto($item->produto_id, $diferenca, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, null, $item->local_id);
             }
             __createLog($request->empresa_id, 'Estoque', 'editar', $item->produto->nome . " - quantidade " . $request->quantidade);
             session()->flash("flash_success", "Estoque alterado com sucesso!");

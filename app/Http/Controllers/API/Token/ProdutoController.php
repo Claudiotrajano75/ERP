@@ -181,7 +181,7 @@ class ProdutoController extends Controller
                 $tipo = 'incremento';
                 $codigo_transacao = $transacao->id;
                 $tipo_transacao = 'alteracao_estoque';
-                $this->utilEstoque->movimentacaoProduto($item->id, $qtd, $tipo, $codigo_transacao, $tipo_transacao, null, null); 
+                $this->utilEstoque->movimentacaoProduto($item->id, $qtd, $tipo, $codigo_transacao, $tipo_transacao, null, null, $localizacao->id); 
             }
 
             $item = Produto::where('empresa_id', $empresa_id)
@@ -282,7 +282,7 @@ class ProdutoController extends Controller
                     $tipo = 'incremento';
                     $codigo_transacao = $transacao->id;
                     $tipo_transacao = 'alteracao_estoque';
-                    $this->utilEstoque->movimentacaoProduto($item->id, $qtd, $tipo, $codigo_transacao, $tipo_transacao, null, null); 
+                    $this->utilEstoque->movimentacaoProduto($item->id, $qtd, $tipo, $codigo_transacao, $tipo_transacao, null, null, $localizacao->id); 
                 }else{
                     $diferenca = 0;
                     $tipo = 'incremento';
@@ -299,7 +299,7 @@ class ProdutoController extends Controller
                     $codigo_transacao = $estoque->id;
                     $tipo_transacao = 'alteracao_estoque';
 
-                    $this->utilEstoque->movimentacaoProduto($estoque->produto_id, $diferenca, $tipo, $codigo_transacao, $tipo_transacao, null);
+                    $this->utilEstoque->movimentacaoProduto($estoque->produto_id, $diferenca, $tipo, $codigo_transacao, $tipo_transacao, null, null, $estoque->local_id);
                 }
             }
 

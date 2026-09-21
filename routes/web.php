@@ -515,6 +515,8 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         Route::get('transferencia-estoque-imprimir/{id}', 'TransferenciaEstoqueController@imprimir')->name('transferencia-estoque.imprimir');
 
         Route::resource('estoque', 'EstoqueController');
+        Route::get('estoque-movimentacoes', 'EstoqueController@movimentacoes')->name('estoque.movimentacoes');
+        Route::post('estoque-ajuste', 'EstoqueController@ajuste')->name('estoque.ajuste');
         Route::get('estoque-localizacao-define/{id}', 'EstoqueLocalizacaoController@define')->name('estoque-localizacao.define');
         Route::put('estoque-localizacao-store/{id}', 'EstoqueLocalizacaoController@store')->name('estoque-localizacao.store');
         Route::resource('categoria-produtos', 'CategoriaProdutoController');

@@ -771,15 +771,16 @@ class NFeController extends Controller
                     ]);
 
                     if ($product->gerenciar_estoque) {
+                        $localId = $caixa ? $caixa->local_id : $item->local_id;
                         if (isset($request->is_compra)) {
-                            $this->util->incrementaEstoque($product->id, __convert_value_bd($item->itens[$i]->quantidade), $caixa ? $caixa->local_id : $item->local_id);
+                            $this->util->incrementaEstoque($product->id, __convert_value_bd($item->itens[$i]->quantidade), null, $localId);
                         } else {
-                            $this->util->reduzEstoque($product->id, __convert_value_bd($item->itens[$i]->quantidade), $caixa ? $caixa->local_id : $item->local_id);
+                            $this->util->reduzEstoque($product->id, __convert_value_bd($item->itens[$i]->quantidade), null, $localId);
                         }
                         $tipo = 'reducao';
                         $codigo_transacao = $nfe->id;
                         $tipo_transacao = 'venda_nfe';
-                        $this->util->movimentacaoProduto($product->id, __convert_value_bd($item->itens[$i]->quantidade), $tipo, $codigo_transacao, $tipo_transacao, $usuario_id);
+                        $this->util->movimentacaoProduto($product->id, __convert_value_bd($item->itens[$i]->quantidade), $tipo, $codigo_transacao, $tipo_transacao, $usuario_id, null, $localId);
                     }
                 }
 

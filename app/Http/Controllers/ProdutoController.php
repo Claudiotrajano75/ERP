@@ -981,7 +981,7 @@ public function storeModelo(Request $request)
                                     $codigo_transacao = $transacao->id;
                                     $tipo_transacao = 'alteracao_estoque';
                                     $this->utilEstoque->movimentacaoProduto($item->id, $data['estoque'], $tipo, 
-                                        $codigo_transacao, $tipo_transacao, \Auth::user()->id);
+                                        $codigo_transacao, $tipo_transacao, \Auth::user()->id, null, $local->localizacao_id);
                                 }
                                 $cont++;
                             }else{

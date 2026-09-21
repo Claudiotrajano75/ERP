@@ -141,11 +141,53 @@ class EstoqueUtil
 
     }
 
-    public function movimentacaoProduto($produto_id, $quantidade, $tipo, $codigo_transacao, $tipo_transacao, $user_id,
-        $produto_variacao_id = null){
+    public function localAtual()
+    {
+        $usuario_id = Auth::user() ? Auth::user()->id : null;
+        if (!$usuario_id) {
+            return null;
+        }
 
-        $estoque = Estoque::where('produto_id', $produto_id)->first();
-        MovimentacaoProduto::create([
+        $local = Localizacao::where('usuario_localizacaos.usuario_id', $usuario_id)
+        ->select('localizacaos.*')
+        ->join('usuario_localizacaos', 'usuario_localizacaos.localizacao_id', '=', 'localizacaos.id')
+        ->first();
+
+        return $local ? $local->id : null;
+    }
+
+    /**
+     * Localiza o registro de estoque correto para registrar o saldo da movimentação.
+     * Prioriza o local informado; se não existir, cai para o primeiro registro do produto.
+     */
+    private function estoqueParaMovimentacao($produto_id, $produto_variacao_id = null, $local_id = null)
+    {
+        $base = function () use ($produto_id, $produto_variacao_id) {
+            return Estoque::where('produto_id', $produto_id)
+            ->when($produto_variacao_id != null, function ($q) use ($produto_variacao_id) {
+                return $q->where('produto_variacao_id', $produto_variacao_id);
+            });
+        };
+
+        if ($local_id != null) {
+            $item = $base()->where('local_id', $local_id)->first();
+            if ($item) {
+                return $item;
+            }
+        }
+
+        return $base()->first();
+    }
+
+    public function movimentacaoProduto($produto_id, $quantidade, $tipo, $codigo_transacao, $tipo_transacao, $user_id,
+        $produto_variacao_id = null, $local_id = null, $estoque_atual = null, $observacao = null){
+
+        if ($estoque_atual === null) {
+            $estoque = $this->estoqueParaMovimentacao($produto_id, $produto_variacao_id, $local_id);
+            $estoque_atual = $estoque ? $estoque->quantidade : 0;
+        }
+
+        $dados = [
             'produto_id' => $produto_id,
             'quantidade' => $quantidade,
             'tipo' => $tipo,
@@ -153,8 +195,16 @@ class EstoqueUtil
             'tipo_transacao' => $tipo_transacao,
             'produto_variacao_id' => $produto_variacao_id,
             'user_id' => $user_id,
-            'estoque_atual' => $estoque ? $estoque->quantidade : 0
-        ]);
+            'estoque_atual' => $estoque_atual
+        ];
+
+        // Só referencia a coluna de observação quando houver valor, mantendo
+        // compatibilidade caso a migration ainda não tenha sido executada.
+        if ($observacao !== null && $observacao !== '') {
+            $dados['observacao'] = $observacao;
+        }
+
+        MovimentacaoProduto::create($dados);
     }
 
 }

@@ -602,7 +602,7 @@ class NFCeController extends Controller
                     $codigo_transacao = $nfce->id;
                     $tipo_transacao = 'venda_nfce';
 
-                    $this->util->movimentacaoProduto($product->id, __convert_value_bd($item->itens[$i]->quantidade), $tipo, $codigo_transacao, $tipo_transacao, $item->usuario_id);
+                    $this->util->movimentacaoProduto($product->id, __convert_value_bd($item->itens[$i]->quantidade), $tipo, $codigo_transacao, $tipo_transacao, $item->usuario_id, null, $item->local_id);
                 }
 
                 for ($i = 0; $i < sizeof($request->fatura); $i++) {
@@ -746,7 +746,7 @@ class NFCeController extends Controller
                     $tipo_transacao = 'venda_nfce';
 
                     $this->util->movimentacaoProduto($product->id, __convert_value_bd($item->itens[$i]->quantidade), $tipo, 
-                        $codigo_transacao, $tipo_transacao, $item->usuario_id);
+                        $codigo_transacao, $tipo_transacao, $item->usuario_id, null, $item->local_id);
                 }
 
                 for ($i = 0; $i < sizeof($request->fatura); $i++) {

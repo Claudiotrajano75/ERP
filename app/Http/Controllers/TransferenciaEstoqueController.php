@@ -128,7 +128,7 @@ class TransferenciaEstoqueController extends Controller
                 $tipo = 'incremento';
                 $codigo_transacao = $itemTransferencia->id;
                 $tipo_transacao = 'alteracao_estoque';
-                $this->utilEstoque->movimentacaoProduto($request->produto_id[$i], $qtd, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id);
+                $this->utilEstoque->movimentacaoProduto($request->produto_id[$i], $qtd, $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, null, $request->local_entrada_id);
 
             }
             $descricaoLog = "Saída de $localSaida->nome para $localEntrada->nome";

@@ -144,7 +144,7 @@ class VendaController extends Controller
                     $codigo_transacao = $nfce->id;
                     $tipo_transacao = 'venda_nfce';
 
-                    $this->util->movimentacaoProduto($product->id, $item['quantidade'], $tipo, $codigo_transacao, $tipo_transacao, $request->usuario_id);
+                    $this->util->movimentacaoProduto($product->id, $item['quantidade'], $tipo, $codigo_transacao, $tipo_transacao, $request->usuario_id, null, $caixa->local_id);
 
                 }
 

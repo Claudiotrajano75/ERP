@@ -56,7 +56,7 @@ class ApontamentoController extends Controller
             $tipo_transacao = 'alteracao_estoque';
 
             $this->util->movimentacaoProduto($request->produto_composto_id, $request->quantidade, $tipo, $codigo_transacao, $tipo_transacao, 
-                \Auth::user()->id);
+                \Auth::user()->id, null, $this->util->localAtual());
 
             session()->flash('flash_success', 'Apontamento realizado com sucesso');
         } catch (\Exception $e) {

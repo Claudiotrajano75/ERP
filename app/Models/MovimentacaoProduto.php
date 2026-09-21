@@ -11,7 +11,7 @@ class MovimentacaoProduto extends Model
 
     protected $fillable = [ 
         'produto_id', 'quantidade', 'tipo', 'codigo_transacao', 'tipo_transacao', 'produto_variacao_id', 'user_id', 
-        'estoque_atual'
+        'estoque_atual', 'observacao'
     ];
 
     public function produto(){

@@ -255,7 +255,7 @@ class NfceController extends Controller
                     $codigo_transacao = $nfce->id;
                     $tipo_transacao = 'venda_nfce';
 
-                    $this->util->movimentacaoProduto($product->id, __convert_value_bd($request->quantidade[$i]), $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $variacao_id);
+                    $this->util->movimentacaoProduto($product->id, __convert_value_bd($request->quantidade[$i]), $tipo, $codigo_transacao, $tipo_transacao, \Auth::user()->id, $variacao_id, $caixa->local_id);
                 }
 
                 for ($i = 0; $i < sizeof($tipoPagamento); $i++) {

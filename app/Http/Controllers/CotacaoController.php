@@ -89,8 +89,9 @@ class CotacaoController extends Controller
     }
 
     public function store(Request $request){
+        $cotacoesCriadas = [];
         try{
-            DB::transaction(function () use ($request) {
+            DB::transaction(function () use ($request, &$cotacoesCriadas) {
                 $referencia = Str::random(7);
 
                 for($i=0; $i<sizeof($request->fornecedor_id); $i++){
@@ -112,14 +113,28 @@ class CotacaoController extends Controller
                         ]);
                     }
                     __createLog($request->empresa_id, 'Cotação', 'cadastrar', $cotacao->fornecedor->info . " - #$cotacao->hash_link");
-                    $this->enviarEmailCotacao($cotacao);
+                    $cotacoesCriadas[] = $cotacao;
                 }
             });
-            session()->flash("flash_success", 'Cotação criada!');
+
+            // Dispara os e-mails fora da transação do banco para não bloquear a criação caso o SMTP esteja offline ou inválido
+            $errosEmail = [];
+            foreach ($cotacoesCriadas as $cotacao) {
+                try {
+                    $this->enviarEmailCotacao($cotacao);
+                } catch (\Exception $e) {
+                    $errosEmail[] = $cotacao->fornecedor ? $cotacao->fornecedor->info : '';
+                    __createLog($request->empresa_id, 'Cotação', 'erro_email', "Erro ao enviar e-mail da cotação: " . $e->getMessage());
+                }
+            }
+
+            if (count($errosEmail) > 0) {
+                session()->flash("flash_warning", 'Cotação criada com sucesso! (Aviso: o e-mail não pôde ser enviado devido a configurações de SMTP pendentes).');
+            } else {
+                session()->flash("flash_success", 'Cotação criada com sucesso!');
+            }
             return redirect()->route('cotacoes.index');
         } catch (\Exception $e) {
-            // echo $e->getMessage() . '<br>' . $e->getLine();
-            // die;
             __createLog($request->empresa_id, 'Cotação', 'erro', $e->getMessage());
             session()->flash("flash_error", 'Algo deu errado: '. $e->getMessage());
             return redirect()->back();
@@ -127,7 +142,7 @@ class CotacaoController extends Controller
     }
 
     private function enviarEmailCotacao($cotacao){
-        if($cotacao->fornecedor->email != ''){
+        if($cotacao->fornecedor && !empty($cotacao->fornecedor->email)){
 
             $email = $cotacao->fornecedor->email;
 
@@ -135,13 +150,11 @@ class CotacaoController extends Controller
             ->where('status', 1)
             ->first();
             if($emailConfig != null){
-
-                $body = view('mail.cotacao', compact('cotacao'));
-                $result = $this->util->enviaEmailPHPMailer($email, 'Envio de cotação', $body, $emailConfig);
+                $body = view('mail.cotacao', compact('cotacao'))->render();
+                $this->util->enviaEmailPHPMailer($email, 'Envio de cotação', $body, $emailConfig);
             }else{
                 Mail::send('mail.cotacao', ['cotacao' => $cotacao], function($m) use ($email){
-
-                    $nomeEmail = env('MAIL_FROM_NAME');
+                    $nomeEmail = env('MAIL_FROM_NAME', 'ERP');
                     $m->from(env('MAIL_USERNAME'), $nomeEmail);
                     $m->subject('Envio de cotação');
                     $m->to($email);

@@ -50,38 +50,40 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr class="dynamic-form">
-                                @isset($item)
+                            @isset($item)
                                 @foreach($item->itens as $l)
-                                <td>
-                                    <select required class="form-control select2 produto_id form-select" name="produto_id[]" id="inp-produto_id">
-                                        <option value="{{ $l->produto_id }}">{{ $l->produto->nome }}</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <input required class="form-control qtd text-center" type="tel" value="{{ __moeda($l->quantidade) }}" name="quantidade[]" id="inp-quantidade">
-                                </td>
-                                <td class="text-center">
-                                    <button type="button" class="act-btn act-del btn-remove-tr" title="Remover Produto">
-                                        <i class="ri-delete-bin-line"></i>
-                                    </button>
-                                </td>
+                                <tr class="dynamic-form">
+                                    <td>
+                                        <select required class="form-control select2 produto_id form-select" name="produto_id[]">
+                                            <option value="{{ $l->produto_id }}">{{ $l->produto->nome }}</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input required class="form-control qtd text-center" type="tel" value="{{ __moeda($l->quantidade) }}" name="quantidade[]">
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="act-btn act-del btn-remove-tr" title="Remover Produto">
+                                            <i class="ri-delete-bin-line"></i>
+                                        </button>
+                                    </td>
+                                </tr>
                                 @endforeach
-                                @else
-                                <td>
-                                    <select required class="form-control select2 produto_id form-select" name="produto_id[]" id="inp-produto_id">
-                                    </select>
-                                </td>
-                                <td>
-                                    <input required class="form-control qtd text-center" type="tel" name="quantidade[]" id="inp-quantidade" placeholder="0,00">
-                                </td>
-                                <td class="text-center">
-                                    <button type="button" class="act-btn act-del btn-remove-tr" title="Remover Produto">
-                                        <i class="ri-delete-bin-line"></i>
-                                    </button>
-                                </td>
-                                @endif
-                            </tr>
+                            @else
+                                <tr class="dynamic-form">
+                                    <td>
+                                        <select required class="form-control select2 produto_id form-select" name="produto_id[]">
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input required class="form-control qtd text-center" type="tel" name="quantidade[]" placeholder="0,00">
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="act-btn act-del btn-remove-tr" title="Remover Produto">
+                                            <i class="ri-delete-bin-line"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -136,7 +138,3 @@
     </div>
 
 </div>
-
-@section('js')
-<script type="text/javascript" src="/js/cotacao.js"></script>
-@endsection

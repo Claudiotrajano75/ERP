@@ -1,46 +1,26 @@
-
-
-$('.btn-add-tr-item').on("click", function () {
-    console.clear()
-    var $table = $(this)
-    .closest(".row")
-    .prev()
-    .find(".table-dynamic");
-
-    var hasEmpty = false;
-
-    $table.find("input, select").each(function () {
-        if (($(this).val() == "" || $(this).val() == null) && $(this).attr("type") != "hidden" && $(this).attr("type") != "file" && !$(this).hasClass("ignore")) {
-            hasEmpty = true;
-        }
-    });
-
-    if (hasEmpty) {
-        swal(
-            "Atenção",
-            "Preencha todos os campos antes de adicionar novos.",
-            "warning"
-            );
-        return;
+function getPathUrl() {
+    if (typeof path_url !== "undefined" && path_url) {
+        return path_url;
     }
-    // $table.find("select.select2").select2("destroy");
-    var $tr = $table.find(".dynamic-form").first();
-    $tr.find("select.select2").select2("destroy");
-    var $clone = $tr.clone();
-    $clone.show();
+    var prot = window.location.protocol;
+    var host = window.location.host;
+    return prot + "//" + host + "/";
+}
 
-    $clone.find("input,select").val("");
-    $clone.find("span").html("");
-    
-    $table.append($clone);
-    setTimeout(function () {
-        $("tbody select.select2").select2({
-            language: "pt-BR",
-            width: "100%",
-            theme: "bootstrap4"
-        });
+function initSelect2Produto($elements) {
+    var baseUrl = getPathUrl();
 
-        $("tbody #inp-produto_id").select2({
+    $elements.each(function () {
+        var $select = $(this);
+
+        // Se já foi inicializado estaticamente pelo template, destrói para reaplicar com AJAX
+        if ($select.hasClass("select2-hidden-accessible") || $select.data('select2')) {
+            try {
+                $select.select2('destroy');
+            } catch (e) {}
+        }
+
+        $select.select2({
             minimumInputLength: 2,
             language: "pt-BR",
             placeholder: "Digite para buscar o produto",
@@ -48,121 +28,147 @@ $('.btn-add-tr-item').on("click", function () {
             theme: "bootstrap4",
             ajax: {
                 cache: true,
-                url: path_url + "api/produtos",
+                url: baseUrl + "api/produtos",
                 dataType: "json",
+                delay: 250,
                 data: function (params) {
-                    let empresa_id = $('#empresa_id').val()
-                    console.clear();
-                    var query = {
+                    var empId = $('#empresa_id').val();
+                    var usuId = $('#usuario_id').val();
+                    return {
                         pesquisa: params.term,
-                        empresa_id: empresa_id
+                        empresa_id: empId,
+                        usuario_id: usuId
                     };
-                    return query;
                 },
                 processResults: function (response) {
                     var results = [];
-                    let compra = 0
-                    if($('#is_compra') && $('#is_compra').val() == 1){
-                        compra = 1
-                    }
-                    console.log(response)
                     $.each(response, function (i, v) {
                         var o = {};
                         o.id = v.id;
-                        
                         o.text = v.nome;
+                        if (v.codigo_barras) {
+                            o.text += " [" + v.codigo_barras + "]";
+                        }
+                        results.push(o);
+                    });
+                    return {
+                        results: results
+                    };
+                }
+            }
+        });
+    });
+}
+
+function initSelect2Fornecedor() {
+    var baseUrl = getPathUrl();
+
+    $(".fornecedor_id").each(function () {
+        var $select = $(this);
+
+        if ($select.hasClass("select2-hidden-accessible") || $select.data('select2')) {
+            try {
+                $select.select2('destroy');
+            } catch (e) {}
+        }
+
+        $select.select2({
+            minimumInputLength: 2,
+            language: "pt-BR",
+            placeholder: "Digite para buscar o fornecedor",
+            theme: "bootstrap4",
+            ajax: {
+                cache: true,
+                url: baseUrl + "api/fornecedores/pesquisa",
+                dataType: "json",
+                delay: 250,
+                data: function (params) {
+                    return {
+                        pesquisa: params.term,
+                        empresa_id: $("#empresa_id").val()
+                    };
+                },
+                processResults: function (response) {
+                    var results = [];
+                    $.each(response, function (i, v) {
+                        var o = {};
+                        o.id = v.id;
+                        o.text = v.razao_social + " - " + v.cpf_cnpj;
                         o.value = v.id;
                         results.push(o);
                     });
                     return {
-                        results: results,
+                        results: results
                     };
-                },
-            },
-        });
-    }, 100);
-
-})
-
-
-$('form#form-cotacao').submit(function(){
-    $('.btn-salvar').attr('disabled', 1)
-});
-
-
-$("tbody #inp-produto_id").select2({
-    minimumInputLength: 2,
-    language: "pt-BR",
-    placeholder: "Digite para buscar o produto",
-    width: "100%",
-    theme: "bootstrap4",
-    ajax: {
-        cache: true,
-        url: path_url + "api/produtos",
-        dataType: "json",
-        data: function (params) {
-            let empresa_id = $('#empresa_id').val()
-            console.clear();
-            var query = {
-                pesquisa: params.term,
-                empresa_id: empresa_id
-            };
-            return query;
-        },
-        processResults: function (response) {
-            var results = [];
-            let compra = 0
-            if($('#is_compra') && $('#is_compra').val() == 1){
-                compra = 1
+                }
             }
-            console.log(response)
-            $.each(response, function (i, v) {
-                var o = {};
-                o.id = v.id;
-                
-                o.text = v.nome;
-                o.value = v.id;
-                results.push(o);
-            });
-            return {
-                results: results,
-            };
-        },
-    },
+        });
+    });
+}
+
+$(document).ready(function () {
+    // Pequeno timeout para garantir execução após qualquer inicializador genérico do template
+    setTimeout(function () {
+        initSelect2Produto($("select.produto_id"));
+        initSelect2Fornecedor();
+    }, 50);
 });
 
-$(".fornecedor_id").select2({
-    minimumInputLength: 2,
-    language: "pt-BR",
-    placeholder: "Digite para buscar o fornecedor",
-    theme: "bootstrap4",
+// Adição de nova linha na grade de produtos da cotação
+$(document).on("click", ".btn-add-tr-item", function (e) {
+    e.preventDefault();
 
-    ajax: {
-        cache: true,
-        url: path_url + "api/fornecedores/pesquisa",
-        dataType: "json",
-        data: function (params) {
-            console.clear();
-            var query = {
-                pesquisa: params.term,
-                empresa_id: $("#empresa_id").val(),
-            };
-            return query;
-        },
-        processResults: function (response) {
-            var results = [];
+    var $table = $(".table-produtos");
+    if (!$table.length) {
+        $table = $(".table-dynamic");
+    }
 
-            $.each(response, function (i, v) {
-                var o = {};
-                o.id = v.id;
+    var hasEmpty = false;
+    $table.find("tbody tr.dynamic-form").each(function () {
+        var prod = $(this).find("select.produto_id").val();
+        var qtd = $(this).find("input.qtd").val();
+        if (!prod || !qtd || $.trim(qtd) === "") {
+            hasEmpty = true;
+        }
+    });
 
-                o.text = v.razao_social + " - " + v.cpf_cnpj;
-                o.value = v.id;
-                results.push(o);
-            });
-            return {
-                results: results,
-            };
-        },
-    },
+    if (hasEmpty) {
+        if (typeof swal === "function") {
+            swal(
+                "Atenção",
+                "Preencha o produto e a quantidade antes de adicionar novos itens.",
+                "warning"
+            );
+        } else {
+            alert("Preencha o produto e a quantidade antes de adicionar novos itens.");
+        }
+        return;
+    }
+
+    var newTrHtml = `
+        <tr class="dynamic-form">
+            <td>
+                <select required class="form-control produto_id form-select" name="produto_id[]">
+                </select>
+            </td>
+            <td>
+                <input required class="form-control qtd text-center" type="tel" name="quantidade[]" placeholder="0,00">
+            </td>
+            <td class="text-center">
+                <button type="button" class="act-btn act-del btn-remove-tr" title="Remover Produto">
+                    <i class="ri-delete-bin-line"></i>
+                </button>
+            </td>
+        </tr>
+    `;
+
+    var $newTr = $(newTrHtml);
+    $table.find("tbody").append($newTr);
+    initSelect2Produto($newTr.find("select.produto_id"));
+});
+
+$('form#form-cotacao, form').on("submit", function () {
+    if ($(this).find('#btn-save-cotacao').length) {
+        $('.btn-salvar').attr('disabled', true);
+    }
 });

@@ -443,26 +443,81 @@ function testarImpressora() {
                 result.html('<span class="text-success fw-bold"><i class="ri-checkbox-circle-fill"></i> ' + res.message + '</span>');
                 btn.prop('disabled', false).html('<i class="ri-wifi-line me-1 text-primary"></i> Testar Conexão com a Impressora');
             } else {
-                // Tenta testar pelo Agente Local de Impressão
+                // Se a Hostinger não alcança o IP da LAN, tenta pelo Agente Local (WebSocket / HTTP)
                 testarViaAgenteLocal(ip, porta, btn, result, res.message);
             }
         },
         error: function(xhr) {
-            // Se o servidor em nuvem deu timeout ou erro, tenta pelo Agente Local
-            testarViaAgenteLocal(ip, porta, btn, result, 'Servidor em nuvem sem acesso direto');
+            testarViaAgenteLocal(ip, porta, btn, result, 'Servidor em nuvem sem acesso direto ao IP local');
         }
     });
 }
 
 function testarViaAgenteLocal(ip, porta, btn, result, erroServidor) {
-    result.html('<span class="text-muted"><i class="ri-loader-4-line spin me-1"></i> Tentando via Agente Local (127.0.0.1:9187)...</span>');
+    result.html('<span class="text-muted"><i class="ri-loader-4-line spin me-1"></i> Tentando via Agente Local (ws://127.0.0.1:9187)...</span>');
 
+    var wsConcluido = false;
+    var wsTimeout = null;
+    var ws = null;
+
+    try {
+        ws = new WebSocket('ws://127.0.0.1:9187');
+    } catch(e) {
+        testarViaHttpFallback(ip, porta, btn, result, erroServidor);
+        return;
+    }
+
+    wsTimeout = setTimeout(function() {
+        if (!wsConcluido) {
+            wsConcluido = true;
+            try { ws.close(); } catch(e){}
+            testarViaHttpFallback(ip, porta, btn, result, erroServidor);
+        }
+    }, 3500);
+
+    ws.onopen = function() {
+        ws.send(JSON.stringify({
+            action: 'test',
+            ip: ip,
+            porta: porta
+        }));
+    };
+
+    ws.onmessage = function(evt) {
+        if (wsConcluido) return;
+        wsConcluido = true;
+        clearTimeout(wsTimeout);
+        try { ws.close(); } catch(e){}
+
+        try {
+            var data = JSON.parse(evt.data);
+            if (data.success) {
+                result.html('<span class="text-success fw-bold"><i class="ri-checkbox-circle-fill"></i> ' + data.message + '</span>');
+            } else {
+                result.html('<span class="text-danger fw-bold"><i class="ri-error-warning-line"></i> ' + (data.message || 'Falha ao conectar') + '</span>');
+            }
+        } catch(ex) {
+            result.html('<span class="text-success fw-bold"><i class="ri-checkbox-circle-fill"></i> Conexão estabelecida com o Agente Local!</span>');
+        }
+        btn.prop('disabled', false).html('<i class="ri-wifi-line me-1 text-primary"></i> Testar Conexão com a Impressora');
+    };
+
+    ws.onerror = function(err) {
+        if (wsConcluido) return;
+        wsConcluido = true;
+        clearTimeout(wsTimeout);
+        try { ws.close(); } catch(e){}
+        testarViaHttpFallback(ip, porta, btn, result, erroServidor);
+    };
+}
+
+function testarViaHttpFallback(ip, porta, btn, result, erroServidor) {
     $.ajax({
         url: 'http://127.0.0.1:9187/test',
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ ip: ip, porta: porta }),
-        timeout: 5000,
+        timeout: 3000,
         success: function(agentRes) {
             if (agentRes && agentRes.success) {
                 result.html('<span class="text-success fw-bold"><i class="ri-checkbox-circle-fill"></i> ' + agentRes.message + '</span>');

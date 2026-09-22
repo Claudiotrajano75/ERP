@@ -121,36 +121,95 @@ var PrintThermal = {
     },
 
     /**
-     * Envia o payload ESC/POS para o Agente Local de Impressão (127.0.0.1:9187)
+     * Envia o payload ESC/POS para o Agente Local de Impressão (WebSocket ws://127.0.0.1:9187 ou HTTP)
      */
     enviarParaAgenteLocal: function(ip, porta, dataBase64, pdfUrl, onComplete) {
-        $.ajax({
-            url: 'http://127.0.0.1:9187/print',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
+        var wsConcluido = false;
+        var wsTimeout = null;
+        var ws = null;
+
+        function fallbackHttp() {
+            $.ajax({
+                url: 'http://127.0.0.1:9187/print',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    ip: ip,
+                    porta: porta || 9100,
+                    data: dataBase64
+                }),
+                timeout: 4000,
+                success: function(agentRes) {
+                    if (agentRes && agentRes.success) {
+                        PrintThermal.mostrarFeedback('success', 'Impresso com sucesso na impressora térmica!');
+                    } else {
+                        PrintThermal.mostrarFeedback('warning', 'Agente local não conectou na impressora. Abrindo PDF...');
+                        if (pdfUrl) window.open(pdfUrl, '_blank');
+                    }
+                },
+                error: function(err) {
+                    console.warn('Agente local (127.0.0.1:9187) offline. Abrindo PDF como fallback.', err);
+                    if (pdfUrl) window.open(pdfUrl, '_blank');
+                    PrintThermal.mostrarFeedback('warning', 'Inicie o Agente de Impressão na máquina local.');
+                },
+                complete: function() {
+                    if (onComplete) onComplete();
+                }
+            });
+        }
+
+        try {
+            ws = new WebSocket('ws://127.0.0.1:9187');
+        } catch(e) {
+            fallbackHttp();
+            return;
+        }
+
+        wsTimeout = setTimeout(function() {
+            if (!wsConcluido) {
+                wsConcluido = true;
+                try { ws.close(); } catch(e){}
+                fallbackHttp();
+            }
+        }, 4000);
+
+        ws.onopen = function() {
+            ws.send(JSON.stringify({
+                action: 'print',
                 ip: ip,
                 porta: porta || 9100,
                 data: dataBase64
-            }),
-            timeout: 5000,
-            success: function(agentRes) {
-                if (agentRes && agentRes.success) {
+            }));
+        };
+
+        ws.onmessage = function(evt) {
+            if (wsConcluido) return;
+            wsConcluido = true;
+            clearTimeout(wsTimeout);
+            try { ws.close(); } catch(e){}
+
+            try {
+                var res = JSON.parse(evt.data);
+                if (res.success) {
                     PrintThermal.mostrarFeedback('success', 'Impresso com sucesso na impressora térmica!');
                 } else {
-                    PrintThermal.mostrarFeedback('warning', 'Agente local não conectou na impressora. Abrindo PDF...');
+                    PrintThermal.mostrarFeedback('warning', (res.message || 'Falha na impressora.') + ' Abrindo PDF...');
                     if (pdfUrl) window.open(pdfUrl, '_blank');
                 }
-            },
-            error: function(err) {
-                console.warn('Agente local (127.0.0.1:9187) offline. Abrindo PDF como fallback.', err);
-                if (pdfUrl) window.open(pdfUrl, '_blank');
-                PrintThermal.mostrarFeedback('warning', 'Inicie o Agente de Impressão local para envio direto.');
-            },
-            complete: function() {
-                if (onComplete) onComplete();
+            } catch(ex) {
+                PrintThermal.mostrarFeedback('success', 'Comando de impressão enviado com sucesso!');
             }
-        });
+
+            if (onComplete) onComplete();
+        };
+
+        ws.onerror = function(err) {
+            if (wsConcluido) return;
+            wsConcluido = true;
+            clearTimeout(wsTimeout);
+            try { ws.close(); } catch(e){}
+            fallbackHttp();
+        };
     },
 
     /**

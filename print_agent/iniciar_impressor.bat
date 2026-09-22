@@ -19,5 +19,5 @@ cd /d "%~dp0"
 set PHP_BIN=php
 if exist "C:\xampp\php\php.exe" set PHP_BIN=C:\xampp\php\php.exe
 
-%PHP_BIN% -S 127.0.0.1:9187 server.php
+%PHP_BIN% server.php
 pause

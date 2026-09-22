@@ -287,77 +287,86 @@ class PrintService
             $cmd .= str_repeat('-', $cols) . "\n";
 
             // ── 4. ITENS ──────────────────────────────────────────────────
+            // Cada item em 1 linha (ou 2 se nome longo) com todas as colunas
             $totalItens = 0;
             foreach ($nfce->itens as $item) {
                 $totalItens++;
                 $nome    = $item->produto ? $item->produto->nome : ($item->descricao ?? 'Item ' . $item->produto_id);
                 $unidade = $item->produto ? ($item->produto->unidade ?? 'UN') : 'UN';
+                $nomeConv = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($nome));
 
-                // Linha 1: COD | NOME (maiusculo, sem acento) | SUBTOTAL
-                $subtotalStr = number_format($item->sub_total, 2, ',', '.');
-                $nomeStr     = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($this->truncate($nome, $colDesc)));
-                $cmd .= $this->padR(mb_substr((string)$item->produto_id, 0, $colCod - 1), $colCod)
-                      . $this->padR($nomeStr, $colDesc)
-                      . $this->padL($subtotalStr, $colVlr) . "\n";
+                $codStr   = $this->padR(mb_substr((string)$item->produto_id, 0, $cCod - 1), $cCod);
+                $qtdeStr  = $this->padL(number_format($item->quantidade, 0, ',', '.'), $cQtde);
+                $unStr    = $this->padL($unidade, $cUN);
+                $unitStr  = $this->padL(number_format($item->valor_unitario, 2, ',', '.'), $cUnit);
+                $totalStr = $this->padL(number_format($item->sub_total, 2, ',', '.'), $cTotal);
 
-                // Linha 2: (recuo) | QTD x VLR UNIT
-                $qtdStr = '  ' . number_format($item->quantidade, 3, ',', '.')
-                        . ' ' . $unidade
-                        . ' x ' . number_format($item->valor_unitario, 2, ',', '.');
-                $cmd .= str_repeat(' ', $colCod) . $qtdStr . "\n";
+                $nomeT = $this->truncate($nomeConv, $cDesc);
+                $cmd .= $codStr
+                      . $this->padR($nomeT, $cDesc)
+                      . $qtdeStr . $unStr . $unitStr . $totalStr . "\n";
+
+                // Se nome longo, exibe o resto na proxima linha
+                if (mb_strlen($nomeConv) > $cDesc) {
+                    $resto = trim(mb_substr($nomeConv, $cDesc - 1));
+                    if ($resto) {
+                        $cmd .= str_repeat(' ', $cCod) . $this->truncate($resto, $cDesc) . "\n";
+                    }
+                }
             }
 
             $cmd .= str_repeat('-', $cols) . "\n";
 
+
             // ── 5. TOTAIS ─────────────────────────────────────────────────
-            $subtotalProdutos = $nfce->total + ($nfce->desconto ?? 0) - ($nfce->acrescimo ?? 0);
+            // Igual ao modelo original: sempre mostra Valor Total, Desconto, Frete e Valor a Pagar
+            $valorTotalR = $nfce->total + ($nfce->desconto ?? 0) - ($nfce->acrescimo ?? 0);
 
-            $cmd .= $this->padR('QTD TOTAL DE ITENS', $labelCol)
+            $cmd .= $this->padR('Qtde total de itens', $labelCol)
                   . $this->padL((string)$totalItens, $valueCol) . "\n";
-            $cmd .= $this->padR('VALOR TOTAL PRODUTOS R$', $labelCol)
-                  . $this->padL(number_format($subtotalProdutos, 2, ',', '.'), $valueCol) . "\n";
-
-            if (($nfce->desconto ?? 0) > 0) {
-                $cmd .= $this->padR('(-) DESCONTO R$', $labelCol)
-                      . $this->padL(number_format($nfce->desconto, 2, ',', '.'), $valueCol) . "\n";
-            }
-            if (($nfce->acrescimo ?? 0) > 0) {
-                $cmd .= $this->padR('(+) ACRESCIMO R$', $labelCol)
-                      . $this->padL(number_format($nfce->acrescimo, 2, ',', '.'), $valueCol) . "\n";
-            }
+            $cmd .= $this->padR('Valor Total R$', $labelCol)
+                  . $this->padL(number_format($valorTotalR, 2, ',', '.'), $valueCol) . "\n";
+            $cmd .= $this->padR('Desconto R$', $labelCol)
+                  . $this->padL(number_format($nfce->desconto ?? 0, 2, ',', '.'), $valueCol) . "\n";
+            $cmd .= $this->padR('Frete R$', $labelCol)
+                  . $this->padL('0,00', $valueCol) . "\n";
 
             $cmd .= str_repeat('-', $cols) . "\n";
             $cmd .= "\x1B\x45\x01"; // Negrito ON
-            $cmd .= $this->padR('VALOR A PAGAR R$', $labelCol)
+            $cmd .= $this->padR('Valor a Pagar R$', $labelCol)
                   . $this->padL(number_format($nfce->total, 2, ',', '.'), $valueCol) . "\n";
             $cmd .= "\x1B\x45\x00"; // Negrito OFF
             $cmd .= str_repeat('-', $cols) . "\n";
 
+
             // ── 6. FORMAS DE PAGAMENTO ────────────────────────────────────
+            // Igual ao modelo original: sempre mostra Troco R$
             $cmd .= "\x1B\x45\x01"; // Negrito ON
-            $cmd .= $this->padR('FORMA DE PAGAMENTO', $labelCol)
+            $cmd .= $this->padR('FORMA PAGAMENTO', $labelCol)
                   . $this->padL('VALOR PAGO R$', $valueCol) . "\n";
             $cmd .= "\x1B\x45\x00"; // Negrito OFF
 
             if (sizeof($nfce->fatura) > 0) {
                 foreach ($nfce->fatura as $f) {
                     $tipoPag = \App\Models\Nfce::getTipoPagamento($f->tipo_pagamento) ?? $f->tipo_pagamento;
-                    $cmd .= $this->padR(mb_strtoupper($tipoPag), $labelCol)
+                    $tipoPag = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', $tipoPag);
+                    $cmd .= $this->padR($tipoPag, $labelCol)
                           . $this->padL(number_format($f->valor, 2, ',', '.'), $valueCol) . "\n";
                 }
             } else {
                 $tipoPag  = \App\Models\Nfce::getTipoPagamento($nfce->tipo_pagamento) ?? 'Dinheiro';
+                $tipoPag  = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', $tipoPag);
                 $valorPag = ($nfce->dinheiro_recebido ?? 0) > 0 ? $nfce->dinheiro_recebido : $nfce->total;
-                $cmd .= $this->padR(mb_strtoupper($tipoPag), $labelCol)
+                $cmd .= $this->padR($tipoPag, $labelCol)
                       . $this->padL(number_format($valorPag, 2, ',', '.'), $valueCol) . "\n";
             }
 
-            if (($nfce->troco ?? 0) > 0) {
-                $cmd .= $this->padR('TROCO R$', $labelCol)
-                      . $this->padL(number_format($nfce->troco, 2, ',', '.'), $valueCol) . "\n";
-            }
+            // Sempre mostra Troco R$ (mesmo zerado - igual ao modelo original)
+            $cmd .= $this->padR('Troco R$', $labelCol)
+                  . $this->padL(number_format($nfce->troco ?? 0, 2, ',', '.'), $valueCol) . "\n";
 
-            $cmd .= str_repeat('=', $cols) . "\n";
+            $cmd .= str_repeat('-', $cols) . "\n";
+
 
             // ── 7. DADOS DA EMISSAO ───────────────────────────────────────
             $cmd .= "\x1B\x61\x01"; // Centralizar

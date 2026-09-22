@@ -367,48 +367,33 @@ class PrintService
 
             $cmd .= str_repeat('-', $cols) . "\n";
 
-
-            // ── 7. DADOS DA EMISSAO ───────────────────────────────────────
+            // ── 7. CONSULTA SEFAZ ─────────────────────────────────────────
+            // Ordem do modelo original: consulta sefaz → chave → consumidor → NFCe n./protocolo/data → QR Code → tributos
             $cmd .= "\x1B\x61\x01"; // Centralizar
-            $nfceInfo = 'NFC-e No. ' . str_pad($nfce->numero, 9, '0', STR_PAD_LEFT)
-                      . '  Serie ' . str_pad($nfce->numero_serie ?: '1', 3, '0', STR_PAD_LEFT);
-            $cmd .= $this->centerText($nfceInfo, $cols) . "\n";
-
-            $dataEmissao = $nfce->data_emissao
-                ? \Carbon\Carbon::parse($nfce->data_emissao)->format('d/m/Y H:i:s')
-                : date('d/m/Y H:i:s');
-            $cmd .= $this->centerText('Emissao: ' . $dataEmissao, $cols) . "\n";
-
-            if ($nfce->recibo) {
-                $cmd .= $this->centerText('Protocolo: ' . $nfce->recibo, $cols) . "\n";
-            }
-
-            $ambiente = ($nfce->ambiente == 2) ? 'HOMOLOGACAO - SEM VALOR FISCAL' : 'PRODUCAO';
-            $cmd .= $this->centerText('Ambiente: ' . $ambiente, $cols) . "\n";
+            $cmd .= "\x1B\x45\x01"; // Negrito ON
+            $cmd .= $this->centerText('Consulte pela Chave de Acesso em:', $cols) . "\n";
+            $cmd .= "\x1B\x45\x00"; // Negrito OFF
+            $uf = $empresa->cidade->uf ?? 'ce';
+            $urlConsulta = $urlChave ?: ('www.sefaz.' . strtolower($uf) . '.gov.br/nfce/consulta');
+            $cmd .= $this->centerText($urlConsulta, $cols) . "\n";
             $cmd .= "\x1B\x61\x00"; // Esquerda
             $cmd .= str_repeat('-', $cols) . "\n";
 
             // ── 8. CHAVE DE ACESSO ────────────────────────────────────────
-            $cmd .= "\x1B\x61\x01"; // Centralizar
-            $cmd .= "\x1B\x45\x01"; // Negrito ON
-            $cmd .= $this->centerText('CHAVE DE ACESSO', $cols) . "\n";
-            $cmd .= "\x1B\x45\x00"; // Negrito OFF
-
+            // Exibe a chave formatada em grupos de 4 digitos, centralizada
             $chaveLimpa     = preg_replace('/[^0-9]/', '', $nfce->chave ?? '');
             $chaveFormatada = trim(chunk_split($chaveLimpa, 4, ' '));
+            $cmd .= "\x1B\x61\x01"; // Centralizar
+            // Quebra a chave em linhas de $cols e centraliza cada parte
             foreach (str_split($chaveFormatada, $cols) as $parte) {
                 $cmd .= $this->centerText(trim($parte), $cols) . "\n";
             }
-
             $cmd .= "\x1B\x61\x00"; // Esquerda
             $cmd .= str_repeat('-', $cols) . "\n";
 
             // ── 9. CONSUMIDOR ─────────────────────────────────────────────
             $cmd .= "\x1B\x61\x01"; // Centralizar
             $cmd .= "\x1B\x45\x01"; // Negrito ON
-            $cmd .= $this->centerText('CONSUMIDOR', $cols) . "\n";
-            $cmd .= "\x1B\x45\x00"; // Negrito OFF
-
             if ($nfce->cliente || $nfce->cliente_cpf_cnpj || $nfce->cliente_nome) {
                 $cpfCnpj = $nfce->cliente
                     ? ($nfce->cliente->cpf_cnpj ? 'CPF/CNPJ: ' . $nfce->cliente->cpf_cnpj : '')
@@ -425,34 +410,46 @@ class PrintService
             } else {
                 $cmd .= $this->centerText('CONSUMIDOR NAO IDENTIFICADO', $cols) . "\n";
             }
+            $cmd .= "\x1B\x45\x00"; // Negrito OFF
 
-            $cmd .= "\x1B\x61\x00"; // Esquerda
-            $cmd .= str_repeat('-', $cols) . "\n";
+            // ── 10. NFCe n. / SERIE / DATA / PROTOCOLO / DATA DE AUTORIZACAO ─
+            // Ordem do modelo: NFCe n. XXXXXXXX Serie XXX DD/MM/YYYY HH:MM:SS (negrito)
+            //                  Protocolo de Autorizacao: XXXXXXXX (normal)
+            //                  Data de Autorizacao:  DD/MM/YYYY HH:MM:SS (normal)
+            $dataEmissao = $nfce->data_emissao
+                ? \Carbon\Carbon::parse($nfce->data_emissao)->format('d/m/Y H:i:s')
+                : date('d/m/Y H:i:s');
 
-            // ── 10. CONSULTA SEFAZ ────────────────────────────────────────
-            $cmd .= "\x1B\x61\x01"; // Centralizar
-            $cmd .= $this->centerText('Consulte pela Chave de Acesso em:', $cols) . "\n";
-            $uf = $empresa->cidade->uf ?? 'ce';
-            $urlConsulta = $urlChave ?: ('http://www.sefaz.' . strtolower($uf) . '.gov.br/nfce/consulta');
-            foreach (str_split($urlConsulta, $cols) as $parte) {
-                $cmd .= $this->centerText($parte, $cols) . "\n";
+            $nfceNum = 'NFCe n. ' . str_pad($nfce->numero, 9, '0', STR_PAD_LEFT)
+                     . ' Serie ' . str_pad($nfce->numero_serie ?: '1', 3, '0', STR_PAD_LEFT)
+                     . ' ' . $dataEmissao;
+
+            $cmd .= "\x1B\x45\x01"; // Negrito ON
+            foreach (str_split($nfceNum, $cols) as $parte) {
+                $cmd .= $this->centerText(trim($parte), $cols) . "\n";
+            }
+            $cmd .= "\x1B\x45\x00"; // Negrito OFF
+
+            if ($nfce->recibo) {
+                $cmd .= $this->centerText('Protocolo de Autorizacao: ' . $nfce->recibo, $cols) . "\n";
+                $cmd .= $this->centerText('Data de Autorizacao:  ' . $dataEmissao, $cols) . "\n";
             }
 
+            $cmd .= "\x1B\x61\x00"; // Esquerda
+
             // ── 11. QR CODE NATIVO ESC/POS ────────────────────────────────
+            // QR Code grande centralizado (igual ao modelo original)
             if (!empty($qrCodeUrl)) {
                 $cmd .= "\n";
-                $cmd .= $this->centerText('* Consulta via QR Code *', $cols) . "\n";
                 $cmd .= $this->gerarQrCodeEscPos($qrCodeUrl);
             }
 
-            $cmd .= "\x1B\x61\x00"; // Esquerda
             $cmd .= str_repeat('-', $cols) . "\n";
 
-            // ── 12. RODAPE ────────────────────────────────────────────────
+            // ── 12. RODAPE: TRIBUTOS ──────────────────────────────────────
+            // Igual ao modelo original: linha de tributos no rodape (sem "OBRIGADO")
             $cmd .= "\x1B\x61\x01"; // Centralizar
-            $cmd .= "\x1B\x45\x01"; // Negrito ON
-            $cmd .= $this->centerText('OBRIGADO PELA PREFERENCIA!', $cols) . "\n";
-            $cmd .= "\x1B\x45\x00"; // Negrito OFF
+            $cmd .= $this->centerText('Tributos totais Incidentes (Lei Federal 12.741/2012): R$ -----', $cols) . "\n";
             $cmd .= "\x1B\x61\x00"; // Esquerda
 
             // Avanco de papel e corte

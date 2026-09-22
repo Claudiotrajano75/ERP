@@ -747,6 +747,6 @@
 @endsection
 
 @section('js')
-    <script type="text/javascript" src="/js/print_thermal.js"></script>
+    <script type="text/javascript" src="/js/print_thermal.js?v={{ time() }}"></script>
     <script type="text/javascript" src="/js/nfce_transmitir.js"></script>
 @endsection

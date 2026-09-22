@@ -82,7 +82,7 @@
         <script src='https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js'></script>   
         <script src="/assets/vendor/flatpickr/flatpickr.min.js"></script>
         <script src="/assets/js/pages/demo.flatpickr.js"></script>
-        <script type="text/javascript" src="/js/print_thermal.js"></script>
+        <script type="text/javascript" src="/js/print_thermal.js?v={{ time() }}"></script>
         @yield('js')
 
         <script type="text/javascript">

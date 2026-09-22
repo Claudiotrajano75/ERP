@@ -180,5 +180,5 @@
 @endsection
 
 @section('js')
-    <script type="text/javascript" src="/js/print_thermal.js"></script>
+    <script type="text/javascript" src="/js/print_thermal.js?v={{ time() }}"></script>
 @endsection

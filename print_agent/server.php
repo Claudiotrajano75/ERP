@@ -167,33 +167,38 @@ function cleanupClient($clientId, &$clients, &$wsHandshakes) {
  */
 function decodeWsFrame($data) {
     if (strlen($data) < 2) return null;
-    $bytes = array_values(unpack('C*', $data));
-    $opcode = $bytes[0] & 0x0F;
-    $isMasked = ($bytes[1] & 0x80) !== 0;
-    $length = $bytes[1] & 0x7F;
+    $firstByte = ord($data[0]);
+    $secondByte = ord($data[1]);
+    $opcode = $firstByte & 0x0F;
+    $isMasked = ($secondByte & 0x80) !== 0;
+    $length = $secondByte & 0x7F;
     $offset = 2;
 
     if ($length === 126) {
-        if (count($bytes) < 4) return null;
-        $length = ($bytes[2] << 8) | $bytes[3];
+        if (strlen($data) < 4) return null;
+        $arr = unpack('nlen', substr($data, 2, 2));
+        $length = $arr['len'];
         $offset = 4;
     } elseif ($length === 127) {
-        if (count($bytes) < 10) return null;
+        if (strlen($data) < 10) return null;
+        $arr = unpack('Jlen', substr($data, 2, 8));
+        $length = $arr['len'];
         $offset = 10;
     }
 
     if ($isMasked) {
-        if (count($bytes) < $offset + 4) return null;
-        $mask = array_slice($bytes, $offset, 4);
+        if (strlen($data) < $offset + 4) return null;
+        $mask = substr($data, $offset, 4);
         $offset += 4;
+        $payloadRaw = substr($data, $offset, $length);
         $payload = '';
-        $count = count($bytes);
-        for ($i = $offset; $i < $count; $i++) {
-            $payload .= chr($bytes[$i] ^ $mask[($i - $offset) % 4]);
+        $payloadLen = strlen($payloadRaw);
+        for ($i = 0; $i < $payloadLen; $i++) {
+            $payload .= chr(ord($payloadRaw[$i]) ^ ord($mask[$i % 4]));
         }
         return ['opcode' => $opcode, 'payload' => $payload];
     } else {
-        $payload = substr($data, $offset);
+        $payload = substr($data, $offset, $length);
         return ['opcode' => $opcode, 'payload' => $payload];
     }
 }

@@ -441,13 +441,37 @@ function testarImpressora() {
         success: function(res) {
             if (res.success) {
                 result.html('<span class="text-success fw-bold"><i class="ri-checkbox-circle-fill"></i> ' + res.message + '</span>');
+                btn.prop('disabled', false).html('<i class="ri-wifi-line me-1 text-primary"></i> Testar Conexão com a Impressora');
             } else {
-                result.html('<span class="text-danger fw-bold"><i class="ri-error-warning-line"></i> ' + res.message + '</span>');
+                // Tenta testar pelo Agente Local de Impressão
+                testarViaAgenteLocal(ip, porta, btn, result, res.message);
             }
         },
         error: function(xhr) {
-            var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Erro de conexão com a impressora';
-            result.html('<span class="text-danger fw-bold"><i class="ri-error-warning-line"></i> ' + msg + '</span>');
+            // Se o servidor em nuvem deu timeout ou erro, tenta pelo Agente Local
+            testarViaAgenteLocal(ip, porta, btn, result, 'Servidor em nuvem sem acesso direto');
+        }
+    });
+}
+
+function testarViaAgenteLocal(ip, porta, btn, result, erroServidor) {
+    result.html('<span class="text-muted"><i class="ri-loader-4-line spin me-1"></i> Tentando via Agente Local (127.0.0.1:9187)...</span>');
+
+    $.ajax({
+        url: 'http://127.0.0.1:9187/test',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ ip: ip, porta: porta }),
+        timeout: 5000,
+        success: function(agentRes) {
+            if (agentRes && agentRes.success) {
+                result.html('<span class="text-success fw-bold"><i class="ri-checkbox-circle-fill"></i> ' + agentRes.message + '</span>');
+            } else {
+                result.html('<span class="text-danger fw-bold"><i class="ri-error-warning-line"></i> ' + (agentRes.message || 'Falha ao conectar') + '</span>');
+            }
+        },
+        error: function(err) {
+            result.html('<span class="text-danger fw-bold"><i class="ri-error-warning-line"></i> ' + erroServidor + ' (Inicie o Agente de Impressão na máquina local)</span>');
         },
         complete: function() {
             btn.prop('disabled', false).html('<i class="ri-wifi-line me-1 text-primary"></i> Testar Conexão com a Impressora');

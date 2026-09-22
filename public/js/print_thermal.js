@@ -95,20 +95,57 @@ var PrintThermal = {
             type: 'POST',
             data: { _token: $('meta[name="csrf-token"]').attr('content') },
             success: function(res) {
-                if (res.success) {
+                if (res.via_agent && res.payload_base64) {
+                    // Servidor na nuvem (Hostinger) -> envia para o Agente Local na máquina do usuário
+                    PrintThermal.enviarParaAgenteLocal(res.printer_ip, res.printer_porta, res.payload_base64, pdfUrl, onComplete);
+                } else if (res.success) {
                     PrintThermal.mostrarFeedback('success', res.message || 'Impresso com sucesso!');
+                    if (onComplete) onComplete();
                 } else if (res.use_pdf) {
                     // Impressora desabilitada ou sem config - abre o PDF automaticamente
-                    window.open(pdfUrl, '_blank');
+                    if (pdfUrl) window.open(pdfUrl, '_blank');
+                    if (onComplete) onComplete();
                 } else {
                     PrintThermal.mostrarFeedback('error', res.message || 'Erro ao imprimir');
+                    if (onComplete) onComplete();
                 }
             },
             error: function(xhr) {
                 // Erro de rede/servidor - abre PDF como fallback
-                window.open(pdfUrl, '_blank');
+                if (pdfUrl) window.open(pdfUrl, '_blank');
                 var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Erro de conexão';
                 PrintThermal.mostrarFeedback('error', msg);
+                if (onComplete) onComplete();
+            }
+        });
+    },
+
+    /**
+     * Envia o payload ESC/POS para o Agente Local de Impressão (127.0.0.1:9187)
+     */
+    enviarParaAgenteLocal: function(ip, porta, dataBase64, pdfUrl, onComplete) {
+        $.ajax({
+            url: 'http://127.0.0.1:9187/print',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                ip: ip,
+                porta: porta || 9100,
+                data: dataBase64
+            }),
+            timeout: 5000,
+            success: function(agentRes) {
+                if (agentRes && agentRes.success) {
+                    PrintThermal.mostrarFeedback('success', 'Impresso com sucesso na impressora térmica!');
+                } else {
+                    PrintThermal.mostrarFeedback('warning', 'Agente local não conectou na impressora. Abrindo PDF...');
+                    if (pdfUrl) window.open(pdfUrl, '_blank');
+                }
+            },
+            error: function(err) {
+                console.warn('Agente local (127.0.0.1:9187) offline. Abrindo PDF como fallback.', err);
+                if (pdfUrl) window.open(pdfUrl, '_blank');
+                PrintThermal.mostrarFeedback('warning', 'Inicie o Agente de Impressão local para envio direto.');
             },
             complete: function() {
                 if (onComplete) onComplete();

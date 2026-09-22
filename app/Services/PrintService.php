@@ -370,7 +370,20 @@ class PrintService
             $cmd .= "\n\n\n";
             $cmd .= "\x1D\x56\x41\x10"; // Corte parcial
 
-            return $this->imprimir($cmd, $config);
+            $resultado = $this->imprimir($cmd, $config);
+            if ($resultado['success']) {
+                return $resultado;
+            }
+
+            // Fallback para Agente Local (Cloud ERP / Hostinger)
+            return [
+                'success'        => true,
+                'via_agent'      => true,
+                'printer_ip'     => $config->printer_ip,
+                'printer_porta'  => (int)($config->printer_porta ?: 9100),
+                'payload_base64' => base64_encode($cmd),
+                'message'        => 'Enviando para o Agente Local de Impressão...',
+            ];
 
         } catch (\Exception $e) {
             Log::error('PrintService: Erro ao gerar Cupom Nao Fiscal - ' . $e->getMessage());
@@ -680,7 +693,20 @@ class PrintService
             $cmd .= "\n\n\n";
             $cmd .= "\x1D\x56\x41\x10"; // Corte parcial
 
-            return $this->imprimir($cmd, $config);
+            $resultado = $this->imprimir($cmd, $config);
+            if ($resultado['success']) {
+                return $resultado;
+            }
+
+            // Fallback para Agente Local (Cloud ERP / Hostinger)
+            return [
+                'success'        => true,
+                'via_agent'      => true,
+                'printer_ip'     => $config->printer_ip,
+                'printer_porta'  => (int)($config->printer_porta ?: 9100),
+                'payload_base64' => base64_encode($cmd),
+                'message'        => 'Enviando para o Agente Local de Impressão...',
+            ];
 
         } catch (\Exception $e) {
             Log::error('PrintService: Erro ao gerar DANFE NFCe termico - ' . $e->getMessage());

@@ -19,6 +19,7 @@ var PrintThermal = {
     imprimir: function(tipo, id, pdfUrl) {
         var routes = {
             'cupom': '/print/cupom/' + id,
+            'nfce': '/print/nfce/' + id,
             'troca': '/print/troca/' + id,
             'prevenda': '/print/prevenda/' + id,
             'sangria': '/print/sangria/' + id,
@@ -51,7 +52,7 @@ var PrintThermal = {
             success: function(config) {
                 if (config.printer_configured) {
                     // Impressora configurada - envia direto para a térmica
-                    PrintThermal.enviarParaImpressora(route, function() {
+                    PrintThermal.enviarParaImpressora(route, pdfUrl, function() {
                         if (btnOriginal) {
                             btnOriginal.disabled = false;
                             btnOriginal.innerHTML = originalHtml;
@@ -78,25 +79,33 @@ var PrintThermal = {
     },
 
     /**
-     * Envia o cupom para a impressora térmica via AJAX
+     * Envia o cupom para a impressora térmica via AJAX.
+     * Se o servidor retornar use_pdf=true (impressora desabilitada pelo admin),
+     * abre automaticamente o PDF como fallback.
+     *
+     * @param {string} route - Rota POST da impressora térmica
+     * @param {string} pdfUrl - URL de fallback para o PDF/DANFE
+     * @param {Function} onComplete - Callback ao finalizar
      */
-    enviarParaImpressora: function(route, onComplete) {
+    enviarParaImpressora: function(route, pdfUrl, onComplete) {
         $.ajax({
             url: route,
             type: 'POST',
             data: { _token: $('meta[name="csrf-token"]').attr('content') },
             success: function(res) {
                 if (res.success) {
-                    PrintThermal.mostrarFeedback('success', res.message);
+                    PrintThermal.mostrarFeedback('success', res.message || 'Impresso com sucesso!');
                 } else if (res.use_pdf) {
-                    // Sem impressora, comportamento antigo será tratado pelo caller
-                    PrintThermal.mostrarFeedback('warning', 'Impressora não configurada');
+                    // Impressora desabilitada ou sem config - abre o PDF automaticamente
+                    window.open(pdfUrl, '_blank');
                 } else {
-                    PrintThermal.mostrarFeedback('error', res.message);
+                    PrintThermal.mostrarFeedback('error', res.message || 'Erro ao imprimir');
                 }
             },
             error: function(xhr) {
-                var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Erro de conexão com a impressora';
+                // Erro de rede/servidor - abre PDF como fallback
+                window.open(pdfUrl, '_blank');
+                var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Erro de conexão';
                 PrintThermal.mostrarFeedback('error', msg);
             },
             complete: function() {

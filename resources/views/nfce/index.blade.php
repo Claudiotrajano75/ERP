@@ -602,13 +602,24 @@
                                                 {{-- Imprimir NFCe (Aprovado) --}}
                                                 @if($item->estado == 'aprovado')
                                                 <li>
-                                                    <a class="dropdown-item action-menu-item" target="_blank" href="{{ route('nfce.imprimir', [$item->id]) }}">
-                                                        <div class="action-item-icon icon-primary">
-                                                            <i class="ri-printer-line"></i>
+                                                    <a class="dropdown-item action-menu-item" href="javascript:void(0)" onclick="PrintThermal.imprimir('nfce', '{{$item->id}}', '{{ route('nfce.imprimir', [$item->id]) }}')">
+                                                        <div class="action-item-icon icon-success">
+                                                            <i class="ri-printer-fill"></i>
                                                         </div>
                                                         <div class="action-item-content">
-                                                            <span class="action-item-title">Imprimir NFC-e</span>
-                                                            <span class="action-item-desc">DANFCE fiscal emitido</span>
+                                                            <span class="action-item-title">Imprimir Térmica (IP)</span>
+                                                            <span class="action-item-desc">Enviar direto p/ impressora</span>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item action-menu-item" target="_blank" href="{{ route('nfce.imprimir', [$item->id]) }}">
+                                                        <div class="action-item-icon icon-primary">
+                                                            <i class="ri-file-pdf-line"></i>
+                                                        </div>
+                                                        <div class="action-item-content">
+                                                            <span class="action-item-title">DANFE PDF</span>
+                                                            <span class="action-item-desc">Abrir PDF no navegador</span>
                                                         </div>
                                                     </a>
                                                 </li>

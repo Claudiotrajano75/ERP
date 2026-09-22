@@ -265,17 +265,20 @@
                                         </div>
                                         <div class="col-md-3 col-12">
                                             {!!Form::text('printer_nome', 'Nome / Identificação da Impressora')
+                                            ->id('printer-nome')
                                             ->attrs(['class' => 'form-control', 'placeholder' => 'Ex: Térmica Caixa 01'])
                                             !!}
                                         </div>
                                         <div class="col-md-3 col-6">
                                             {!!Form::text('printer_ip', 'Endereço IP na Rede')
-                                            ->attrs(['class' => 'form-control', 'placeholder' => 'Ex: 192.168.1.200', 'id' => 'printer-ip'])
+                                            ->id('printer-ip')
+                                            ->attrs(['class' => 'form-control', 'placeholder' => 'Ex: 192.168.1.200'])
                                             !!}
                                         </div>
                                         <div class="col-md-3 col-6">
                                             {!!Form::tel('printer_porta', 'Porta TCP/IP')
-                                            ->attrs(['class' => 'form-control', 'placeholder' => '9100', 'id' => 'printer-porta', 'value' => isset($item) && $item->printer_porta ? $item->printer_porta : 9100])
+                                            ->id('printer-porta')
+                                            ->attrs(['class' => 'form-control', 'placeholder' => '9100', 'value' => isset($item) && $item->printer_porta ? $item->printer_porta : 9100])
                                             !!}
                                         </div>
                                         <div class="col-md-3 col-12">
@@ -409,18 +412,27 @@
 @section('js')
 <script>
 function testarImpressora() {
-    var ip = $('#printer-ip').val();
-    var porta = $('#printer-porta').val();
+    var ip = ($('#printer-ip').length && $('#printer-ip').val() ? $('#printer-ip').val() : '') ||
+             ($('input[name="printer_ip"]').length && $('input[name="printer_ip"]').val() ? $('input[name="printer_ip"]').val() : '') ||
+             ($('#inp-printer_ip').length && $('#inp-printer_ip').val() ? $('#inp-printer_ip').val() : '');
+
+    var porta = ($('#printer-porta').length && $('#printer-porta').val() ? $('#printer-porta').val() : '') ||
+                ($('input[name="printer_porta"]').length && $('input[name="printer_porta"]').val() ? $('input[name="printer_porta"]').val() : '') ||
+                ($('#inp-printer_porta').length && $('#inp-printer_porta').val() ? $('#inp-printer_porta').val() : '') ||
+                9100;
+
     var result = $('#printer-test-result');
     var btn = $('#btn-testar-impressora');
 
-    if (!ip) {
+    if (!ip || !$.trim(ip)) {
         result.html('<span class="text-danger fw-bold"><i class="ri-error-warning-line"></i> Informe o IP da impressora</span>');
         return;
     }
+    ip = $.trim(ip);
+    porta = $.trim(porta) || 9100;
 
     btn.prop('disabled', true).html('<i class="ri-loader-4-line spin me-1"></i> Testando conexão...');
-    result.html('<span class="text-muted">Conectando...</span>');
+    result.html('<span class="text-muted"><i class="ri-loader-4-line spin me-1"></i> Conectando em ' + ip + ':' + porta + '...</span>');
 
     $.ajax({
         url: '{{ route("print.testar") }}',
@@ -434,7 +446,7 @@ function testarImpressora() {
             }
         },
         error: function(xhr) {
-            var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Erro de conexão com a impressora';
+            var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Erro de conexão com a impressora';
             result.html('<span class="text-danger fw-bold"><i class="ri-error-warning-line"></i> ' + msg + '</span>');
         },
         complete: function() {

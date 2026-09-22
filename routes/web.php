@@ -874,6 +874,7 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
             Route::post('/testar', 'PrintController@testar')->name('print.testar');
             Route::get('/configuracao', 'PrintController@configuracao')->name('print.configuracao');
             Route::post('/cupom/{id}', 'PrintController@imprimirCupom')->name('print.cupom');
+            Route::post('/nfce/{id}', 'PrintController@imprimirNfce')->name('print.nfce');
             Route::post('/troca/{id}', 'PrintController@imprimirTroca')->name('print.troca');
             Route::post('/prevenda/{id}', 'PrintController@imprimirPreVenda')->name('print.prevenda');
             Route::post('/sangria/{id}', 'PrintController@imprimirSangria')->name('print.sangria');

@@ -518,33 +518,59 @@
                                                             </button>
                                                             <ul class="dropdown-menu dropdown-menu-end action-dropdown-card shadow-lg">
                                                             
-                                                            {{-- Imprimir Não Fiscal --}}
-                                                            <li>
-                                                                <a class="dropdown-item action-menu-item" href="javascript:void(0)" onclick="PrintThermal.imprimir('cupom', {{$item->id}}, '{{ route('frontbox.imprimir-nao-fiscal', [$item->id]) }}')">
-                                                                    <div class="action-item-icon icon-primary">
-                                                                        <i class="ri-printer-line"></i>
-                                                                    </div>
-                                                                    <div class="action-item-content">
-                                                                        <span class="action-item-title">Imprimir Não Fiscal</span>
-                                                                        <span class="action-item-desc">Cupom térmico da venda</span>
-                                                                    </div>
-                                                                </a>
-                                                            </li>
+                                                                {{-- Imprimir Não Fiscal (Térmica IP) --}}
+                                                                <li>
+                                                                    <a class="dropdown-item action-menu-item" href="javascript:void(0)" onclick="PrintThermal.imprimir('cupom', {{$item->id}}, '{{ route('frontbox.imprimir-nao-fiscal', [$item->id]) }}')">
+                                                                        <div class="action-item-icon icon-primary">
+                                                                            <i class="ri-printer-line"></i>
+                                                                        </div>
+                                                                        <div class="action-item-content">
+                                                                            <span class="action-item-title">Imprimir Não Fiscal</span>
+                                                                            <span class="action-item-desc">Enviar direto p/ impressora IP</span>
+                                                                        </div>
+                                                                    </a>
+                                                                </li>
 
-                                                            {{-- Imprimir NFCe (Aprovado) --}}
-                                                            @if($item->estado == 'aprovado')
-                                                            <li>
-                                                                <a class="dropdown-item action-menu-item" target="_blank" href="{{ route('nfce.imprimir', [$item->id]) }}">
-                                                                    <div class="action-item-icon icon-success">
-                                                                        <i class="ri-printer-line"></i>
-                                                                    </div>
-                                                                    <div class="action-item-content">
-                                                                        <span class="action-item-title">Imprimir NFC-e</span>
-                                                                        <span class="action-item-desc">DANFE fiscal emitido</span>
-                                                                    </div>
-                                                                </a>
-                                                            </li>
-                                                            @endif
+                                                                {{-- Cupom Não Fiscal (PDF) --}}
+                                                                <li>
+                                                                    <a class="dropdown-item action-menu-item" target="_blank" href="{{ route('frontbox.imprimir-nao-fiscal', [$item->id]) }}">
+                                                                        <div class="action-item-icon icon-info">
+                                                                            <i class="ri-file-text-line"></i>
+                                                                        </div>
+                                                                        <div class="action-item-content">
+                                                                            <span class="action-item-title">Cupom Não Fiscal (PDF)</span>
+                                                                            <span class="action-item-desc">Abrir PDF no navegador</span>
+                                                                        </div>
+                                                                    </a>
+                                                                </li>
+
+                                                                {{-- Imprimir NFCe Térmica IP (Aprovado) --}}
+                                                                @if($item->estado == 'aprovado')
+                                                                <li>
+                                                                    <a class="dropdown-item action-menu-item" href="javascript:void(0)" onclick="PrintThermal.imprimir('nfce', '{{$item->id}}', '{{ route('nfce.imprimir', [$item->id]) }}')">
+                                                                        <div class="action-item-icon icon-success">
+                                                                            <i class="ri-printer-fill"></i>
+                                                                        </div>
+                                                                        <div class="action-item-content">
+                                                                            <span class="action-item-title">Imprimir NFC-e</span>
+                                                                            <span class="action-item-desc">Enviar direto p/ impressora IP</span>
+                                                                        </div>
+                                                                    </a>
+                                                                </li>
+
+                                                                {{-- DANFE NFC-e (PDF) --}}
+                                                                <li>
+                                                                    <a class="dropdown-item action-menu-item" target="_blank" href="{{ route('nfce.imprimir', [$item->id]) }}">
+                                                                        <div class="action-item-icon icon-teal">
+                                                                            <i class="ri-file-pdf-line"></i>
+                                                                        </div>
+                                                                        <div class="action-item-content">
+                                                                            <span class="action-item-title">DANFE NFC-e (PDF)</span>
+                                                                            <span class="action-item-desc">Abrir PDF no navegador</span>
+                                                                        </div>
+                                                                    </a>
+                                                                </li>
+                                                                @endif
 
                                                             {{-- Transmitir NFCe (Novo ou Rejeitado) --}}
                                                             @if($item->estado == 'novo' || $item->estado == 'rejeitado')
@@ -721,5 +747,6 @@
 @endsection
 
 @section('js')
+    <script type="text/javascript" src="/js/print_thermal.js"></script>
     <script type="text/javascript" src="/js/nfce_transmitir.js"></script>
 @endsection

@@ -80,11 +80,29 @@
                     </div>
                 </div>
 
-                <div class="d-flex align-items-center gap-2 mb-4">
-                    <button type="button" class="btn btn-dark btn-sm" title="Imprimir não fiscal"
+                <div class="d-flex align-items-center flex-wrap gap-2 mb-4">
+                    {{-- Não Fiscal Térmica IP --}}
+                    <button type="button" class="btn btn-dark btn-sm" title="Imprimir não fiscal na impressora térmica"
                         onclick="PrintThermal.imprimir('cupom', {{$data->id}}, '{{ route('frontbox.imprimir-nao-fiscal', [$data->id]) }}')">
-                        <i class="ri-printer-line me-1"></i> Imprimir Cupom
+                        <i class="ri-printer-line me-1"></i> Imprimir Não Fiscal (IP)
                     </button>
+
+                    {{-- Não Fiscal PDF --}}
+                    <a href="{{ route('frontbox.imprimir-nao-fiscal', [$data->id]) }}" target="_blank" class="btn btn-outline-secondary btn-sm" title="Abrir PDF não fiscal">
+                        <i class="ri-file-text-line me-1"></i> Cupom Não Fiscal (PDF)
+                    </a>
+
+                    {{-- Se aprovado: NFC-e Térmica e DANFE PDF --}}
+                    @if($data->estado == 'aprovado')
+                    <button type="button" class="btn btn-success btn-sm" title="Imprimir DANFE NFC-e na impressora térmica"
+                        onclick="PrintThermal.imprimir('nfce', '{{$data->id}}', '{{ route('nfce.imprimir', [$data->id]) }}')">
+                        <i class="ri-printer-fill me-1"></i> Imprimir NFC-e (IP)
+                    </button>
+
+                    <a href="{{ route('nfce.imprimir', [$data->id]) }}" target="_blank" class="btn btn-outline-success btn-sm" title="Abrir DANFE PDF">
+                        <i class="ri-file-pdf-line me-1"></i> DANFE NFC-e (PDF)
+                    </a>
+                    @endif
                 </div>
 
                 <!-- Produtos -->
@@ -159,4 +177,8 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('js')
+    <script type="text/javascript" src="/js/print_thermal.js"></script>
 @endsection

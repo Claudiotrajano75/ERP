@@ -5,62 +5,73 @@ function transmitir(id){
 	})
 	.done((success) => {
 		console.log(success)
-		if(success.recibo == '' && success.contigencia){
-			swal("Sucesso", "NFCe emitida em contigência  - chave: [" + success.chave + "]", "success")
-			.then(() => {
-				window.open(path_url + 'nfce/imprimir/' + id, "_blank")
-				setTimeout(() => {
-					location.reload()
-				}, 100)
-			})
-		}else{
-			swal("Sucesso", "NFCe emitida " + success.recibo + " - chave: [" + success.chave + "]", "success")
-			.then(() => {
-				window.open(path_url + 'nfce/imprimir/' + id, "_blank")
-				setTimeout(() => {
-					location.reload()
-				}, 100)
-			})
-		}
+		var msg = (success.recibo == '' && success.contigencia) 
+			? "NFCe emitida em contingência - chave: [" + success.chave + "]" 
+			: "NFCe emitida " + success.recibo + " - chave: [" + success.chave + "]";
+
+		swal("Sucesso", msg, "success")
+		.then(() => {
+			if (typeof PrintThermal !== 'undefined') {
+				$.get('/print/configuracao').done(function(config) {
+					if (config.printer_configured) {
+						PrintThermal.enviarParaImpressora('/print/nfce/' + id, null);
+					} else {
+						window.open(path_url + 'nfce/imprimir/' + id, "_blank");
+					}
+				}).fail(function() {
+					window.open(path_url + 'nfce/imprimir/' + id, "_blank");
+				});
+			} else {
+				window.open(path_url + 'nfce/imprimir/' + id, "_blank");
+			}
+			setTimeout(() => {
+				location.reload()
+			}, 500)
+		})
 	})
 	.fail((err) => {
 		console.log(err)
-		if(err.responseJSON.message){
+		if(err.responseJSON && err.responseJSON.message){
 			swal("Algo deu errado", err.responseJSON.message, "error")
 			.then(() => {
 				location.reload()
 			})
 		}else{
-			swal("Algo deu errado", err.responseJSON, "error")
+			swal("Algo deu errado", err.responseJSON || "Erro ao comunicar com SEFAZ", "error")
 		}
 	})
 }
 
 function transmitirContigencia(id){
-
 	console.clear()
 	$.post(path_url + "api/nfce_painel/transmitir-contigencia", {
 		id: id,
 	})
 	.done((success) => {
 		console.log(success)
-		if(success.recibo == '' && success.contigencia){
-			swal("Sucesso", "NFCe emitida em contigência  - chave: [" + success.chave + "]", "success")
-			.then(() => {
-				window.open(path_url + 'nfce/imprimir/' + id, "_blank")
-				setTimeout(() => {
-					location.reload()
-				}, 100)
-			})
-		}else{
-			swal("Sucesso", "NFCe emitida " + success.recibo + " - chave: [" + success.chave + "]", "success")
-			.then(() => {
-				window.open(path_url + 'nfce/imprimir/' + id, "_blank")
-				setTimeout(() => {
-					location.reload()
-				}, 100)
-			})
-		}
+		var msg = (success.recibo == '' && success.contigencia) 
+			? "NFCe emitida em contingência - chave: [" + success.chave + "]" 
+			: "NFCe emitida " + success.recibo + " - chave: [" + success.chave + "]";
+
+		swal("Sucesso", msg, "success")
+		.then(() => {
+			if (typeof PrintThermal !== 'undefined') {
+				$.get('/print/configuracao').done(function(config) {
+					if (config.printer_configured) {
+						PrintThermal.enviarParaImpressora('/print/nfce/' + id, null);
+					} else {
+						window.open(path_url + 'nfce/imprimir/' + id, "_blank");
+					}
+				}).fail(function() {
+					window.open(path_url + 'nfce/imprimir/' + id, "_blank");
+				});
+			} else {
+				window.open(path_url + 'nfce/imprimir/' + id, "_blank");
+			}
+			setTimeout(() => {
+				location.reload()
+			}, 500)
+		})
 	})
 	.fail((err) => {
 		console.log(err)

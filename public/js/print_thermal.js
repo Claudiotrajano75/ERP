@@ -35,9 +35,11 @@ var PrintThermal = {
 
         // Mostra feedback visual
         var btnOriginal = null;
-        if (event && event.target) {
-            btnOriginal = event.target.closest('button, a');
-        }
+        try {
+            if (typeof window !== 'undefined' && window.event && window.event.target) {
+                btnOriginal = window.event.target.closest('button, a');
+            }
+        } catch (e) {}
 
         if (btnOriginal) {
             btnOriginal.disabled = true;

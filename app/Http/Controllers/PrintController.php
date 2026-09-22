@@ -42,13 +42,40 @@ class PrintController extends Controller
     }
 
     /**
+     * Imprime cupom fiscal (DANFE NFC-e) na impressora termica
+     */
+    public function imprimirNfce($id)
+    {
+        try {
+            $nfce = Nfce::with(['itens.produto', 'cliente', 'fatura'])->findOrFail($id);
+            $configGeral = ConfigGeral::where('empresa_id', $nfce->empresa_id)->first();
+
+            if (!$configGeral || !$configGeral->isPrinterConfigured()) {
+                return response()->json([
+                    'success' => false,
+                    'use_pdf' => true,
+                    'message' => 'Impressora nao configurada. Use o PDF.'
+                ]);
+            }
+
+            $resultado = $this->printService->imprimirNfce($nfce, $configGeral);
+            return response()->json($resultado);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao gerar cupom fiscal NFC-e: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Imprime cupom nao fiscal na impressora termica
      */
     public function imprimirCupom($id)
     {
         try {
             $item = Nfce::with(['itens.produto', 'cliente', 'fatura'])->findOrFail($id);
-            $config = Empresa::with('cidade')->where('id', $item->empresa_id)->first();
             $configGeral = ConfigGeral::where('empresa_id', $item->empresa_id)->first();
 
             // Verifica se a impressora esta configurada
@@ -61,24 +88,14 @@ class PrintController extends Controller
                 ]);
             }
 
-            // Renderiza o HTML do cupom
-            $html = view('front_box.cupom_nao_fiscal', compact('item', 'config'))->render();
-
-            // Converte HTML para texto
-            $texto = $this->printService->htmlToText($html);
-
-            // Formata com comandos ESC/POS
-            $textoFormatado = $this->printService->formatarEscPos($texto);
-
-            // Envia para a impressora
-            $resultado = $this->printService->imprimir($textoFormatado, $configGeral);
+            $resultado = $this->printService->imprimirCupomNaoFiscal($item, $configGeral);
 
             return response()->json($resultado);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao gerar cupom: ' . $e->getMessage()
+                'message' => 'Erro ao gerar cupom nao fiscal: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -220,7 +237,8 @@ class PrintController extends Controller
      */
     public function configuracao()
     {
-        $configGeral = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
+        $empresa_id = request()->empresa_id ?: (Auth::user() ? Auth::user()->empresa_id : null);
+        $configGeral = $empresa_id ? ConfigGeral::where('empresa_id', $empresa_id)->first() : ConfigGeral::first();
 
         return response()->json([
             'printer_configured' => $configGeral ? $configGeral->isPrinterConfigured() : false,

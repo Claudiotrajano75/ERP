@@ -2110,15 +2110,27 @@ function gerarNfce(venda) {
             pdvEsconderProcessingOverlay();
             swal("Sucesso", "NFCe emitida " + (success.recibo || '') + " - chave: [" + (success.chave || '') + "]", "success")
             .then(() => {
-                window.open(path_url + 'nfce/imprimir/' + venda.id, "_blank")
+                if (typeof PrintThermal !== 'undefined') {
+                    $.get('/print/configuracao').done(function(config) {
+                        if (config.printer_configured) {
+                            PrintThermal.enviarParaImpressora('/print/nfce/' + venda.id, null);
+                        } else {
+                            window.open(path_url + 'nfce/imprimir/' + venda.id, "_blank");
+                        }
+                    }).fail(function() {
+                        window.open(path_url + 'nfce/imprimir/' + venda.id, "_blank");
+                    });
+                } else {
+                    window.open(path_url + 'nfce/imprimir/' + venda.id, "_blank");
+                }
                 setTimeout(() => {
                     if(!update){
-                        location.reload()
+                        location.reload();
                     }else{
-                        location.href = path_url+'frontbox'
+                        location.href = path_url+'frontbox';
                     }
-                }, 100)
-            })
+                }, 500);
+            });
         }, 500);
     })
     .fail((err) => {

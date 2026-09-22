@@ -151,6 +151,237 @@ class PrintService
     }
 
     /**
+     * Imprime Cupom Não Fiscal diretamente na impressora térmica via ESC/POS nativo.
+     * Segue o modelo não fiscal clássico: Emitente, Cliente, Itens, Totais, Pagamentos, Vendedor, Rodapé.
+     *
+     * @param \App\Models\Nfce $nfce Model da venda/NFCe com itens, cliente e fatura carregados
+     * @param ConfigGeral|null $config Configuração geral
+     * @return array ['success' => bool, 'use_pdf' => bool, 'message' => string]
+     */
+    public function imprimirCupomNaoFiscal($nfce, $config = null)
+    {
+        if ($config === null) {
+            $config = ConfigGeral::where('empresa_id', $nfce->empresa_id)->first();
+        }
+
+        if (!$config || !$config->isPrinterConfigured()) {
+            return [
+                'success' => false,
+                'use_pdf'  => true,
+                'message'  => 'Impressora termica nao configurada. Abrindo Cupom PDF...',
+            ];
+        }
+
+        try {
+            $empresa = \App\Models\Empresa::with('cidade')->where('id', $nfce->empresa_id)->first();
+
+            // Largura em colunas: 80mm = 48 cols, 58mm = 32 cols
+            $cols     = ($config->printer_largura == '58') ? 32 : 48;
+            $labelCol = $cols - 14;
+            $valueCol = 14;
+
+            // ── Monta payload ESC/POS ─────────────────────────────────────
+            $cmd  = "\x1B\x40";     // ESC @ - Reset/Inicializar
+            $cmd .= "\x1B\x74\x10"; // Code page WPC1252
+
+            // ── 1. CABEÇALHO DO EMITENTE ──────────────────────────────────
+            $cmd .= "\x1B\x61\x01"; // Centralizar
+            $cmd .= "\x1B\x45\x01"; // Negrito ON
+            $nomeFantasia = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($empresa->nome_fantasia ?: $empresa->nome));
+            $cmd .= $nomeFantasia . "\n";
+            $cmd .= "\x1B\x45\x00"; // Negrito OFF
+
+            if ($empresa->nome_fantasia && $empresa->nome && ($empresa->nome_fantasia !== $empresa->nome)) {
+                $nomeRazao = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($empresa->nome));
+                $cmd .= $nomeRazao . "\n";
+            }
+
+            $cnpj = 'CNPJ: ' . $this->formatCnpj($empresa->cpf_cnpj ?? '');
+            if ($empresa->ie) {
+                $cnpj .= ' IE: ' . $empresa->ie;
+            }
+            $cmd .= $cnpj . "\n";
+
+            $rua = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', ($empresa->rua ?? '') . ', ' . ($empresa->numero ?? ''));
+            $cmd .= $rua . "\n";
+
+            if ($empresa->bairro) {
+                $bairro = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($empresa->bairro));
+                $cmd .= $bairro . "\n";
+            }
+
+            if ($empresa->cidade) {
+                $cidade = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', $empresa->cidade->nome) . '-' . $empresa->cidade->uf;
+                $cmd .= $cidade . "\n";
+            }
+
+            if ($empresa->celular || $empresa->telefone) {
+                $cmd .= 'Fone: ' . ($empresa->celular ?: $empresa->telefone) . "\n";
+            }
+
+            $cmd .= "\x1B\x61\x00"; // Esquerda
+            $cmd .= str_repeat('-', $cols) . "\n";
+
+            // ── 2. TÍTULO: CUPOM NÃO FISCAL ───────────────────────────────
+            $cmd .= "\x1B\x61\x01"; // Centralizar
+            $cmd .= "\x1B\x45\x01"; // Negrito ON
+            $cmd .= "CUPOM NAO FISCAL\n";
+            $cmd .= "\x1B\x45\x00"; // Negrito OFF
+            $cmd .= "\x1B\x61\x00"; // Esquerda
+            $cmd .= str_repeat('-', $cols) . "\n";
+
+            // ── 3. CLIENTE & DADOS DA VENDA ───────────────────────────────
+            $clienteNome = $nfce->cliente ? ($nfce->cliente->razao_social ?: $nfce->cliente->nome) : ($nfce->cliente_nome ?: 'Cliente padrao');
+            $clienteNome = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', $clienteNome);
+            $cmd .= 'CLIENTE: ' . $this->truncate($clienteNome, $cols - 9) . "\n";
+
+            $dataVenda = $nfce->created_at ? \Carbon\Carbon::parse($nfce->created_at)->format('d/m/Y H:i') : date('d/m/Y H:i');
+            $numVenda  = 'N. ' . str_pad($nfce->numero ?? $nfce->id, 6, '0', STR_PAD_LEFT);
+            $cmd .= $this->padR($dataVenda, $cols - strlen($numVenda)) . $numVenda . "\n";
+            $cmd .= str_repeat('-', $cols) . "\n";
+
+            // ── 4. CABEÇALHO DA TABELA DE ITENS ───────────────────────────
+            if ($cols >= 48) {
+                $cCod   = 6;
+                $cDesc  = 16;
+                $cQtde  = 4;
+                $cUN    = 3;
+                $cUnit  = 9;
+                $cTotal = 10;
+            } else {
+                $cCod   = 4;
+                $cDesc  = 9;
+                $cQtde  = 3;
+                $cUN    = 2;
+                $cUnit  = 7;
+                $cTotal = 7;
+            }
+
+            $cmd .= "\x1B\x45\x01"; // Negrito ON
+            $cmd .= $this->padR('Codigo', $cCod)
+                  . $this->padR('Descricao', $cDesc)
+                  . $this->padL('Qtde', $cQtde)
+                  . $this->padL('UN', $cUN)
+                  . $this->padL('VlUnit', $cUnit)
+                  . $this->padL('VlTotal', $cTotal) . "\n";
+            $cmd .= "\x1B\x45\x00"; // Negrito OFF
+            $cmd .= str_repeat('-', $cols) . "\n";
+
+            // ── 5. ITENS DA VENDA ─────────────────────────────────────────
+            $totalItens = 0;
+            foreach ($nfce->itens as $item) {
+                $totalItens++;
+                $nome    = $item->produto ? $item->produto->nome : ($item->descricao ?? 'Item ' . $item->produto_id);
+                $unidade = $item->produto ? ($item->produto->unidade ?? 'UN') : 'UN';
+                $nomeConv = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($nome));
+
+                $codStr   = $this->padR(mb_substr((string)$item->produto_id, 0, $cCod - 1), $cCod);
+                $qtdeStr  = $this->padL(number_format($item->quantidade, 0, ',', '.'), $cQtde);
+                $unStr    = $this->padL($unidade, $cUN);
+                $unitStr  = $this->padL(number_format($item->valor_unitario, 2, ',', '.'), $cUnit);
+                $totalStr = $this->padL(number_format($item->sub_total, 2, ',', '.'), $cTotal);
+
+                $nomeT = $this->truncate($nomeConv, $cDesc);
+                $cmd .= $codStr . $this->padR($nomeT, $cDesc) . $qtdeStr . $unStr . $unitStr . $totalStr . "\n";
+
+                if (mb_strlen($nomeConv) > $cDesc) {
+                    $resto = trim(mb_substr($nomeConv, $cDesc - 1));
+                    if ($resto) {
+                        $cmd .= str_repeat(' ', $cCod) . $this->truncate($resto, $cDesc) . "\n";
+                    }
+                }
+            }
+
+            $cmd .= str_repeat('-', $cols) . "\n";
+
+            // ── 6. TOTAIS ─────────────────────────────────────────────────
+            $cmd .= $this->padR('Qtde total de itens', $labelCol)
+                  . $this->padL((string)$totalItens, $valueCol) . "\n";
+
+            $valorTotalR = $nfce->total + ($nfce->desconto ?? 0) - ($nfce->acrescimo ?? 0);
+            $cmd .= $this->padR('Valor Total R$', $labelCol)
+                  . $this->padL(number_format($valorTotalR, 2, ',', '.'), $valueCol) . "\n";
+
+            if (($nfce->desconto ?? 0) > 0) {
+                $cmd .= $this->padR('Desconto R$', $labelCol)
+                      . $this->padL(number_format($nfce->desconto, 2, ',', '.'), $valueCol) . "\n";
+            }
+            if (($nfce->acrescimo ?? 0) > 0) {
+                $cmd .= $this->padR('Acrescimo R$', $labelCol)
+                      . $this->padL(number_format($nfce->acrescimo, 2, ',', '.'), $valueCol) . "\n";
+            }
+
+            $cmd .= str_repeat('-', $cols) . "\n";
+            $cmd .= "\x1B\x45\x01"; // Negrito ON
+            $cmd .= $this->padR('Total da Nota R$', $labelCol)
+                  . $this->padL(number_format($nfce->total, 2, ',', '.'), $valueCol) . "\n";
+            $cmd .= "\x1B\x45\x00"; // Negrito OFF
+
+            $recebido = ($nfce->dinheiro_recebido ?? 0) > 0 ? $nfce->dinheiro_recebido : $nfce->total;
+            $cmd .= $this->padR('Valor Recebido R$', $labelCol)
+                  . $this->padL(number_format($recebido, 2, ',', '.'), $valueCol) . "\n";
+            $cmd .= $this->padR('Troco R$', $labelCol)
+                  . $this->padL(number_format($nfce->troco ?? 0, 2, ',', '.'), $valueCol) . "\n";
+
+            $cmd .= str_repeat('-', $cols) . "\n";
+
+            // ── 7. FORMAS DE PAGAMENTO ────────────────────────────────────
+            $cmd .= "\x1B\x45\x01"; // Negrito ON
+            $cmd .= $this->padR('FORMA PAGAMENTO', $labelCol)
+                  . $this->padL('VALOR PAGO R$', $valueCol) . "\n";
+            $cmd .= "\x1B\x45\x00"; // Negrito OFF
+
+            if (sizeof($nfce->fatura) > 0) {
+                foreach ($nfce->fatura as $f) {
+                    $tipoPag = \App\Models\Nfce::getTipoPagamento($f->tipo_pagamento) ?? $f->tipo_pagamento;
+                    $tipoPag = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', $tipoPag);
+                    $cmd .= $this->padR($tipoPag, $labelCol)
+                          . $this->padL(number_format($f->valor, 2, ',', '.'), $valueCol) . "\n";
+                }
+            } else {
+                $tipoPag  = \App\Models\Nfce::getTipoPagamento($nfce->tipo_pagamento) ?? 'Dinheiro';
+                $tipoPag  = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', $tipoPag);
+                $cmd .= $this->padR($tipoPag, $labelCol)
+                      . $this->padL(number_format($recebido, 2, ',', '.'), $valueCol) . "\n";
+            }
+
+            $cmd .= str_repeat('-', $cols) . "\n";
+
+            // ── 8. VENDEDOR ───────────────────────────────────────────────
+            $vendedor = $nfce->vendedor();
+            if ($vendedor) {
+                $cmd .= 'VENDEDOR(A): ' . iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', $vendedor) . "\n";
+                $cmd .= str_repeat('-', $cols) . "\n";
+            }
+
+            // ── 9. RODAPÉ / TERMO ─────────────────────────────────────────
+            $cmd .= "\x1B\x61\x01"; // Centralizar
+            $cmd .= "Recebi a(s) mercadoria(s) acima descrita(s),\n";
+            $cmd .= "concordando plenamente com os prazos e condicoes de\n";
+            $cmd .= "garantia.\n\n\n";
+            $cmd .= "__________________________________________\n";
+            $cmd .= "ASSINATURA DO CLIENTE\n\n";
+            $cmd .= "\x1B\x45\x01"; // Negrito ON
+            $cmd .= "* OBRIGADO E VOLTE SEMPRE *\n";
+            $cmd .= "\x1B\x45\x00"; // Negrito OFF
+            $cmd .= "\x1B\x61\x00"; // Esquerda
+
+            // Avanço de papel e corte
+            $cmd .= "\n\n\n";
+            $cmd .= "\x1D\x56\x41\x10"; // Corte parcial
+
+            return $this->imprimir($cmd, $config);
+
+        } catch (\Exception $e) {
+            Log::error('PrintService: Erro ao gerar Cupom Nao Fiscal - ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Erro ao gerar impressao do cupom nao fiscal: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
      * Imprime DANFE NFC-e fiscal diretamente na impressora termica via ESC/POS nativo.
      * Gera texto formatado com colunas corretas para 80mm (48 cols) ou 58mm (32 cols).
      * Se a impressora nao estiver configurada, retorna use_pdf=true para o

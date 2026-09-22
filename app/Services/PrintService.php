@@ -213,26 +213,26 @@ class PrintService
             $cmd .= "\x1B\x61\x01"; // Centralizar
             $cmd .= "\x1B\x45\x01"; // Negrito ON
             $nomeFantasia = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($empresa->nome_fantasia ?: $empresa->nome));
-            $cmd .= $this->centerText($nomeFantasia, $cols) . "\n";
+            $cmd .= $nomeFantasia . "\n";
             $cmd .= "\x1B\x45\x00"; // Negrito OFF
 
-            if ($empresa->nome_fantasia && $empresa->nome) {
+            if ($empresa->nome_fantasia && $empresa->nome && ($empresa->nome_fantasia !== $empresa->nome)) {
                 $nomeRazao = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($empresa->nome));
-                $cmd .= $this->centerText($nomeRazao, $cols) . "\n";
+                $cmd .= $nomeRazao . "\n";
             }
 
             $cnpj = 'CNPJ: ' . $this->formatCnpj($empresa->cpf_cnpj ?? '');
             if ($empresa->ie) {
                 $cnpj .= ' IE: ' . $empresa->ie;
             }
-            $cmd .= $this->centerText($cnpj, $cols) . "\n";
+            $cmd .= $cnpj . "\n";
 
             $rua = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', ($empresa->rua ?? '') . ', ' . ($empresa->numero ?? ''));
-            $cmd .= $this->centerText($rua, $cols) . "\n";
+            $cmd .= $rua . "\n";
 
             if ($empresa->bairro) {
                 $bairro = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($empresa->bairro));
-                $cmd .= $this->centerText($bairro, $cols) . "\n";
+                $cmd .= $bairro . "\n";
             }
 
             $cidade = '';
@@ -240,11 +240,11 @@ class PrintService
                 $cidade = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', $empresa->cidade->nome) . '-' . $empresa->cidade->uf;
             }
             if ($cidade) {
-                $cmd .= $this->centerText($cidade, $cols) . "\n";
+                $cmd .= $cidade . "\n";
             }
 
             if ($empresa->celular || $empresa->telefone) {
-                $cmd .= $this->centerText('Fone: ' . ($empresa->celular ?: $empresa->telefone), $cols) . "\n";
+                $cmd .= 'Fone: ' . ($empresa->celular ?: $empresa->telefone) . "\n";
             }
 
             $cmd .= "\x1B\x61\x00"; // Esquerda
@@ -253,8 +253,8 @@ class PrintService
             // ── 2. TITULO DO DOCUMENTO ────────────────────────────────────
             // Igual ao modelo original: texto completo centralizado (sem destaque "DANFE NFC-e")
             $cmd .= "\x1B\x61\x01"; // Centralizar
-            $cmd .= $this->centerText('Documento Auxiliar da Nota Fiscal de Consumidor Eletronica', $cols) . "\n";
-            $cmd .= $this->centerText('Nao permite aproveitamento de credito de ICMS', $cols) . "\n";
+            $cmd .= "Documento Auxiliar da Nota Fiscal de Consumidor Eletronica\n";
+            $cmd .= "Nao permite aproveitamento de credito de ICMS\n";
             $cmd .= "\x1B\x61\x00"; // Esquerda
             $cmd .= str_repeat('-', $cols) . "\n";
 
@@ -368,27 +368,24 @@ class PrintService
             $cmd .= str_repeat('-', $cols) . "\n";
 
             // ── 7. CONSULTA SEFAZ ─────────────────────────────────────────
-            // Ordem do modelo original: consulta sefaz → chave → consumidor → NFCe n./protocolo/data → QR Code → tributos
+            // Igual ao modelo: "Consulte pela Chave de Acesso em:" (negrito) + URL + chave SEM separador entre eles
             $cmd .= "\x1B\x61\x01"; // Centralizar
             $cmd .= "\x1B\x45\x01"; // Negrito ON
-            $cmd .= $this->centerText('Consulte pela Chave de Acesso em:', $cols) . "\n";
+            $cmd .= "Consulte pela Chave de Acesso em:\n";
             $cmd .= "\x1B\x45\x00"; // Negrito OFF
             $uf = $empresa->cidade->uf ?? 'ce';
             $urlConsulta = $urlChave ?: ('www.sefaz.' . strtolower($uf) . '.gov.br/nfce/consulta');
-            $cmd .= $this->centerText($urlConsulta, $cols) . "\n";
-            $cmd .= "\x1B\x61\x00"; // Esquerda
-            $cmd .= str_repeat('-', $cols) . "\n";
+            $cmd .= $urlConsulta . "\n";
 
             // ── 8. CHAVE DE ACESSO ────────────────────────────────────────
-            // Exibe a chave formatada em grupos de 4 digitos, centralizada
+            // Sem separador acima (igual ao modelo). Usa fonte condensada (Font B)
+            // para caber os 54 caracteres da chave formatada em 1 linha de 80mm.
             $chaveLimpa     = preg_replace('/[^0-9]/', '', $nfce->chave ?? '');
             $chaveFormatada = trim(chunk_split($chaveLimpa, 4, ' '));
-            $cmd .= "\x1B\x61\x01"; // Centralizar
-            // Quebra a chave em linhas de $cols e centraliza cada parte
-            foreach (str_split($chaveFormatada, $cols) as $parte) {
-                $cmd .= $this->centerText(trim($parte), $cols) . "\n";
-            }
-            $cmd .= "\x1B\x61\x00"; // Esquerda
+            $cmd .= "\x1B\x4D\x01"; // Fonte condensada (Font B)
+            $cmd .= $chaveFormatada . "\n";
+            $cmd .= "\x1B\x4D\x00"; // Restaura fonte normal (Font A)
+            $cmd .= "\x1B\x61\x00"; // Alinhamento Esquerda
             $cmd .= str_repeat('-', $cols) . "\n";
 
             // ── 9. CONSUMIDOR ─────────────────────────────────────────────
@@ -399,16 +396,16 @@ class PrintService
                     ? ($nfce->cliente->cpf_cnpj ? 'CPF/CNPJ: ' . $nfce->cliente->cpf_cnpj : '')
                     : ($nfce->cliente_cpf_cnpj ? 'CPF/CNPJ: ' . $nfce->cliente_cpf_cnpj : '');
                 if ($cpfCnpj) {
-                    $cmd .= $this->centerText($cpfCnpj, $cols) . "\n";
+                    $cmd .= $cpfCnpj . "\n";
                 }
                 $nomeConsumidor = $nfce->cliente
                     ? iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($nfce->cliente->razao_social ?? ''))
                     : iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($nfce->cliente_nome ?? ''));
                 if ($nomeConsumidor) {
-                    $cmd .= $this->centerText($nomeConsumidor, $cols) . "\n";
+                    $cmd .= $nomeConsumidor . "\n";
                 }
             } else {
-                $cmd .= $this->centerText('CONSUMIDOR NAO IDENTIFICADO', $cols) . "\n";
+                $cmd .= "CONSUMIDOR NAO IDENTIFICADO\n";
             }
             $cmd .= "\x1B\x45\x00"; // Negrito OFF
 
@@ -425,31 +422,27 @@ class PrintService
                      . ' ' . $dataEmissao;
 
             $cmd .= "\x1B\x45\x01"; // Negrito ON
-            foreach (str_split($nfceNum, $cols) as $parte) {
-                $cmd .= $this->centerText(trim($parte), $cols) . "\n";
-            }
+            $cmd .= $nfceNum . "\n";
             $cmd .= "\x1B\x45\x00"; // Negrito OFF
 
             if ($nfce->recibo) {
-                $cmd .= $this->centerText('Protocolo de Autorizacao: ' . $nfce->recibo, $cols) . "\n";
-                $cmd .= $this->centerText('Data de Autorizacao:  ' . $dataEmissao, $cols) . "\n";
+                $cmd .= 'Protocolo de Autorizacao: ' . $nfce->recibo . "\n";
+                $cmd .= 'Data de Autorizacao:  ' . $dataEmissao . "\n";
             }
 
             $cmd .= "\x1B\x61\x00"; // Esquerda
+            $cmd .= str_repeat('-', $cols) . "\n";
 
             // ── 11. QR CODE NATIVO ESC/POS ────────────────────────────────
             // QR Code grande centralizado (igual ao modelo original)
             if (!empty($qrCodeUrl)) {
-                $cmd .= "\n";
                 $cmd .= $this->gerarQrCodeEscPos($qrCodeUrl);
             }
 
-            $cmd .= str_repeat('-', $cols) . "\n";
-
             // ── 12. RODAPE: TRIBUTOS ──────────────────────────────────────
-            // Igual ao modelo original: linha de tributos no rodape (sem "OBRIGADO")
+            // Igual ao modelo original: linha de tributos no rodape
             $cmd .= "\x1B\x61\x01"; // Centralizar
-            $cmd .= $this->centerText('Tributos totais Incidentes (Lei Federal 12.741/2012): R$ -----', $cols) . "\n";
+            $cmd .= "Tributos totais Incidentes (Lei Federal 12.741/2012): R$ -----\n";
             $cmd .= "\x1B\x61\x00"; // Esquerda
 
             // Avanco de papel e corte

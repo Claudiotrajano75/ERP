@@ -182,17 +182,6 @@ class PrintService
             $labelCol = $cols - 14;
             $valueCol = 14;
 
-            // Colunas da tabela de itens
-            if ($cols >= 48) {
-                $colCod  = 5;
-                $colDesc = 28;
-                $colVlr  = 15;
-            } else {
-                $colCod  = 4;
-                $colDesc = 17;
-                $colVlr  = 11;
-            }
-
             // Extrai QR Code e URL de consulta do XML
             $qrCodeUrl = null;
             $urlChave  = null;
@@ -220,12 +209,11 @@ class PrintService
             $cmd .= "\x1B\x74\x10"; // Code page WPC1252
 
             // ── 1. CABECALHO DO EMITENTE ──────────────────────────────────
+            // Ordem do modelo original: nome fantasia (negrito), razao social, CNPJ IE, rua+numero, bairro, cidade-UF
             $cmd .= "\x1B\x61\x01"; // Centralizar
             $cmd .= "\x1B\x45\x01"; // Negrito ON
-            $cmd .= "\x1B\x21\x10"; // Altura dupla
             $nomeFantasia = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($empresa->nome_fantasia ?: $empresa->nome));
             $cmd .= $this->centerText($nomeFantasia, $cols) . "\n";
-            $cmd .= "\x1B\x21\x00"; // Altura normal
             $cmd .= "\x1B\x45\x00"; // Negrito OFF
 
             if ($empresa->nome_fantasia && $empresa->nome) {
@@ -235,22 +223,24 @@ class PrintService
 
             $cnpj = 'CNPJ: ' . $this->formatCnpj($empresa->cpf_cnpj ?? '');
             if ($empresa->ie) {
-                $cnpj .= '  IE: ' . $empresa->ie;
+                $cnpj .= ' IE: ' . $empresa->ie;
             }
             $cmd .= $this->centerText($cnpj, $cols) . "\n";
 
-            $end = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', trim(($empresa->rua ?? '') . ', ' . ($empresa->numero ?? '') . ($empresa->bairro ? ' - ' . $empresa->bairro : '')));
-            $cmd .= $this->centerText($end, $cols) . "\n";
+            $rua = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', ($empresa->rua ?? '') . ', ' . ($empresa->numero ?? ''));
+            $cmd .= $this->centerText($rua, $cols) . "\n";
 
-            $cidadeNome = '';
+            if ($empresa->bairro) {
+                $bairro = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($empresa->bairro));
+                $cmd .= $this->centerText($bairro, $cols) . "\n";
+            }
+
+            $cidade = '';
             if ($empresa->cidade) {
-                $cidadeNome = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', $empresa->cidade->nome) . '-' . $empresa->cidade->uf;
+                $cidade = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', $empresa->cidade->nome) . '-' . $empresa->cidade->uf;
             }
-            if ($empresa->cep) {
-                $cidadeNome .= ($cidadeNome ? '  ' : '') . 'CEP: ' . $empresa->cep;
-            }
-            if ($cidadeNome) {
-                $cmd .= $this->centerText($cidadeNome, $cols) . "\n";
+            if ($cidade) {
+                $cmd .= $this->centerText($cidade, $cols) . "\n";
             }
 
             if ($empresa->celular || $empresa->telefone) {
@@ -261,21 +251,38 @@ class PrintService
             $cmd .= str_repeat('-', $cols) . "\n";
 
             // ── 2. TITULO DO DOCUMENTO ────────────────────────────────────
+            // Igual ao modelo original: texto completo centralizado (sem destaque "DANFE NFC-e")
             $cmd .= "\x1B\x61\x01"; // Centralizar
-            $cmd .= "\x1B\x45\x01"; // Negrito ON
-            $cmd .= $this->centerText('DANFE NFC-e', $cols) . "\n";
-            $cmd .= "\x1B\x45\x00"; // Negrito OFF
-            $cmd .= $this->centerText('Documento Auxiliar da Nota Fiscal', $cols) . "\n";
-            $cmd .= $this->centerText('de Consumidor Eletronica', $cols) . "\n";
+            $cmd .= $this->centerText('Documento Auxiliar da Nota Fiscal de Consumidor Eletronica', $cols) . "\n";
             $cmd .= $this->centerText('Nao permite aproveitamento de credito de ICMS', $cols) . "\n";
             $cmd .= "\x1B\x61\x00"; // Esquerda
             $cmd .= str_repeat('-', $cols) . "\n";
 
             // ── 3. CABECALHO DA TABELA DE ITENS ──────────────────────────
+            // Igual ao modelo original: Codigo | Descricao | Qtde | UN | Vl Unit | Vl Total
+            if ($cols >= 48) {
+                $cCod   = 6;   // Codigo
+                $cDesc  = 16;  // Descricao
+                $cQtde  = 4;   // Qtde
+                $cUN    = 3;   // UN
+                $cUnit  = 9;   // Vl Unit
+                $cTotal = 10;  // Vl Total  (total = 48)
+            } else {
+                $cCod   = 4;
+                $cDesc  = 9;
+                $cQtde  = 3;
+                $cUN    = 2;
+                $cUnit  = 7;
+                $cTotal = 7;   // total = 32
+            }
+
             $cmd .= "\x1B\x45\x01"; // Negrito ON
-            $cmd .= $this->padR('COD', $colCod)
-                  . $this->padR('DESCRICAO / QTD x VLR', $colDesc)
-                  . $this->padL('TOTAL', $colVlr) . "\n";
+            $cmd .= $this->padR('Codigo', $cCod)
+                  . $this->padR('Descricao', $cDesc)
+                  . $this->padL('Qtde', $cQtde)
+                  . $this->padL('UN', $cUN)
+                  . $this->padL('VlUnit', $cUnit)
+                  . $this->padL('VlTotal', $cTotal) . "\n";
             $cmd .= "\x1B\x45\x00"; // Negrito OFF
             $cmd .= str_repeat('-', $cols) . "\n";
 

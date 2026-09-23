@@ -871,22 +871,55 @@ $(".btn-add-item").click(() => {
 });
 
 function beepSucesso(){
-    let alerta = $('#alerta_sonoro').val()
-    if(alerta == 1){
-        var audio = new Audio('/audio/beep.mp3');
-        audio.addEventListener('canplaythrough', function() {
-            audio.play();
-        });
+    let alerta = $('#alerta_sonoro').val();
+    if(alerta == 1 || alerta === undefined || alerta === '' || alerta == '1'){
+        try {
+            var audio = new Audio('/audio/beep.mp3');
+            var promise = audio.play();
+            if (promise !== undefined) {
+                promise.catch(function() {
+                    tocarBeepWebAudio(1800, 0.08, 'sine');
+                });
+            }
+        } catch(e) {
+            tocarBeepWebAudio(1800, 0.08, 'sine');
+        }
     }
 }
+
 function beepErro(){
-    let alerta = $('#alerta_sonoro').val()
-    if(alerta == 1){
-        var audio = new Audio('/audio/beep_error.mp3');
-        audio.addEventListener('canplaythrough', function() {
-            audio.play();
-        });
+    let alerta = $('#alerta_sonoro').val();
+    if(alerta == 1 || alerta === undefined || alerta === '' || alerta == '1'){
+        try {
+            var audio = new Audio('/audio/beep_error.mp3');
+            var promise = audio.play();
+            if (promise !== undefined) {
+                promise.catch(function() {
+                    tocarBeepWebAudio(350, 0.2, 'sawtooth');
+                });
+            }
+        } catch(e) {
+            tocarBeepWebAudio(350, 0.2, 'sawtooth');
+        }
     }
+}
+
+function tocarBeepWebAudio(freq, duration, type){
+    try {
+        var AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        var ctx = new AudioCtx();
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = type || 'sine';
+        osc.frequency.value = freq || 1800;
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+    } catch(e) {}
 }
 
 

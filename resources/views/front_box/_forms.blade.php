@@ -17,7 +17,7 @@
 <input type="hidden" id="agrupar_itens" value="{{ $config ? $config->agrupar_itens : 0 }}" name="">
 <input type="hidden" id="venda_id" value="{{ isset($item) ? $item->id : '' }}">
 <input type="hidden" id="lista_id" value="" name="lista_id">
-<input type="hidden" id="alerta_sonoro" value="{{ $config ? $config->alerta_sonoro : 0 }}">
+<input type="hidden" id="alerta_sonoro" value="{{ isset($config) && $config && isset($config->alerta_sonoro) ? $config->alerta_sonoro : 1 }}">
 
 @if($isVendaSuspensa)
     <input type="hidden" value="{{ $item->id }}" name="venda_suspensa_id">
@@ -47,6 +47,31 @@
 
 <input type="hidden" id="estoque_view" value="@can('estoque_view') 1 @else 0 @endif">
 
+{{-- ══════════ HEADER COMPACTO PDV ══════════ --}}
+<header class="pdv-mesa-header mb-1 mt-0">
+    <div class="pdv-mesa-header-left">
+        <div class="pdv-mesa-logo-icon">
+            <i class="ri-restaurant-line"></i>
+        </div>
+        <div class="pdv-mesa-brand-info">
+            <h1 class="pdv-mesa-brand-title">
+                {{ config('app.name', 'ERP') }} <span>PDV</span>
+            </h1>
+            <p class="pdv-mesa-subtitle">
+                {{ $caixa->nome ?? 'Frente de Caixa' }}
+            </p>
+        </div>
+    </div>
+    <div class="pdv-mesa-header-right">
+        <span class="pdv-mesa-online-badge">
+            <span class="pdv-mesa-dot"></span> Online
+        </span>
+        <span class="pdv-mesa-user-badge">
+            <i class="ri-user-line me-1"></i>{{ Auth::user()->name }}
+        </span>
+    </div>
+</header>
+
 <div class="row align-items-stretch">
     <div class="col-lg-4">
         <div class="row g-2">
@@ -70,7 +95,9 @@
                                     <h6 class="pdv-card-value cliente_selecionado mt-1">
                                         {{ $cliente->razao_social }}
                                         @if($cliente->valor_credito > 0)
-                                            <span class="badge bg-success" style="font-size: 11px; vertical-align: middle;" title="Saldo de crédito disponível para compras">Crédito: R$ {{ __moeda($cliente->valor_credito) }}</span>
+                                            <span class="badge bg-success" style="font-size: 11px; vertical-align: middle;"
+                                                title="Saldo de crédito disponível para compras">Crédito: R$
+                                                {{ __moeda($cliente->valor_credito) }}</span>
                                         @endif
                                     </h6>
                                 @else
@@ -122,9 +149,9 @@
                 </div>
             </div>
         </div>
-        <div class="card" style="min-height: calc(100vh - 190px); display: flex; flex-direction: column;">
+        <div class="card mb-0" style="height: calc(100vh - 155px); display: flex; flex-direction: column;">
 
-            <div class="card pdv-categories-wrapper m-1 border-0 shadow-none">
+            <div class="card pdv-categories-wrapper mt-0 mb-0 border-0 shadow-none">
                 <div class="pdv-categories-header">
                     <h6 class="pdv-categories-title"><i class="ri-grid-fill me-1"></i>Categorias</h6>
                 </div>
@@ -148,8 +175,7 @@
                     </button>
                 </div>
             </div>
-            <div class="card-body lista_produtos m-1" data-simplebar data-simplebar-lg
-                style="flex: 1 1 auto; min-height: 0; height: calc(100vh - 340px); overflow-y: auto;">
+            <div class="card-body lista_produtos m-1" style="flex: 1 1 auto; min-height: 0; overflow-y: auto;">
                 <div class="row cards-categorias">
 
                 </div>
@@ -180,9 +206,9 @@
         </div>
     </div>
     <div class="col-lg-8 produtos">
-        <div class="card" style="min-height: calc(100vh - 190px);">
+        <div class="card mb-0" style="height: calc(100vh - 80px); display: flex; flex-direction: column;">
             {{-- ═══ LINHA: BUSCAR / ADICIONAR PRODUTO ═══ --}}
-            <div class="row m-2 align-items-end pdv-add-row g-2">
+            <div class="row align-items-end pdv-add-row g-2 flex-shrink-0">
 
                 {{-- Campo: Produto --}}
                 <div class="col-md-6">
@@ -201,37 +227,45 @@
                 {{-- Campo: Quantidade --}}
                 <div class="col-md-2">
                     <div class="form-group mb-0">
-                        <label class="pdv-add-label"><i class="ri-numbers-line me-1"></i>Qtd.</label>
-                        {!! Form::tel('quantidade', false)->attrs(['data-mask' => '00000,000', 'data-mask-reverse' => "true", 'class' => 'form-control text-center pdv-add-input']) !!}
+                        <label class="pdv-add-label" for="inp-quantidade"><i
+                                class="ri-numbers-line me-1"></i>Qtd.</label>
+                        <input type="tel" name="quantidade" id="inp-quantidade"
+                            class="form-control text-center pdv-add-input" data-mask="00000,000"
+                            data-mask-reverse="true" value="1,000">
                     </div>
                 </div>
 
                 {{-- Campo: Valor Unitário --}}
                 <div class="col-md-2">
                     <div class="form-group mb-0">
-                        <label class="pdv-add-label"><i class="ri-price-tag-2-line me-1"></i>Valor Unit.</label>
-                        {!! Form::tel('valor_unitario', false)->attrs(['class' => 'moeda value_unit form-control text-end pdv-add-input']) !!}
+                        <label class="pdv-add-label" for="inp-valor_unitario"><i
+                                class="ri-price-tag-2-line me-1"></i>Valor Unit.</label>
+                        <input type="tel" name="valor_unitario" id="inp-valor_unitario"
+                            class="moeda value_unit form-control text-end pdv-add-input" placeholder="0,00">
                     </div>
                 </div>
 
                 {{-- Botão: Adicionar --}}
                 <div class="col-md-2">
-                    <button class="btn btn-primary btn-add-item w-100" type="button">
-                        <i class="ri-add-circle-line me-1"></i>Adicionar
-                    </button>
+                    <div class="form-group mb-0">
+                        <label class="pdv-add-label opacity-0 d-none d-md-flex">&nbsp;</label>
+                        <button class="btn btn-primary btn-add-item w-100" type="button">
+                            <i class="ri-add-circle-line me-1"></i>Adicionar
+                        </button>
+                    </div>
                 </div>
 
                 {{-- Campos hidden --}}
                 <div class="col-md-1 d-none">
-                    {!! Form::hidden('subtotal', 'SubTotal')->attrs(['class' => 'moeda']) !!}
-                    {!! Form::hidden('valor_total', 'valor Total')->attrs(['class' => 'moeda']) !!}
+                    <input type="hidden" name="subtotal" id="inp-subtotal" class="moeda" value="">
+                    <input type="hidden" name="valor_total" id="inp-valor_total" class="moeda" value="">
                 </div>
 
             </div>
 
-            <div class="card m-1">
+            <div class="card m-1 flex-grow-1" style="min-height: 0; display: flex; flex-direction: column;">
                 <div data-bs-target="#navbar-example2" class="scrollspy-example table-responsive"
-                    style="height: calc(100vh - 395px)">
+                    style="flex: 1 1 auto; min-height: 0; overflow-y: auto;">
                     <table class="table table-striped dt-responsive nowrap table-itens pdv-table-items">
                         <thead>
                             <tr>
@@ -387,7 +421,7 @@
                     </table>
                 </div>
             </div>
-            <div class="mt-1 px-3 pb-2">
+            <div class="mt-auto px-3 pb-2 flex-shrink-0">
 
                 {{-- Finalização foi comentada no dia 26-06-2026 para da mais espaço na tela --}}
                 {{-- <h5 class="text-center mb-2 mt-1 fw-bold"><i class="ri-shopping-cart-2-fill me-1"></i>Finalização

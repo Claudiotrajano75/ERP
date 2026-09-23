@@ -98,8 +98,17 @@
         }
 
         @keyframes pdv-pulse-dot {
-            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
-            50%       { opacity: 0.7; box-shadow: 0 0 0 3px rgba(34,197,94,0); }
+
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+            }
+
+            50% {
+                opacity: 0.7;
+                box-shadow: 0 0 0 3px rgba(34, 197, 94, 0);
+            }
         }
 
         .pdv-mesa-user-badge {
@@ -192,7 +201,8 @@
 <input type="hidden" id="agrupar_itens" value="{{ $config ? $config->agrupar_itens : 0 }}" name="">
 <input type="hidden" id="venda_id" value="{{ isset($item) ? $item->id : '' }}">
 <input type="hidden" id="lista_id" value="" name="lista_id">
-<input type="hidden" id="alerta_sonoro" value="{{ isset($config) && $config && isset($config->alerta_sonoro) ? $config->alerta_sonoro : 1 }}">
+<input type="hidden" id="alerta_sonoro"
+    value="{{ isset($config) && $config && isset($config->alerta_sonoro) ? $config->alerta_sonoro : 1 }}">
 
 @if($isVendaSuspensa)
     <input type="hidden" value="{{ $item->id }}" name="venda_suspensa_id">
@@ -603,7 +613,7 @@
                 </h5> --}}
 
 
-                <div class="row g-2 mt-1 align-items-stretch">
+                <div class="row g-2 mt-0 align-items-stretch">
                     <div class="col-lg-3 col-6">
                         <div class="card pdv-fin-card h-100 mb-0">
                             <div class="card-body pdv-fin-card-body">
@@ -680,7 +690,7 @@
                         </div>
                     </div> <!-- end col-->
                 </div>
-                <div class="row g-2 mt-1 align-items-stretch">
+                <div class="row g-2 mt-0 align-items-stretch">
                     <div class="col-lg-3 col-6">
                         <div class="card pdv-fin-card h-100 mb-0">
                             <div class="card-body pdv-fin-card-body">

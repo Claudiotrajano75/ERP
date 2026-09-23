@@ -113,6 +113,76 @@
             display: flex;
             align-items: center;
         }
+
+        /* ── Cards de Finalização (Desconto, Acréscimo, Suprimento, Total) ── */
+        .pdv-fin-card {
+            border-radius: 10px !important;
+            border: 1px solid #e2e8f0 !important;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+            height: 100% !important;
+            min-height: 68px !important;
+        }
+
+        .pdv-fin-card-body {
+            padding: 6px 10px !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .pdv-fin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+
+        .pdv-fin-label {
+            font-size: 10px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #64748b !important;
+            margin-bottom: 0;
+            line-height: 1.2;
+        }
+
+        .pdv-fin-value {
+            font-size: 16px !important;
+            font-weight: 800 !important;
+            color: #1e293b !important;
+            margin-bottom: 0 !important;
+            line-height: 1.2;
+        }
+
+        .pdv-fin-icon-box {
+            width: 24px !important;
+            height: 24px !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px !important;
+            font-size: 13px !important;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .pdv-fin-total {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%) !important;
+            border-color: #312e81 !important;
+        }
+
+        .pdv-fin-total .pdv-fin-label {
+            color: #c7d2fe !important;
+        }
+
+        .pdv-fin-total .pdv-fin-value,
+        .pdv-fin-total .total-venda {
+            color: #ffffff !important;
+        }
     </style>
 @endsection
 
@@ -533,9 +603,9 @@
                 </h5> --}}
 
 
-                <div class="row">
+                <div class="row g-2 mt-1 align-items-stretch">
                     <div class="col-lg-3 col-6">
-                        <div class="card pdv-fin-card">
+                        <div class="card pdv-fin-card h-100 mb-0">
                             <div class="card-body pdv-fin-card-body">
                                 <div class="pdv-fin-header">
                                     <h5 class="pdv-fin-label">Desconto <span class="pdv-shortcut">F2</span></h5>
@@ -551,7 +621,7 @@
                         </div>
                     </div>
                     <div class="col-lg-3 col-6">
-                        <div class="card pdv-fin-card">
+                        <div class="card pdv-fin-card h-100 mb-0">
                             <div class="card-body pdv-fin-card-body">
                                 <div class="pdv-fin-header">
                                     <h5 class="pdv-fin-label">Acréscimo <span class="pdv-shortcut">F3</span></h5>
@@ -568,9 +638,9 @@
                     </div>
 
                     <div class="col-lg-3 col-6">
-                        <div class="card pdv-fin-card">
+                        <div class="card pdv-fin-card h-100 mb-0">
                             <div class="card-body pdv-fin-card-body">
-                                <div class="row g-0">
+                                <div class="row g-0 h-100 align-items-center">
                                     <div class="col-6 text-center">
                                         <h6 class="pdv-fin-label mb-1">SUPRIM.</h6>
                                         <button type="button" data-bs-toggle="modal" data-bs-target="#suprimento_caixa"
@@ -591,7 +661,7 @@
                     </div>
 
                     <div class="col-lg-3 col-6">
-                        <div class="card pdv-fin-card pdv-fin-total">
+                        <div class="card pdv-fin-card pdv-fin-total h-100 mb-0">
                             <div class="card-body pdv-fin-card-body">
                                 <div class="pdv-fin-header">
                                     <h5 class="pdv-fin-label">TOTAL</h5>
@@ -610,9 +680,9 @@
                         </div>
                     </div> <!-- end col-->
                 </div>
-                <div class="row">
+                <div class="row g-2 mt-1 align-items-stretch">
                     <div class="col-lg-3 col-6">
-                        <div class="card pdv-fin-card">
+                        <div class="card pdv-fin-card h-100 mb-0">
                             <div class="card-body pdv-fin-card-body">
                                 <div class="pdv-fin-header mb-1">
                                     <h5 class="pdv-fin-label">Pagamento</h5>

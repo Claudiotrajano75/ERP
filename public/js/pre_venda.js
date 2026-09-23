@@ -443,11 +443,20 @@ function gerarVenda(fatura) {
             buttons: ["Não", "Sim"],
             dangerMode: true,
         }).then((isConfirm) => {
+            var redirectFn = function() {
+                location.reload();
+            };
+
             if (isConfirm) {
-                window.open(path_url + 'frontbox/imprimir-nao-fiscal/' + success, "_blank")
-                location.reload()
+                var urlComprovante = path_url + 'frontbox/imprimir-nao-fiscal/' + success;
+                if (typeof PrintThermal !== 'undefined') {
+                    PrintThermal.imprimir('cupom', success, urlComprovante, redirectFn);
+                } else {
+                    window.open(urlComprovante, "_blank");
+                    setTimeout(redirectFn, 600);
+                }
             } else {
-                location.reload()
+                redirectFn();
             }
         });
     })
@@ -507,10 +516,17 @@ function transmitirNfce(id) {
     .done((success) => {
         swal("Sucesso", "NFCe emitida " + success.recibo + " - chave: [" + success.chave + "]", "success")
         .then(() => {
-            window.open(path_url + 'nfce/imprimir/' + id, "_blank")
-            setTimeout(() => {
-                location.reload()
-            }, 100)
+            var pdfUrl = path_url + 'nfce/imprimir/' + id;
+            var redirectFn = function() {
+                location.reload();
+            };
+
+            if (typeof PrintThermal !== 'undefined') {
+                PrintThermal.imprimir('nfce', id, pdfUrl, redirectFn);
+            } else {
+                window.open(pdfUrl, "_blank");
+                setTimeout(redirectFn, 600);
+            }
         })
     })
     .fail((err) => {

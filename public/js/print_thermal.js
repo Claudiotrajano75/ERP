@@ -3,20 +3,21 @@
  * print_thermal.js - Utilitário de impressão em impressora térmica
  * 
  * Se a impressora estiver configurada: envia via Agente Local WebSocket (ws://127.0.0.1:9187).
- * Se não estiver configurada ou agente offline: abre o PDF no navegador (fallback seguro).
+ * Se não estiver configurada ou agente offline: abre o comprovante/PDF no navegador (fallback seguro).
  * ═══════════════════════════════════════════════════════════════
  */
 
 var PrintThermal = {
     
     /**
-     * Imprime um cupom na impressora térmica ou abre PDF como fallback
+     * Imprime um cupom na impressora térmica ou abre PDF/Comprovante como fallback
      * 
      * @param {string} tipo - Tipo do cupom: 'cupom', 'nfce', 'troca', 'prevenda', 'sangria', 'suprimento'
      * @param {int|string} id - ID do registro a imprimir
-     * @param {string} pdfUrl - URL de fallback para o PDF
+     * @param {string} pdfUrl - URL de fallback para o PDF/Comprovante
+     * @param {Function} callback - Callback opcional executado após a impressão ou abertura do documento
      */
-    imprimir: function(tipo, id, pdfUrl) {
+    imprimir: function(tipo, id, pdfUrl, callback) {
         var routes = {
             'cupom': '/print/cupom/' + id,
             'nfce': '/print/nfce/' + id,
@@ -28,11 +29,11 @@ var PrintThermal = {
 
         var route = routes[tipo];
         if (!route) {
-            if (pdfUrl) window.open(pdfUrl, '_blank');
+            PrintThermal.abrirDocumento(pdfUrl, callback);
             return;
         }
 
-        // Mostra feedback visual no botão clicado
+        // Mostra feedback visual no botão clicado (se houver)
         var btnOriginal = null;
         var originalHtml = '';
         try {
@@ -47,10 +48,13 @@ var PrintThermal = {
             btnOriginal.innerHTML = '<i class="ri-loader-4-line spin me-1"></i> Imprimindo...';
         }
 
-        var restaurarBtn = function() {
+        var finalizar = function() {
             if (btnOriginal) {
                 btnOriginal.disabled = false;
                 btnOriginal.innerHTML = originalHtml;
+            }
+            if (typeof callback === 'function') {
+                setTimeout(callback, 400);
             }
         };
 
@@ -58,19 +62,18 @@ var PrintThermal = {
         $.ajax({
             url: '/print/configuracao',
             type: 'GET',
+            timeout: 3000,
             success: function(config) {
-                if (config.printer_configured) {
-                    PrintThermal.enviarParaImpressora(route, pdfUrl, restaurarBtn);
+                if (config && config.printer_configured) {
+                    PrintThermal.enviarParaImpressora(route, pdfUrl, finalizar);
                 } else {
-                    // Sem impressora configurada -> abre PDF
-                    if (pdfUrl) window.open(pdfUrl, '_blank');
-                    restaurarBtn();
+                    // Sem impressora configurada -> Abre o PDF/Comprovante para o usuário imprimir no navegador
+                    PrintThermal.abrirDocumento(pdfUrl, finalizar);
                 }
             },
             error: function() {
-                // Erro de rede -> abre PDF
-                if (pdfUrl) window.open(pdfUrl, '_blank');
-                restaurarBtn();
+                // Erro de rede ou sem resposta -> Abre o PDF/Comprovante
+                PrintThermal.abrirDocumento(pdfUrl, finalizar);
             }
         });
     },
@@ -95,19 +98,17 @@ var PrintThermal = {
                     PrintThermal.mostrarFeedback('success', res.message || 'Impresso com sucesso!');
                     if (onComplete) onComplete();
                 } else if (res.use_pdf) {
-                    // Impressora desabilitada -> abre PDF
-                    if (pdfUrl) window.open(pdfUrl, '_blank');
-                    if (onComplete) onComplete();
+                    // Impressora desabilitada -> abre PDF/Comprovante
+                    PrintThermal.abrirDocumento(pdfUrl, onComplete);
                 } else {
-                    PrintThermal.mostrarFeedback('error', res.message || 'Erro ao imprimir');
-                    if (onComplete) onComplete();
+                    PrintThermal.mostrarFeedback('error', res.message || 'Erro ao imprimir. Abrindo comprovante...');
+                    PrintThermal.abrirDocumento(pdfUrl, onComplete);
                 }
             },
             error: function(xhr) {
-                if (pdfUrl) window.open(pdfUrl, '_blank');
                 var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Erro de conexão com o servidor';
-                PrintThermal.mostrarFeedback('error', msg);
-                if (onComplete) onComplete();
+                PrintThermal.mostrarFeedback('warning', msg + '. Abrindo comprovante...');
+                PrintThermal.abrirDocumento(pdfUrl, onComplete);
             }
         });
     },
@@ -134,18 +135,16 @@ var PrintThermal = {
                 success: function(agentRes) {
                     if (agentRes && agentRes.success) {
                         PrintThermal.mostrarFeedback('success', 'Impresso com sucesso na impressora térmica!');
+                        if (onComplete) onComplete();
                     } else {
-                        PrintThermal.mostrarFeedback('warning', 'Agente local não conectou na impressora. Abrindo PDF...');
-                        if (pdfUrl) window.open(pdfUrl, '_blank');
+                        PrintThermal.mostrarFeedback('warning', 'Agente local não conectou na impressora. Abrindo documento...');
+                        PrintThermal.abrirDocumento(pdfUrl, onComplete);
                     }
                 },
                 error: function(err) {
-                    console.warn('Agente local (127.0.0.1:9187) offline. Abrindo PDF como fallback.', err);
-                    if (pdfUrl) window.open(pdfUrl, '_blank');
-                    PrintThermal.mostrarFeedback('warning', 'Inicie o Agente de Impressão na máquina local.');
-                },
-                complete: function() {
-                    if (onComplete) onComplete();
+                    console.warn('Agente local (127.0.0.1:9187) offline. Abrindo comprovante como fallback.', err);
+                    PrintThermal.mostrarFeedback('warning', 'Agente de impressão offline. Abrindo documento...');
+                    PrintThermal.abrirDocumento(pdfUrl, onComplete);
                 }
             });
         }
@@ -184,15 +183,15 @@ var PrintThermal = {
                 var res = JSON.parse(evt.data);
                 if (res.success) {
                     PrintThermal.mostrarFeedback('success', 'Impresso com sucesso na impressora térmica!');
+                    if (onComplete) onComplete();
                 } else {
-                    PrintThermal.mostrarFeedback('warning', (res.message || 'Falha na impressora.') + ' Abrindo PDF...');
-                    if (pdfUrl) window.open(pdfUrl, '_blank');
+                    PrintThermal.mostrarFeedback('warning', (res.message || 'Falha na impressora.') + ' Abrindo documento...');
+                    PrintThermal.abrirDocumento(pdfUrl, onComplete);
                 }
             } catch(ex) {
                 PrintThermal.mostrarFeedback('success', 'Comando de impressão enviado com sucesso!');
+                if (onComplete) onComplete();
             }
-
-            if (onComplete) onComplete();
         };
 
         ws.onerror = function(err) {
@@ -202,6 +201,33 @@ var PrintThermal = {
             try { ws.close(); } catch(e){}
             fallbackHttp();
         };
+    },
+
+    /**
+     * Abre o comprovante/PDF no navegador de forma segura e garantida contra bloqueador de popups
+     */
+    abrirDocumento: function(url, onDone) {
+        if (!url) {
+            if (onDone) onDone();
+            return;
+        }
+
+        var win = window.open(url, '_blank');
+        if (!win || win.closed || typeof win.closed === 'undefined') {
+            // Popup bloqueado pelo navegador -> aciona clique em link dinâmico
+            var link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(function() {
+                if (link.parentNode) link.parentNode.removeChild(link);
+                if (onDone) onDone();
+            }, 800);
+        } else {
+            if (onDone) setTimeout(onDone, 800);
+        }
     },
 
     /**

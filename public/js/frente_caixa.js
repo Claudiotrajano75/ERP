@@ -1944,18 +1944,7 @@ $("#form-pdv").on("submit", function (e) {
                 buttons: ["Não", "Sim"],
                 dangerMode: true,
             }).then((isConfirm) => {
-                if (isConfirm) {
-                    var urlComprovante = path_url + 'frontbox/imprimir-nao-fiscal/' + success.id;
-                    window.open(urlComprovante, '_blank');
-                    if (typeof PrintThermal !== 'undefined') {
-                        $.get('/print/configuracao').done(function(config) {
-                            if (config.printer_configured) {
-                                PrintThermal.enviarParaImpressora('/print/cupom/' + success.id, null);
-                            }
-                        });
-                    }
-                }
-                setTimeout(() => {
+                var redirectFn = function() {
                     if($('#pedido_delivery_id').length){
                         location.href = '/pedidos-delivery';
                     }else if($('#pedido_id').length){
@@ -1963,7 +1952,19 @@ $("#form-pdv").on("submit", function (e) {
                     }else{
                         location.href = '/frontbox/create';
                     }
-                }, 600);
+                };
+
+                if (isConfirm) {
+                    var urlComprovante = path_url + 'frontbox/imprimir-nao-fiscal/' + success.id;
+                    if (typeof PrintThermal !== 'undefined') {
+                        PrintThermal.imprimir('cupom', success.id, urlComprovante, redirectFn);
+                    } else {
+                        window.open(urlComprovante, '_blank');
+                        setTimeout(redirectFn, 600);
+                    }
+                } else {
+                    redirectFn();
+                }
             });
         }
     }).fail((err) => {
@@ -2048,40 +2049,39 @@ $("#form-pdv-update").on("submit", function (e) {
                 buttons: ["Não", "Sim"],
                 dangerMode: true,
             }).then((isConfirm) => {
-                if (isConfirm) {
-                    // Abre a aba diretamente (ação do usuário - não bloqueado pelo browser)
-                    var urlComprovante = path_url + 'frontbox/imprimir-nao-fiscal/' + success.id;
-                    window.open(urlComprovante, '_blank');
-                    // Tenta também enviar para impressora térmica se configurada (assíncrono)
-                    if (typeof PrintThermal !== 'undefined') {
-                        $.get('/print/configuracao').done(function(config) {
-                            if (config.printer_configured) {
-                                PrintThermal.enviarParaImpressora('/print/cupom/' + success.id, null);
-                            }
-                        });
-                    }
-                }
-                setTimeout(() => {
+                var redirectFn = function() {
                     if($('#pedido_delivery_id').length){
                         location.href = '/pedidos-delivery';
                     }else if($('#pedido_id').length){
                         location.href = '/pedidos-cardapio';
                     }else{
                         if(update){
-                            location.href = path_url+'frontbox'
+                            location.href = path_url+'frontbox';
                         }else{
-                            location.reload()
+                            location.reload();
                         }
                     }
-                }, 600);
+                };
+
+                if (isConfirm) {
+                    var urlComprovante = path_url + 'frontbox/imprimir-nao-fiscal/' + success.id;
+                    if (typeof PrintThermal !== 'undefined') {
+                        PrintThermal.imprimir('cupom', success.id, urlComprovante, redirectFn);
+                    } else {
+                        window.open(urlComprovante, '_blank');
+                        setTimeout(redirectFn, 600);
+                    }
+                } else {
+                    redirectFn();
+                }
             });
         }
     }).fail((err) => {
         pdvEsconderProcessingOverlay();
         $('#btn_fiscal, #btn_nao_fiscal').removeClass('pdv-btn-loading').prop('disabled', false);
         swal("Erro", err.responseJSON || "Não foi possível atualizar a venda", "error");
-        console.log(err)
-    })
+        console.log(err);
+    });
 });
 
 function gerarNfce(venda) {
@@ -2110,26 +2110,21 @@ function gerarNfce(venda) {
             pdvEsconderProcessingOverlay();
             swal("Sucesso", "NFCe emitida " + (success.recibo || '') + " - chave: [" + (success.chave || '') + "]", "success")
             .then(() => {
-                if (typeof PrintThermal !== 'undefined') {
-                    $.get('/print/configuracao').done(function(config) {
-                        if (config.printer_configured) {
-                            PrintThermal.enviarParaImpressora('/print/nfce/' + venda.id, null);
-                        } else {
-                            window.open(path_url + 'nfce/imprimir/' + venda.id, "_blank");
-                        }
-                    }).fail(function() {
-                        window.open(path_url + 'nfce/imprimir/' + venda.id, "_blank");
-                    });
-                } else {
-                    window.open(path_url + 'nfce/imprimir/' + venda.id, "_blank");
-                }
-                setTimeout(() => {
+                var pdfUrl = path_url + 'nfce/imprimir/' + venda.id;
+                var redirectFn = function() {
                     if(!update){
                         location.reload();
                     }else{
                         location.href = path_url+'frontbox';
                     }
-                }, 500);
+                };
+
+                if (typeof PrintThermal !== 'undefined') {
+                    PrintThermal.imprimir('nfce', venda.id, pdfUrl, redirectFn);
+                } else {
+                    window.open(pdfUrl, "_blank");
+                    setTimeout(redirectFn, 600);
+                }
             });
         }, 500);
     })

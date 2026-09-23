@@ -851,43 +851,54 @@ $("#form-pdv").on("submit", function (e) {
             	buttons: ["Não", "Sim"],
             	dangerMode: true,
             }).then((isConfirm) => {
+                var redirectFn = function() {
+                    if($('#pedido_delivery_id').length){
+                        location.href = '/pedidos-delivery';
+                    }else if($('#pedido_id').length){
+                        location.href = '/pedidos-cardapio';
+                    }else{
+                        location.href = '/frontbox/create';
+                    }
+                };
+
             	if (isConfirm) {
-            		window.open(path_url + 'frontbox/imprimir-nao-fiscal/' + success.id, "_blank")
-            	}
-                if($('#pedido_delivery_id').length){
-                	location.href = '/pedidos-delivery';
-                }else if($('#pedido_id').length){
-                	location.href = '/pedidos-cardapio';
-                }else{
-                	location.href = '/frontbox/create';
+                    var urlComprovante = path_url + 'frontbox/imprimir-nao-fiscal/' + success.id;
+                    if (typeof PrintThermal !== 'undefined') {
+                        PrintThermal.imprimir('cupom', success.id, urlComprovante, redirectFn);
+                    } else {
+                        window.open(urlComprovante, "_blank");
+                        setTimeout(redirectFn, 600);
+                    }
+            	} else {
+                    redirectFn();
                 }
             });
         }
     }).fail((err) => {
     	$('#btn_fiscal, #btn_nao_fiscal').removeClass('pdv-btn-loading').prop('disabled', false);
-    	swal("Erro", err.responseJSON, "error")
-    	console.log(err)
-    })
+    	swal("Erro", err.responseJSON, "error");
+    	console.log(err);
+    });
 });
 
-var update = false
+var update = false;
 $("#form-pdv-update").on("submit", function (e) {
-	update = true
+	update = true;
 	e.preventDefault();
 	const form = $(e.target);
 	var json = $(this).serializeFormJSON();
 
-	json.empresa_id = $('#empresa_id').val()
-	json.usuario_id = $('#usuario_id').val()
+	json.empresa_id = $('#empresa_id').val();
+	json.usuario_id = $('#usuario_id').val();
 
-	json.desconto = convertMoedaToFloat($('#valor_desconto').text())
-	json.acrescimo = convertMoedaToFloat($('#valor_acrescimo').text())
+	json.desconto = convertMoedaToFloat($('#valor_desconto').text());
+	json.acrescimo = convertMoedaToFloat($('#valor_acrescimo').text());
 	console.log(">>>>>>>> salvando ", json);
 	$.post(path_url + 'api/frenteCaixa/update/'+$('#venda_id').val(), json)
 	.done((success) => {
 
 		if (emitirNfce == true) {
-			gerarNfce(success)
+			gerarNfce(success);
 		} else {
 
 			swal({
@@ -898,27 +909,36 @@ $("#form-pdv-update").on("submit", function (e) {
 				buttons: ["Não", "Sim"],
 				dangerMode: true,
 			}).then((isConfirm) => {
+                var redirectFn = function() {
+                    if($('#pedido_delivery_id').length){
+                        location.href = '/pedidos-delivery';
+                    }else if($('#pedido_id').length){
+                        location.href = '/pedidos-cardapio';
+                    }else{
+                        if(update){
+                            location.href = path_url+'frontbox';
+                        }else{
+                            location.reload();
+                        }
+                    }
+                };
+
 				if (isConfirm) {
-					window.open(path_url + 'frontbox/imprimir-nao-fiscal/' + success.id, "_blank")
+                    var urlComprovante = path_url + 'frontbox/imprimir-nao-fiscal/' + success.id;
+                    if (typeof PrintThermal !== 'undefined') {
+                        PrintThermal.imprimir('cupom', success.id, urlComprovante, redirectFn);
+                    } else {
+                        window.open(urlComprovante, "_blank");
+                        setTimeout(redirectFn, 600);
+                    }
 				} else {
-                    // location.reload()
-                }
-                if($('#pedido_delivery_id').length){
-                	location.href = '/pedidos-delivery';
-                }else if($('#pedido_id').length){
-                	location.href = '/pedidos-cardapio';
-                }else{
-                	if(update){
-                		location.href = path_url+'frontbox'
-                	}else{
-                		location.reload()
-                	}
+                    redirectFn();
                 }
             });
 		}
 	}).fail((err) => {
-		console.log(err)
-	})
+		console.log(err);
+	});
 });
 
 function gerarNfce(venda) {
@@ -952,26 +972,21 @@ function gerarNfce(venda) {
 			}
 			swal("Sucesso", "NFCe emitida " + (success.recibo || '') + " - chave: [" + (success.chave || '') + "]", "success")
 			.then(() => {
+                var pdfUrl = path_url + 'nfce/imprimir/' + venda.id;
+                var redirectFn = function() {
+                    if(!update){
+                        location.reload();
+                    }else{
+                        location.href = path_url+'frontbox';
+                    }
+                };
+
 				if (typeof PrintThermal !== 'undefined') {
-					$.get('/print/configuracao').done(function(config) {
-						if (config.printer_configured) {
-							PrintThermal.enviarParaImpressora('/print/nfce/' + venda.id, null);
-						} else {
-							window.open(path_url + 'nfce/imprimir/' + venda.id, "_blank");
-						}
-					}).fail(function() {
-						window.open(path_url + 'nfce/imprimir/' + venda.id, "_blank");
-					});
+                    PrintThermal.imprimir('nfce', venda.id, pdfUrl, redirectFn);
 				} else {
-					window.open(path_url + 'nfce/imprimir/' + venda.id, "_blank");
+					window.open(pdfUrl, "_blank");
+                    setTimeout(redirectFn, 600);
 				}
-				setTimeout(() => {
-					if(!update){
-						location.reload();
-					}else{
-						location.href = path_url+'frontbox';
-					}
-				}, 500);
 			});
 		}, 500);
 	})

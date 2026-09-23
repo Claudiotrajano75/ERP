@@ -11,22 +11,17 @@ function transmitir(id){
 
 		swal("Sucesso", msg, "success")
 		.then(() => {
+			var pdfUrl = path_url + 'nfce/imprimir/' + id;
+			var redirectFn = function() {
+				location.reload();
+			};
+
 			if (typeof PrintThermal !== 'undefined') {
-				$.get('/print/configuracao').done(function(config) {
-					if (config.printer_configured) {
-						PrintThermal.enviarParaImpressora('/print/nfce/' + id, null);
-					} else {
-						window.open(path_url + 'nfce/imprimir/' + id, "_blank");
-					}
-				}).fail(function() {
-					window.open(path_url + 'nfce/imprimir/' + id, "_blank");
-				});
+				PrintThermal.imprimir('nfce', id, pdfUrl, redirectFn);
 			} else {
-				window.open(path_url + 'nfce/imprimir/' + id, "_blank");
+				window.open(pdfUrl, "_blank");
+				setTimeout(redirectFn, 600);
 			}
-			setTimeout(() => {
-				location.reload()
-			}, 500)
 		})
 	})
 	.fail((err) => {
@@ -55,22 +50,17 @@ function transmitirContigencia(id){
 
 		swal("Sucesso", msg, "success")
 		.then(() => {
+			var pdfUrl = path_url + 'nfce/imprimir/' + id;
+			var redirectFn = function() {
+				location.reload();
+			};
+
 			if (typeof PrintThermal !== 'undefined') {
-				$.get('/print/configuracao').done(function(config) {
-					if (config.printer_configured) {
-						PrintThermal.enviarParaImpressora('/print/nfce/' + id, null);
-					} else {
-						window.open(path_url + 'nfce/imprimir/' + id, "_blank");
-					}
-				}).fail(function() {
-					window.open(path_url + 'nfce/imprimir/' + id, "_blank");
-				});
+				PrintThermal.imprimir('nfce', id, pdfUrl, redirectFn);
 			} else {
-				window.open(path_url + 'nfce/imprimir/' + id, "_blank");
+				window.open(pdfUrl, "_blank");
+				setTimeout(redirectFn, 600);
 			}
-			setTimeout(() => {
-				location.reload()
-			}, 500)
 		})
 	})
 	.fail((err) => {

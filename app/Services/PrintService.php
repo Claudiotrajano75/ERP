@@ -8,7 +8,34 @@ use Illuminate\Support\Facades\Log;
 class PrintService
 {
     /**
-     * Imprime texto na impressora termica via socket TCP/IP
+     * Verifica se um endereço IP pertence a faixa de rede privada (LAN)
+     */
+    public function isPrivateIp($ip)
+    {
+        if (empty($ip)) return false;
+        if ($ip === 'localhost' || $ip === '127.0.0.1') return true;
+        return !filter_var(
+            $ip,
+            FILTER_VALIDATE_IP,
+            FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+        );
+    }
+
+    /**
+     * Verifica se o servidor atual é um ambiente local (localhost / LAN)
+     */
+    public function isLocalServer()
+    {
+        $serverAddr = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '';
+        $httpHost = $_SERVER['HTTP_HOST'] ?? '';
+        if (empty($serverAddr)) {
+            return strpos($httpHost, 'localhost') !== false || strpos($httpHost, '127.0.0.1') !== false;
+        }
+        return $this->isPrivateIp($serverAddr) || strpos($httpHost, 'localhost') !== false || strpos($httpHost, '127.0.0.1') !== false;
+    }
+
+    /**
+     * Imprime texto na impressora termica via socket TCP/IP ou Agente Local instantaneo
      * 
      * @param string $texto Texto formatado para impressao (pode conter comandos ESC/POS)
      * @param ConfigGeral|null $config Configuracao geral (se null, busca automaticamente)
@@ -28,18 +55,36 @@ class PrintService
         }
 
         $ip = $config->printer_ip;
-        $porta = $config->printer_porta;
-        $timeout = 5; // segundos
+        $porta = (int)($config->printer_porta ?: 9100);
+
+        // Se o ERP estiver na nuvem (Hostinger) e a impressora for IP local (192.168.x.x):
+        // Retorna o payload INSTANTANEAMENTE (em 1ms) para o Agente Local WebSocket imprimir sem delay!
+        if ($this->isPrivateIp($ip) && !$this->isLocalServer()) {
+            return [
+                'success'        => true,
+                'via_agent'      => true,
+                'printer_ip'     => $ip,
+                'printer_porta'  => $porta,
+                'payload_base64' => base64_encode($texto),
+                'message'        => 'Enviando para o Agente Local de Impressão...',
+            ];
+        }
+
+        $timeout = 1; // 1s max para rede local
 
         try {
             // Abre conexao TCP/IP com a impressora
             $socket = @fsockopen($ip, $porta, $errno, $errstr, $timeout);
 
             if (!$socket) {
-                Log::error("PrintService: Falha ao conectar na impressora {$ip}:{$porta} - {$errstr} (errno: {$errno})");
+                // Fallback para Agente Local
                 return [
-                    'success' => false,
-                    'message' => "Nao foi possivel conectar na impressora {$ip}:{$porta}. Verifique se ela esta ligada e na mesma rede."
+                    'success'        => true,
+                    'via_agent'      => true,
+                    'printer_ip'     => $ip,
+                    'printer_porta'  => $porta,
+                    'payload_base64' => base64_encode($texto),
+                    'message'        => 'Enviando para o Agente Local de Impressão...',
                 ];
             }
 
@@ -56,8 +101,12 @@ class PrintService
         } catch (\Exception $e) {
             Log::error("PrintService: Erro ao imprimir - " . $e->getMessage());
             return [
-                'success' => false,
-                'message' => 'Erro ao enviar para impressora: ' . $e->getMessage()
+                'success'        => true,
+                'via_agent'      => true,
+                'printer_ip'     => $ip,
+                'printer_porta'  => $porta,
+                'payload_base64' => base64_encode($texto),
+                'message'        => 'Enviando para o Agente Local de Impressão...',
             ];
         }
     }
@@ -370,20 +419,7 @@ class PrintService
             $cmd .= "\n\n\n";
             $cmd .= "\x1D\x56\x41\x10"; // Corte parcial
 
-            $resultado = $this->imprimir($cmd, $config);
-            if ($resultado['success']) {
-                return $resultado;
-            }
-
-            // Fallback para Agente Local (Cloud ERP / Hostinger)
-            return [
-                'success'        => true,
-                'via_agent'      => true,
-                'printer_ip'     => $config->printer_ip,
-                'printer_porta'  => (int)($config->printer_porta ?: 9100),
-                'payload_base64' => base64_encode($cmd),
-                'message'        => 'Enviando para o Agente Local de Impressão...',
-            ];
+            return $this->imprimir($cmd, $config);
 
         } catch (\Exception $e) {
             Log::error('PrintService: Erro ao gerar Cupom Nao Fiscal - ' . $e->getMessage());
@@ -693,20 +729,7 @@ class PrintService
             $cmd .= "\n\n\n";
             $cmd .= "\x1D\x56\x41\x10"; // Corte parcial
 
-            $resultado = $this->imprimir($cmd, $config);
-            if ($resultado['success']) {
-                return $resultado;
-            }
-
-            // Fallback para Agente Local (Cloud ERP / Hostinger)
-            return [
-                'success'        => true,
-                'via_agent'      => true,
-                'printer_ip'     => $config->printer_ip,
-                'printer_porta'  => (int)($config->printer_porta ?: 9100),
-                'payload_base64' => base64_encode($cmd),
-                'message'        => 'Enviando para o Agente Local de Impressão...',
-            ];
+            return $this->imprimir($cmd, $config);
 
         } catch (\Exception $e) {
             Log::error('PrintService: Erro ao gerar DANFE NFCe termico - ' . $e->getMessage());

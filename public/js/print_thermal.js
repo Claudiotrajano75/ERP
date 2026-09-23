@@ -58,24 +58,8 @@ var PrintThermal = {
             }
         };
 
-        // Verifica status da impressora nas configurações
-        $.ajax({
-            url: '/print/configuracao',
-            type: 'GET',
-            timeout: 3000,
-            success: function(config) {
-                if (config && config.printer_configured) {
-                    PrintThermal.enviarParaImpressora(route, pdfUrl, finalizar);
-                } else {
-                    // Sem impressora configurada -> Abre o PDF/Comprovante para o usuário imprimir no navegador
-                    PrintThermal.abrirDocumento(pdfUrl, finalizar);
-                }
-            },
-            error: function() {
-                // Erro de rede ou sem resposta -> Abre o PDF/Comprovante
-                PrintThermal.abrirDocumento(pdfUrl, finalizar);
-            }
-        });
+        // Envia diretamente para a rota do documento (que já valida a configuração no backend)
+        PrintThermal.enviarParaImpressora(route, pdfUrl, finalizar);
     },
 
     /**

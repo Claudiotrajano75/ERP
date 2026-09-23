@@ -26,7 +26,7 @@
         <link rel="stylesheet" type="text/css" href="/assets/css/toastr.min.css">
         <link rel="stylesheet" type="text/css" href="/css/style.css">
         <link rel='stylesheet' href='/css/bootstrap-duallistbox.min.css'/>
-        <link rel='stylesheet' href='/css/pdv.css'/>
+        <link rel='stylesheet' href='/css/pdv.css?v={{ file_exists(public_path("css/pdv.css")) ? filemtime(public_path("css/pdv.css")) : time() }}'/>
 
         @yield('css')
 

@@ -1,12 +1,117 @@
 @section('css')
     <style>
-        /* Estilos mínimos essenciais - maior parte está em pdv.css */
         #salvar_venda:hover {
             cursor: pointer;
         }
 
         .table-responsive {
             overflow-x: auto;
+        }
+
+        /* ── Header Compacto PDV ── */
+        .pdv-mesa-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 52px;
+            padding: 0 16px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .pdv-mesa-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .pdv-mesa-logo-icon {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            color: #fff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+        }
+
+        .pdv-mesa-brand-info {
+            min-width: 0;
+        }
+
+        .pdv-mesa-brand-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1.2;
+            white-space: nowrap;
+            color: #1e293b;
+        }
+
+        .pdv-mesa-brand-title span {
+            color: #3b82f6;
+        }
+
+        .pdv-mesa-subtitle {
+            font-size: 11px;
+            color: #64748b;
+            margin: 0;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .pdv-mesa-header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .pdv-mesa-online-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .pdv-mesa-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pdv-pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pdv-pulse-dot {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+            50%       { opacity: 0.7; box-shadow: 0 0 0 3px rgba(34,197,94,0); }
+        }
+
+        .pdv-mesa-user-badge {
+            font-size: 12px;
+            font-weight: 600;
+            color: #334155;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
         }
     </style>
 @endsection

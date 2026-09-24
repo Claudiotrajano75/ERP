@@ -1,7 +1,7 @@
 @extends('front_box.default', ['title' => 'EDITAR PRÉ VENDA'])
 @section('content')
 
-    <div class="container-fluid px-0 py-2">
+    <div class="container-fluid px-0 pt-0 pb-1">
         {!! Form::open()
         ->fill($item)
         ->put()

@@ -1,11 +1,292 @@
 @section('css')
     <style>
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        /* ── Header Compacto Pré-venda ── */
+        .pdv-mesa-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 44px;
+            padding: 0 14px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .pdv-mesa-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .pdv-mesa-logo-icon {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #0f766e 0%, #06b6d4 100%);
+            color: #fff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(6, 182, 212, 0.35);
+        }
+
+        .pdv-mesa-brand-info {
+            min-width: 0;
+        }
+
+        .pdv-mesa-brand-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1.2;
+            white-space: nowrap;
+            color: #1e293b;
+        }
+
+        .pdv-mesa-brand-title span {
+            color: #06b6d4;
+        }
+
+        .pdv-mesa-subtitle {
+            font-size: 11px;
+            color: #64748b;
+            margin: 0;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .pdv-mesa-header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .pdv-mesa-online-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .pdv-mesa-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pdv-pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pdv-pulse-dot {
+            0%, 100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+            }
+            50% {
+                opacity: 0.7;
+                box-shadow: 0 0 0 3px rgba(34, 197, 94, 0);
+            }
+        }
+
+        .pdv-mesa-user-badge {
+            font-size: 12px;
+            font-weight: 600;
+            color: #334155;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* ── Cards de Finalização ── */
+        .pdv-fin-card {
+            border-radius: 10px !important;
+            border: 1px solid #e2e8f0 !important;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+            height: 100% !important;
+            min-height: 68px !important;
+        }
+
+        .pdv-fin-card-body {
+            padding: 6px 10px !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .pdv-fin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+
+        .pdv-fin-label {
+            font-size: 10px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #64748b !important;
+            margin-bottom: 0;
+            line-height: 1.2;
+        }
+
+        .pdv-fin-value {
+            font-size: 16px !important;
+            font-weight: 800 !important;
+            color: #1e293b !important;
+            margin-bottom: 0 !important;
+            line-height: 1.2;
+        }
+
+        .pdv-fin-icon-box {
+            width: 24px !important;
+            height: 24px !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px !important;
+            font-size: 13px !important;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .pdv-fin-total {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%) !important;
+            border-color: #312e81 !important;
+        }
+
+        .pdv-fin-total .pdv-fin-label {
+            color: #c7d2fe !important;
+        }
+
+        .pdv-fin-total .pdv-fin-value,
+        .pdv-fin-total .total-venda {
+            color: #ffffff !important;
+        }
+
+        /* ── Leitor toggle ── */
+        .pdv-leitor-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .pdv-leitor-toggle.leitor-on {
+            background: #ecfdf5;
+            border-color: #6ee7b7;
+            color: #065f46;
+        }
+        .pdv-leitor-toggle.leitor-off {
+            background: #fef2f2;
+            border-color: #fca5a5;
+            color: #7f1d1d;
+        }
+        .pdv-leitor-switch {
+            font-size: 18px;
+            line-height: 1;
+        }
+        .pdv-barcode-input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            width: 1px;
+            height: 1px;
+        }
+
+        /* ── Barra de Adicionar Produto Compacta ── */
+        .pdv-add-row {
+            padding: 4px 10px !important;
+            margin: 0 !important;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .pdv-add-label {
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #475569 !important;
+            margin-bottom: 2px !important;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            line-height: 1.2;
+            height: 16px !important;
+        }
+
+        .pdv-add-input {
+            height: 36px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            border-radius: 8px !important;
+            border: 1px solid #cbd5e1 !important;
+            padding: 4px 8px !important;
+        }
+
+        .btn-add-item {
+            height: 36px !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            border-radius: 8px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .pdv-add-row .select2-container .select2-selection--single {
+            height: 36px !important;
+            border-radius: 8px !important;
+            border: 1px solid #cbd5e1 !important;
+            display: flex;
+            align-items: center;
+        }
+
+        .pdv-add-row .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 34px !important;
+            padding-left: 10px !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+        }
+
+        .pdv-add-row .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 34px !important;
+            right: 8px !important;
+        }
+
         @media (max-width: 1200px) {
             .card {
                 height: auto !important;
                 min-height: auto !important;
             }
-
             .scrollspy-example {
                 height: auto !important;
                 max-height: 400px;
@@ -20,9 +301,37 @@
 @isset($pedido)
 <input name="pedido_id" id="pedido_id" value="{{ $pedido->id }}" class="d-none">
 @endif
-<div class="row">
+
+{{-- ══════════ HEADER COMPACTO PRÉ-VENDA ══════════ --}}
+<header class="pdv-mesa-header mb-1 mt-0">
+    <div class="pdv-mesa-header-left">
+        <div class="pdv-mesa-logo-icon">
+            <i class="ri-list-ordered"></i>
+        </div>
+        <div class="pdv-mesa-brand-info">
+            <h1 class="pdv-mesa-brand-title">
+                {{ config('app.name', 'ERP') }} <span>Pré-venda</span>
+            </h1>
+            <p class="pdv-mesa-subtitle">
+                Gestão de Pedidos / Orçamentos
+            </p>
+        </div>
+    </div>
+    <div class="pdv-mesa-header-right">
+        <span class="pdv-mesa-online-badge">
+            <span class="pdv-mesa-dot"></span> Online
+        </span>
+        <span class="pdv-mesa-user-badge">
+            <i class="ri-user-line me-1"></i>{{ Auth::user()->name }}
+        </span>
+    </div>
+</header>
+
+<div class="row align-items-stretch">
+    {{-- ═══ COLUNA ESQUERDA: Categorias + Produtos ═══ --}}
     <div class="col-lg-4">
         <div class="row g-2">
+            {{-- Card Cliente --}}
             <div class="col-lg-6">
                 <div class="card pdv-card-client">
                     <div class="card-body pdv-fin-card-body">
@@ -56,6 +365,8 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Card Vendedor --}}
             <div class="col-lg-6">
                 <div class="card pdv-card-seller">
                     <div class="card-body pdv-fin-card-body">
@@ -92,12 +403,11 @@
                 </div>
             </div>
         </div>
-        <div class="card" style="min-height: calc(100vh - 150px)">
-            <div class="col-11" style="margin-left: 24px">
-                {{-- {!!Form::select('produto_id', '')->attrs(['class' => 'select2'])
-                !!} --}}
-            </div>
-            <div class="card pdv-categories-wrapper m-1 border-0 shadow-none">
+
+        {{-- Card com Categorias + Lista de Produtos --}}
+        <div class="card mb-0" style="height: calc(100vh - 155px); display: flex; flex-direction: column;">
+
+            <div class="card pdv-categories-wrapper mt-0 mb-0 border-0 shadow-none">
                 <div class="pdv-categories-header">
                     <h6 class="pdv-categories-title"><i class="ri-grid-fill me-1"></i>Categorias</h6>
                 </div>
@@ -121,71 +431,100 @@
                     </button>
                 </div>
             </div>
-            <div class="card-body lista_produtos m-1" data-simplebar data-simplebar-lg
-                style="max-height: calc(100vh - 320px);">
+
+            <div class="card-body lista_produtos m-1" style="flex: 1 1 auto; min-height: 0; overflow-y: auto;">
                 <div class="row cards-categorias"></div>
             </div>
-            <div class="row">
-                <div class="col-1 text-center">
-                    <input class="mousetrap" type="" autofocus
-                        style="border: none; width: 10px; height: 10px; background-color:black" id="codBarras" name="">
-                </div>
-                <div class="col-5 leitor_ativado text-info">
-                    Leitor Ativado
-                </div>
-                <div class="col-5 leitor_desativado d-none">
-                    Leitor Desativado
-                </div>
-                <div class="col-6 text-end mx-3">
-                    <a href="{{ route('pre-venda.create') }}" class="btn pdv-action-btn btn-primary btn-sm">
-                        <i class="ri-refresh-line me-1"></i> Nova Prevenda
-                    </a>
+
+            {{-- Leitor de código de barras --}}
+            <div class="row align-items-center px-2 pb-2 g-2">
+                <div class="col-12">
+                    <button type="button" id="btn-leitor-toggle" class="btn pdv-leitor-toggle leitor-on w-100"
+                        title="Clique para desativar o leitor de código de barras">
+                        <span class="d-inline-flex align-items-center gap-2">
+                            <i class="ri-barcode-line fs-5"></i>
+                            <span class="pdv-leitor-label">Leitor Ativado</span>
+                        </span>
+                        <span class="pdv-leitor-switch"><i class="ri-toggle-fill"></i></span>
+                    </button>
+                    {{-- Input invisível que recebe o código do leitor USB (funciona como teclado) --}}
+                    <input class="mousetrap pdv-barcode-input" autofocus type="text"
+                        id="codBarras" name="" autocomplete="off">
                 </div>
             </div>
 
         </div>
     </div>
+
+    {{-- ═══ COLUNA DIREITA: Busca + Itens + Finalização ═══ --}}
     <div class="col-lg-8 produtos">
-        <div class="card" style="min-height: calc(100vh - 150px)">
-            <div class="row m-2">
+        <div class="card mb-0" style="height: calc(100vh - 74px); display: flex; flex-direction: column;">
+
+            {{-- ═══ LINHA: BUSCAR / ADICIONAR PRODUTO ═══ --}}
+            <div class="row align-items-end pdv-add-row g-2 flex-shrink-0">
+
+                {{-- Campo: Produto --}}
                 <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="inp-produto_id" class="">Produto <span
-                                class="pdv-shortcut pdv-shortcut-sm">F1</span></label>
+                    <div class="form-group mb-0">
+                        <label for="inp-produto_id" class="pdv-add-label">
+                            <i class="ri-search-line me-1"></i>PRODUTO <span class="pdv-shortcut pdv-shortcut-sm">F1</span>
+                        </label>
                         <div class="input-group">
                             <select class="form-control produto_id" name="produto_id" id="inp-produto_id"></select>
                         </div>
+                        <input name="variacao_id" id="inp-variacao_id" type="hidden" value="">
                     </div>
                 </div>
-                <div class="col-md-2">
-                    {!! Form::tel('quantidade', 'Quantidade')->attrs(['class' => 'qtd']) !!}
-                </div>
-                <div class="col-md-2">
-                    {!! Form::tel('valor_unitario', 'Valor Unitário')->attrs(['class' => 'moeda value_unit']) !!}
-                </div>
-                <div class="col-md-2">
-                    <div class="row">
-                        <div class="col-11 ">
-                            <br>
-                            <button class="btn btn-primary btn-add-item w-100" type="button"
-                                style="margin-left: 0px">Adicionar</button>
-                        </div>
 
+                {{-- Campo: Quantidade --}}
+                <div class="col-md-2">
+                    <div class="form-group mb-0">
+                        <label class="pdv-add-label" for="inp-quantidade">
+                            <i class="ri-numbers-line me-1"></i>QTD.
+                        </label>
+                        <input type="tel" name="quantidade" id="inp-quantidade"
+                            class="qtd form-control text-center pdv-add-input" placeholder="1" value="1">
                     </div>
                 </div>
-                <div class="col-md-1">
-                    {!! Form::hidden('subtotal', 'SubTotal')->attrs(['class' => 'moeda']) !!}
-                    {!! Form::hidden('valor_total', 'valor Total')->attrs(['class' => 'moeda']) !!}
+
+                {{-- Campo: Valor Unitário --}}
+                <div class="col-md-2">
+                    <div class="form-group mb-0">
+                        <label class="pdv-add-label" for="inp-valor_unitario">
+                            <i class="ri-price-tag-2-line me-1"></i>VALOR UNIT.
+                        </label>
+                        <input type="tel" name="valor_unitario" id="inp-valor_unitario"
+                            class="moeda value_unit form-control text-end pdv-add-input" placeholder="0,00">
+                    </div>
                 </div>
+
+                {{-- Botão: Adicionar --}}
+                <div class="col-md-2">
+                    <div class="form-group mb-0">
+                        <label class="pdv-add-label opacity-0 d-none d-md-flex">&nbsp;</label>
+                        <button class="btn btn-primary btn-add-item w-100" type="button">
+                            <i class="ri-add-circle-line me-1"></i>Adicionar
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Campos hidden --}}
+                <div class="d-none">
+                    <input type="hidden" name="subtotal" id="inp-subtotal" class="moeda" value="">
+                    <input type="hidden" name="valor_total" id="inp-valor_total" class="moeda" value="">
+                </div>
+
             </div>
-            <div class="card m-1">
+
+            {{-- ═══ TABELA DE ITENS ═══ --}}
+            <div class="card m-1 flex-grow-1" style="min-height: 0; display: flex; flex-direction: column;">
                 <div data-bs-target="#navbar-example2" class="scrollspy-example table-responsive"
-                    style="height: calc(100vh - 355px)">
+                    style="flex: 1 1 auto; min-height: 0; overflow-y: auto;">
                     <table class="table table-striped dt-responsive nowrap table-itens pdv-table-items">
                         <thead>
                             <tr>
                                 <th style="width:44px"></th>
-                                <th>Produto</th>
+                                <th>Produto <span class="pdv-cart-count badge bg-success rounded-pill ms-1">0</span></th>
                                 <th style="width:130px">Quantidade</th>
                                 <th style="width:100px">Valor</th>
                                 <th style="width:100px">Subtotal</th>
@@ -238,10 +577,14 @@
                     </table>
                 </div>
             </div>
-            <div class="mt-1">
-                <div class="row">
+
+            {{-- ═══ ÁREA DE FINALIZAÇÃO ═══ --}}
+            <div class="mt-auto px-3 pb-2 flex-shrink-0">
+
+                {{-- Linha 1: Desconto | Acréscimo | Info Pré-venda | Total --}}
+                <div class="row g-2 mt-0 align-items-stretch">
                     <div class="col-lg-3 col-6">
-                        <div class="card pdv-fin-card">
+                        <div class="card pdv-fin-card h-100 mb-0">
                             <div class="card-body pdv-fin-card-body">
                                 <div class="pdv-fin-header">
                                     <h5 class="pdv-fin-label">Desconto <span class="pdv-shortcut">F2</span></h5>
@@ -256,7 +599,7 @@
                         </div>
                     </div>
                     <div class="col-lg-3 col-6">
-                        <div class="card pdv-fin-card">
+                        <div class="card pdv-fin-card h-100 mb-0">
                             <div class="card-body pdv-fin-card-body">
                                 <div class="pdv-fin-header">
                                     <h5 class="pdv-fin-label">Acréscimo <span class="pdv-shortcut">F3</span></h5>
@@ -271,7 +614,7 @@
                         </div>
                     </div>
                     <div class="col-lg-3 col-6">
-                        <div class="card pdv-fin-card">
+                        <div class="card pdv-fin-card h-100 mb-0">
                             <div class="card-body pdv-fin-card-body">
                                 <div class="pdv-fin-header">
                                     <h5 class="pdv-fin-label">SUPRIM.</h5>
@@ -284,7 +627,7 @@
                         </div>
                     </div>
                     <div class="col-lg-3 col-6">
-                        <div class="card pdv-fin-card pdv-fin-total">
+                        <div class="card pdv-fin-card pdv-fin-total h-100 mb-0">
                             <div class="card-body pdv-fin-card-body">
                                 <div class="pdv-fin-header">
                                     <h5 class="pdv-fin-label">TOTAL</h5>
@@ -303,9 +646,12 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
+
+                {{-- Linha 2: Pagamento | Botões de Ação --}}
+                <div class="row g-2 mt-0 align-items-stretch">
+                    {{-- Pagamento --}}
                     <div class="col-lg-3 col-6">
-                        <div class="card pdv-fin-card">
+                        <div class="card pdv-fin-card h-100 mb-0">
                             <div class="card-body pdv-fin-card-body">
                                 <div class="pdv-fin-header mb-1">
                                     <h5 class="pdv-fin-label">Pagamento</h5>
@@ -317,6 +663,8 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- Data vencimento (oculta por padrão) --}}
                     <div class="col-lg-2 col-6 div-vencimento d-none">
                         <div class="pdv-vencimento-card h-100">
                             <h6 class="pdv-vencimento-label"><i class="ri-calendar-line me-1"></i>Data de Vencimento
@@ -324,32 +672,48 @@
                             {!! Form::date('data_vencimento', '')->attrs(['class' => 'form-control form-control-sm data_atual']) !!}
                         </div>
                     </div>
+
+                    {{-- Botões Ação: Pag. Multi | Observ. --}}
                     <div class="col">
-                        <div class="card widget-icon-box div-pagamento mb-1">
-                            <div class="card-body p-2">
-                                <div class="row g-1">
-                                    <div class="col-4">
+                        <div class="card widget-icon-box div-pagamento mb-0 h-100">
+                            <div class="card-body p-2 h-100 d-flex align-items-center">
+                                <div class="row g-1 w-100">
+                                    <div class="col-6">
                                         <button type="button" class="btn pdv-action-btn btn-info w-100"
                                             data-bs-toggle="modal" data-bs-target="#pagamento_multiplo">
                                             <i class="ri-list-check-3"></i> Pag. Multi <span
                                                 class="pdv-shortcut pdv-shortcut-sm">F4</span>
                                         </button>
                                     </div>
-                                    <div class="col-4">
+                                    <div class="col-6">
                                         <button type="button" class="btn pdv-action-btn btn-primary w-100"
                                             data-bs-toggle="modal" data-bs-target="#observacao_pdv"
                                             title="Observação"><i class="ri-file-edit-fill"></i> Observ.
                                         </button>
                                     </div>
-                                    <br>
-                                    <div class="col-4">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Botões Ação: Sair | Nova Prevenda | Finalizar --}}
+                    <div class="col">
+                        <div class="card widget-icon-box div-pagamento mb-0 h-100">
+                            <div class="card-body p-2 h-100 d-flex align-items-center">
+                                <div class="row g-1 w-100">
+                                    <div class="col-6">
                                         <a class="btn pdv-action-btn btn-danger w-100"
                                             href="{{ route('pre-venda.index') }}">
                                             <i class="ri-arrow-left-s-line"></i> Sair
                                         </a>
                                     </div>
                                     <div class="col-6">
-                                        <button type="submit" disabled class="pdv-btn-finalizar" id="salvar_pre_venda">
+                                        <a href="{{ route('pre-venda.create') }}" class="btn pdv-action-btn btn-secondary w-100">
+                                            <i class="ri-refresh-line me-1"></i> Nova Prev.
+                                        </a>
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="submit" disabled class="pdv-btn-finalizar mt-1" id="salvar_pre_venda">
                                             <i class="ri-checkbox-circle-line"></i> Finalizar <span
                                                 class="pdv-shortcut pdv-shortcut-light pdv-shortcut-sm">F5</span>
                                         </button>
@@ -359,6 +723,7 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -369,6 +734,36 @@
     <script type="text/javascript" src="/js/mousetrap.js"></script>
 
     <script type="text/javascript">
+        // Leitor toggle (idêntico ao PDV)
+        (function () {
+            var btn = document.getElementById('btn-leitor-toggle');
+            var input = document.getElementById('codBarras');
+            var label = btn ? btn.querySelector('.pdv-leitor-label') : null;
+            var icon = btn ? btn.querySelector('.pdv-leitor-switch i') : null;
+            var isOn = true;
+
+            function setLeitor(on) {
+                isOn = on;
+                if (on) {
+                    btn.classList.remove('leitor-off');
+                    btn.classList.add('leitor-on');
+                    if (label) label.textContent = 'Leitor Ativado';
+                    if (icon) { icon.classList.remove('ri-toggle-line'); icon.classList.add('ri-toggle-fill'); }
+                    if (input) { input.disabled = false; input.focus(); }
+                } else {
+                    btn.classList.remove('leitor-on');
+                    btn.classList.add('leitor-off');
+                    if (label) label.textContent = 'Leitor Desativado';
+                    if (icon) { icon.classList.remove('ri-toggle-fill'); icon.classList.add('ri-toggle-line'); }
+                    if (input) input.disabled = true;
+                }
+            }
+
+            if (btn) {
+                btn.addEventListener('click', function () { setLeitor(!isOn); });
+            }
+        })();
+
         // Atalhos de teclado
         $(document).on('keydown', function (e) {
             if (e.key === 'F1' || e.key === 'F2' || e.key === 'F3' ||

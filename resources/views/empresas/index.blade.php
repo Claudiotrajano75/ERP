@@ -249,27 +249,34 @@
         background-color: #f1f5f9 !important;
         color: #1e293b !important;
     }
+
+    /* Botão do header (padrão modulo) */
+    .dash-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none; transition:all .2s ease; border:none; cursor:pointer; }
+    .dash-btn-success { background:#16a34a; color:#fff !important; }
+    .dash-btn-success:hover { background:#15803d; color:#fff !important; transform:translateY(-1px); box-shadow:0 4px 12px rgba(22,163,74,.3); }
+    .modulo-form-card { border-radius:12px; overflow:hidden; }
 </style>
 @endsection
 
+
 @section('content')
-<div class="mt-3">
+<div class="mt-3 text-dark">
     <div class="row">
-        <div class="card">
+        <div class="card border-0 shadow-sm modulo-form-card">
             <!-- Cabeçalho com Gradiente Premium -->
-            <div class="card-header modulo-header-gradient">
+            <div class="card-header modulo-header-gradient py-3 px-4">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div>
-                        <h4 class="modulo-title text-white">
+                        <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
                             <i class="ri-building-line"></i> Cadastro de Empresas
                         </h4>
-                        <p class="modulo-subtitle">
+                        <p class="mb-0 modulo-subtitle fs-13">
                             Cadastre, edite e gerencie as empresas e suas filiais integradas ao sistema.
                         </p>
                     </div>
                     <div>
-                        <a href="{{ route('empresas.create') }}" class="btn btn-success">
-                            <i class="ri-add-circle-fill"></i> Nova Empresa
+                        <a href="{{ route('empresas.create') }}" class="dash-btn dash-btn-success">
+                            <i class="ri-add-circle-line"></i> Nova Empresa
                         </a>
                     </div>
                 </div>

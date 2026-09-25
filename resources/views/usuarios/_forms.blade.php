@@ -98,7 +98,7 @@
             <div class="col-md-4 col-12 uf-field">
                 {!!Form::select('role_id', 'Grupo / Controle de Acesso', ['' => 'Selecione'] + $roles->pluck('description', 'id')->all())
                 ->attrs(['class' => 'select2 form-select'])
-                ->value(isset($item) && $item->roles ? $item->roles->first()->id : null)
+                ->value(isset($item) && $item->roles ? optional($item->roles->first())->id : null)
                 ->required()!!}
             </div>
 

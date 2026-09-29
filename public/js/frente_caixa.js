@@ -932,6 +932,50 @@ function validaCaixa() {
 }
 
 var total_venda = 0;
+
+function recalculaTroco() {
+    let vRaw = $("#inp-valor_recebido").val() || "";
+    let v = convertMoedaToFloat(vRaw);
+
+    let desc = typeof DESCONTO !== 'undefined' ? parseFloat(DESCONTO) || 0 : 0;
+    let acre = typeof VALORACRESCIMO !== 'undefined' ? parseFloat(VALORACRESCIMO) || 0 : 0;
+    let totalLiquido = total_venda - desc + acre;
+
+    let qtdItens = $(".subtotal-item").length;
+
+    // Se não há itens ou o total líquido for zerado/negativo, zera o troco
+    if (qtdItens === 0 || totalLiquido <= 0 || total_venda <= 0) {
+        $("#valor-troco").html("0,00");
+        $("#inp-troco").val("0,00");
+        $(".pdv-troco-card, .pdv-troco-container").removeClass('has-troco');
+        if (typeof validateButtonSave === "function") {
+            validateButtonSave();
+        }
+        return;
+    }
+
+    if (v > 0) {
+        let troco = v - totalLiquido;
+        if (troco > 0) {
+            $("#valor-troco").html(convertFloatToMoeda(troco));
+            $("#inp-troco").val(convertFloatToMoeda(troco));
+            $(".pdv-troco-card, .pdv-troco-container").addClass('has-troco');
+        } else {
+            $("#valor-troco").html("0,00");
+            $("#inp-troco").val("0,00");
+            $(".pdv-troco-card, .pdv-troco-container").removeClass('has-troco');
+        }
+    } else {
+        $("#valor-troco").html("0,00");
+        $("#inp-troco").val("0,00");
+        $(".pdv-troco-card, .pdv-troco-container").removeClass('has-troco');
+    }
+
+    if (typeof validateButtonSave === "function") {
+        validateButtonSave();
+    }
+}
+
 function calcTotal() {
     var total = 0;
     $(".subtotal-item").each(function () {
@@ -939,14 +983,21 @@ function calcTotal() {
     });
     setTimeout(() => {
         total_venda = total;
-        $(".total-venda").html(convertFloatToMoeda(total + parseFloat(VALORACRESCIMO) - parseFloat(DESCONTO)));
-        $('#inp-valor_total').val(convertFloatToMoeda(total + parseFloat(VALORACRESCIMO) - parseFloat(DESCONTO)));
-        $(".total-venda-modal").html("R$ " + convertFloatToMoeda(total + VALORACRESCIMO - DESCONTO));
+        let desc = typeof DESCONTO !== 'undefined' ? parseFloat(DESCONTO) || 0 : 0;
+        let acre = typeof VALORACRESCIMO !== 'undefined' ? parseFloat(VALORACRESCIMO) || 0 : 0;
+        let totalFinal = total + acre - desc;
+        if (totalFinal < 0) totalFinal = 0;
+
+        $(".total-venda").html(convertFloatToMoeda(totalFinal));
+        $('#inp-valor_total').val(convertFloatToMoeda(totalFinal));
+        $(".total-venda-modal").html("R$ " + convertFloatToMoeda(totalFinal));
         $('#inp-valor_integral').val(convertFloatToMoeda(total_venda))
 
         $('#inp-quantidade').val('')
         $('#inp-valor_unitario').val('')
         $('#inp-produto_id').val('').change()
+
+        recalculaTroco();
     }, 100);
 }
 
@@ -1017,19 +1068,8 @@ $('#salvar_venda').click(function() {
     }, 100);
 });
 
-$("#inp-valor_recebido").on("keyup", (event) => {
-    let v = $("#inp-valor_recebido").val();
-    v = v.replace(",", ".");
-
-    let troco = v - (total_venda - DESCONTO + VALORACRESCIMO);
-    if (troco > 0) {
-        $("#valor-troco").html(convertFloatToMoeda(troco));
-        $("#inp-troco").val(convertFloatToMoeda(troco));
-    } else {
-        $("#valor-troco").html("0,00");
-    }
-    
-    validateButtonSave();
+$("#inp-valor_recebido").on("keyup change input", (event) => {
+    recalculaTroco();
 });
 
 $("body").on("click", "#btn-incrementa", function () {
@@ -1375,6 +1415,9 @@ $("#inp-tipo_pagamento").change(() => {
         $("#finalizar-consignado").attr("disabled", true);
         $(".div-troco").removeClass('d-none');
         $(".div-vencimento").addClass('d-none');
+        setTimeout(() => {
+            $("#inp-valor_recebido").focus().select();
+        }, 100);
     } else {
         $("#inp-valor_recebido").attr("disabled", "true");
         $(".div-troco").addClass('d-none');

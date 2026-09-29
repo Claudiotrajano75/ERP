@@ -192,6 +192,173 @@
         .pdv-fin-total .total-venda {
             color: #ffffff !important;
         }
+
+        /* ── Painel de Pagamento e Recebido Compactos ── */
+        .pdv-pagamento-card .pdv-fin-card-body,
+        .pdv-recebido-card .pdv-fin-card-body {
+            justify-content: flex-start !important;
+            gap: 6px !important;
+            padding: 6px 10px !important;
+        }
+
+        .pdv-pagamento-card .pdv-fin-header,
+        .pdv-recebido-card .pdv-fin-header {
+            margin-bottom: 2px !important;
+        }
+
+        .pdv-pagamento-card .pdv-fin-icon-box,
+        .pdv-recebido-card .pdv-fin-icon-box {
+            width: 22px !important;
+            height: 22px !important;
+            font-size: 12px !important;
+        }
+
+        .pdv-pagamento-card .pdv-fin-label,
+        .pdv-recebido-card .pdv-fin-label {
+            font-size: 13px !important;
+        }
+
+        /* Select de Pagamento compacto */
+        .pdv-pagamento-select {
+            height: 32px !important;
+            min-height: 32px !important;
+            padding: 2px 8px !important;
+            font-size: 13px !important;
+            border-radius: 6px !important;
+            border: 1px solid #cbd5e1 !important;
+            margin-top: 0 !important;
+        }
+
+        /* ── Grupo: R$ + Input Recebido ── */
+        .pdv-recebido-input-wrap {
+            width: 100%;
+        }
+
+        .pdv-recebido-group {
+            display: flex !important;
+            align-items: stretch !important;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .pdv-recebido-group:focus-within {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18) !important;
+        }
+
+        .pdv-recebido-prefix {
+            display: flex !important;
+            align-items: center !important;
+            padding: 0 8px !important;
+            font-size: 15px !important;
+            font-weight: 800 !important;
+            color: #475569 !important;
+            background: #f8fafc !important;
+            border-right: 1.5px solid #cbd5e1 !important;
+            user-select: none !important;
+            flex-shrink: 0 !important;
+            line-height: 1 !important;
+        }
+
+        .pdv-recebido-input {
+            display: block !important;
+            width: 100% !important;
+            height: 34px !important;
+            border: none !important;
+            border-radius: 0 !important;
+            background-color: transparent !important;
+            font-size: 18px !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+            padding: 0 10px !important;
+            text-align: right !important;
+            letter-spacing: 0.5px !important;
+            box-shadow: none !important;
+            transition: none !important;
+            outline: none !important;
+        }
+
+        .pdv-recebido-input:focus {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        /* ── Faixa de Troco ── */
+        .pdv-troco-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 4px 10px;
+            min-height: 28px;
+            margin-top: 2px;
+            transition: all 0.25s ease;
+        }
+
+        .pdv-troco-icon {
+            font-size: 13px;
+            color: #64748b;
+            transition: color 0.2s ease;
+        }
+
+        .pdv-troco-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 0;
+            line-height: 1;
+            transition: color 0.2s ease;
+        }
+
+        .pdv-troco-value-wrap {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 3px;
+        }
+
+        .pdv-troco-curr {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            transition: color 0.2s ease;
+        }
+
+        .pdv-troco-value {
+            font-size: 16px;
+            font-weight: 800;
+            color: #334155;
+            letter-spacing: 0.3px;
+            line-height: 1;
+            transition: color 0.2s ease;
+        }
+
+        /* Estado quando há Troco a devolver (> 0) */
+        .pdv-troco-card.has-troco {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+            border-color: #34d399 !important;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.18) !important;
+        }
+
+        .pdv-troco-card.has-troco .pdv-troco-icon {
+            color: #059669 !important;
+        }
+
+        .pdv-troco-card.has-troco .pdv-troco-label {
+            color: #065f46 !important;
+        }
+
+        .pdv-troco-card.has-troco .pdv-troco-curr {
+            color: #047857 !important;
+        }
+
+        .pdv-troco-card.has-troco .pdv-troco-value {
+            color: #064e3b !important;
+        }
     </style>
 @endsection
 
@@ -287,7 +454,7 @@
                                     </h6>
                                 @else
                                 <h6 class="pdv-card-value-empty cliente_selecionado mt-1"><i
-                                        class="ri-user-search-line"></i> Nenhum cliente selecionado</h6>
+                                        class="ri-user-search-line"></i> Nenhum selecionado</h6>
                                 @endif
                             </div>
                             <div class="flex-shrink-0 ms-2">
@@ -320,7 +487,7 @@
                                     <h6 class="pdv-card-value funcionario_selecionado mt-1">{{ $funcionario->nome }}</h6>
                                 @else
                                 <h6 class="pdv-card-value-empty funcionario_selecionado mt-1"><i
-                                        class="ri-user-search-line"></i> Nenhum vendedor selecionado</h6>
+                                        class="ri-user-search-line"></i> Nenhum selecionado</h6>
                                 @endif
                             </div>
                             <div class="flex-shrink-0 ms-2">
@@ -692,7 +859,7 @@
                 </div>
                 <div class="row g-2 mt-0 align-items-stretch">
                     <div class="col-lg-3 col-6">
-                        <div class="card pdv-fin-card h-100 mb-0">
+                        <div class="card pdv-fin-card h-100 mb-0 pdv-pagamento-card">
                             <div class="card-body pdv-fin-card-body">
                                 <div class="pdv-fin-header mb-1">
                                     <h5 class="pdv-fin-label">Pagamento</h5>
@@ -705,21 +872,33 @@
                         </div>
                     </div>
                     <div class="col-lg-3 col-6 div-troco d-none">
-                        <div class="card pdv-fin-card">
+                        <div class="card pdv-fin-card h-100 mb-0 pdv-recebido-card">
                             <div class="card-body pdv-fin-card-body">
                                 <div class="pdv-fin-header mb-1">
                                     <h5 class="pdv-fin-label">Recebido</h5>
-                                    <span class="pdv-fin-icon-box text-bg-danger shadow-sm">
+                                    <span class="pdv-fin-icon-box text-bg-success shadow-sm" title="Valor em Dinheiro">
                                         <i class="ri-hand-coin-line"></i>
                                     </span>
                                 </div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="flex-grow-1" style="min-width:0">
-                                        {!! Form::tel('valor_recebido', '')->attrs(['class' => 'moeda form-control form-control-sm text-end', 'placeholder' => '0,00']) !!}
+                                <div class="pdv-recebido-input-wrap">
+                                    <div class="pdv-recebido-group">
+                                        <span class="pdv-recebido-prefix">R$</span>
+                                        {!! Form::tel('valor_recebido', '')->attrs([
+                                            'class' => 'moeda pdv-recebido-input text-end',
+                                            'placeholder' => '0,00',
+                                            'autocomplete' => 'off',
+                                            'id' => 'inp-valor_recebido'
+                                        ]) !!}
                                     </div>
-                                    <div class="pdv-troco-badge flex-shrink-0 text-center">
+                                </div>
+                                <div class="pdv-troco-card d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <i class="ri-coins-line pdv-troco-icon"></i>
                                         <span class="pdv-troco-label">Troco</span>
-                                        <strong class="pdv-troco-value" id="valor-troco">R$ 0,00</strong>
+                                    </div>
+                                    <div class="pdv-troco-value-wrap">
+                                        <span class="pdv-troco-curr">R$</span>
+                                        <strong class="pdv-troco-value" id="valor-troco">0,00</strong>
                                         <input type="hidden" name="troco" id="inp-troco">
                                     </div>
                                 </div>

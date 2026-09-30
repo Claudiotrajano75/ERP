@@ -236,196 +236,202 @@
 @endsection
 
 @section('content')
-<div class="container-fluid">
-    {{-- Header Moderno --}}
-    <div class="modulo-header-gradient mb-3">
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div class="d-flex align-items-center gap-3">
-                <div class="modulo-header-icon">
-                    <i class="ri-scales-3-line"></i>
-                </div>
-                <div>
-                    <h4 class="modulo-header-title">Padrões de Tributação</h4>
-                    <p class="modulo-header-subtitle">
-                        Empresa: <strong class="text-white">{{ $empresa->nome }}</strong> 
-                        ({{ $empresa->cpf_cnpj }}) — {{ $empresa->tributacao }}
-                    </p>
-                </div>
-            </div>
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-                <a href="{{ route('contador-empresa.padrao-tributacao.alterar') }}" class="dash-btn dash-btn-light">
-                    <i class="ri-refresh-line"></i>
-                    <span>Aplicar em Lote nos Produtos</span>
-                </a>
-                <a href="{{ route('contador-empresa.padrao-tributacao.create') }}" class="dash-btn dash-btn-primary">
-                    <i class="ri-add-line"></i>
-                    <span>Novo Padrão</span>
-                </a>
-            </div>
-        </div>
-    </div>
+<div class="mt-3">
+    <div class="row">
+        <div class="card border-0 shadow-sm modulo-form-card">
 
-    {{-- Cards de Estatísticas --}}
-    <div class="row g-3 mb-3">
-        <div class="col-md-4">
-            <div class="stat-card">
-                <div class="stat-icon stat-icon-indigo">
-                    <i class="ri-file-settings-line"></i>
-                </div>
-                <div>
-                    <div class="stat-label">Total de Padrões</div>
-                    <div class="stat-value">{{ $stats['total'] }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="stat-card">
-                <div class="stat-icon stat-icon-green">
-                    <i class="ri-checkbox-circle-line"></i>
-                </div>
-                <div>
-                    <div class="stat-label">Padrão Principal Ativo</div>
-                    <div class="stat-value">{{ $stats['padrao'] > 0 ? 'Definido' : 'Pendente' }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="stat-card">
-                <div class="stat-icon stat-icon-purple">
-                    <i class="ri-building-line"></i>
-                </div>
-                <div>
-                    <div class="stat-label">Regime Tributário</div>
-                    <div class="stat-value" style="font-size: 16px;">{{ $empresa->tributacao ?: 'Não informado' }}</div>
+            {{-- ═══ CABEÇALHO ═══ --}}
+            <div class="card-header modulo-header-gradient py-3 px-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
+                            <i class="ri-scales-3-line"></i> Padrões de Tributação
+                        </h4>
+                        <p class="mb-0 modulo-subtitle fs-13">
+                            Empresa: <strong class="text-primary fw-bold">{{ $empresa->nome }}</strong> 
+                            ({{ $empresa->cpf_cnpj }}) — {{ $empresa->tributacao }}
+                        </p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <a href="{{ route('contador-empresa.padrao-tributacao.alterar') }}" class="dash-btn dash-btn-light">
+                            <i class="ri-refresh-line"></i>
+                            <span>Aplicar em Lote nos Produtos</span>
+                        </a>
+                        <a href="{{ route('contador-empresa.padrao-tributacao.create') }}" class="dash-btn dash-btn-primary">
+                            <i class="ri-add-line"></i>
+                            <span>Novo Padrão</span>
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    {{-- Filtro de Busca --}}
-    <div class="filter-wrap">
-        {!! Form::open()->fill(request()->all())->get() !!}
-        <div class="filter-grid">
-            <div class="filter-field">
-                <label><i class="ri-search-line me-1"></i>Buscar por Descrição</label>
-                <input type="text" name="descricao" class="form-control" placeholder="Ex: Tributação Geral Simples, ST..." value="{{ request()->descricao }}">
-            </div>
-            <div class="filter-actions">
-                <button class="btn-filter-submit" type="submit">
-                    <i class="ri-search-line"></i>
-                    <span>Buscar</span>
-                </button>
-                <a class="btn-filter-clear" href="{{ route('contador-empresa.padrao-tributacao') }}">
-                    <i class="ri-eraser-line"></i>
-                    <span>Limpar</span>
-                </a>
-            </div>
-        </div>
-        {!! Form::close() !!}
-    </div>
+            <div class="card-body p-4">
 
-    {{-- Tabela de Padrões --}}
-    <div class="tb-wrap mb-3">
-        {!! Form::open()->delete()->route('contador-empresa.padrao-tributacao.destroy-select')->id('form-delete-select') !!}
-        <div class="table-responsive">
-            <table class="tb-custom">
-                <thead>
-                    <tr>
-                        <th width="30">
-                            <input type="checkbox" class="form-check-input check-all" id="check-all">
-                        </th>
-                        <th>Descrição</th>
-                        <th>CST/CSOSN</th>
-                        <th>CFOP Estadual</th>
-                        <th>CFOP Interestadual</th>
-                        <th>% ICMS</th>
-                        <th>% PIS / COFINS</th>
-                        <th>% IPI</th>
-                        <th>Padrão</th>
-                        <th class="text-end">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($data as $item)
-                    <tr>
-                        <td>
-                            <input type="checkbox" class="form-check-input check-item" name="item_delete[]" value="{{ $item->id }}">
-                        </td>
-                        <td>
-                            <strong class="text-dark">{{ $item->descricao }}</strong>
-                            @if($item->ncm)
-                                <br><small class="text-muted">NCM: {{ $item->ncm }}</small>
-                            @endif
-                        </td>
-                        <td>
-                            <span class="badge bg-light text-dark border">{{ $item->cst_csosn }}</span>
-                        </td>
-                        <td>
-                            <span class="fw-semibold text-secondary">{{ $item->cfop_estadual }}</span>
-                        </td>
-                        <td>
-                            <span class="fw-semibold text-secondary">{{ $item->cfop_outro_estado }}</span>
-                        </td>
-                        <td>
-                            <span class="text-primary fw-bold">{{ $item->perc_icms }}%</span>
-                        </td>
-                        <td>
-                            <small>{{ $item->perc_pis }}% / {{ $item->perc_cofins }}%</small>
-                        </td>
-                        <td>
-                            <small>{{ $item->perc_ipi }}%</small>
-                        </td>
-                        <td>
-                            @if($item->padrao == 1)
-                                <span class="pill-badge pill-default"><i class="ri-check-line"></i> Principal</span>
-                            @else
-                                <span class="pill-badge pill-secondary">Não</span>
-                            @endif
-                        </td>
-                        <td>
-                            <div class="actions-cell">
-                                <a class="btn-act btn-act-edit" title="Editar Padrão" href="{{ route('contador-empresa.padrao-tributacao.edit', [$item->id]) }}">
-                                    <i class="ri-edit-line"></i>
-                                </a>
-                                <button type="button" class="btn-act btn-act-del btn-delete" title="Excluir" data-form="form-del-{{ $item->id }}">
-                                    <i class="ri-delete-bin-line"></i>
-                                </button>
+                {{-- Cards de Estatísticas --}}
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-indigo">
+                                <i class="ri-file-settings-line"></i>
                             </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="10">
-                            <div class="empty-state">
-                                <i class="ri-scales-3-line"></i>
-                                <h6>Nenhum padrão de tributação cadastrado</h6>
-                                <p class="small text-muted mb-0">Cadastre um padrão tributário para agilizar o lançamento fiscal da empresa.</p>
+                            <div>
+                                <div class="stat-label">Total de Padrões</div>
+                                <div class="stat-value">{{ $stats['total'] }}</div>
                             </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        {!! Form::close() !!}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-green">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <div>
+                                <div class="stat-label">Padrão Principal Ativo</div>
+                                <div class="stat-value">{{ $stats['padrao'] > 0 ? 'Definido' : 'Pendente' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-purple">
+                                <i class="ri-building-line"></i>
+                            </div>
+                            <div>
+                                <div class="stat-label">Regime Tributário</div>
+                                <div class="stat-value" style="font-size: 16px;">{{ $empresa->tributacao ?: 'Não informado' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        {{-- Forms individuais de exclusão --}}
-        @foreach($data as $item)
-            <form id="form-del-{{ $item->id }}" action="{{ route('contador-empresa.padrao-tributacao.destroy', [$item->id]) }}" method="POST" style="display:none;">
-                @csrf
-                @method('DELETE')
-            </form>
-        @endforeach
+                {{-- Filtro de Busca --}}
+                <div class="filter-wrap">
+                    {!! Form::open()->fill(request()->all())->get() !!}
+                    <div class="filter-grid">
+                        <div class="filter-field">
+                            <label><i class="ri-search-line me-1"></i>Buscar por Descrição</label>
+                            <input type="text" name="descricao" class="form-control" placeholder="Ex: Tributação Geral Simples, ST..." value="{{ request()->descricao }}">
+                        </div>
+                        <div class="filter-actions">
+                            <button class="btn-filter-submit" type="submit">
+                                <i class="ri-search-line"></i>
+                                <span>Buscar</span>
+                            </button>
+                            <a class="btn-filter-clear" href="{{ route('contador-empresa.padrao-tributacao') }}">
+                                <i class="ri-eraser-line"></i>
+                                <span>Limpar</span>
+                            </a>
+                        </div>
+                    </div>
+                    {!! Form::close() !!}
+                </div>
 
-        {{-- Rodapé da Tabela --}}
-        <div class="p-3 border-top d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 bg-light bg-opacity-50">
-            <div>
-                {!! $data->appends(request()->all())->links() !!}
-            </div>
-            <div>
-                <button type="button" class="btn btn-outline-danger btn-sm" id="btn-delete-selected" style="display: none;">
-                    <i class="ri-delete-bin-line me-1"></i> Excluir Selecionados
-                </button>
+                {{-- Tabela de Padrões --}}
+                <div class="tb-wrap mb-3">
+                    {!! Form::open()->delete()->route('contador-empresa.padrao-tributacao.destroy-select')->id('form-delete-select') !!}
+                    <div class="table-responsive">
+                        <table class="tb-custom">
+                            <thead>
+                                <tr>
+                                    <th width="30">
+                                        <input type="checkbox" class="form-check-input check-all" id="check-all">
+                                    </th>
+                                    <th>Descrição</th>
+                                    <th>CST/CSOSN</th>
+                                    <th>CFOP Estadual</th>
+                                    <th>CFOP Interestadual</th>
+                                    <th>% ICMS</th>
+                                    <th>% PIS / COFINS</th>
+                                    <th>% IPI</th>
+                                    <th>Padrão</th>
+                                    <th class="text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($data as $item)
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="form-check-input check-item" name="item_delete[]" value="{{ $item->id }}">
+                                    </td>
+                                    <td>
+                                        <strong class="text-dark">{{ $item->descricao }}</strong>
+                                        @if($item->ncm)
+                                            <br><small class="text-muted">NCM: {{ $item->ncm }}</small>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">{{ $item->cst_csosn }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-semibold text-secondary">{{ $item->cfop_estadual }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-semibold text-secondary">{{ $item->cfop_outro_estado }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-primary fw-bold">{{ $item->perc_icms }}%</span>
+                                    </td>
+                                    <td>
+                                        <small>{{ $item->perc_pis }}% / {{ $item->perc_cofins }}%</small>
+                                    </td>
+                                    <td>
+                                        <small>{{ $item->perc_ipi }}%</small>
+                                    </td>
+                                    <td>
+                                        @if($item->padrao == 1)
+                                            <span class="pill-badge pill-default"><i class="ri-check-line"></i> Principal</span>
+                                        @else
+                                            <span class="pill-badge pill-secondary">Não</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="actions-cell">
+                                            <a class="btn-act btn-act-edit" title="Editar Padrão" href="{{ route('contador-empresa.padrao-tributacao.edit', [$item->id]) }}">
+                                                <i class="ri-edit-line"></i>
+                                            </a>
+                                            <button type="button" class="btn-act btn-act-del btn-delete" title="Excluir" data-form="form-del-{{ $item->id }}">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="10">
+                                        <div class="empty-state">
+                                            <i class="ri-scales-3-line"></i>
+                                            <h6>Nenhum padrão de tributação cadastrado</h6>
+                                            <p class="small text-muted mb-0">Cadastre um padrão tributário para agilizar o lançamento fiscal da empresa.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    {!! Form::close() !!}
+
+                    {{-- Forms individuais de exclusão --}}
+                    @foreach($data as $item)
+                        <form id="form-del-{{ $item->id }}" action="{{ route('contador-empresa.padrao-tributacao.destroy', [$item->id]) }}" method="POST" style="display:none;">
+                            @csrf
+                            @method('DELETE')
+                        </form>
+                    @endforeach
+
+                    {{-- Rodapé da Tabela --}}
+                    <div class="p-3 border-top d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 bg-light bg-opacity-50">
+                        <div>
+                            {!! $data->appends(request()->all())->links() !!}
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-outline-danger btn-sm" id="btn-delete-selected" style="display: none;">
+                                <i class="ri-delete-bin-line me-1"></i> Excluir Selecionados
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>

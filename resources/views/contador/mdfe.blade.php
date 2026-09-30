@@ -273,30 +273,38 @@
 @endsection
 
 @section('content')
-<div class="container-fluid">
-    {{-- Header Moderno --}}
-    <div class="modulo-header-gradient mb-3">
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div class="d-flex align-items-center gap-3">
-                <div class="modulo-header-icon">
-                    <i class="ri-folders-line"></i>
-                </div>
-                <div>
-                    <h4 class="modulo-header-title">Manifestos de Documentos Fiscais (MDF-e)</h4>
-                    <p class="modulo-header-subtitle">Consulta, visualização e exportação de MDF-e emitidos pela empresa</p>
-                </div>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-                <a href="{{ route('home') }}" class="dash-btn dash-btn-light">
-                    <i class="ri-arrow-left-line"></i>
-                    <span>Voltar ao Painel</span>
-                </a>
-            </div>
-        </div>
-    </div>
+<div class="mt-3">
+    <div class="row">
+        <div class="card border-0 shadow-sm modulo-form-card">
 
-    {{-- Cards de Resumo --}}
-    <div class="row g-3 mb-3">
+            {{-- ═══ CABEÇALHO ═══ --}}
+            <div class="card-header modulo-header-gradient py-3 px-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
+                            <i class="ri-folders-line"></i> Manifestos de Documentos Fiscais (MDF-e)
+                        </h4>
+                        <p class="mb-0 modulo-subtitle fs-13">
+                            Consulta, visualização e exportação de MDF-e emitidos pela empresa.
+                        </p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        @if(isset($contXml) && $contXml > 0)
+                        <a class="dash-btn dash-btn-zip" href="{{ route('contador-empresa-mdfe-zip', ['start_date='.request()->start_date, 'end_date='.request()->end_date]) }}">
+                            <i class="ri-file-zip-line"></i> Baixar ZIP ({{ $contXml }} XMLs)
+                        </a>
+                        @endif
+                        <a href="{{ route('home') }}" class="dash-btn dash-btn-light">
+                            <i class="ri-arrow-left-line"></i> Voltar ao Painel
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+
+                {{-- Cards de Resumo --}}
+                <div class="row g-3 mb-4">
         <div class="col-md-6 col-lg-6">
             <div class="stat-card">
                 <div class="stat-icon stat-icon-indigo">
@@ -448,5 +456,8 @@
             @endif
         </div>
     </div>
+</div>
+</div>
+</div>
 </div>
 @endsection

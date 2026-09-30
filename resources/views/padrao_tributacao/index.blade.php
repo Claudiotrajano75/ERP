@@ -70,7 +70,7 @@
                         @endcan
                         @can('config_produto_fiscal_edit')
                         <a href="{{ route('produtopadrao-tributacao.alterar') }}" class="dash-btn dash-btn-light">
-                            <i class="ri-refresh-line"></i> Alterar Tributação
+                            <i class="ri-refresh-line"></i> Aplicar Tributação em Lote
                         </a>
                         @endcan
                     </div>

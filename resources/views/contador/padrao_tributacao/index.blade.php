@@ -1,8 +1,8 @@
-@extends('layouts.app', ['title' => 'MDFe da Empresa'])
+@extends('layouts.app', ['title' => 'Padrões de Tributação da Empresa'])
 
 @section('css')
 <style>
-    /* ─── Cards de Estatística ─── */
+    /* ─── Cards de Estatísticas ─── */
     .stat-card {
         background: #fff;
         border-radius: 14px;
@@ -30,7 +30,7 @@
     }
     .stat-icon-indigo { background: #eef2ff; color: #4338ca; }
     .stat-icon-green  { background: #ecfdf5; color: #047857; }
-    .stat-icon-blue   { background: #eff6ff; color: #1d4ed8; }
+    .stat-icon-purple { background: #faf5ff; color: #7e22ce; }
     .stat-label {
         font-size: 11px;
         font-weight: 600;
@@ -52,12 +52,12 @@
         border: 1px solid #e9ecf3;
         border-radius: 14px;
         box-shadow: 0 1px 2px rgba(16,24,40,.04);
-        padding: 18px 20px;
+        padding: 16px 20px;
         margin-bottom: 20px;
     }
     .filter-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr auto;
+        grid-template-columns: 1fr auto;
         gap: 12px;
         align-items: end;
     }
@@ -165,48 +165,28 @@
         color: #334155;
         vertical-align: middle;
     }
-    .badge-origem-api {
+    .pill-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border-radius: 6px;
+        padding: 3px 8px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .pill-default {
         background: #ecfdf5;
         color: #047857;
-        font-weight: 600;
-        font-size: 11px;
-        padding: 3px 8px;
-        border-radius: 6px;
         border: 1px solid #a7f3d0;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
     }
-    .badge-origem-painel {
-        background: #eff6ff;
-        color: #1d4ed8;
-        font-weight: 600;
-        font-size: 11px;
-        padding: 3px 8px;
-        border-radius: 6px;
-        border: 1px solid #bfdbfe;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-    }
-    .chave-code {
-        font-family: monospace;
-        font-size: 11px;
-        color: #475569;
-        background: #f8fafc;
-        padding: 2px 6px;
-        border-radius: 5px;
+    .pill-secondary {
+        background: #f1f5f9;
+        color: #64748b;
         border: 1px solid #e2e8f0;
-        display: inline-block;
-        max-width: 140px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        vertical-align: middle;
     }
     .actions-cell {
         display: flex;
-        gap: 5px;
+        gap: 6px;
         align-items: center;
         justify-content: flex-end;
     }
@@ -221,41 +201,24 @@
         border: 1px solid transparent;
         transition: all .15s;
         text-decoration: none;
+        cursor: pointer;
     }
-    .btn-act-xml {
-        background: #eff6ff;
-        color: #2563eb;
-        border-color: #bfdbfe;
+    .btn-act-edit {
+        background: #eef2ff;
+        color: #4338ca;
+        border-color: #c7d2fe;
     }
-    .btn-act-xml:hover {
-        background: #2563eb;
+    .btn-act-edit:hover {
+        background: #4338ca;
         color: #fff;
     }
-    .btn-act-damdfe {
-        background: #f8fafc;
-        color: #334155;
-        border-color: #cbd5e1;
+    .btn-act-del {
+        background: #fee2e2;
+        color: #dc2626;
+        border-color: #fecaca;
     }
-    .btn-act-damdfe:hover {
-        background: #334155;
-        color: #fff;
-    }
-    .btn-zip-download {
-        background: #0f172a;
-        color: #fff;
-        font-weight: 600;
-        font-size: 13px;
-        border-radius: 9px;
-        padding: 9px 18px;
-        border: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        text-decoration: none;
-        transition: background .15s;
-    }
-    .btn-zip-download:hover {
-        background: #1e293b;
+    .btn-act-del:hover {
+        background: #dc2626;
         color: #fff;
     }
     .empty-state {
@@ -279,66 +242,80 @@
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-3">
                 <div class="modulo-header-icon">
-                    <i class="ri-folders-line"></i>
+                    <i class="ri-scales-3-line"></i>
                 </div>
                 <div>
-                    <h4 class="modulo-header-title">Manifestos de Documentos Fiscais (MDF-e)</h4>
-                    <p class="modulo-header-subtitle">Consulta, visualização e exportação de MDF-e emitidos pela empresa</p>
+                    <h4 class="modulo-header-title">Padrões de Tributação</h4>
+                    <p class="modulo-header-subtitle">
+                        Empresa: <strong class="text-white">{{ $empresa->nome }}</strong> 
+                        ({{ $empresa->cpf_cnpj }}) — {{ $empresa->tributacao }}
+                    </p>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <a href="{{ route('home') }}" class="dash-btn dash-btn-light">
-                    <i class="ri-arrow-left-line"></i>
-                    <span>Voltar ao Painel</span>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <a href="{{ route('contador-empresa.padrao-tributacao.alterar') }}" class="dash-btn dash-btn-light">
+                    <i class="ri-refresh-line"></i>
+                    <span>Aplicar em Lote nos Produtos</span>
+                </a>
+                <a href="{{ route('contador-empresa.padrao-tributacao.create') }}" class="dash-btn dash-btn-primary">
+                    <i class="ri-add-line"></i>
+                    <span>Novo Padrão</span>
                 </a>
             </div>
         </div>
     </div>
 
-    {{-- Cards de Resumo --}}
+    {{-- Cards de Estatísticas --}}
     <div class="row g-3 mb-3">
-        <div class="col-md-6 col-lg-6">
+        <div class="col-md-4">
             <div class="stat-card">
                 <div class="stat-icon stat-icon-indigo">
-                    <i class="ri-file-list-3-line"></i>
+                    <i class="ri-file-settings-line"></i>
                 </div>
                 <div>
-                    <div class="stat-label">Total nesta consulta</div>
-                    <div class="stat-value">{{ $data->total() }}</div>
+                    <div class="stat-label">Total de Padrões</div>
+                    <div class="stat-value">{{ $stats['total'] }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-6">
+        <div class="col-md-4">
             <div class="stat-card">
                 <div class="stat-icon stat-icon-green">
-                    <i class="ri-file-code-line"></i>
+                    <i class="ri-checkbox-circle-line"></i>
                 </div>
                 <div>
-                    <div class="stat-label">Arquivos XML Disponíveis</div>
-                    <div class="stat-value">{{ $contXml }}</div>
+                    <div class="stat-label">Padrão Principal Ativo</div>
+                    <div class="stat-value">{{ $stats['padrao'] > 0 ? 'Definido' : 'Pendente' }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon stat-icon-purple">
+                    <i class="ri-building-line"></i>
+                </div>
+                <div>
+                    <div class="stat-label">Regime Tributário</div>
+                    <div class="stat-value" style="font-size: 16px;">{{ $empresa->tributacao ?: 'Não informado' }}</div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Filtro de Período --}}
+    {{-- Filtro de Busca --}}
     <div class="filter-wrap">
         {!! Form::open()->fill(request()->all())->get() !!}
         <div class="filter-grid">
             <div class="filter-field">
-                <label><i class="ri-calendar-line me-1"></i>Data Inicial</label>
-                <input type="date" name="start_date" class="form-control" value="{{ request()->start_date }}">
-            </div>
-            <div class="filter-field">
-                <label><i class="ri-calendar-line me-1"></i>Data Final</label>
-                <input type="date" name="end_date" class="form-control" value="{{ request()->end_date }}">
+                <label><i class="ri-search-line me-1"></i>Buscar por Descrição</label>
+                <input type="text" name="descricao" class="form-control" placeholder="Ex: Tributação Geral Simples, ST..." value="{{ request()->descricao }}">
             </div>
             <div class="filter-actions">
                 <button class="btn-filter-submit" type="submit">
                     <i class="ri-search-line"></i>
-                    <span>Filtrar</span>
+                    <span>Buscar</span>
                 </button>
-                <a class="btn-filter-clear" href="{{ route('contador-empresa.mdfe') }}">
+                <a class="btn-filter-clear" href="{{ route('contador-empresa.padrao-tributacao') }}">
                     <i class="ri-eraser-line"></i>
                     <span>Limpar</span>
                 </a>
@@ -347,22 +324,24 @@
         {!! Form::close() !!}
     </div>
 
-    {{-- Tabela de MDF-e --}}
+    {{-- Tabela de Padrões --}}
     <div class="tb-wrap mb-3">
+        {!! Form::open()->delete()->route('contador-empresa.padrao-tributacao.destroy-select')->id('form-delete-select') !!}
         <div class="table-responsive">
             <table class="tb-custom">
                 <thead>
                     <tr>
-                        <th>Início Viagem</th>
-                        <th>Criação</th>
-                        <th>CNPJ Contratante</th>
-                        <th>Estado Fiscal</th>
-                        <th>Chave MDF-e</th>
-                        <th>Número</th>
-                        <th>Veículo Tração</th>
-                        <th>Qtd Carga</th>
-                        <th>Valor Carga</th>
-                        <th>Canal</th>
+                        <th width="30">
+                            <input type="checkbox" class="form-check-input check-all" id="check-all">
+                        </th>
+                        <th>Descrição</th>
+                        <th>CST/CSOSN</th>
+                        <th>CFOP Estadual</th>
+                        <th>CFOP Interestadual</th>
+                        <th>% ICMS</th>
+                        <th>% PIS / COFINS</th>
+                        <th>% IPI</th>
+                        <th>Padrão</th>
                         <th class="text-end">Ações</th>
                     </tr>
                 </thead>
@@ -370,61 +349,57 @@
                     @forelse($data as $item)
                     <tr>
                         <td>
-                            <span class="fw-semibold text-dark">{{ __data_pt($item->data_inicio_viagem, 0) }}</span>
+                            <input type="checkbox" class="form-check-input check-item" name="item_delete[]" value="{{ $item->id }}">
                         </td>
                         <td>
-                            <small class="text-muted">{{ __data_pt($item->created_at, 0) }}</small>
-                        </td>
-                        <td>
-                            <span class="text-secondary fw-semibold">{{ $item->cnpj_contratante ?: '--' }}</span>
-                        </td>
-                        <td>
-                            {!! $item->estadoEmissao($item->estado_emissao) !!}
-                        </td>
-                        <td>
-                            @if($item->chave)
-                                <span class="chave-code" title="{{ $item->chave }}">{{ $item->chave }}</span>
-                            @else
-                                <span class="text-muted">--</span>
+                            <strong class="text-dark">{{ $item->descricao }}</strong>
+                            @if($item->ncm)
+                                <br><small class="text-muted">NCM: {{ $item->ncm }}</small>
                             @endif
                         </td>
                         <td>
-                            <span class="badge bg-light text-dark border">#{{ $item->mdfe_numero > 0 ? $item->mdfe_numero : '--' }}</span>
+                            <span class="badge bg-light text-dark border">{{ $item->cst_csosn }}</span>
                         </td>
                         <td>
-                            <span class="text-dark fw-semibold">{{ $item->veiculoTracao ? $item->veiculoTracao->marca . ' - ' . $item->veiculoTracao->placa : '--' }}</span>
+                            <span class="fw-semibold text-secondary">{{ $item->cfop_estadual }}</span>
                         </td>
                         <td>
-                            <span class="badge bg-secondary-subtle text-secondary">{{ $item->quantidade_carga }}</span>
+                            <span class="fw-semibold text-secondary">{{ $item->cfop_outro_estado }}</span>
                         </td>
                         <td>
-                            <strong class="text-dark">{{ __moeda($item->valor_carga) }}</strong>
+                            <span class="text-primary fw-bold">{{ $item->perc_icms }}%</span>
                         </td>
                         <td>
-                            @if($item->api)
-                                <span class="badge-origem-api"><i class="ri-code-s-slash-line"></i> API</span>
+                            <small>{{ $item->perc_pis }}% / {{ $item->perc_cofins }}%</small>
+                        </td>
+                        <td>
+                            <small>{{ $item->perc_ipi }}%</small>
+                        </td>
+                        <td>
+                            @if($item->padrao == 1)
+                                <span class="pill-badge pill-default"><i class="ri-check-line"></i> Principal</span>
                             @else
-                                <span class="badge-origem-painel"><i class="ri-window-line"></i> Painel</span>
+                                <span class="pill-badge pill-secondary">Não</span>
                             @endif
                         </td>
                         <td>
                             <div class="actions-cell">
-                                <a class="btn-act btn-act-xml" title="Download XML" href="{{ route('contador-empresa-mdfe.download', [$item->id]) }}">
-                                    <i class="ri-file-download-line"></i>
+                                <a class="btn-act btn-act-edit" title="Editar Padrão" href="{{ route('contador-empresa.padrao-tributacao.edit', [$item->id]) }}">
+                                    <i class="ri-edit-line"></i>
                                 </a>
-                                <a target="_blank" class="btn-act btn-act-damdfe" title="Imprimir DAMDFE" href="{{ route('contador-empresa-mdfe.damdfe', [$item->id]) }}">
-                                    <i class="ri-printer-line"></i>
-                                </a>
+                                <button type="button" class="btn-act btn-act-del btn-delete" title="Excluir" data-form="form-del-{{ $item->id }}">
+                                    <i class="ri-delete-bin-line"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="11">
+                        <td colspan="10">
                             <div class="empty-state">
-                                <i class="ri-inbox-line"></i>
-                                <h6>Nenhum MDF-e encontrado</h6>
-                                <p class="small text-muted mb-0">Tente ajustar o intervalo de datas no filtro acima.</p>
+                                <i class="ri-scales-3-line"></i>
+                                <h6>Nenhum padrão de tributação cadastrado</h6>
+                                <p class="small text-muted mb-0">Cadastre um padrão tributário para agilizar o lançamento fiscal da empresa.</p>
                             </div>
                         </td>
                     </tr>
@@ -432,21 +407,65 @@
                 </tbody>
             </table>
         </div>
+        {!! Form::close() !!}
 
-        {{-- Paginação e Ações em Lote --}}
+        {{-- Forms individuais de exclusão --}}
+        @foreach($data as $item)
+            <form id="form-del-{{ $item->id }}" action="{{ route('contador-empresa.padrao-tributacao.destroy', [$item->id]) }}" method="POST" style="display:none;">
+                @csrf
+                @method('DELETE')
+            </form>
+        @endforeach
+
+        {{-- Rodapé da Tabela --}}
         <div class="p-3 border-top d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 bg-light bg-opacity-50">
             <div>
                 {!! $data->appends(request()->all())->links() !!}
             </div>
-            @if($contXml > 0)
-            <div class="d-flex align-items-center gap-2">
-                <a class="btn-zip-download" href="{{ route('contador-empresa-mdfe-zip', ['start_date='.request()->start_date, 'end_date='.request()->end_date]) }}">
-                    <i class="ri-file-zip-line"></i>
-                    <span>Baixar Todos XMLs (.ZIP)</span>
-                </a>
+            <div>
+                <button type="button" class="btn btn-outline-danger btn-sm" id="btn-delete-selected" style="display: none;">
+                    <i class="ri-delete-bin-line me-1"></i> Excluir Selecionados
+                </button>
             </div>
-            @endif
         </div>
     </div>
 </div>
+@endsection
+
+@section('js')
+<script>
+    $(function(){
+        // Check all
+        $('#check-all').on('change', function(){
+            $('.check-item').prop('checked', $(this).is(':checked'));
+            toggleDeleteBtn();
+        });
+
+        $(document).on('change', '.check-item', function(){
+            toggleDeleteBtn();
+        });
+
+        function toggleDeleteBtn(){
+            var count = $('.check-item:checked').length;
+            if(count > 0){
+                $('#btn-delete-selected').show().text('Excluir ' + count + ' Selecionados');
+            } else {
+                $('#btn-delete-selected').hide();
+            }
+        }
+
+        $('#btn-delete-selected').on('click', function(){
+            if(confirm('Tem certeza que deseja excluir os padrões selecionados?')){
+                $('#form-delete-select').submit();
+            }
+        });
+
+        $('.btn-delete').on('click', function(){
+            var formId = $(this).data('form');
+            if(confirm('Deseja realmente excluir este padrão de tributação?')){
+                $('#' + formId).submit();
+            }
+        });
+    });
+</script>
 @endsection

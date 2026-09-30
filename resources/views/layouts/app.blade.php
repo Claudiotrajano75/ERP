@@ -2086,6 +2086,9 @@
                                     <li>
                                         <a href="{{ route('contador-empresa.fornecedores') }}">Fornecedores</a>
                                     </li>
+                                    <li>
+                                        <a href="{{ route('contador-empresa.padrao-tributacao') }}">Padrão de Tributação</a>
+                                    </li>
                                 </ul>
                             </div>
                         </li>

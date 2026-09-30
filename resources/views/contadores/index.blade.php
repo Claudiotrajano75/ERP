@@ -1,383 +1,231 @@
 @extends('layouts.app', ['title' => 'Contadores'])
 
 @section('css')
-<style type="text/css">
-    /* Estilos Personalizados para a Página */
-    .card {
-        border: 1px solid rgba(0, 0, 0, 0.06) !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
-        border-radius: 16px !important;
-        overflow: hidden;
-        background: #fff;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        margin-bottom: 24px;
-    }
+<style>
+    /* ─── Cards de Estatísticas ─── */
+    .stat-card { border: 0; border-radius: 16px; padding: 18px 20px; height: 100%; color: #fff; position: relative; overflow: hidden; transition: transform .18s ease, box-shadow .18s ease; }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-card::after { content: ''; position: absolute; top: -44px; right: -44px; width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,.12); }
+    .stat-indigo { background: linear-gradient(135deg,#6366f1,#4f46e5); box-shadow: 0 6px 18px rgba(79,70,229,.32); }
+    .stat-green  { background: linear-gradient(135deg,#24c98a,#109f61); box-shadow: 0 6px 18px rgba(16,185,129,.32); }
+    .stat-red    { background: linear-gradient(135deg,#fb7185,#dc2626); box-shadow: 0 6px 18px rgba(220,38,38,.32); }
+    .stat-card .st-label { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: rgba(255,255,255,.85); }
+    .stat-card .st-value { font-size: 26px; font-weight: 800; color: #fff; margin-top: 4px; line-height: 1.1; }
+    .stat-card .st-sub { font-size: 11.5px; color: rgba(255,255,255,.75); margin-top: 4px; }
+    .stat-card .st-icon { width: 46px; height: 46px; border-radius: 13px; background: rgba(255,255,255,.22); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05) !important;
-    }
+    /* ─── Filtro ─── */
+    .filter-wrap { background: #fff; border: 1px solid #e9ecf3; border-radius: 14px; box-shadow: 0 1px 2px rgba(16,24,40,.04); padding: 18px 20px; margin-bottom: 18px; }
+    .filter-title { font-size: 13px; font-weight: 700; color: #3f3e6a; text-transform: uppercase; letter-spacing: .5px; }
+    .filter-title i { color: #4f46e5; margin-right: 6px; }
+    .filter-wrap label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #8c8ca6; }
+    .filter-wrap .form-control { height: 40px; border-radius: 10px; border: 1px solid #dcdce9; font-size: 13.5px; background: #fcfdfe; }
+    .filter-wrap .form-control:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.12); background: #fff; }
 
-    .card-body {
-        padding: 24px !important;
-    }
+    /* ─── Tabela ─── */
+    .tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+    .tb-wrap table { margin-bottom: 0; }
+    .tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 16px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+    .tb-wrap tbody td { padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13.5px; color: #374151; }
+    .tb-wrap tbody tr:hover { background: #f5f6fe; }
+    .tb-wrap tbody tr:last-child td { border-bottom: none; }
 
-    /* Cabeçalho de Gradiente Premium */
-    .modulo-header-gradient {
-        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%) !important;
-        border-radius: 12px 12px 0 0 !important;
-        border-bottom: none !important;
-        padding: 20px 24px !important;
-    }
+    /* ─── Grade de botões de ação ─── */
+    .act-group { display: inline-flex; gap: 6px; align-items: center; }
+    .act-btn { width: 34px; height: 34px; border-radius: 10px; border: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; text-decoration: none; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+    .act-btn:hover { transform: translateY(-2px); text-decoration: none; }
+    .act-edit    { background: #eef0ff; color: #4f46e5; }
+    .act-edit:hover    { box-shadow: 0 4px 12px rgba(79,70,229,.3); }
+    .act-view    { background: #e0f2fe; color: #0284c7; }
+    .act-view:hover    { box-shadow: 0 4px 12px rgba(2,132,199,.3); }
+    .act-money   { background: #dcfce7; color: #16a34a; }
+    .act-money:hover   { box-shadow: 0 4px 12px rgba(22,163,74,.3); }
+    .act-del     { background: #fee2e2; color: #dc2626; }
+    .act-del:hover     { box-shadow: 0 4px 12px rgba(220,38,38,.3); }
 
-    .modulo-header-gradient .modulo-title {
-        color: #fff !important;
-        font-weight: 700 !important;
-        letter-spacing: -0.3px !important;
-        margin: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 12px !important;
-    }
+    /* ─── Badges (pills) ─── */
+    .pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 8px; padding: 4px 10px; font-size: 11.5px; font-weight: 700; }
+    .pill-ok  { background: #dcfce7; color: #15803d; }
+    .pill-no  { background: #f1f5f9; color: #64748b; }
 
-    .modulo-header-gradient .modulo-title i {
-        background: rgba(255, 255, 255, 0.1) !important;
-        padding: 8px !important;
-        border-radius: 10px !important;
-        color: #a8b5ff !important;
-        font-size: 20px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-
-    .modulo-header-gradient .modulo-subtitle {
-        color: rgba(255, 255, 255, 0.6) !important;
-        font-weight: 400 !important;
-        font-size: 13px !important;
-        margin-top: 4px !important;
-        margin-bottom: 0 !important;
-    }
-
-    /* Formulários de Filtro */
-    .form-control, select {
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 10px !important;
-        padding: 10px 14px !important;
-        font-size: 13px !important;
-        color: #334155 !important;
-        transition: all 0.2s ease !important;
-        box-shadow: none !important;
-    }
-
-    .form-control:focus, select:focus {
-        border-color: #4f46e5 !important;
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
-    }
-
-    .form-label, label {
-        font-weight: 600 !important;
-        color: #475569 !important;
-        font-size: 13px !important;
-        margin-bottom: 6px !important;
-    }
-
-    /* Botões */
-    .btn {
-        border-radius: 10px !important;
-        font-weight: 500 !important;
-        font-size: 13px !important;
-        padding: 10px 20px !important;
-        transition: all 0.2s ease !important;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-    }
-
-    .btn-sm {
-        padding: 6px 12px !important;
-        font-size: 12px !important;
-        border-radius: 8px !important;
-    }
-
-    .btn-success {
-        background-color: #10b981 !important;
-        border-color: #10b981 !important;
-        color: #fff !important;
-    }
-
-    .btn-success:hover {
-        background-color: #059669 !important;
-        border-color: #059669 !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
-    }
-
-    .btn-primary {
-        background-color: #4f46e5 !important;
-        border-color: #4f46e5 !important;
-        color: #fff !important;
-    }
-
-    .btn-primary:hover {
-        background-color: #4338ca !important;
-        border-color: #4338ca !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2) !important;
-    }
-
-    .btn-danger {
-        background-color: #ef4444 !important;
-        border-color: #ef4444 !important;
-        color: #fff !important;
-    }
-
-    .btn-danger:hover {
-        background-color: #dc2626 !important;
-        border-color: #dc2626 !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2) !important;
-    }
-
-    /* Tabelas */
-    .table-responsive-sm {
-        border-radius: 12px;
-        overflow-x: auto !important;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .table {
-        margin-bottom: 0 !important;
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .table thead th {
-        background-color: #f8fafc !important;
-        color: #475569 !important;
-        font-size: 11px !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.06em !important;
-        padding: 14px 20px !important;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
-        border-top: none !important;
-    }
-
-    .table tbody tr {
-        transition: background-color 0.2s ease;
-    }
-
-    .table tbody tr:hover {
-        background-color: #f8fafc !important;
-    }
-
-    .table tbody td {
-        padding: 14px 20px !important;
-        vertical-align: middle !important;
-        font-size: 13px !important;
-        color: #334155 !important;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
-    }
-
-    .table tbody tr:last-child td {
-        border-bottom: none !important;
-    }
-
-    /* Badges Modernizados (Pills) */
-    .badge {
-        padding: 6px 12px !important;
-        border-radius: 9999px !important;
-        font-size: 11px !important;
-        font-weight: 600 !important;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        box-shadow: none !important;
-        border: 1px solid transparent;
-    }
-
-    .bg-success-subtle {
-        background-color: #ecfdf5 !important;
-        color: #047857 !important;
-        border-color: #a7f3d0 !important;
-    }
-
-    .bg-danger-subtle {
-        background-color: #fef2f2 !important;
-        color: #b91c1c !important;
-        border-color: #fecaca !important;
-    }
+    /* ─── Estado vazio ─── */
+    .empty-state { padding: 52px 20px; text-align: center; }
+    .empty-state i { font-size: 52px; color: #c5cae9; display: block; margin-bottom: 12px; }
+    .empty-state p { color: #9e9eb8; font-size: 14px; margin: 0; }
 </style>
 @endsection
 
 @section('content')
 <div class="mt-3">
     <div class="row">
-        <div class="card">
-            <!-- Cabeçalho com Gradiente Premium -->
-            <div class="card-header modulo-header-gradient">
+        <div class="card border-0 shadow-sm">
+
+            {{-- ═══ CABEÇALHO ═══ --}}
+            <div class="card-header modulo-header-gradient py-3 px-4">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div>
-                        <h4 class="modulo-title text-white">
-                            <i class="ri-user-star-line"></i> Gestão de Contadores
+                        <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
+                            <i class="ri-user-star-line"></i>
+                            Gestão de Contadores
                         </h4>
-                        <p class="modulo-subtitle">
-                            Cadastre, edite e gerencie os escritórios e profissionais contábeis do sistema.
-                        </p>
+                        <p class="text-muted mb-0 modulo-subtitle fs-13">Cadastre, edite e gerencie os profissionais e escritórios contábeis do sistema.</p>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <a href="{{ route('escritorio-contabils') }}" class="btn btn-outline-light text-white border-white">
-                            <i class="ri-file-list-fill"></i> Escritórios Contábeis
-                        </a>
-                        <a href="{{ route('contadores.create') }}" class="btn btn-success">
-                            <i class="ri-add-circle-fill"></i> Novo Contador
-                        </a>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ route('contadores.index') }}" class="dash-btn dash-btn-light"><i class="ri-refresh-line"></i> Atualizar</a>
+                        <a href="{{ route('escritorio-contabils') }}" class="dash-btn dash-btn-light"><i class="ri-building-2-line"></i> Escritórios</a>
+                        <a href="{{ route('contadores.create') }}" class="dash-btn dash-btn-primary"><i class="ri-add-line"></i> Novo Contador</a>
                     </div>
                 </div>
             </div>
-            <div class="card-body">
 
-                <!-- ═══ KPI CARDS (RESUMO) ═══ -->
-                <div class="row g-3 mb-4">
-                    <div class="col-md-4 col-12">
-                        <div class="card widget-icon-box text-bg-info mb-0 shadow-sm border-0">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between">
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Total de Contadores</h4>
-                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['total'] ?? 0 }}</h3>
-                                        <p class="mb-0 text-white-50 fs-11">Profissionais / Escritórios</p>
-                                    </div>
-                                    <div class="avatar-sm flex-shrink-0">
-                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                                            <i class="ri-user-star-line"></i>
-                                        </span>
-                                    </div>
+            <div class="card-body p-4">
+
+                {{-- ═══ Cards de Estatísticas ═══ --}}
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-xl-4">
+                        <div class="stat-card stat-indigo">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Total de Contadores</div>
+                                    <div class="st-value">{{ $stats['total'] }}</div>
+                                    <div class="st-sub">Profissionais e escritórios</div>
                                 </div>
+                                <div class="st-icon"><i class="ri-user-star-line"></i></div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="col-md-4 col-12">
-                        <div class="card widget-icon-box text-bg-success mb-0 shadow-sm border-0">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between">
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Contadores Ativos</h4>
-                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['ativos'] ?? 0 }}</h3>
-                                        <p class="mb-0 text-white-50 fs-11">Comissionamento regular</p>
-                                    </div>
-                                    <div class="avatar-sm flex-shrink-0">
-                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                                            <i class="ri-checkbox-circle-line"></i>
-                                        </span>
-                                    </div>
+                    <div class="col-6 col-xl-4">
+                        <div class="stat-card stat-green">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Contadores Ativos</div>
+                                    <div class="st-value">{{ $stats['ativos'] }}</div>
+                                    <div class="st-sub">Com cadastro ativo</div>
                                 </div>
+                                <div class="st-icon"><i class="ri-checkbox-circle-line"></i></div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="col-md-4 col-12">
-                        <div class="card widget-icon-box text-bg-danger mb-0 shadow-sm border-0">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between">
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Inativos</h4>
-                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['inativos'] ?? 0 }}</h3>
-                                        <p class="mb-0 text-white-50 fs-11">Sem atividade recente</p>
-                                    </div>
-                                    <div class="avatar-sm flex-shrink-0">
-                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                                            <i class="ri-close-circle-line"></i>
-                                        </span>
-                                    </div>
+                    <div class="col-6 col-xl-4">
+                        <div class="stat-card stat-red">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Inativos</div>
+                                    <div class="st-value">{{ $stats['inativos'] }}</div>
+                                    <div class="st-sub">Sem atividade</div>
                                 </div>
+                                <div class="st-icon"><i class="ri-close-circle-line"></i></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Filtros -->
-                <div class="col-lg-12 mb-3">
-                    {!!Form::open()->fill(request()->all())->get()!!}
-                    <div class="row align-items-end g-2">
-                        <div class="col-md-4 col-12">
-                            <label class="form-label"><i class="ri-search-line me-1"></i> Pesquisar por Razão Social / Nome</label>
-                            {!!Form::text('nome', '')->attrs(['class' => 'form-control', 'placeholder' => 'Digite o nome do contador...'])!!}
-                        </div>
-                        <div class="col-md-4 col-12">
-                            <label class="form-label"><i class="ri-file-text-line me-1"></i> Pesquisar por CPF / CNPJ</label>
-                            {!!Form::tel('cpf_cnpj', '')->attrs(['class' => 'form-control cpf_cnpj', 'placeholder' => '00.000.000/0000-00'])!!}
-                        </div>
-                        <div class="col-md-4 col-12 d-flex gap-2">
-                            <button class="btn btn-primary flex-grow-1" type="submit">
-                                <i class="ri-search-line"></i> Pesquisar
-                            </button>
-                            <a id="clear-filter" class="btn btn-danger px-3" href="{{ route('contadores.index') }}">
-                                <i class="ri-eraser-line me-1"></i> Limpar
-                            </a>
-                        </div>
+                {{-- ═══ Filtros de Busca ═══ --}}
+                <div class="filter-wrap">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h5 class="filter-title mb-0"><i class="ri-search-line"></i> Filtrar Contadores</h5>
                     </div>
-                    {!!Form::close()!!}
+                    <div class="mt-3">
+                        {!!Form::open()->fill(request()->all())->get()!!}
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-5 col-12">
+                                <label class="form-label"><i class="ri-user-line"></i> Razão Social / Nome</label>
+                                {!!Form::text('nome', '')->attrs(['class' => 'form-control', 'placeholder' => 'Digite o nome do contador...'])!!}
+                            </div>
+                            <div class="col-md-4 col-12">
+                                <label class="form-label"><i class="ri-file-text-line"></i> CPF / CNPJ</label>
+                                {!!Form::tel('cpf_cnpj', '')->attrs(['class' => 'form-control cpf_cnpj', 'placeholder' => '00.000.000/0000-00'])!!}
+                            </div>
+                            <div class="col-md-3 col-12">
+                                <div class="d-flex gap-2 w-100">
+                                    <button class="btn btn-primary flex-grow-1" type="submit" style="border-radius:10px;">
+                                        <i class="ri-search-line"></i> Buscar
+                                    </button>
+                                    <a class="btn btn-light border px-3" href="{{ route('contadores.index') }}" title="Limpar Filtros" style="border-radius:10px;">
+                                        <i class="ri-eraser-line"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {!!Form::close()!!}
+                    </div>
                 </div>
 
-                <!-- Tabela -->
-                <div class="col-md-12">
-                    <div class="table-responsive-sm">
-                        <table class="table table-centered">
+                {{-- ═══ Tabela ═══ --}}
+                <div class="tb-wrap">
+                    <div class="table-responsive">
+                        <table class="table table-centered table-hover align-middle mb-0">
                             <thead>
                                 <tr>
-                                    <th>Razão social</th>
-                                    <th>Nome fantasia</th>
-                                    <th>CNPJ/CPF</th>
-                                    <th>IE/RG</th>
+                                    <th>Contador</th>
+                                    <th>CPF / CNPJ</th>
+                                    <th>IE / RG</th>
                                     <th>Status</th>
-                                    <th width="10%">Ações</th>
+                                    <th class="text-end" style="width: 160px;">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($data as $item)
+                                @forelse($data as $item)
                                 <tr>
-                                    <td><strong>{{ $item->nome }}</strong></td>
-                                    <td>{{ $item->nome_fantasia }}</td>
+                                    <td>
+                                        <div class="fw-semibold" style="color:#1f2937;">{{ $item->nome }}</div>
+                                        @if($item->nome_fantasia)
+                                        <div class="fs-12" style="color:#94a3b8;">{{ $item->nome_fantasia }}</div>
+                                        @endif
+                                    </td>
                                     <td>{{ $item->cpf_cnpj }}</td>
                                     <td>{{ $item->ie }}</td>
                                     <td>
                                         @if($item->status)
-                                        <span class="badge bg-success-subtle"><i class="ri-checkbox-circle-line"></i> Ativo</span>
+                                        <span class="pill pill-ok"><i class="ri-checkbox-circle-line"></i> Ativo</span>
                                         @else
-                                        <span class="badge bg-danger-subtle"><i class="ri-close-circle-line"></i> Inativo</span>
+                                        <span class="pill pill-no"><i class="ri-close-circle-line"></i> Inativo</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        <form action="{{ route('contadores.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="d-flex align-items-center gap-1" style="width: auto;">
+                                    <td class="text-end">
+                                        <form action="{{ route('contadores.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="m-0">
                                             @method('delete')
-                                            <a class="btn btn-warning btn-sm text-white" href="{{ route('contadores.edit', [$item->id]) }}" title="Editar">
-                                                <i class="ri-pencil-fill"></i>
-                                            </a>
                                             @csrf
-                                            <button type="button" class="btn btn-delete btn-sm btn-danger" title="Excluir">
-                                                <i class="ri-delete-bin-line"></i>
-                                            </button>
-                                            <a title="Empresas do contador" class="btn btn-dark btn-sm text-white" href="{{ route('contadores.show', [$item->id]) }}">
-                                                <i class="ri-play-list-add-fill"></i>
-                                            </a>
-                                            <a title="Financeiro do contador" class="btn btn-success btn-sm text-white" href="{{ route('contadores.financeiro', [$item->id]) }}">
-                                                <i class="ri-cash-fill"></i>
-                                            </a>
+                                            <div class="act-group">
+                                                <a class="act-btn act-edit" href="{{ route('contadores.edit', [$item->id]) }}" title="Editar Contador">
+                                                    <i class="ri-pencil-line"></i>
+                                                </a>
+                                                <a class="act-btn act-view" href="{{ route('contadores.show', [$item->id]) }}" title="Empresas do Contador">
+                                                    <i class="ri-building-2-line"></i>
+                                                </a>
+                                                <a class="act-btn act-money" href="{{ route('contadores.financeiro', [$item->id]) }}" title="Financeiro do Contador">
+                                                    <i class="ri-money-dollar-circle-line"></i>
+                                                </a>
+                                                <button type="button" class="act-btn act-del btn-delete" title="Excluir Contador">
+                                                    <i class="ri-delete-bin-line"></i>
+                                                </button>
+                                            </div>
                                         </form>
                                     </td>
                                 </tr>
-                                @endforeach
+                                @empty
+                                <tr>
+                                    <td colspan="5">
+                                        <div class="empty-state">
+                                            <i class="ri-inbox-2-line"></i>
+                                            <p>Nenhum contador encontrado.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div class="mt-3">
-                    {!! $data->appends(request()->all())->links() !!}
+
+                {{-- ═══ Footer ═══ --}}
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
+                    <div class="fs-12" style="color:#94a3b8;">
+                        Exibindo <strong>{{ $data->count() }}</strong> de <strong>{{ $data->total() }}</strong> contadores
+                    </div>
+                    <div>{!! $data->appends(request()->all())->links() !!}</div>
                 </div>
+
             </div>
         </div>
     </div>

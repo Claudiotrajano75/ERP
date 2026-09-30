@@ -195,6 +195,15 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
     Route::get('contador-empresa-produtos/{id}', 'ContadorAdminController@produtoShow')->name('contador-empresa-produtos.show');
     Route::get('contador-empresa-clientes', 'ContadorAdminController@clientes')->name('contador-empresa.clientes');
     Route::get('contador-empresa-fornecedores', 'ContadorAdminController@fornecedores')->name('contador-empresa.fornecedores');
+    Route::get('contador-empresa-padrao-tributacao', 'ContadorAdminController@padraoTributacao')->name('contador-empresa.padrao-tributacao');
+    Route::get('contador-empresa-padrao-tributacao/create', 'ContadorAdminController@padraoTributacaoCreate')->name('contador-empresa.padrao-tributacao.create');
+    Route::post('contador-empresa-padrao-tributacao', 'ContadorAdminController@padraoTributacaoStore')->name('contador-empresa.padrao-tributacao.store');
+    Route::get('contador-empresa-padrao-tributacao/{id}/edit', 'ContadorAdminController@padraoTributacaoEdit')->name('contador-empresa.padrao-tributacao.edit');
+    Route::put('contador-empresa-padrao-tributacao/{id}', 'ContadorAdminController@padraoTributacaoUpdate')->name('contador-empresa.padrao-tributacao.update');
+    Route::delete('contador-empresa-padrao-tributacao/{id}', 'ContadorAdminController@padraoTributacaoDestroy')->name('contador-empresa.padrao-tributacao.destroy');
+    Route::delete('contador-empresa-padrao-tributacao-destroy-select', 'ContadorAdminController@padraoTributacaoDestroySelect')->name('contador-empresa.padrao-tributacao.destroy-select');
+    Route::get('contador-empresa-padrao-tributacao-alterar', 'ContadorAdminController@padraoTributacaoAlterarProdutos')->name('contador-empresa.padrao-tributacao.alterar');
+    Route::post('contador-empresa-padrao-tributacao-set-tributacao', 'ContadorAdminController@padraoTributacaoSetTributacao')->name('contador-empresa.padrao-tributacao.set-tributacao');
 
     Route::get('contador-empresa-create', 'ContadorAdminController@empresaCreate')->name('contador.empresa-create');
     Route::post('contador-empresa-store', 'ContadorAdminController@empresaStore')->name('contador.empresa-store');

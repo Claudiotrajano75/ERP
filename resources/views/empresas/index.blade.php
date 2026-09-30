@@ -1,269 +1,290 @@
 @extends('layouts.app', ['title' => 'Empresas'])
 
 @section('css')
-<style type="text/css">
-    /* Estilos Personalizados para a Página */
-    .card {
-        border: 1px solid rgba(0, 0, 0, 0.06) !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
-        border-radius: 16px !important;
-        overflow: hidden;
+<style>
+    /* ─── Cards de Estatística ─── */
+    .stat-card {
         background: #fff;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        margin-bottom: 24px;
+        border-radius: 14px;
+        padding: 16px 20px;
+        border: 1px solid #e9ecf3;
+        box-shadow: 0 1px 3px rgba(16,24,40,.04);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        transition: transform .15s ease, box-shadow .15s ease;
     }
-
-    .card:hover {
+    .stat-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05) !important;
+        box-shadow: 0 6px 18px rgba(16,24,40,.08);
     }
-
-    .card-body {
-        padding: 24px !important;
-    }
-
-    /* Cabeçalho de Gradiente Premium */
-    .modulo-header-gradient {
-        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%) !important;
-        border-radius: 12px 12px 0 0 !important;
-        border-bottom: none !important;
-        padding: 20px 24px !important;
-    }
-
-    .modulo-header-gradient .modulo-title {
-        color: #fff !important;
-        font-weight: 700 !important;
-        letter-spacing: -0.3px !important;
-        margin: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 12px !important;
-    }
-
-    .modulo-header-gradient .modulo-title i {
-        background: rgba(255, 255, 255, 0.1) !important;
-        padding: 8px !important;
-        border-radius: 10px !important;
-        color: #a8b5ff !important;
-        font-size: 20px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-
-    .modulo-header-gradient .modulo-subtitle {
-        color: rgba(255, 255, 255, 0.6) !important;
-        font-weight: 400 !important;
-        font-size: 13px !important;
-        margin-top: 4px !important;
-        margin-bottom: 0 !important;
-    }
-
-    /* Formulários de Filtro */
-    .form-control, select {
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 10px !important;
-        padding: 10px 14px !important;
-        font-size: 13px !important;
-        color: #334155 !important;
-        transition: all 0.2s ease !important;
-        box-shadow: none !important;
-    }
-
-    .form-control:focus, select:focus {
-        border-color: #4f46e5 !important;
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
-    }
-
-    .form-label, label {
-        font-weight: 600 !important;
-        color: #475569 !important;
-        font-size: 13px !important;
-        margin-bottom: 6px !important;
-    }
-
-    /* Botões */
-    .btn {
-        border-radius: 10px !important;
-        font-weight: 500 !important;
-        font-size: 13px !important;
-        padding: 10px 20px !important;
-        transition: all 0.2s ease !important;
-        display: inline-flex;
+    .stat-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
         align-items: center;
         justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+    }
+    .stat-icon-indigo { background: #eef2ff; color: #4338ca; }
+    .stat-icon-green  { background: #ecfdf5; color: #047857; }
+    .stat-icon-red    { background: #fef2f2; color: #b91c1c; }
+    .stat-label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        color: #64748b;
+        margin-bottom: 2px;
+    }
+    .stat-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.2;
+    }
+
+    /* ─── Filtro ─── */
+    .filter-wrap {
+        background: #fff;
+        border: 1px solid #e9ecf3;
+        border-radius: 14px;
+        box-shadow: 0 1px 2px rgba(16,24,40,.04);
+        padding: 18px 20px;
+        margin-bottom: 20px;
+    }
+    .filter-grid {
+        display: grid;
+        grid-template-columns: 2fr 1.5fr auto;
+        gap: 12px;
+        align-items: end;
+    }
+    @media (max-width: 768px) {
+        .filter-grid { grid-template-columns: 1fr; }
+    }
+    .filter-field label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        color: #475569;
+        margin-bottom: 5px;
+        display: block;
+    }
+    .filter-field .form-control {
+        border-radius: 9px;
+        border: 1px solid #d1d5db;
+        padding: 8px 12px;
+        font-size: 13px;
+        color: #111827;
+        background-color: #fff;
+        box-shadow: none;
+    }
+    .filter-field .form-control:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+        outline: 0;
+    }
+    .filter-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+    .btn-filter-submit {
+        background: #4338ca;
+        color: #fff;
+        font-weight: 600;
+        font-size: 13px;
+        border-radius: 9px;
+        padding: 8px 16px;
+        border: none;
+        display: inline-flex;
+        align-items: center;
         gap: 6px;
+        transition: background .15s ease;
     }
-
-    .btn-sm {
-        padding: 6px 12px !important;
-        font-size: 12px !important;
-        border-radius: 8px !important;
+    .btn-filter-submit:hover { background: #3730a3; color: #fff; }
+    .btn-filter-clear {
+        background: #f1f5f9;
+        color: #475569;
+        font-weight: 600;
+        font-size: 13px;
+        border-radius: 9px;
+        padding: 8px 14px;
+        border: 1px solid #e2e8f0;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        transition: background .15s ease;
     }
+    .btn-filter-clear:hover { background: #e2e8f0; color: #1e293b; }
 
-    .btn-success {
-        background-color: #10b981 !important;
-        border-color: #10b981 !important;
-        color: #fff !important;
+    /* ─── Tabela ─── */
+    .tb-wrap {
+        border-radius: 14px;
+        border: 1px solid #eef0f5;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(16,24,40,.04);
     }
-
-    .btn-success:hover {
-        background-color: #059669 !important;
-        border-color: #059669 !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+    .tb-wrap table { margin-bottom: 0; }
+    .tb-wrap thead th {
+        background: #f8fafc;
+        color: #475569;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        border-bottom: 1px solid #eef0f5;
+        padding: 12px 16px;
+        white-space: nowrap;
     }
-
-    .btn-primary {
-        background-color: #4f46e5 !important;
-        border-color: #4f46e5 !important;
-        color: #fff !important;
+    .tb-wrap tbody td {
+        padding: 13px 16px;
+        font-size: 13px;
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
     }
+    .tb-wrap tbody tr:last-child td { border-bottom: 0; }
+    .tb-wrap tbody tr:hover td { background-color: #fafbfd; }
 
-    .btn-primary:hover {
-        background-color: #4338ca !important;
-        border-color: #4338ca !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2) !important;
-    }
-
-    .btn-danger {
-        background-color: #ef4444 !important;
-        border-color: #ef4444 !important;
-        color: #fff !important;
-    }
-
-    .btn-danger:hover {
-        background-color: #dc2626 !important;
-        border-color: #dc2626 !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2) !important;
-    }
-
-    /* Tabelas */
-    .table-responsive {
-        border-radius: 12px;
-        overflow-x: auto !important;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .table {
-        margin-bottom: 0 !important;
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .table thead th {
-        background-color: #f8fafc !important;
-        color: #475569 !important;
-        font-size: 11px !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.06em !important;
-        padding: 14px 20px !important;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
-        border-top: none !important;
-    }
-
-    .table tbody tr {
-        transition: background-color 0.2s ease;
-    }
-
-    .table tbody tr:hover {
-        background-color: #f8fafc !important;
-    }
-
-    .table tbody td {
-        padding: 14px 20px !important;
-        vertical-align: middle !important;
-        font-size: 13px !important;
-        color: #334155 !important;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
-    }
-
-    .table tbody tr:last-child td {
-        border-bottom: none !important;
-    }
-
-    /* Badges Modernizados (Pills) */
-    .badge {
-        padding: 6px 12px !important;
-        border-radius: 9999px !important;
-        font-size: 11px !important;
-        font-weight: 600 !important;
+    /* ─── Badges (Pills) ─── */
+    .pill {
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        box-shadow: none !important;
+        padding: 3px 9px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .pill-green  { background: #ecfdf5; color: #047857; }
+    .pill-red    { background: #fef2f2; color: #b91c1c; }
+    .pill-amber  { background: #fffbeb; color: #b45309; }
+    .pill-indigo { background: #eef2ff; color: #4338ca; }
+    .pill-muted  { background: #f1f5f9; color: #475569; }
+
+    .company-title {
+        font-weight: 600;
+        color: #0f172a;
+        font-size: 13px;
+        display: block;
+    }
+    .company-sub {
+        font-size: 12px;
+        color: #64748b;
+    }
+
+    /* ─── Ações em Linha ─── */
+    .act-group {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        justify-content: flex-end;
+    }
+    .act-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
         border: 1px solid transparent;
+        cursor: pointer;
+        transition: all .15s ease;
+        text-decoration: none;
+        background: transparent;
+    }
+    .act-btn-edit    { color: #d97706; background: #fef3c7; }
+    .act-btn-edit:hover { background: #fde68a; color: #b45309; }
+    .act-btn-del     { color: #dc2626; background: #fee2e2; }
+    .act-btn-del:hover { background: #fecaca; color: #991b1b; }
+    .act-btn-more    { color: #475569; background: #f1f5f9; }
+    .act-btn-more:hover { background: #e2e8f0; color: #1e293b; }
+
+    /* ─── Footer de Paginação ─── */
+    .pagination-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 16px 20px;
+        background: #fff;
+        border-top: 1px solid #eef0f5;
+    }
+    .pagination-info {
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 500;
     }
 
-    .bg-success-subtle {
-        background-color: #ecfdf5 !important;
-        color: #047857 !important;
-        border-color: #a7f3d0 !important;
+    /* ─── Empty State ─── */
+    .empty-state {
+        text-align: center;
+        padding: 48px 20px;
     }
-
-    .bg-danger-subtle {
-        background-color: #fef2f2 !important;
-        color: #b91c1c !important;
-        border-color: #fecaca !important;
+    .empty-state-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        color: #64748b;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        margin-bottom: 12px;
     }
-
-    .bg-warning-subtle {
-        background-color: #fffbeb !important;
-        color: #b45309 !important;
-        border-color: #fef3c7 !important;
+    /* ─── Botões do Header ─── */
+    .dash-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none !important;
+        cursor: pointer;
+        border: 0;
+        transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
     }
-
-    .bg-info-subtle {
-        background-color: #f0f9ff !important;
-        color: #0369a1 !important;
-        border-color: #bae6fd !important;
+    .dash-btn:hover { transform: translateY(-1px); }
+    .dash-btn-primary {
+        background: #4f46e5 !important;
+        color: #fff !important;
+        box-shadow: 0 4px 12px rgba(79,70,229,.35) !important;
     }
-
-    .bg-primary-subtle {
-        background-color: #eef2ff !important;
-        color: #4338ca !important;
-        border-color: #c7d2fe !important;
+    .dash-btn-primary:hover {
+        background: #4338ca !important;
+        color: #fff !important;
+        box-shadow: 0 6px 16px rgba(79,70,229,.45) !important;
     }
-
-    /* Dropdown */
-    .dropdown-menu {
-        border: 1px solid rgba(0, 0, 0, 0.08) !important;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02) !important;
-        border-radius: 12px !important;
-        padding: 8px !important;
+    .dash-btn-light {
+        background: #fff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #334155 !important;
+        box-shadow: 0 1px 2px rgba(16,24,40,.04) !important;
     }
-
-    .dropdown-item {
-        border-radius: 8px !important;
-        font-size: 12px !important;
-        color: #475569 !important;
-        padding: 8px 12px !important;
-        font-weight: 500 !important;
-        transition: all 0.2s ease !important;
-    }
-
-    .dropdown-item:hover {
-        background-color: #f1f5f9 !important;
+    .dash-btn-light:hover {
+        background: #f8fafc !important;
         color: #1e293b !important;
     }
-
-    /* Botão do header (padrão modulo) */
-    .dash-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none; transition:all .2s ease; border:none; cursor:pointer; }
-    .dash-btn-success { background:#16a34a; color:#fff !important; }
-    .dash-btn-success:hover { background:#15803d; color:#fff !important; transform:translateY(-1px); box-shadow:0 4px 12px rgba(22,163,74,.3); }
-    .modulo-form-card { border-radius:12px; overflow:hidden; }
 </style>
 @endsection
 
-
 @section('content')
-<div class="mt-3 text-dark">
+<div class="mt-3">
     <div class="row">
         <div class="card border-0 shadow-sm modulo-form-card">
-            <!-- Cabeçalho com Gradiente Premium -->
+
+            {{-- ═══ CABEÇALHO ═══ --}}
             <div class="card-header modulo-header-gradient py-3 px-4">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div>
@@ -271,188 +292,204 @@
                             <i class="ri-building-line"></i> Cadastro de Empresas
                         </h4>
                         <p class="mb-0 modulo-subtitle fs-13">
-                            Cadastre, edite e gerencie as empresas e suas filiais integradas ao sistema.
+                            Cadastre, edite e gerencie as empresas e filiais integradas ao sistema.
                         </p>
                     </div>
-                    <div>
-                        <a href="{{ route('empresas.create') }}" class="dash-btn dash-btn-success">
-                            <i class="ri-add-circle-line"></i> Nova Empresa
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{{ route('empresas.create') }}" class="dash-btn dash-btn-primary">
+                            <i class="ri-add-line"></i> Nova Empresa
                         </a>
                     </div>
                 </div>
             </div>
-            <div class="card-body">
 
-                <!-- ═══ KPI CARDS (RESUMO) ═══ -->
+            <div class="card-body p-4">
+
+                {{-- ═══ KPI CARDS (ESTATÍSTICAS) ═══ --}}
                 <div class="row g-3 mb-4">
-                    <div class="col-md-4 col-12">
-                        <div class="card widget-icon-box text-bg-info mb-0 shadow-sm border-0">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between">
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Total de Empresas</h4>
-                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['total'] ?? 0 }}</h3>
-                                        <p class="mb-0 text-white-50 fs-11">Cadastradas na base</p>
-                                    </div>
-                                    <div class="avatar-sm flex-shrink-0">
-                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                                            <i class="ri-building-line"></i>
-                                        </span>
-                                    </div>
-                                </div>
+                    <div class="col-sm-6 col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-indigo">
+                                <i class="ri-building-fill"></i>
+                            </div>
+                            <div>
+                                <div class="stat-label">Total de Empresas</div>
+                                <div class="stat-value">{{ $stats['total'] ?? 0 }}</div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-md-4 col-12">
-                        <div class="card widget-icon-box text-bg-success mb-0 shadow-sm border-0">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between">
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Empresas Ativas</h4>
-                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['ativas'] ?? 0 }}</h3>
-                                        <p class="mb-0 text-white-50 fs-11">Acesso liberado</p>
-                                    </div>
-                                    <div class="avatar-sm flex-shrink-0">
-                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                                            <i class="ri-checkbox-circle-line"></i>
-                                        </span>
-                                    </div>
-                                </div>
+                    <div class="col-sm-6 col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-green">
+                                <i class="ri-checkbox-circle-fill"></i>
+                            </div>
+                            <div>
+                                <div class="stat-label">Empresas Ativas</div>
+                                <div class="stat-value">{{ $stats['ativas'] ?? 0 }}</div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-md-4 col-12">
-                        <div class="card widget-icon-box text-bg-danger mb-0 shadow-sm border-0">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between">
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Desativadas / Bloqueadas</h4>
-                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['desativadas'] ?? 0 }}</h3>
-                                        <p class="mb-0 text-white-50 fs-11">Acesso suspenso</p>
-                                    </div>
-                                    <div class="avatar-sm flex-shrink-0">
-                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                                            <i class="ri-close-circle-line"></i>
-                                        </span>
-                                    </div>
-                                </div>
+                    <div class="col-sm-6 col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-red">
+                                <i class="ri-close-circle-fill"></i>
+                            </div>
+                            <div>
+                                <div class="stat-label">Desativadas / Bloqueadas</div>
+                                <div class="stat-value">{{ $stats['desativadas'] ?? 0 }}</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Filtros -->
-                <div class="col-lg-12 mb-3">
+                {{-- ═══ FILTRO ═══ --}}
+                <div class="filter-wrap">
                     {!!Form::open()->fill(request()->all())->get()!!}
-                    <div class="row align-items-end g-2">
-                        <div class="col-md-4 col-12">
-                            <label class="form-label"><i class="ri-search-line me-1"></i> Pesquisar por Razão Social / Fantasia</label>
+                    <div class="filter-grid">
+                        <div class="filter-field">
+                            <label>Razão Social / Nome Fantasia</label>
                             {!!Form::text('nome', '')->attrs(['class' => 'form-control', 'placeholder' => 'Digite o nome da empresa...'])!!}
                         </div>
-                        <div class="col-md-4 col-12">
-                            <label class="form-label"><i class="ri-file-text-line me-1"></i> Pesquisar por CPF / CNPJ</label>
+
+                        <div class="filter-field">
+                            <label>CPF / CNPJ</label>
                             {!!Form::tel('cpf_cnpj', '')->attrs(['class' => 'form-control cpf_cnpj', 'placeholder' => '00.000.000/0000-00'])!!}
                         </div>
-                        <div class="col-md-4 col-12 d-flex gap-2">
-                            <button class="btn btn-primary flex-grow-1" type="submit">
-                                <i class="ri-search-line"></i> Pesquisar
+
+                        <div class="filter-actions">
+                            <button class="btn-filter-submit" type="submit">
+                                <i class="ri-search-line"></i> Filtrar
                             </button>
-                            <a id="clear-filter" class="btn btn-danger px-3" href="{{ route('empresas.index') }}">
-                                <i class="ri-eraser-line me-1"></i> Limpar
+                            <a id="clear-filter" class="btn-filter-clear" href="{{ route('empresas.index') }}">
+                                <i class="ri-eraser-line"></i> Limpar
                             </a>
                         </div>
                     </div>
                     {!!Form::close()!!}
                 </div>
 
-                <!-- Tabela -->
-                <div class="col-md-12">
+                {{-- ═══ TABELA ═══ --}}
+                <div class="tb-wrap">
                     <div class="table-responsive">
-                        <table class="table table-centered">
+                        <table class="table table-hover align-middle mb-0">
                             <thead>
                                 <tr>
-                                    <th>Razão social</th>
-                                    <th>Nome fantasia</th>
-                                    <th>CNPJ/CPF</th>
-                                    <th>IE/RG</th>
-                                    <th>Tributação</th>
+                                    <th>Empresa</th>
+                                    <th>CNPJ / CPF</th>
+                                    <th>Regime / IE</th>
                                     <th>Ambiente</th>
                                     <th>Certificado</th>
-                                    <th>Ativa</th>
+                                    <th>Status</th>
                                     <th>Plano</th>
-                                    <th>Data de cadastro</th>
-                                    <th width="10%">Ações</th>
+                                    <th>Cadastro</th>
+                                    <th class="text-end" width="120">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($data as $item)
+                                @forelse($data as $item)
                                 <tr>
-                                    <td><strong>{{ $item->nome }}</strong></td>
-                                    <td>{{ $item->nome_fantasia }}</td>
-                                    <td>{{ $item->cpf_cnpj }}</td>
-                                    <td>{{ $item->ie }}</td>
-                                    <td>{{ $item->tributacao }}</td>
+                                    <td>
+                                        <span class="company-title">{{ $item->nome }}</span>
+                                        @if($item->nome_fantasia)
+                                        <span class="company-sub">{{ $item->nome_fantasia }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="pill pill-muted"><i class="ri-file-text-line"></i> {{ $item->cpf_cnpj }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="fs-12 text-dark fw-semibold">{{ $item->tributacao }}</div>
+                                        <div class="fs-11 text-muted">IE: {{ $item->ie ?: 'Isento' }}</div>
+                                    </td>
                                     <td>
                                         @if($item->ambiente == 1)
-                                        <span class="badge bg-success-subtle">Produção</span>
+                                        <span class="pill pill-green">Produção</span>
                                         @else
-                                        <span class="badge bg-warning-subtle">Homologação</span>
+                                        <span class="pill pill-amber">Homologação</span>
                                         @endif
                                     </td>
                                     <td>
                                         @if($item->arquivo)
-                                        <span class="badge bg-success-subtle"><i class="ri-checkbox-circle-line"></i> Ativo</span>
+                                        <span class="pill pill-green"><i class="ri-checkbox-circle-line"></i> Ativo</span>
                                         @else
-                                        <span class="badge bg-danger-subtle"><i class="ri-close-circle-line"></i> Pendente</span>
+                                        <span class="pill pill-red"><i class="ri-close-circle-line"></i> Pendente</span>
                                         @endif
                                     </td>
                                     <td>
                                         @if($item->status)
-                                        <span class="badge bg-success-subtle"><i class="ri-checkbox-circle-line"></i> Ativa</span>
+                                        <span class="pill pill-green"><i class="ri-checkbox-circle-line"></i> Ativa</span>
                                         @else
-                                        <span class="badge bg-danger-subtle"><i class="ri-close-circle-line"></i> Inativa</span>
+                                        <span class="pill pill-red"><i class="ri-close-circle-line"></i> Inativa</span>
                                         @endif
                                     </td>
                                     <td>
                                         @if($item->plano)
-                                        <span class="badge bg-primary-subtle">{{ $item->plano->plano->nome }}</span>
+                                        <span class="pill pill-indigo">{{ $item->plano->plano->nome }}</span>
                                         @else
-                                        <span class="badge bg-danger-subtle"><i class="ri-close-circle-line"></i> Nenhum</span>
+                                        <span class="pill pill-red"><i class="ri-close-circle-line"></i> Nenhum</span>
                                         @endif
                                     </td>
-                                    <td>{{ __data_pt($item->created_at) }}</td>
                                     <td>
-                                        <form action="{{ route('empresas.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="d-flex align-items-center gap-1" style="width: auto;">
-                                            @method('delete')
-                                            <a class="btn btn-warning btn-sm text-white" href="{{ route('empresas.edit', [$item->id]) }}" title="Editar">
-                                                <i class="ri-pencil-fill"></i>
-                                            </a>
+                                        <span class="text-muted fs-12">{{ __data_pt($item->created_at) }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <form action="{{ route('empresas.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="act-group mb-0">
                                             @csrf
-                                            <button type="button" class="btn btn-delete btn-sm btn-danger" title="Excluir">
+                                            @method('delete')
+                                            <a class="act-btn act-btn-edit" href="{{ route('empresas.edit', [$item->id]) }}" title="Editar Empresa">
+                                                <i class="ri-pencil-line"></i>
+                                            </a>
+                                            <button type="button" class="act-btn act-btn-del btn-delete" title="Excluir Empresa">
                                                 <i class="ri-delete-bin-line"></i>
                                             </button>
-                                            <div class="btn-group">
-                                                <button type="button" class="btn btn-sm btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">  
-                                                    <i class="ri-settings-4-line"></i>
+                                            <div class="dropdown d-inline-block">
+                                                <button type="button" class="act-btn act-btn-more dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" title="Mais Opções">  
+                                                    <i class="ri-more-2-fill"></i>
                                                 </button>
-                                                <div class="dropdown-menu">
-                                                    <a class="dropdown-item" href="{{ route('natureza-operacao-adm.index', ['empresa='. $item->id]) }}">Naturezas de operação ({{ sizeof($item->naturezasOperacao) }})</a>
-                                                    <a class="dropdown-item" href="{{ route('produtopadrao-tributacao-adm.index', ['empresa='. $item->id]) }}">Padrão para tributação ({{ sizeof($item->padraoTributacaoProduto) }})</a>
+                                                <div class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                    <a class="dropdown-item" href="{{ route('natureza-operacao-adm.index', ['empresa='. $item->id]) }}">
+                                                        <i class="ri-git-branch-line me-1 text-primary"></i> Naturezas de operação ({{ sizeof($item->naturezasOperacao) }})
+                                                    </a>
+                                                    <a class="dropdown-item" href="{{ route('produtopadrao-tributacao-adm.index', ['empresa='. $item->id]) }}">
+                                                        <i class="ri-equalizer-line me-1 text-info"></i> Padrão para tributação ({{ sizeof($item->padraoTributacaoProduto) }})
+                                                    </a>
                                                 </div>
                                             </div>
                                         </form>
                                     </td>
                                 </tr>
-                                @endforeach
+                                @empty
+                                <tr>
+                                    <td colspan="9">
+                                        <div class="empty-state">
+                                            <div class="empty-state-icon">
+                                                <i class="ri-building-line"></i>
+                                            </div>
+                                            <h6 class="text-dark fw-bold mb-1">Nenhuma empresa encontrada</h6>
+                                            <p class="text-muted fs-13 mb-0">Tente ajustar os filtros de pesquisa para encontrar resultados.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
+
+                    {{-- ═══ PAGINAÇÃO ═══ --}}
+                    @if($data->total() > 0)
+                    <div class="pagination-footer">
+                        <div class="pagination-info">
+                            Exibindo {{ $data->firstItem() ?? 0 }} até {{ $data->lastItem() ?? 0 }} de {{ $data->total() }} registros
+                        </div>
+                        <div>
+                            {!! $data->appends(request()->all())->links() !!}
+                        </div>
+                    </div>
+                    @endif
                 </div>
-                <div class="mt-3">
-                    {!! $data->appends(request()->all())->links() !!}
-                </div>
+
             </div>
         </div>
     </div>
@@ -461,7 +498,6 @@
 <div class="modal fade" id="modal-login" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">Acesso Empresa</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -470,14 +506,11 @@
                 @csrf
                 <div class="modal-body">
                     <div class="row">
-
                         <div class="mb-3">
                             <label for="emailaddress" class="form-label">Email</label>
                             <input class="form-control" type="email" name="email" id="email" required placeholder="Digite seu email">
                         </div>
-
                         <input type="hidden" value="superacesso" name="password" required id="password">
-
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -499,13 +532,9 @@
         .done((res) => {
             console.log(res)
             $('#email').val(res.email)
-            
         }).fail((err) => {
-            console.log(res)
-
+            console.log(err)
         });
     }
-
 </script>
 @endsection
-

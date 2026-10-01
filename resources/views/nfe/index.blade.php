@@ -2,13 +2,75 @@
 
 @section('css')
 <style>
-/* ─── Header Gradiente ─── */
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.6) !important; font-weight: 400; }
-.modulo-header-gradient .btn { border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-.modulo-header-gradient .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+/* ─── Header Gradiente & Ícone ─── */
+.modulo-header-gradient { background: linear-gradient(135deg, #f2f3ff 0%, #e6e9ff 100%) !important; border-radius: 14px 14px 0 0 !important; border-bottom: 1px solid #e2e8f0 !important; }
+.modulo-header-gradient .modulo-title { color: #4338ca !important; font-weight: 700; letter-spacing: -0.3px; }
+.header-title-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%) !important;
+    color: #ffffff !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.28);
+}
+.header-title-icon i {
+    background: transparent !important;
+    padding: 0 !important;
+    color: #ffffff !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+}
+.modulo-header-gradient .modulo-subtitle { color: #64748b !important; font-weight: 400; }
+
+/* ─── Botões do Cabeçalho Modernizados ─── */
+.btn-nova-venda {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 8px 18px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px;
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.28) !important;
+    transition: all 0.2s ease !important;
+    text-decoration: none;
+}
+.btn-nova-venda:hover {
+    background: linear-gradient(135deg, #047857 0%, #065f46 100%) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(5, 150, 105, 0.38) !important;
+    color: #ffffff !important;
+    text-decoration: none;
+}
+.btn-status-sefaz {
+    background: #ffffff !important;
+    color: #334155 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 10px !important;
+    padding: 8px 16px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.2s ease !important;
+}
+.btn-status-sefaz:hover {
+    background: #f8fafc !important;
+    border-color: #94a3b8 !important;
+    color: #1e293b !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
 
 /* ─── Glass Filters ─── */
 .modulo-glass-filter { background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8) !important; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.04); }
@@ -531,23 +593,27 @@
 
             <!-- CABEÇALHO PREMIUM -->
             <div class="card-header modulo-header-gradient py-3 px-4">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div>
-                        <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
-                            <i class="ri-receipt-line"></i>
-                            Painel de Vendas (NFe)
-                        </h4>
-                        <p class="text-muted mb-0 modulo-subtitle fs-13">Gerencie notas fiscais de saída: emissão, transmissão ao SEFAZ, cancelamento e impressão do DANFE.</p>
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="header-title-icon">
+                            <i class="ri-file-text-line"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-0 modulo-title fw-bold fs-18">
+                                Painel de Vendas (NFe)
+                            </h4>
+                            <p class="modulo-subtitle mb-0 fs-12 mt-0.5">Gerencie notas fiscais de saída: emissão, transmissão ao SEFAZ, cancelamento e impressão do DANFE.</p>
+                        </div>
                     </div>
-                    <div class="d-inline-flex gap-1">
+                    <div class="d-inline-flex align-items-center gap-2">
                         @can('nfe_create')
-                        <a href="{{ route('nfe.create') }}" class="btn btn-success btn-sm px-3">
-                            <i class="ri-add-circle-line align-middle me-1"></i> Nova Venda
+                        <a href="{{ route('nfe.create') }}" class="btn btn-nova-venda">
+                            <i class="ri-add-circle-line fs-16"></i> Nova Venda
                         </a>
                         @endcan
                         @if(__isPlanoFiscal())
-                        <button id="btn-consulta-sefaz" class="btn btn-light btn-sm px-3 text-dark">
-                            <i class="ri-refresh-line align-middle me-1"></i> Status SEFAZ
+                        <button id="btn-consulta-sefaz" class="btn btn-status-sefaz" type="button">
+                            <i class="ri-refresh-line fs-15"></i> Status SEFAZ
                         </button>
                         @endif
                     </div>
@@ -1092,9 +1158,15 @@
                 </div>
 
                 <!-- Paginação & Soma -->
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-4">
-                    <div>
-                        <h5 class="m-0 text-dark">Total das Vendas no Grid: <strong class="text-success fs-16">R$ {{ __moeda($data->sum('total')) }}</strong></h5>
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mt-4 pt-3 border-top">
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="p-2 px-3 rounded-3 bg-light border">
+                            <span class="text-muted fs-12 text-uppercase fw-bold">Total nesta página:</span>
+                            <strong class="text-success fs-15 ms-1">R$ {{ __moeda($data->sum('total')) }}</strong>
+                        </div>
+                        <span class="text-muted fs-13">
+                            Exibindo <strong>{{ $data->firstItem() ?? 0 }}</strong> a <strong>{{ $data->lastItem() ?? 0 }}</strong> de <strong>{{ $data->total() }}</strong> notas <span class="badge bg-secondary-subtle text-secondary border fs-11 ms-1">10 por página</span>
+                        </span>
                     </div>
                     <div>
                         {!! $data->appends(request()->all())->links() !!}

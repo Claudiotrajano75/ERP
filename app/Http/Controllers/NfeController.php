@@ -158,7 +158,7 @@ class NfeController extends Controller
             return $query->whereIn('local_id', $locais);
         })
         ->orderBy('created_at', 'desc')
-        ->paginate(env("PAGINACAO"));
+        ->paginate($request->get('per_page', env("PAGINACAO", 10)) ?: 10);
 
         $contigencia = $this->getContigencia($request->empresa_id);
         return view('nfe.index', compact('data', 'contigencia'));

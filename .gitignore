@@ -25,6 +25,7 @@ Thumbs.db
 /__MACOSX
 nul
 *.zip
+/scratch
 
 # ─── Pastas de Documentos Fiscais Dinâmicos (Produção) ───
 /public/xml_cte/*

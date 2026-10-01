@@ -84,6 +84,7 @@
                                     <th>%PIS</th>
                                     <th>%COFINS</th>
                                     <th>%IPI</th>
+                                    <th>CFOP</th>
                                     <th>CST</th>
                                     <th>CST PIS</th>
                                     <th>CST COFINS</th>
@@ -111,6 +112,7 @@
                                     <td>{{ $item->perc_pis }}%</td>
                                     <td>{{ $item->perc_cofins }}%</td>
                                     <td>{{ $item->perc_ipi }}%</td>
+                                    <td><span class="badge bg-light text-dark border px-2 py-1 fs-11">{{ $item->cfop_estadual }}</span></td>
                                     <td><span class="badge bg-light text-dark border px-2 py-1 fs-11">{{ $item->cst_csosn }}</span></td>
                                     <td><span class="badge bg-light text-dark border px-2 py-1 fs-11">{{ $item->cst_pis }}</span></td>
                                     <td><span class="badge bg-light text-dark border px-2 py-1 fs-11">{{ $item->cst_cofins }}</span></td>

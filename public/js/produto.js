@@ -17,7 +17,7 @@ $(function() {
     }
 
     setTimeout(() => {
-        if($('#inp-padrao_id').val()){
+        if($('#edit').val() != 1 && $('#inp-padrao_id').val()){
             $('#inp-padrao_id').change()
         }
 
@@ -158,37 +158,38 @@ $(document).on("change", "#inp-padrao_id", function() {
             padrao: padrao
         })
         .done((result) => {
-
-            if(EDIT == 0){
-                if(result._ncm){
-                    var newOption = new Option(result._ncm.descricao, result._ncm.codigo, 1, false);
-                    $('#inp-ncm').append(newOption);
-                }
-
-                // $('#inp-ncm').val(result.ncm)
-                $('#inp-cest').val(result.cest)
-                $('#inp-perc_icms').val(result.perc_icms)
-                $('#inp-perc_pis').val(result.perc_pis)
-                $('#inp-perc_cofins').val(result.perc_cofins)
-                $('#inp-perc_ipi').val(result.perc_ipi)
-                $('#inp-cst_csosn').val(result.cst_csosn).change()
-                $('#inp-cst_pis').val(result.cst_pis).change()
-                $('#inp-cst_cofins').val(result.cst_cofins).change()
-                $('#inp-cst_ipi').val(result.cst_ipi).change()
-                $('#inp-cEnq').val(result.cEnq).change()
-                $('#inp-cfop_estadual').val(result.cfop_estadual)
-                $('#inp-cfop_outro_estado').val(result.cfop_outro_estado)
-                $('#inp-codigo_beneficio_fiscal').val(result.codigo_beneficio_fiscal)
-
-                $('#inp-cfop_entrada_estadual').val(result.cfop_entrada_estadual)
-                $('#inp-cfop_entrada_outro_estado').val(result.cfop_entrada_outro_estado)
-                $('#inp-modBCST').val(result.modBCST).change()
-                $('#inp-pICMSST').val(result.pICMSST)
-                $('#inp-pMVAST').val(result.pMVAST)
-                $('#inp-redBCST').val(result.redBCST)
-            }else{
-                EDIT = 0
+            if(result._ncm){
+                var newOption = new Option(result._ncm.descricao, result._ncm.codigo, true, true);
+                $('#inp-ncm').empty().append(newOption).trigger('change');
+            } else if(result.ncm) {
+                var newOption = new Option(result.ncm, result.ncm, true, true);
+                $('#inp-ncm').empty().append(newOption).trigger('change');
+            } else {
+                $('#inp-ncm').val(null).trigger('change');
             }
+
+            $('#inp-cest').val(result.cest ? result.cest : '')
+            $('#inp-perc_icms').val(result.perc_icms)
+            $('#inp-perc_pis').val(result.perc_pis)
+            $('#inp-perc_cofins').val(result.perc_cofins)
+            $('#inp-perc_ipi').val(result.perc_ipi)
+            if($('#inp-perc_ibs').length) $('#inp-perc_ibs').val(result.perc_ibs ? result.perc_ibs : '0.00');
+            if($('#inp-perc_cbs').length) $('#inp-perc_cbs').val(result.perc_cbs ? result.perc_cbs : '0.00');
+            $('#inp-cst_csosn').val(result.cst_csosn).change()
+            $('#inp-cst_pis').val(result.cst_pis).change()
+            $('#inp-cst_cofins').val(result.cst_cofins).change()
+            $('#inp-cst_ipi').val(result.cst_ipi).change()
+            $('#inp-cEnq').val(result.cEnq).change()
+            $('#inp-cfop_estadual').val(result.cfop_estadual)
+            $('#inp-cfop_outro_estado').val(result.cfop_outro_estado)
+            $('#inp-codigo_beneficio_fiscal').val(result.codigo_beneficio_fiscal)
+
+            $('#inp-cfop_entrada_estadual').val(result.cfop_entrada_estadual)
+            $('#inp-cfop_entrada_outro_estado').val(result.cfop_entrada_outro_estado)
+            $('#inp-modBCST').val(result.modBCST).change()
+            $('#inp-pICMSST').val(result.pICMSST)
+            $('#inp-pMVAST').val(result.pMVAST)
+            $('#inp-redBCST').val(result.redBCST)
         })
         .fail((err) => {
             console.log(err)

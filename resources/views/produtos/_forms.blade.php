@@ -1333,7 +1333,7 @@
 </div>
 @section('js')
 
-<script type="text/javascript" src="/js/produto.js"></script>
+<script type="text/javascript" src="/js/produto.js?v={{ time() }}"></script>
 
 @isset($item)
 @if(empty($item->imagem))

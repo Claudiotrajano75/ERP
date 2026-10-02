@@ -109,6 +109,11 @@ Route::middleware(['validaEcommerce'])->group(function () {
 Route::middleware(['authh', 'validaEmpresa'])->group(function () {
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+    // Central de Ajuda - Vídeo Aulas e Tutoriais para todas as Empresas
+    Route::get('/central-ajuda', [App\Http\Controllers\CentralAjudaController::class, 'index'])->name('central-ajuda.index');
+    Route::get('/central-ajuda/{id}', [App\Http\Controllers\CentralAjudaController::class, 'show'])->name('central-ajuda.show');
+    Route::get('/central-ajuda/{id}/stream', [App\Http\Controllers\CentralAjudaController::class, 'stream'])->name('central-ajuda.stream');
+
     Route::middleware(['verificaMaster'])->group(function () {
         Route::get('/admin-dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
 
@@ -145,6 +150,8 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         Route::post('config-geral-admin/login-banner', [App\Http\Controllers\ConfiguracaoSuperController::class, 'updateLoginBanner'])->name('config-geral-admin.update-login-banner');
         Route::resource('cidades', 'CidadeController');
         Route::resource('bairros-super', 'BairroSuperController');
+        Route::patch('video-suporte/{id}/status', [App\Http\Controllers\VideoSuporteController::class, 'toggleStatus'])->name('video-suporte.toggle-status');
+        Route::get('video-suporte/{id}/stream', [App\Http\Controllers\VideoSuporteController::class, 'stream'])->name('video-suporte.stream');
         Route::resource('video-suporte', 'VideoSuporteController');
         Route::resource('financeiro-plano', 'FinanceiroPlanoController');
 

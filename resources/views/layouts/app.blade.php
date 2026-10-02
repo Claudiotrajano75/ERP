@@ -189,6 +189,82 @@
             transform: translateX(3px);
             opacity: 1;
         }
+
+        /* ─── Botão Central de Ajuda Elegante no Topbar ─── */
+        .btn-top-central-ajuda {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: linear-gradient(135deg, #4338ca 0%, #6366f1 50%, #4f46e5 100%);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 10px;
+            padding: 5px 13px 5px 7px;
+            color: #ffffff !important;
+            font-size: 12.5px;
+            font-weight: 700;
+            text-decoration: none !important;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-top-central-ajuda::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-top-central-ajuda:hover::before {
+            left: 140%;
+        }
+
+        .btn-top-central-ajuda:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(79, 70, 229, 0.5);
+            color: #ffffff !important;
+        }
+
+        .btn-top-central-ajuda .ajuda-icon-badge {
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.22);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #ffffff;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+            transition: transform 0.22s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-top-central-ajuda:hover .ajuda-icon-badge {
+            transform: scale(1.1) rotate(-4deg);
+            background: rgba(255, 255, 255, 0.32);
+        }
+
+        .btn-top-central-ajuda .ajuda-text {
+            letter-spacing: -0.2px;
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            .btn-top-central-ajuda .ajuda-text {
+                display: none;
+            }
+            .btn-top-central-ajuda {
+                padding: 5px 7px;
+            }
+        }
     </style>
 </head>
 
@@ -272,6 +348,12 @@
                                 @endcan
                             @endif
                         @endif
+
+                        <!-- Botão Central de Ajuda Visível para Todas as Empresas -->
+                        <a href="{{ route('central-ajuda.index') }}" class="btn-top-central-ajuda" title="Central de Ajuda · Vídeos Tutoriais">
+                            <span class="ajuda-icon-badge"><i class="ri-video-chat-line"></i></span>
+                            <span class="ajuda-text">Central de Ajuda</span>
+                        </a>
                     </div>
 
                 </div><!-- /step1 -->
@@ -506,6 +588,14 @@
                             <i class="ri-dashboard-2-fill"></i>
                             <span class="badge bg-success float-end"></span>
                             <span> Dashboard </span>
+                        </a>
+                    </li>
+
+                    <li class="side-nav-item">
+                        <a href="{{ route('central-ajuda.index') }}" class="side-nav-link">
+                            <i class="ri-video-chat-line text-primary"></i>
+                            <span class="badge bg-primary-subtle text-primary float-end">Tutoriais</span>
+                            <span> Central de Ajuda </span>
                         </a>
                     </li>
 

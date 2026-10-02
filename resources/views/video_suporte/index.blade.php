@@ -1,365 +1,327 @@
 @extends('layouts.app', ['title' => 'Vídeos de Suporte'])
 
 @section('css')
-<style type="text/css">
-    /* Estilos Personalizados para a Página */
-    .card {
-        border: 1px solid rgba(0, 0, 0, 0.06) !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
-        border-radius: 16px !important;
+<style>
+    /* ─── Cards de Estatísticas (Padrão Contadores) ─── */
+    .stat-card {
+        border: 0;
+        border-radius: 16px;
+        padding: 18px 20px;
+        height: 100%;
+        color: #fff;
+        position: relative;
         overflow: hidden;
-        background: #fff;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        margin-bottom: 24px;
+        transition: transform .18s ease, box-shadow .18s ease;
     }
-
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05) !important;
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        top: -44px;
+        right: -44px;
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.12);
     }
+    .stat-indigo { background: linear-gradient(135deg,#6366f1,#4f46e5); box-shadow: 0 6px 18px rgba(79,70,229,.32); }
+    .stat-green  { background: linear-gradient(135deg,#24c98a,#109f61); box-shadow: 0 6px 18px rgba(16,185,129,.32); }
+    .stat-red    { background: linear-gradient(135deg,#fb7185,#dc2626); box-shadow: 0 6px 18px rgba(220,38,38,.32); }
+    .stat-blue   { background: linear-gradient(135deg,#38bdf8,#0284c7); box-shadow: 0 6px 18px rgba(2,132,199,.32); }
 
-    .card-body {
-        padding: 24px !important;
-    }
+    .stat-card .st-label { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: rgba(255,255,255,.85); }
+    .stat-card .st-value { font-size: 26px; font-weight: 800; color: #fff; margin-top: 4px; line-height: 1.1; }
+    .stat-card .st-sub { font-size: 11.5px; color: rgba(255,255,255,.75); margin-top: 4px; }
+    .stat-card .st-icon { width: 46px; height: 46px; border-radius: 13px; background: rgba(255,255,255,.22); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 22px; }
 
-    /* Cabeçalho de Gradiente Premium */
-    .modulo-header-gradient {
-        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%) !important;
-        border-radius: 12px 12px 0 0 !important;
-        border-bottom: none !important;
-        padding: 20px 24px !important;
-    }
+    /* ─── Filtro (Padrão Contadores) ─── */
+    .filter-wrap { background: #fff; border: 1px solid #e9ecf3; border-radius: 14px; box-shadow: 0 1px 2px rgba(16,24,40,.04); padding: 18px 20px; margin-bottom: 18px; }
+    .filter-title { font-size: 13px; font-weight: 700; color: #3f3e6a; text-transform: uppercase; letter-spacing: .5px; }
+    .filter-title i { color: #4f46e5; margin-right: 6px; }
+    .filter-wrap label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #8c8ca6; margin-bottom: 5px; }
+    .filter-wrap .form-control, .filter-wrap .form-select { height: 40px; border-radius: 10px; border: 1px solid #dcdce9; font-size: 13px; background: #fcfdfe; }
+    .filter-wrap .form-control:focus, .filter-wrap .form-select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.12); background: #fff; }
 
-    .modulo-header-gradient .modulo-title {
-        color: #fff !important;
-        font-weight: 700 !important;
-        letter-spacing: -0.3px !important;
-        margin: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 12px !important;
-    }
+    /* ─── Tabela (Padrão Contadores) ─── */
+    .tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+    .tb-wrap table { margin-bottom: 0; }
+    .tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 16px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+    .tb-wrap tbody td { padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13.5px; color: #374151; }
+    .tb-wrap tbody tr:hover { background: #f5f6fe; }
+    .tb-wrap tbody tr:last-child td { border-bottom: none; }
 
-    .modulo-header-gradient .modulo-title i {
-        background: rgba(255, 255, 255, 0.1) !important;
-        padding: 8px !important;
-        border-radius: 10px !important;
-        color: #a8b5ff !important;
-        font-size: 20px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
+    /* ─── Grade de botões de ação (Padrão Contadores) ─── */
+    .act-group { display: inline-flex; gap: 6px; align-items: center; }
+    .act-btn { width: 34px; height: 34px; border-radius: 10px; border: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; text-decoration: none; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+    .act-btn:hover { transform: translateY(-2px); text-decoration: none; }
+    .act-view    { background: #e0f2fe; color: #0284c7; }
+    .act-view:hover    { box-shadow: 0 4px 12px rgba(2,132,199,.3); color: #0284c7; }
+    .act-edit    { background: #eef0ff; color: #4f46e5; }
+    .act-edit:hover    { box-shadow: 0 4px 12px rgba(79,70,229,.3); color: #4f46e5; }
+    .act-del     { background: #fee2e2; color: #dc2626; }
+    .act-del:hover     { box-shadow: 0 4px 12px rgba(220,38,38,.3); color: #dc2626; }
 
-    .modulo-header-gradient .modulo-subtitle {
-        color: rgba(255, 255, 255, 0.6) !important;
-        font-weight: 400 !important;
-        font-size: 13px !important;
-        margin-top: 4px !important;
-        margin-bottom: 0 !important;
-    }
+    /* ─── Badges / Pills ─── */
+    .pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 8px; padding: 4px 10px; font-size: 11.5px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
+    .pill:hover { opacity: 0.85; transform: scale(1.03); }
+    .pill-ok  { background: #dcfce7; color: #15803d; }
+    .pill-no  { background: #f1f5f9; color: #64748b; }
 
-    /* Formulários de Filtro */
-    .form-control, select {
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 10px !important;
-        padding: 10px 14px !important;
-        font-size: 13px !important;
-        color: #334155 !important;
-        transition: all 0.2s ease !important;
-        box-shadow: none !important;
-    }
-
-    .form-control:focus, select:focus {
-        border-color: #4f46e5 !important;
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
-    }
-
-    .form-label, label {
-        font-weight: 600 !important;
-        color: #475569 !important;
-        font-size: 13px !important;
-        margin-bottom: 6px !important;
-    }
-
-    /* Botões */
-    .btn {
-        border-radius: 10px !important;
-        font-weight: 500 !important;
-        font-size: 13px !important;
-        padding: 10px 20px !important;
-        transition: all 0.2s ease !important;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-    }
-
-    .btn-sm {
-        padding: 6px 12px !important;
-        font-size: 12px !important;
-        border-radius: 8px !important;
-    }
-
-    .btn-success {
-        background-color: #10b981 !important;
-        border-color: #10b981 !important;
-        color: #fff !important;
-    }
-
-    .btn-success:hover {
-        background-color: #059669 !important;
-        border-color: #059669 !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
-    }
-
-    .btn-primary {
-        background-color: #4f46e5 !important;
-        border-color: #4f46e5 !important;
-        color: #fff !important;
-    }
-
-    .btn-primary:hover {
-        background-color: #4338ca !important;
-        border-color: #4338ca !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2) !important;
-    }
-
-    .btn-info {
-        background-color: #0ea5e9 !important;
-        border-color: #0ea5e9 !important;
-        color: #fff !important;
-    }
-
-    .btn-info:hover {
-        background-color: #0284c7 !important;
-        border-color: #0284c7 !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2) !important;
-    }
-
-    .btn-warning {
-        background-color: #f59e0b !important;
-        border-color: #f59e0b !important;
-        color: #fff !important;
-    }
-
-    .btn-warning:hover {
-        background-color: #d97706 !important;
-        border-color: #d97706 !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2) !important;
-    }
-
-    .btn-danger {
-        background-color: #ef4444 !important;
-        border-color: #ef4444 !important;
-        color: #fff !important;
-    }
-
-    .btn-danger:hover {
-        background-color: #dc2626 !important;
-        border-color: #dc2626 !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2) !important;
-    }
-
-    /* Tabelas */
-    .table-responsive {
+    /* ─── Miniatura de Vídeo ─── */
+    .video-icon-box {
+        width: 44px;
+        height: 44px;
         border-radius: 12px;
-        overflow-x: auto !important;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .table {
-        margin-bottom: 0 !important;
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .table thead th {
-        background-color: #f8fafc !important;
-        color: #475569 !important;
-        font-size: 11px !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.06em !important;
-        padding: 14px 20px !important;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
-        border-top: none !important;
-    }
-
-    .table tbody tr {
-        transition: background-color 0.2s ease;
-    }
-
-    .table tbody tr:hover {
-        background-color: #f8fafc !important;
-    }
-
-    .table tbody td {
-        padding: 14px 20px !important;
-        vertical-align: middle !important;
-        font-size: 13px !important;
-        color: #334155 !important;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
-    }
-
-    .table tbody tr:last-child td {
-        border-bottom: none !important;
-    }
-
-    /* Badges Modernizados */
-    .badge {
-        padding: 6px 12px !important;
-        border-radius: 9999px !important;
-        font-size: 11px !important;
-        font-weight: 600 !important;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        box-shadow: none !important;
-        border: 1px solid transparent;
-    }
-
-    .bg-primary-subtle {
-        background-color: #eef2ff !important;
-        color: #4338ca !important;
-        border-color: #c7d2fe !important;
-    }
-
-    .bg-info-subtle {
-        background-color: #f0f9ff !important;
-        color: #0369a1 !important;
-        border-color: #bae6fd !important;
-    }
-
-    .modulo-action-group {
+        background: #eef2ff;
+        color: #4f46e5;
         display: flex;
         align-items: center;
-        gap: 6px;
-        flex-wrap: nowrap;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+        transition: transform 0.2s ease;
     }
+    .tb-wrap tbody tr:hover .video-icon-box {
+        transform: scale(1.08);
+        background: #4f46e5;
+        color: #fff;
+    }
+
+    /* ─── Estado Vazio ─── */
+    .empty-state { padding: 52px 20px; text-align: center; }
+    .empty-state i { font-size: 52px; color: #c5cae9; display: block; margin-bottom: 12px; }
+    .empty-state p { color: #9e9eb8; font-size: 14px; margin: 0; }
 </style>
 @endsection
 
 @section('content')
-<div class="mt-3 text-dark">
+<div class="mt-3">
     <div class="row">
-        <div class="card">
+        <div class="card border-0 shadow-sm">
 
-            <!-- ═══ CABEÇALHO COM GRADIENTE PREMIUM ═══ -->
-            <div class="card-header modulo-header-gradient">
+            {{-- ═══ CABEÇALHO (PADRÃO CONTADORES) ═══ --}}
+            <div class="card-header modulo-header-gradient py-3 px-4">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div>
-                        <h4 class="modulo-title text-white">
-                            <i class="ri-video-line"></i> Vídeos de Suporte e Ajuda
+                        <h4 class="mb-1 modulo-title d-flex align-items-center gap-2 text-white">
+                            <i class="ri-video-line"></i>
+                            Vídeos de Suporte
                         </h4>
-                        <p class="modulo-subtitle">
-                            Gerencie os vídeos e tutoriais explicativos exibidos nos botões de ajuda de cada tela do ERP.
+                        <p class="text-white-50 mb-0 modulo-subtitle fs-13">
+                            Cadastre vídeos tutoriais em formato MP4 para ensinar os usuários do ERP a realizarem rotinas no sistema.
                         </p>
                     </div>
-                    <div>
-                        <a href="{{ route('video-suporte.create') }}" class="btn btn-success">
-                            <i class="ri-add-circle-fill"></i> Novo Vídeo
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ route('central-ajuda.index') }}" target="_blank" class="dash-btn dash-btn-light" title="Visualizar como os clientes enxergam">
+                            <i class="ri-external-link-line"></i> Central de Ajuda
+                        </a>
+                        <a href="{{ route('video-suporte.create') }}" class="dash-btn dash-btn-primary">
+                            <i class="ri-add-line"></i> Novo Vídeo
                         </a>
                     </div>
                 </div>
             </div>
 
-            <div class="card-body">
+            <div class="card-body p-4">
 
-                <!-- ═══ KPI CARDS (RESUMO) ═══ -->
-                <div class="row g-3 mb-4">
-                    <div class="col-md-4 col-12">
-                        <div class="card widget-icon-box text-bg-info mb-0 shadow-sm border-0">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between">
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <h4 class="text-uppercase fs-12 mt-0 text-white-50">Total de Vídeos</h4>
-                                        <h3 class="my-1 text-white fs-20 fw-bold">{{ $stats['total'] ?? 0 }}</h3>
-                                        <p class="mb-0 text-white-50 fs-11">Tutoriais configurados</p>
-                                    </div>
-                                    <div class="avatar-sm flex-shrink-0">
-                                        <span class="avatar-title bg-white bg-opacity-25 text-white rounded rounded-3 fs-3 widget-icon-box-avatar shadow">
-                                            <i class="ri-play-circle-line"></i>
-                                        </span>
-                                    </div>
+                {{-- ═══ CARDS DE ESTATÍSTICAS (PADRÃO CONTADORES) ═══ --}}
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-indigo">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Total de Vídeos</div>
+                                    <div class="st-value">{{ $stats['total'] }}</div>
+                                    <div class="st-sub">Tutoriais cadastrados</div>
                                 </div>
+                                <div class="st-icon"><i class="ri-film-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-green">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Vídeos Ativos</div>
+                                    <div class="st-value">{{ $stats['ativos'] }}</div>
+                                    <div class="st-sub">Publicados para clientes</div>
+                                </div>
+                                <div class="st-icon"><i class="ri-checkbox-circle-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-red">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Inativos / Rascunhos</div>
+                                    <div class="st-value">{{ $stats['inativos'] }}</div>
+                                    <div class="st-sub">Ocultos no sistema</div>
+                                </div>
+                                <div class="st-icon"><i class="ri-close-circle-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-blue">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Espaço em Disco</div>
+                                    <div class="st-value fs-20">{{ $stats['total_espaco'] }}</div>
+                                    <div class="st-sub">{{ $stats['categorias'] }} categorias ativas</div>
+                                </div>
+                                <div class="st-icon"><i class="ri-hard-drive-2-line"></i></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ═══ FILTRO DE PESQUISA ═══ -->
-                <div class="col-lg-12 mb-3">
-                    {!!Form::open()->fill(request()->all())->get()!!}
-                    <div class="row align-items-end g-2">
-                        <div class="col-md-6 col-12">
-                            <label class="form-label"><i class="ri-search-line me-1"></i> Pesquisar por Página / Rota / URL</label>
-                            {!!Form::text('pagina', '')->attrs(['class' => 'form-control', 'placeholder' => 'Ex: produtos, nfe, pdv, compras...'])!!}
-                        </div>
-
-                        <div class="col-md-6 col-12 d-flex gap-2">
-                            <button class="btn btn-primary" type="submit">
-                                <i class="ri-search-line"></i> Pesquisar
-                            </button>
-                            <a id="clear-filter" class="btn btn-danger" href="{{ route('video-suporte.index') }}">
-                                <i class="ri-eraser-line me-1"></i> Limpar
-                            </a>
-                        </div>
+                {{-- ═══ FILTRO DE BUSCA (PADRÃO CONTADORES) ═══ --}}
+                <div class="filter-wrap">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h5 class="filter-title mb-0"><i class="ri-search-line"></i> Filtrar Vídeos de Suporte</h5>
                     </div>
-                    {!!Form::close()!!}
+                    <div class="mt-3">
+                        <form method="GET" action="{{ route('video-suporte.index') }}">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-4 col-12">
+                                    <label class="form-label"><i class="ri-text"></i> Título ou Descrição</label>
+                                    <input type="text" name="busca" class="form-control" placeholder="Buscar por título, descrição, tags..." value="{{ request('busca') }}">
+                                </div>
+
+                                <div class="col-md-2 col-6">
+                                    <label class="form-label"><i class="ri-toggle-line"></i> Status</label>
+                                    <select name="status" class="form-select">
+                                        <option value="">Todos</option>
+                                        <option value="ATIVO" {{ request('status') === 'ATIVO' ? 'selected' : '' }}>Ativos</option>
+                                        <option value="INATIVO" {{ request('status') === 'INATIVO' ? 'selected' : '' }}>Inativos</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3 col-6">
+                                    <label class="form-label"><i class="ri-folder-line"></i> Categoria</label>
+                                    <select name="categoria_id" class="form-select">
+                                        <option value="">Todas as Categorias</option>
+                                        @foreach($categorias as $cat)
+                                            <option value="{{ $cat->id }}" {{ request('categoria_id') == $cat->id ? 'selected' : '' }}>
+                                                {{ $cat->nome }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3 col-12">
+                                    <div class="d-flex gap-2 w-100">
+                                        <button class="btn btn-primary flex-grow-1" type="submit" style="border-radius:10px; height: 40px;">
+                                            <i class="ri-search-line me-1"></i> Buscar
+                                        </button>
+                                        <a class="btn btn-light border px-3 d-flex align-items-center justify-content-center" href="{{ route('video-suporte.index') }}" title="Limpar Filtros" style="border-radius:10px; height: 40px;">
+                                            <i class="ri-eraser-line"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
-                <!-- ═══ TABELA DE DADOS ═══ -->
-                <div class="col-md-12 mt-3">
+                {{-- ═══ TABELA DE VÍDEOS (PADRÃO CONTADORES) ═══ --}}
+                <div class="tb-wrap">
                     <div class="table-responsive">
-                        <table class="table table-centered">
+                        <table class="table table-centered table-hover align-middle mb-0">
                             <thead>
                                 <tr>
-                                    <th style="width: 220px;">Página / Módulo</th>
-                                    <th>URL do Vídeo / Tutorial</th>
-                                    <th>URL do Servidor</th>
-                                    <th width="14%">Ações</th>
+                                    <th style="width: 60px;">Mídia</th>
+                                    <th>Título &amp; Descrição</th>
+                                    <th>Categoria &amp; Tags</th>
+                                    <th>Arquivo MP4</th>
+                                    <th>Tamanho</th>
+                                    <th class="text-center" style="width: 70px;">Ordem</th>
+                                    <th class="text-center" style="width: 100px;">Status</th>
+                                    <th class="text-end" style="width: 140px;">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
                                     <td>
-                                        <span class="badge bg-primary-subtle fs-12 font-monospace">
-                                            <i class="ri-pages-line me-1"></i>{{ $item->pagina }}
+                                        <div class="video-icon-box" title="Vídeo MP4">
+                                            <i class="ri-play-circle-line"></i>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark fs-14 mb-1">
+                                            {{ $item->titulo ?: ($item->pagina ?: 'Sem título') }}
+                                        </div>
+                                        <div class="fs-12 text-muted" style="max-width: 320px; line-height: 1.4;">
+                                            {{ \Illuminate\Support\Str::limit($item->descricao ?: 'Vídeo tutorial do sistema ERP', 85) }}
+                                        </div>
+                                        <small class="fs-11 text-muted d-block mt-1">
+                                            <i class="ri-calendar-line me-1"></i> Cadastrado em {{ $item->created_at ? $item->created_at->format('d/m/Y H:i') : '—' }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        @if($item->categoria)
+                                            <span class="badge bg-primary-subtle text-primary mb-1">
+                                                <i class="ri-folder-2-line me-1"></i>{{ $item->categoria }}
+                                            </span>
+                                        @endif
+                                        @if(!empty($item->tags_array))
+                                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                                @foreach(array_slice($item->tags_array, 0, 3) as $tag)
+                                                    <span class="badge bg-light text-secondary border fs-10">#{{ $tag }}</span>
+                                                @endforeach
+                                                @if(count($item->tags_array) > 3)
+                                                    <span class="badge bg-light text-muted border fs-10">+{{ count($item->tags_array) - 3 }}</span>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($item->arquivo_original)
+                                            <div class="d-flex align-items-center gap-1 text-truncate font-monospace fs-12" style="max-width: 180px;" title="{{ $item->arquivo_original }}">
+                                                <i class="ri-file-video-fill text-danger fs-16"></i>
+                                                {{ $item->arquivo_original }}
+                                            </div>
+                                        @elseif($item->url_video)
+                                            <a href="{{ $item->url_video }}" target="_blank" class="text-info fs-12 d-inline-flex align-items-center gap-1">
+                                                <i class="ri-external-link-line"></i> Link Externo
+                                            </a>
+                                        @else
+                                            <span class="text-muted fs-12">—</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary-subtle text-secondary font-monospace">
+                                            {{ $item->tamanho_formatado }}
                                         </span>
                                     </td>
-                                    <td>
-                                        <a href="{{ $item->url_video }}" target="_blank" class="text-primary fw-medium text-decoration-underline d-inline-flex align-items-center gap-1">
-                                            <i class="ri-youtube-line text-danger fs-16"></i>
-                                            {{ \Illuminate\Support\Str::limit($item->url_video, 50) }}
-                                            <i class="ri-external-link-line fs-12 text-muted"></i>
-                                        </a>
+                                    <td class="text-center font-monospace fw-bold">
+                                        {{ $item->ordem_exibicao }}
                                     </td>
-                                    <td>
-                                        <span class="badge bg-info-subtle font-monospace">
-                                            {{ $item->url_servidor }}
+                                    <td class="text-center">
+                                        <span class="pill {{ $item->status === 'ATIVO' ? 'pill-ok' : 'pill-no' }}"
+                                              onclick="toggleStatus({{ $item->id }})"
+                                              id="status-badge-{{ $item->id }}"
+                                              title="Clique para alternar status">
+                                            <i class="{{ $item->status === 'ATIVO' ? 'ri-checkbox-circle-line' : 'ri-close-circle-line' }}" id="status-icon-{{ $item->id }}"></i>
+                                            <span id="status-text-{{ $item->id }}">{{ $item->status === 'ATIVO' ? 'Ativo' : 'Inativo' }}</span>
                                         </span>
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         <form action="{{ route('video-suporte.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="m-0">
                                             @method('delete')
                                             @csrf
-                                            <div class="modulo-action-group">
-                                                <a target="_blank" href="{{ $item->url_video }}" class="btn btn-info btn-sm text-white" title="Assistir Vídeo">
+                                            <div class="act-group justify-content-end">
+                                                <button type="button" class="act-btn act-view" title="Assistir Vídeo"
+                                                        onclick="abrirPlayerModal('{{ addslashes($item->titulo) }}', '{{ $item->stream_url }}', '{{ addslashes($item->descricao) }}')">
                                                     <i class="ri-play-fill"></i>
+                                                </button>
+                                                <a class="act-btn act-edit" href="{{ route('video-suporte.edit', [$item->id]) }}" title="Editar Vídeo">
+                                                    <i class="ri-pencil-line"></i>
                                                 </a>
-
-                                                <a class="btn btn-warning btn-sm text-white" href="{{ route('video-suporte.edit', [$item->id]) }}" title="Editar Vídeo">
-                                                    <i class="ri-pencil-fill"></i>
-                                                </a>
-
-                                                <button type="button" class="btn btn-danger btn-sm btn-delete" title="Excluir Vídeo">
+                                                <button type="button" class="act-btn act-del" title="Excluir Vídeo"
+                                                        onclick="confirmarExclusao({{ $item->id }}, '{{ addslashes($item->titulo) }}')">
                                                     <i class="ri-delete-bin-line"></i>
                                                 </button>
                                             </div>
@@ -368,9 +330,15 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-4">
-                                        <i class="ri-inbox-line fs-24 d-block mb-1 text-muted"></i>
-                                        Nenhum vídeo de suporte cadastrado.
+                                    <td colspan="8">
+                                        <div class="empty-state">
+                                            <i class="ri-movie-line"></i>
+                                            <h5 class="fw-bold text-dark mt-2 mb-1">Nenhum vídeo de suporte cadastrado</h5>
+                                            <p class="text-muted fs-13 mb-3">Clique em "Novo Vídeo" para cadastrar o primeiro tutorial.</p>
+                                            <a href="{{ route('video-suporte.create') }}" class="dash-btn dash-btn-primary d-inline-flex">
+                                                <i class="ri-add-line"></i> Novo Vídeo
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforelse
@@ -379,18 +347,144 @@
                     </div>
                 </div>
 
-                <!-- ═══ PAGINAÇÃO ═══ -->
+                {{-- ═══ FOOTER & PAGINAÇÃO (PADRÃO CONTADORES) ═══ --}}
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
-                    <div>
-                        <span class="text-muted fs-12">Exibindo {{ $data->count() }} de {{ $data->total() }} vídeos</span>
+                    <div class="fs-12" style="color:#94a3b8;">
+                        Exibindo <strong>{{ $data->count() }}</strong> de <strong>{{ $data->total() }}</strong> vídeos tutoriais
                     </div>
-                    <div>
-                        {!! $data->appends(request()->all())->links() !!}
-                    </div>
+                    <div>{!! $data->appends(request()->all())->links() !!}</div>
                 </div>
 
             </div>
         </div>
     </div>
 </div>
+
+<!-- ═══ MODAL PLAYER DE VÍDEO ═══ -->
+<div class="modal fade" id="modalPlayer" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden;">
+            <div class="modal-header bg-dark text-white border-0 py-2 px-3">
+                <h5 class="modal-title fs-14 d-flex align-items-center gap-2" id="modalPlayerTitulo">
+                    <i class="ri-play-circle-line text-danger"></i> Tutorial
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="fecharPlayerModal()"></button>
+            </div>
+            <div class="modal-body p-0 bg-black text-center">
+                <div class="ratio ratio-16x9">
+                    <video id="playerHtml5" controls controlsList="nodownload" style="width: 100%; height: 100%;">
+                        <source src="" type="video/mp4" id="playerSource">
+                        Seu navegador não suporta reprodução de vídeos HTML5.
+                    </video>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2 px-3">
+                <div class="w-100 text-start">
+                    <p class="text-muted fs-12 mb-0" id="modalPlayerDescricao"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ MODAL CONFIRMAÇÃO DE EXCLUSÃO ═══ -->
+<div class="modal fade" id="modalConfirmDelete" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow" style="border-radius: 14px;">
+            <div class="modal-body text-center p-4">
+                <div class="mx-auto mb-3" style="width: 52px; height: 52px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    <i class="ri-delete-bin-line"></i>
+                </div>
+                <h5 class="fw-bold mb-1">Excluir Tutorial?</h5>
+                <p class="text-muted fs-13 mb-3">
+                    Deseja remover o vídeo <strong id="delete-video-title"></strong>? Ele deixará de ser exibido na Central de Ajuda.
+                </p>
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 8px;">Cancelar</button>
+                    <button type="button" class="btn btn-danger px-3" id="btn-confirm-delete" style="border-radius: 8px;">Sim, Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Form oculto para exclusão -->
+<form id="form-delete" action="" method="POST" style="display: none;">
+    @csrf
+    @method('DELETE')
+</form>
+
+@endsection
+
+@section('js')
+<script>
+    function toggleStatus(id) {
+        let badge = $(`#status-badge-${id}`);
+        let icon = $(`#status-icon-${id}`);
+        let text = $(`#status-text-${id}`);
+
+        $.ajax({
+            url: `/video-suporte/${id}/status`,
+            type: 'PATCH',
+            data: { _token: '{{ csrf_token() }}' },
+            beforeSend: function () {
+                badge.css('opacity', '0.5');
+            },
+            success: function (res) {
+                badge.css('opacity', '1');
+                if (res.status === 'ATIVO') {
+                    badge.removeClass('pill-no').addClass('pill-ok');
+                    icon.removeClass('ri-close-circle-line').addClass('ri-checkbox-circle-line');
+                    text.text('Ativo');
+                } else {
+                    badge.removeClass('pill-ok').addClass('pill-no');
+                    icon.removeClass('ri-checkbox-circle-line').addClass('ri-close-circle-line');
+                    text.text('Inativo');
+                }
+                toastr.success(res.message);
+            },
+            error: function () {
+                badge.css('opacity', '1');
+                toastr.error('Erro ao alterar status do vídeo.');
+            }
+        });
+    }
+
+    function abrirPlayerModal(titulo, url, descricao) {
+        $('#modalPlayerTitulo').text(titulo || 'Vídeo de Suporte');
+        $('#modalPlayerDescricao').text(descricao || '');
+        let video = document.getElementById('playerHtml5');
+        let source = document.getElementById('playerSource');
+        source.src = url;
+        video.load();
+        let modal = new bootstrap.Modal(document.getElementById('modalPlayer'));
+        modal.show();
+        video.play().catch(e => {});
+    }
+
+    function fecharPlayerModal() {
+        let video = document.getElementById('playerHtml5');
+        if (video) video.pause();
+    }
+
+    document.getElementById('modalPlayer').addEventListener('hidden.bs.modal', function () {
+        fecharPlayerModal();
+    });
+
+    let targetDeleteId = null;
+    function confirmarExclusao(id, titulo) {
+        targetDeleteId = id;
+        $('#delete-video-title').text(`"${titulo}"`);
+        let modal = new bootstrap.Modal(document.getElementById('modalConfirmDelete'));
+        modal.show();
+    }
+
+    $('#btn-confirm-delete').on('click', function () {
+        if (targetDeleteId) {
+            let form = $('#form-delete');
+            form.attr('action', `/video-suporte/${targetDeleteId}`);
+            form.submit();
+        }
+    });
+</script>
 @endsection

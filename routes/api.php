@@ -27,6 +27,22 @@ Route::get('/contas-empresa', 'HelperController@contasEmpresa');
 Route::get('/conta-boleto', 'HelperController@contaBoleto');
 Route::get('/contas-empresa-count', 'HelperController@contasEmpresaCount');
 Route::get('/video-suporte', 'HelperController@videoSuporte');
+
+// Endpoints REST - Vídeo Suporte & Central de Ajuda
+Route::get('/video-suportes', 'VideoSuporteApiController@indexPublico');
+Route::get('/video-suportes/categorias', 'VideoSuporteApiController@categoriasPublico');
+Route::get('/video-suportes/{id}', 'VideoSuporteApiController@showPublico');
+Route::get('/video-suportes/{id}/stream', [\App\Http\Controllers\CentralAjudaController::class, 'stream']);
+
+Route::prefix('admin/video-suportes')->group(function () {
+    Route::get('/', 'VideoSuporteApiController@indexAdmin');
+    Route::post('/', 'VideoSuporteApiController@storeAdmin');
+    Route::get('/{id}', 'VideoSuporteApiController@showAdmin');
+    Route::put('/{id}', 'VideoSuporteApiController@updateAdmin');
+    Route::delete('/{id}', 'VideoSuporteApiController@destroyAdmin');
+    Route::patch('/{id}/status', 'VideoSuporteApiController@statusAdmin');
+    Route::post('/{id}/upload', 'VideoSuporteApiController@uploadAdmin');
+});
 Route::get('/etiqueta', 'HelperController@etiqueta');
 Route::post('/wc-store', 'WoocommercePedidoController@storePedido');
 Route::post('/wc-update', 'WoocommercePedidoController@updatePedido');

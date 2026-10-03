@@ -113,7 +113,7 @@ class VideoSuporte extends Model
     public function getStreamUrlAttribute()
     {
         if (!empty($this->arquivo_path)) {
-            return route('video-suporte.stream', $this->id);
+            return '/central-ajuda/' . $this->id . '/stream';
         }
         return $this->url_video ?? '';
     }

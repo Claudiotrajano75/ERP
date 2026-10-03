@@ -1,59 +1,260 @@
-@extends('layouts.app', ['title' => 'Solicitação #'.$item->id])
+@extends('layouts.app', ['title' => 'Chamado #' . $item->id . ' - ' . $item->assunto])
 
 @section('css')
-<style>
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,.6) !important; }
-.modulo-form-card { border: 1px solid #eef0f5; border-radius: 12px; overflow: hidden; }
+<style type="text/css">
+    /* Estilos Gerais do Card */
+    .card-modulo {
+        border: 1px solid rgba(0, 0, 0, 0.06) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03) !important;
+        border-radius: 16px !important;
+        overflow: hidden;
+        background: #fff;
+        margin-bottom: 24px;
+    }
 
-/* Chat */
-.chat-wrap { display: flex; flex-direction: column; gap: 20px; }
-.chat-msg { display: flex; gap: 14px; }
-.chat-msg.is-reply { flex-direction: row-reverse; }
-.chat-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 2px solid #e8eaf6; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-.chat-bubble { background: #f8f9fc; border: 1px solid #eef0f5; border-radius: 0 14px 14px 14px; padding: 14px 18px; max-width: 75%; position: relative; }
-.chat-msg.is-reply .chat-bubble { background: linear-gradient(135deg, #ede9fe, #dbeafe); border: 1px solid #c7d2fe; border-radius: 14px 0 14px 14px; }
-.chat-sender { font-size: 12px; font-weight: 700; color: #312e81; margin-bottom: 4px; }
-.chat-msg.is-reply .chat-sender { color: #4338ca; text-align: right; }
-.chat-time { font-size: 11px; color: #94a3b8; margin-top: 6px; }
-.chat-msg.is-reply .chat-time { text-align: right; }
-.chat-body { font-size: 14px; color: #1e293b; line-height: 1.6; }
-.chat-body p { margin-bottom: 0; }
-.chat-anexo-link { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #4f46e5; text-decoration: none; background: #ede9fe; border-radius: 6px; padding: 4px 10px; margin-top: 8px; }
-.chat-anexo-link:hover { background: #ddd6fe; color: #3730a3; }
-.chat-divider { border-color: #f1f5f9; margin: 4px 0; }
+    /* Cabeçalho no padrão claro moderno */
+    .modulo-header-gradient {
+        background: linear-gradient(135deg, #f2f3ff 0%, #e6e9ff 100%) !important;
+        border-bottom: 1px solid #e0e7ff !important;
+        border-radius: 16px 16px 0 0 !important;
+        padding: 20px 24px !important;
+    }
 
-/* Sidebar info */
-.tk-info-box { background: #f8faff; border: 1px solid #eef0f5; border-radius: 12px; padding: 20px; }
-.tk-info-row { display: flex; flex-direction: column; gap: 2px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
-.tk-info-row:last-child { border-bottom: none; padding-bottom: 0; }
-.tk-info-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #94a3b8; }
-.tk-info-value { font-size: 13px; font-weight: 600; color: #1e293b; }
+    .modulo-header-gradient .modulo-title {
+        color: #4338ca !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.3px !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        font-size: 1.25rem !important;
+    }
 
-/* Badges status */
-.tk-badge { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; }
-.tk-badge-aberto    { background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; }
-.tk-badge-respondida{ background:#fef3c7; color:#92400e; border:1px solid #fde68a; }
-.tk-badge-aguardando{ background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
-.tk-badge-resolvido { background:#dcfce7; color:#166534; border:1px solid #bbf7d0; }
-.tk-depto { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:6px; font-size:11px; font-weight:600; background:#ede9fe; color:#5b21b6; }
+    .modulo-header-gradient .modulo-title i {
+        background: #4f46e5 !important;
+        color: #ffffff !important;
+        padding: 10px !important;
+        border-radius: 12px !important;
+        font-size: 20px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25) !important;
+    }
 
-/* Resposta form */
-.reply-box { background: #fff; border: 1px solid #eef0f5; border-radius: 12px; padding: 20px; }
-.reply-box-title { font-size: 13px; font-weight: 700; color: #312e81; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
-.reply-box-title i { font-size: 16px; color: #a5b4fc; }
+    .modulo-header-gradient .modulo-subtitle {
+        color: #64748b !important;
+        font-weight: 500 !important;
+        font-size: 13px !important;
+        margin-top: 4px !important;
+        margin-bottom: 0 !important;
+    }
 
-/* Btn */
-.dash-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none; transition:all .2s ease; border:none; cursor:pointer; }
-.dash-btn-success { background:#16a34a; color:#fff; }
-.dash-btn-success:hover { background:#15803d; color:#fff; transform:translateY(-1px); }
-.dash-btn-light { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25); color:#fff; backdrop-filter:blur(6px); }
-.dash-btn-light:hover { background:rgba(255,255,255,.28); color:#fff; }
+    .btn-voltar {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #334155 !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+        padding: 8px 16px !important;
+        border-radius: 10px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none !important;
+        transition: all 0.2s ease;
+    }
 
-input[type=file]::file-selector-button { background:#f8f9fc; color:#475569; border:0; border-right:1px solid #eef0f5; padding:9px 14px; margin-right:14px; transition:.3s; font-size:12px; font-weight:600; }
-input[type=file]::file-selector-button:hover { background:#ede9fe; color:#4f46e5; }
+    .btn-voltar:hover {
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    /* Balões de Mensagem do Chat (Padrão Super Admin) */
+    .chat-message-box {
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin-bottom: 18px;
+        position: relative;
+        border: 1px solid #f1f5f9;
+        transition: all 0.2s ease;
+    }
+
+    .chat-admin {
+        background-color: #f8fafc;
+        border-left: 4px solid #4f46e5 !important;
+    }
+
+    .chat-client {
+        background-color: #ffffff;
+        border-left: 4px solid #10b981 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .avatar-icon-circle {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: #fff;
+        flex-shrink: 0;
+    }
+    .avatar-icon-client {
+        background-color: #10b981;
+    }
+    .avatar-icon-admin {
+        background-color: #4f46e5;
+    }
+
+    /* Badges */
+    .badge-subtle {
+        padding: 4px 10px !important;
+        border-radius: 9999px !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border: 1px solid transparent;
+    }
+
+    .bg-success-subtle {
+        background-color: #ecfdf5 !important;
+        color: #047857 !important;
+        border-color: #a7f3d0 !important;
+    }
+
+    .bg-primary-subtle {
+        background-color: #eef2ff !important;
+        color: #4338ca !important;
+        border-color: #c7d2fe !important;
+    }
+
+    .bg-warning-subtle {
+        background-color: #fffbeb !important;
+        color: #b45309 !important;
+        border-color: #fef3c7 !important;
+    }
+
+    .bg-danger-subtle {
+        background-color: #fef2f2 !important;
+        color: #b91c1c !important;
+        border-color: #fecaca !important;
+    }
+
+    /* Anexos */
+    .btn-anexo-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none !important;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: #334155;
+        transition: all 0.2s ease;
+        margin-right: 6px;
+        margin-top: 6px;
+    }
+    .btn-anexo-tag:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+        transform: translateY(-1px);
+    }
+
+    /* Box Lateral de Informações */
+    .tk-sidebar-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 22px;
+    }
+    .tk-info-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .tk-info-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    .tk-info-label {
+        font-size: 12.5px;
+        color: #64748b;
+        font-weight: 500;
+    }
+    .tk-info-val {
+        font-size: 13px;
+        color: #1e293b;
+        font-weight: 600;
+        text-align: right;
+    }
+
+    /* Card de Resposta */
+    .reply-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 22px;
+        margin-top: 24px;
+    }
+    .reply-card-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0f766e;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .btn-enviar-resposta {
+        background-color: #10b981 !important;
+        border-color: #10b981 !important;
+        color: #fff !important;
+        font-weight: 600 !important;
+        padding: 9px 22px !important;
+        border-radius: 10px !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
+        transition: all 0.2s ease;
+    }
+    .btn-enviar-resposta:hover {
+        background-color: #059669 !important;
+        border-color: #059669 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35) !important;
+    }
+
+    input[type=file]::file-selector-button {
+        background-color: #f1f5f9;
+        color: #334155;
+        border: 0;
+        border-radius: 8px;
+        padding: 6px 14px;
+        margin-right: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    input[type=file]::file-selector-button:hover {
+        background-color: #e2e8f0;
+    }
 </style>
 @endsection
 
@@ -61,20 +262,22 @@ input[type=file]::file-selector-button:hover { background:#ede9fe; color:#4f46e5
 <div class="mt-3 text-dark">
     <div class="row">
         <div class="col-12">
-            <div class="card border-0 shadow-sm modulo-form-card">
+            <div class="card card-modulo">
 
-                {{-- HEADER --}}
-                <div class="card-header modulo-header-gradient py-3 px-4">
+                <!-- ═══ CABEÇALHO PADRÃO CLARO ═══ -->
+                <div class="card-header modulo-header-gradient">
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <div>
-                            <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
+                            <h4 class="modulo-title">
                                 <i class="ri-customer-service-2-line"></i>
-                                Solicitação <span style="color:#a5b4fc;">#{{ str_pad($item->id, 4, '0', STR_PAD_LEFT) }}</span>
+                                Chamado #{{ $item->id }} — {{ $item->assunto }}
                             </h4>
-                            <p class="mb-0 modulo-subtitle fs-13">{{ $item->assunto }}</p>
+                            <p class="modulo-subtitle">
+                                Empresa: <strong>{{ $item->empresa->nome ?? 'Minha Empresa' }}</strong> &nbsp;|&nbsp; Departamento: <strong>{{ ucfirst($item->departamento) }}</strong>
+                            </p>
                         </div>
                         <div>
-                            <a href="{{ route('ticket.index') }}" class="dash-btn dash-btn-light">
+                            <a href="{{ route('ticket.index') }}" class="btn-voltar">
                                 <i class="ri-arrow-left-line"></i> Voltar
                             </a>
                         </div>
@@ -84,123 +287,160 @@ input[type=file]::file-selector-button:hover { background:#ede9fe; color:#4f46e5
                 <div class="card-body p-4">
                     <div class="row g-4">
 
-                        {{-- COLUNA CHAT --}}
+                        <!-- ═══ COLUNA DE MENSAGENS (ESQUERDA) ═══ -->
                         <div class="col-lg-8 col-12">
-                            <div class="chat-wrap">
-                                @foreach($item->mensagens as $m)
-                                <div class="chat-msg {{ $m->resposta ? 'is-reply' : '' }}">
-                                    @if($m->resposta)
-                                    <img class="chat-avatar" src="/logo.png" alt="Suporte">
-                                    @else
-                                    <img class="chat-avatar" src="{{ $item->empresa->img ?? '/imgs/no-image.png' }}" alt="{{ $item->empresa->nome ?? 'Empresa' }}">
-                                    @endif
+                            <h5 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2" style="font-size: 15px;">
+                                <i class="ri-discuss-line text-primary"></i> Histórico de Mensagens
+                            </h5>
 
-                                    <div class="chat-bubble">
-                                        <div class="chat-sender">
-                                            {{ $m->resposta ? env('APP_NAME') : ($item->empresa->nome ?? 'Empresa') }}
+                            <div class="chat-thread">
+                                @foreach($item->mensagens as $m)
+                                <div class="chat-message-box {{ $m->resposta ? 'chat-admin' : 'chat-client' }}">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <div class="d-flex align-items-center gap-3">
+                                            @if($m->resposta)
+                                                <div class="avatar-icon-circle avatar-icon-admin">
+                                                    <i class="ri-headphone-line"></i>
+                                                </div>
+                                                <div>
+                                                    <strong class="text-primary fs-14">{{ env("APP_NAME", "Equipe de Suporte") }}</strong>
+                                                    <span class="badge-subtle bg-primary-subtle ms-2">Equipe de Suporte</span>
+                                                </div>
+                                            @else
+                                                <div class="avatar-icon-circle avatar-icon-client">
+                                                    <i class="ri-building-line"></i>
+                                                </div>
+                                                <div>
+                                                    <strong class="text-dark fs-14">{{ $item->empresa->nome ?? 'Cliente / Solicitante' }}</strong>
+                                                    <span class="badge-subtle bg-success-subtle ms-2">Cliente / Solicitante</span>
+                                                </div>
+                                            @endif
                                         </div>
-                                        <div class="chat-body">
-                                            {!! $m->descricao !!}
-                                        </div>
-                                        @foreach($m->anexos as $key => $f)
-                                        <a target="_blank" href="{{ $f->file }}" class="chat-anexo-link">
-                                            <i class="ri-attachment-2"></i> Anexo {{ $key + 1 }}
-                                        </a>
-                                        @endforeach
-                                        <div class="chat-time">
-                                            <i class="ri-time-line me-1"></i>{{ __data_pt($m->created_at) }}
+                                        <div>
+                                            <span class="text-muted fs-11">
+                                                <i class="ri-time-line me-1"></i>{{ __data_pt($m->created_at, 1) }}
+                                            </span>
                                         </div>
                                     </div>
+
+                                    <div class="chat-content text-dark fs-13 mt-2" style="line-height: 1.6;">
+                                        {!! $m->descricao !!}
+                                    </div>
+
+                                    @if($m->anexos && count($m->anexos) > 0)
+                                    <div class="mt-3 pt-2 border-top border-light">
+                                        <span class="text-muted fs-11 fw-semibold d-block mb-1">
+                                            <i class="ri-attachment-2"></i> Anexos:
+                                        </span>
+                                        <div class="d-flex flex-wrap">
+                                            @foreach($m->anexos as $key => $f)
+                                            <a target="_blank" href="{{ $f->file }}" class="btn-anexo-tag">
+                                                <i class="ri-file-text-line text-primary"></i> Anexo {{ $key + 1 }}
+                                            </a>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    @endif
                                 </div>
-                                <hr class="chat-divider">
                                 @endforeach
                             </div>
 
-                            {{-- Formulário de resposta --}}
+                            <!-- ═══ FORMULÁRIO DE RESPOSTA ═══ -->
                             @if($item->status != 'resolvido')
-                            <div class="reply-box mt-4">
-                                <div class="reply-box-title">
-                                    <i class="ri-reply-line"></i> Adicionar Resposta
+                            <div class="reply-card">
+                                <div class="reply-card-title">
+                                    <i class="ri-corner-down-right-line fs-16"></i> Responder a este Chamado
                                 </div>
                                 <form method="post" action="{{ route('ticket.add-mensagem', $item->id) }}" enctype="multipart/form-data">
                                     @csrf
                                     @method('put')
                                     <div class="mb-3">
-                                        {!! Form::textarea('descricao', 'Mensagem')->attrs(['rows' => '8', 'class' => 'tiny']) !!}
+                                        <textarea name="descricao" class="form-control tiny" rows="6" placeholder="Digite sua resposta ou informações adicionais..."></textarea>
                                     </div>
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold fs-13">
-                                            <i class="ri-attachment-2 me-1 text-muted"></i> Anexos
-                                        </label>
-                                        <input type="file" name="anexos[]" multiple class="form-control">
-                                    </div>
-                                    <div class="text-end">
-                                        <button type="submit" class="dash-btn dash-btn-success px-5" id="btn-store">
-                                            <i class="ri-send-plane-line"></i> Enviar Resposta
-                                        </button>
+
+                                    <div class="row align-items-center g-3">
+                                        <div class="col-md-7 col-12">
+                                            <label class="form-label fs-12 text-muted mb-1">
+                                                <i class="ri-attachment-line"></i> Anexar Arquivos (Opcional)
+                                            </label>
+                                            <input type="file" name="anexos[]" multiple class="form-control bg-white">
+                                        </div>
+                                        <div class="col-md-5 col-12 text-md-end">
+                                            <button type="submit" class="btn-enviar-resposta" id="btn-store">
+                                                <i class="ri-send-plane-fill"></i> Enviar Resposta
+                                            </button>
+                                        </div>
                                     </div>
                                 </form>
                             </div>
                             @else
-                            <div class="alert alert-success d-flex align-items-center gap-2 mt-4 rounded-3">
-                                <i class="ri-checkbox-circle-line fs-18"></i>
-                                <span>Esta solicitação foi <strong>resolvida</strong>. Não é mais possível adicionar respostas.</span>
+                            <div class="alert alert-success d-flex align-items-center gap-3 mt-4 rounded-3 border-0 shadow-sm" style="background-color: #ecfdf5; color: #065f46;">
+                                <i class="ri-checkbox-circle-fill fs-22 text-success"></i>
+                                <div>
+                                    <strong>Chamado Resolvido:</strong> Esta solicitação foi concluída e arquivada com sucesso. Caso precise de mais ajuda, você pode abrir uma nova solicitação.
+                                </div>
                             </div>
                             @endif
+
                         </div>
 
-                        {{-- SIDEBAR INFO --}}
+                        <!-- ═══ COLUNA DE DETALHES (DIREITA) ═══ -->
                         <div class="col-lg-4 col-12">
-                            <div class="tk-info-box">
-                                <div class="fw-bold fs-13 text-uppercase text-muted mb-3" style="letter-spacing:.5px;">
-                                    <i class="ri-information-line me-1 text-indigo-400"></i> Detalhes do Chamado
+                            <div class="tk-sidebar-card shadow-sm">
+                                <h6 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2" style="font-size: 14px;">
+                                    <i class="ri-information-line text-primary"></i> Detalhes do Chamado
+                                </h6>
+
+                                <div class="tk-info-item">
+                                    <span class="tk-info-label">Protocolo:</span>
+                                    <span class="tk-info-val">#{{ $item->id }}</span>
                                 </div>
 
-                                <div class="tk-info-row">
-                                    <div class="tk-info-label">Número</div>
-                                    <div class="tk-info-value">#{{ str_pad($item->id, 4, '0', STR_PAD_LEFT) }}</div>
+                                <div class="tk-info-item">
+                                    <span class="tk-info-label">Status Atual:</span>
+                                    <span class="tk-info-val">
+                                        @if($item->status == 'aberto')
+                                            <span class="badge-subtle bg-dark-subtle" style="background:#f1f5f9; color:#475569; border-color:#cbd5e1;">
+                                                <i class="ri-inbox-line"></i> Aberto
+                                            </span>
+                                        @elseif($item->status == 'respondida')
+                                            <span class="badge-subtle bg-warning-subtle">
+                                                <i class="ri-chat-check-line"></i> Respondida
+                                            </span>
+                                        @elseif($item->status == 'aguardando')
+                                            <span class="badge-subtle bg-danger-subtle">
+                                                <i class="ri-time-line"></i> Aguardando
+                                            </span>
+                                        @elseif($item->status == 'resolvido')
+                                            <span class="badge-subtle bg-success-subtle">
+                                                <i class="ri-checkbox-circle-line"></i> Resolvido
+                                            </span>
+                                        @endif
+                                    </span>
                                 </div>
 
-                                <div class="tk-info-row">
-                                    <div class="tk-info-label">Status</div>
-                                    <div class="mt-1">
-                                        @php
-                                            $statusMap = [
-                                                'aberto'     => ['class' => 'tk-badge-aberto',     'icon' => 'ri-inbox-line',           'label' => 'Aberto'],
-                                                'respondida' => ['class' => 'tk-badge-respondida', 'icon' => 'ri-chat-check-line',      'label' => 'Respondida'],
-                                                'aguardando' => ['class' => 'tk-badge-aguardando', 'icon' => 'ri-time-line',            'label' => 'Aguardando'],
-                                                'resolvido'  => ['class' => 'tk-badge-resolvido',  'icon' => 'ri-checkbox-circle-line', 'label' => 'Resolvido'],
-                                            ];
-                                            $s = $statusMap[$item->status] ?? ['class' => 'tk-badge-aberto', 'icon' => 'ri-question-line', 'label' => $item->status];
-                                        @endphp
-                                        <span class="tk-badge {{ $s['class'] }}">
-                                            <i class="{{ $s['icon'] }}"></i> {{ $s['label'] }}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div class="tk-info-row">
-                                    <div class="tk-info-label">Departamento</div>
-                                    <div class="mt-1">
-                                        <span class="tk-depto">
+                                <div class="tk-info-item">
+                                    <span class="tk-info-label">Departamento:</span>
+                                    <span class="tk-info-val">
+                                        <span class="badge-subtle bg-primary-subtle">
                                             <i class="ri-briefcase-line"></i> {{ ucfirst($item->departamento) }}
                                         </span>
-                                    </div>
+                                    </span>
                                 </div>
 
-                                <div class="tk-info-row">
-                                    <div class="tk-info-label">Criado em</div>
-                                    <div class="tk-info-value">{{ __data_pt($item->created_at) }}</div>
+                                <div class="tk-info-item">
+                                    <span class="tk-info-label">Empresa:</span>
+                                    <span class="tk-info-val">{{ $item->empresa->nome ?? 'Minha Empresa' }}</span>
                                 </div>
 
-                                <div class="tk-info-row">
-                                    <div class="tk-info-label">Última atividade</div>
-                                    <div class="tk-info-value">{{ __data_pt($item->updated_at) }}</div>
+                                <div class="tk-info-item">
+                                    <span class="tk-info-label">Data de Abertura:</span>
+                                    <span class="tk-info-val">{{ __data_pt($item->created_at, 1) }}</span>
                                 </div>
 
-                                <div class="tk-info-row">
-                                    <div class="tk-info-label">Total de mensagens</div>
-                                    <div class="tk-info-value">{{ $item->mensagens->count() }}</div>
+                                <div class="tk-info-item">
+                                    <span class="tk-info-label">Última Atualização:</span>
+                                    <span class="tk-info-val">{{ __data_pt($item->updated_at, 1) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -216,12 +456,22 @@ input[type=file]::file-selector-button:hover { background:#ede9fe; color:#4f46e5
 
 @section('js')
 <script src="/tinymce/tinymce.min.js"></script>
-<script>
+<script type="text/javascript">
     $(function(){
-        tinymce.init({ selector: 'textarea.tiny', language: 'pt_BR' })
+        tinymce.init({ 
+            selector: 'textarea.tiny', 
+            language: 'pt_BR',
+            height: 180,
+            menubar: false,
+            plugins: 'lists link code',
+            toolbar: 'undo redo | bold italic underline | bullist numlist | link code',
+            branding: false,
+            promotion: false
+        });
+
         setTimeout(() => {
-            $('.tox-promotion, .tox-statusbar__right-container').addClass('d-none')
-        }, 500)
-    })
+            $('.tox-promotion, .tox-statusbar__right-container').addClass('d-none');
+        }, 500);
+    });
 </script>
 @endsection

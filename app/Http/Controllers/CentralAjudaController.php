@@ -136,7 +136,7 @@ class CentralAjudaController extends Controller
      */
     public function stream(Request $request, $id)
     {
-        $video = VideoSuporte::ativo()->findOrFail($id);
+        $video = VideoSuporte::withTrashed()->findOrFail($id);
 
         if (empty($video->arquivo_path) || !Storage::disk('public')->exists($video->arquivo_path)) {
             if (!empty($video->url_video)) {
@@ -146,49 +146,15 @@ class CentralAjudaController extends Controller
         }
 
         $path = Storage::disk('public')->path($video->arquivo_path);
-        $size = filesize($path);
-        $mime = $video->mime_type ?: 'video/mp4';
 
-        $start = 0;
-        $end = $size - 1;
-        $status = 200;
-
-        $headers = [
-            'Content-Type' => $mime,
-            'Accept-Ranges' => 'bytes',
-            'Content-Disposition' => 'inline; filename="' . ($video->arquivo_original ?: 'tutorial.mp4') . '"',
-        ];
-
-        if ($request->server('HTTP_RANGE')) {
-            $range = $request->server('HTTP_RANGE');
-            if (preg_match('/bytes=\h*(\d+)-(\d*)[\D.*]?/i', $range, $matches)) {
-                $start = intval($matches[1]);
-                if (!empty($matches[2])) {
-                    $end = intval($matches[2]);
-                }
-            }
-            $status = 206;
-            $length = $end - $start + 1;
-            $headers['Content-Range'] = sprintf('bytes %d-%d/%d', $start, $end, $size);
-            $headers['Content-Length'] = $length;
-        } else {
-            $headers['Content-Length'] = $size;
+        if (!file_exists($path)) {
+            abort(404, 'Arquivo de vídeo não encontrado no disco.');
         }
 
-        $stream = function () use ($path, $start, $end) {
-            $file = fopen($path, 'rb');
-            fseek($file, $start);
-            $buffer = 1024 * 16;
-            while (!feof($file) && ($pos = ftell($file)) <= $end) {
-                if ($pos + $buffer > $end) {
-                    $buffer = $end - $pos + 1;
-                }
-                echo fread($file, $buffer);
-                flush();
-            }
-            fclose($file);
-        };
-
-        return response()->stream($stream, $status, $headers);
+        return response()->file($path, [
+            'Content-Type' => $video->mime_type ?: 'video/mp4',
+            'Accept-Ranges' => 'bytes',
+            'Content-Disposition' => 'inline; filename="' . ($video->arquivo_original ?: 'tutorial.mp4') . '"',
+        ]);
     }
 }

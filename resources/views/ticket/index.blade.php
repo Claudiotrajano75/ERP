@@ -2,11 +2,41 @@
 
 @section('css')
 <style>
-.modulo-header-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); border-radius: 12px 12px 0 0 !important; border-bottom: none !important; }
-.modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -.3px; }
-.modulo-header-gradient .modulo-title i { background: rgba(255,255,255,.12); padding: 8px; border-radius: 10px; color: #a8b5ff; }
-.modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,.6) !important; }
-.modulo-form-card { border: 1px solid #eef0f5; border-radius: 12px; overflow: hidden; }
+/* Cabeçalho no padrão claro moderno */
+.modulo-header-gradient {
+    background: linear-gradient(135deg, #f2f3ff 0%, #e6e9ff 100%) !important;
+    border-bottom: 1px solid #e0e7ff !important;
+    border-radius: 14px 14px 0 0 !important;
+    padding: 20px 24px !important;
+}
+.modulo-header-gradient .modulo-title {
+    color: #4338ca !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.3px !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+.modulo-header-gradient .modulo-title i {
+    background: #4f46e5 !important;
+    color: #ffffff !important;
+    padding: 10px !important;
+    border-radius: 12px !important;
+    font-size: 20px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25) !important;
+}
+.modulo-header-gradient .modulo-subtitle {
+    color: #64748b !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    margin-top: 4px !important;
+    margin-bottom: 0 !important;
+}
+.modulo-form-card { border: 1px solid rgba(0, 0, 0, 0.06) !important; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03) !important; }
 
 /* Stats */
 .tk-stat { background:#fff; border:1px solid #eef0f5; border-radius:12px; padding:16px 20px; display:flex; align-items:center; gap:14px; transition: box-shadow .2s, transform .2s; }

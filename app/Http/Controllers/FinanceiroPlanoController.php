@@ -30,21 +30,29 @@ class FinanceiroPlanoController extends Controller
         ->orderBy('id', 'desc')
         ->paginate(env("PAGINACAO", 10));
 
-        $somaPendente = FinanceiroPlano::where('status_pagamento', 'pendente')
-        ->sum('valor');
-        $somaRecebido = FinanceiroPlano::where('status_pagamento', 'recebido')
-        ->sum('valor');
-        $somaCancelado = FinanceiroPlano::where('status_pagamento', 'cancelado')
-        ->sum('valor');
+        $baseQuery = FinanceiroPlano::when(!empty($empresa), function ($q) use ($empresa) {
+            return $q->where('empresa_id', $empresa);
+        })
+        ->when(!empty($end_date), function ($query) use ($end_date) {
+            return $query->whereDate('created_at', '<=', $end_date);
+        })
+        ->when(!empty($start_date), function ($query) use ($start_date) {
+            return $query->whereDate('created_at', '>=', $start_date);
+        });
+
+        $somaPendente = (clone $baseQuery)->where('status_pagamento', 'pendente')->sum('valor');
+        $somaRecebido = (clone $baseQuery)->where('status_pagamento', 'recebido')->sum('valor');
+        $somaCancelado = (clone $baseQuery)->where('status_pagamento', 'cancelado')->sum('valor');
+        $somaTotal = $somaRecebido + $somaPendente;
 
         if($empresa){
             $empresa = Empresa::findOrFail($empresa);
         }
-        return view('financeiro_plano.index', compact('data', 'somaPendente', 'somaRecebido', 'somaCancelado', 'empresa'));
+        return view('financeiro_plano.index', compact('data', 'somaPendente', 'somaRecebido', 'somaCancelado', 'somaTotal', 'empresa'));
     }
 
     public function edit($id){
-        $item = FinanceiroPlano::findOrFail($id);
+        $item = FinanceiroPlano::with(['empresa', 'plano'])->findOrFail($id);
         return view('financeiro_plano.edit', compact('item'));
     }
 

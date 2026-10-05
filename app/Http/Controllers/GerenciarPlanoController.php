@@ -25,7 +25,7 @@ class GerenciarPlanoController extends Controller
             'valor_total' => (clone $query)->sum('valor'),
         ];
 
-        $data = (clone $query)->with(['empresa', 'plano'])->orderBy('id', 'desc')
+        $data = (clone $query)->with(['empresa', 'plano', 'financeiro'])->orderBy('id', 'desc')
                               ->paginate(env("PAGINACAO", 10));
 
         $empresa = null;
@@ -61,6 +61,60 @@ class GerenciarPlanoController extends Controller
             session()->flash("flash_success", "Plano atribuído!");
         } catch (\Exception $e) {
             session()->flash("flash_error", "Algo deu errado: " . $e->getMessage());
+        }
+        return redirect()->back();
+    }
+
+    public function update(Request $request, $id)
+    {
+        $item = PlanoEmpresa::findOrFail($id);
+        try {
+            $data_expiracao = $request->data_expiracao;
+            if (!empty($data_expiracao)) {
+                if (strpos($data_expiracao, '/') !== false) {
+                    $data_expiracao = \Carbon\Carbon::createFromFormat('d/m/Y', $data_expiracao)->format('Y-m-d');
+                }
+            } else {
+                $data_expiracao = $item->data_expiracao;
+            }
+
+            $valor = $request->valor !== null ? __convert_value_bd($request->valor) : $item->valor;
+            $plano_id = $request->plano_id ?: $item->plano_id;
+            $forma_pagamento = $request->forma_pagamento ?: $item->forma_pagamento;
+
+            $item->update([
+                'plano_id' => $plano_id,
+                'data_expiracao' => $data_expiracao,
+                'valor' => $valor,
+                'forma_pagamento' => $forma_pagamento,
+            ]);
+
+            // Atualiza ou cria o registro financeiro vinculado
+            $financeiro = FinanceiroPlano::where('plano_empresa_id', $item->id)->first();
+            if ($financeiro) {
+                $dadosFinanceiro = [
+                    'plano_id' => $plano_id,
+                    'valor' => $valor,
+                    'tipo_pagamento' => $forma_pagamento,
+                ];
+                if ($request->filled('status_pagamento')) {
+                    $dadosFinanceiro['status_pagamento'] = $request->status_pagamento;
+                }
+                $financeiro->update($dadosFinanceiro);
+            } else if ($request->filled('status_pagamento')) {
+                FinanceiroPlano::create([
+                    'empresa_id' => $item->empresa_id,
+                    'plano_id' => $plano_id,
+                    'valor' => $valor,
+                    'tipo_pagamento' => $forma_pagamento,
+                    'status_pagamento' => $request->status_pagamento,
+                    'plano_empresa_id' => $item->id
+                ]);
+            }
+
+            session()->flash("flash_success", "Atribuição de plano atualizada com sucesso!");
+        } catch (\Exception $e) {
+            session()->flash("flash_error", "Algo deu errado ao atualizar: " . $e->getMessage());
         }
         return redirect()->back();
     }

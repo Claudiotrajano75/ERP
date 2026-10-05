@@ -21,5 +21,7 @@ class PlanoEmpresa extends Model
         return $this->belongsTo(Plano::class, 'plano_id');
     }
 
-
+    public function financeiro(){
+        return $this->hasOne(FinanceiroPlano::class, 'plano_empresa_id');
+    }
 }

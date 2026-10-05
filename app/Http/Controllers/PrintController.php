@@ -58,6 +58,16 @@ class PrintController extends Controller
                 ]);
             }
 
+            // Modo USB: Abre cupom fiscal termico padronizado com disparo automatico de impressao
+            if ($configGeral->isPrinterUsb()) {
+                return response()->json([
+                    'success' => true,
+                    'is_usb'  => true,
+                    'url'     => route('print.termico-nfce', ['id' => $id]),
+                    'message' => 'Abrindo cupom fiscal NFC-e térmico (USB)...'
+                ]);
+            }
+
             $resultado = $this->printService->imprimirNfce($nfce, $configGeral);
             return response()->json($resultado);
 
@@ -85,6 +95,16 @@ class PrintController extends Controller
                     'success' => false,
                     'use_pdf' => true,
                     'message' => 'Impressora nao configurada. Use o PDF.'
+                ]);
+            }
+
+            // Modo USB: Abre cupom nao fiscal termico padronizado com disparo automatico de impressao
+            if ($configGeral->isPrinterUsb()) {
+                return response()->json([
+                    'success' => true,
+                    'is_usb'  => true,
+                    'url'     => route('print.termico-cupom', ['id' => $id]),
+                    'message' => 'Abrindo cupom não fiscal térmico (USB)...'
                 ]);
             }
 
@@ -242,10 +262,71 @@ class PrintController extends Controller
 
         return response()->json([
             'printer_configured' => $configGeral ? $configGeral->isPrinterConfigured() : false,
+            'printer_tipo' => $configGeral->printer_tipo ?? 'rede',
             'printer_nome' => $configGeral->printer_nome ?? null,
             'printer_ip' => $configGeral->printer_ip ?? null,
             'printer_porta' => $configGeral->printer_porta ?? 9100,
             'printer_largura' => $configGeral->printer_largura ?? '80',
         ]);
+    }
+
+    /**
+     * Renderiza o Cupom Não Fiscal padronizado para impressão térmica (USB / Navegador)
+     */
+    public function cupomNaoFiscalTermico($id)
+    {
+        $item = Nfce::with(['itens.produto', 'cliente', 'fatura'])->findOrFail($id);
+        $empresa = Empresa::with('cidade')->findOrFail($item->empresa_id);
+        $configGeral = ConfigGeral::where('empresa_id', $item->empresa_id)->first();
+        $largura = $configGeral->printer_largura ?? '80';
+
+        return view('front_box.cupom_nao_fiscal_termico', compact('item', 'empresa', 'configGeral', 'largura'));
+    }
+
+    /**
+     * Renderiza o DANFE NFC-e padronizado para impressão térmica (USB / Navegador)
+     */
+    public function cupomFiscalTermico($id)
+    {
+        $nfce = Nfce::with(['itens.produto', 'cliente', 'fatura'])->findOrFail($id);
+        $empresa = Empresa::with('cidade')->findOrFail($nfce->empresa_id);
+        $configGeral = ConfigGeral::where('empresa_id', $nfce->empresa_id)->first();
+        $largura = $configGeral->printer_largura ?? '80';
+
+        $qrCodeUrl = null;
+        $urlChave  = null;
+        $xmlPath   = public_path('xml_nfce/') . $nfce->chave . '.xml';
+        if (!file_exists($xmlPath)) {
+            $xmlPath = public_path('xml_nfce_contigencia/') . $nfce->chave . '.xml';
+        }
+        if (file_exists($xmlPath)) {
+            try {
+                $xml = simplexml_load_string(file_get_contents($xmlPath));
+                if ($xml && isset($xml->infNFeSupl)) {
+                    $qrCodeUrl = (string) $xml->infNFeSupl->qrCode;
+                    $urlChave  = (string) $xml->infNFeSupl->urlChave;
+                } elseif ($xml && isset($xml->NFe->infNFeSupl)) {
+                    $qrCodeUrl = (string) $xml->NFe->infNFeSupl->qrCode;
+                    $urlChave  = (string) $xml->NFe->infNFeSupl->urlChave;
+                }
+            } catch (\Exception $xmlEx) {
+                // Silencia excecao de leitura XML
+            }
+        }
+
+        return view('nfce.cupom_fiscal_termico', compact('nfce', 'empresa', 'qrCodeUrl', 'urlChave', 'configGeral', 'largura'));
+    }
+
+    /**
+     * Página de teste de impressão térmica USB
+     */
+    public function paginaTesteTermico()
+    {
+        $empresa_id = request()->empresa_id ?: (Auth::user() ? Auth::user()->empresa_id : null);
+        $empresa = $empresa_id ? Empresa::with('cidade')->find($empresa_id) : Empresa::first();
+        $configGeral = $empresa ? ConfigGeral::where('empresa_id', $empresa->id)->first() : null;
+        $largura = $configGeral->printer_largura ?? '80';
+
+        return view('print.termico_teste', compact('empresa', 'largura'));
     }
 }

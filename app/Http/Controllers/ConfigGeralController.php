@@ -48,6 +48,7 @@ class ConfigGeralController extends Controller
                 'percentual_lucro_produto' => $request->percentual_lucro_produto ?? 0,
                 // Impressora termica - checkbox nao envia quando desmarcado
                 'printer_status' => $request->has('printer_status') ? 1 : 0,
+                'printer_tipo' => $request->printer_tipo ?? 'rede',
                 'printer_porta' => $request->printer_porta ?? 9100,
                 'printer_largura' => $request->printer_largura ?? '80',
             ]);

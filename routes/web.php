@@ -897,6 +897,11 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
             Route::post('/prevenda/{id}', 'PrintController@imprimirPreVenda')->name('print.prevenda');
             Route::post('/sangria/{id}', 'PrintController@imprimirSangria')->name('print.sangria');
             Route::post('/suprimento/{id}', 'PrintController@imprimirSuprimento')->name('print.suprimento');
+
+            // Cupons Térmicos Padronizados (USB / Navegador)
+            Route::get('/termico-cupom/{id}', 'PrintController@cupomNaoFiscalTermico')->name('print.termico-cupom');
+            Route::get('/termico-nfce/{id}', 'PrintController@cupomFiscalTermico')->name('print.termico-nfce');
+            Route::get('/termico-teste', 'PrintController@paginaTesteTermico')->name('print.termico-teste');
         });
 
         Route::resource('config-api', 'ConfigApiController');

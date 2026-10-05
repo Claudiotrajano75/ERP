@@ -250,58 +250,109 @@
                         <!-- ══════════════ ABA 2: IMPRESSORA TÉRMICA ══════════════ -->
                         <div class="tab-pane fade" id="tab-impressora" role="tabpanel">
                             <div class="card card-secao-fiscal">
-                                <div class="card-header">
-                                    <h5><i class="ri-printer-line text-primary"></i> Impressora Térmica de Rede (ESC/POS)</h5>
+                                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                    <h5 class="mb-0"><i class="ri-printer-line text-primary me-1"></i> Configuração da Impressora Térmica (Cupom Fiscal & Não Fiscal)</h5>
+                                    <span class="badge bg-primary-subtle text-primary fw-semibold px-2 py-1">Padronização ESC/POS</span>
                                 </div>
                                 <div class="card-body">
                                     <div class="row g-3">
+                                        <!-- Ativação -->
                                         <div class="col-md-3 col-12">
-                                            <label class="form-label fw-semibold">Impressão Direta na Rede</label>
+                                            <label class="form-label fw-semibold">Impressora Térmica</label>
                                             <div class="form-check form-switch mt-2">
                                                 <input class="form-check-input" type="checkbox" name="printer_status" value="1" id="printer-status-toggle"
                                                     @isset($item) @if($item->printer_status == 1) checked @endif @endif>
-                                                <label class="form-check-label fw-semibold text-dark" for="printer-status-toggle" style="font-size:13px;">Habilitar envio direto via IP</label>
+                                                <label class="form-check-label fw-semibold text-dark" for="printer-status-toggle" style="font-size:13px;">Habilitar Impressão Térmica</label>
                                             </div>
                                         </div>
-                                        <div class="col-md-3 col-12">
+
+                                        <!-- Tipo de Conexão: Rede ou USB -->
+                                        <div class="col-md-3 col-12 secao-printer-ativa">
+                                            <label class="form-label fw-semibold required">Tipo de Conexão</label>
+                                            <select name="printer_tipo" class="form-select" id="printer-tipo-select">
+                                                <option value="rede" @isset($item) @if(($item->printer_tipo ?? 'rede') == 'rede') selected @endif @else selected @endif>
+                                                    🌐 Rede (TCP/IP - Envio Direto)
+                                                </option>
+                                                <option value="usb" @isset($item) @if(($item->printer_tipo ?? '') == 'usb') selected @endif @endif>
+                                                    🔌 USB / Local (Driver do Windows)
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Nome da Impressora -->
+                                        <div class="col-md-3 col-12 secao-printer-ativa">
                                             {!!Form::text('printer_nome', 'Nome / Identificação da Impressora')
                                             ->id('printer-nome')
-                                            ->attrs(['class' => 'form-control', 'placeholder' => 'Ex: Térmica Caixa 01'])
+                                            ->attrs(['class' => 'form-control', 'placeholder' => 'Ex: Térmica Balcão'])
                                             !!}
                                         </div>
-                                        <div class="col-md-3 col-6">
-                                            {!!Form::text('printer_ip', 'Endereço IP na Rede')
-                                            ->id('printer-ip')
-                                            ->attrs(['class' => 'form-control', 'placeholder' => 'Ex: 192.168.1.200'])
-                                            !!}
-                                        </div>
-                                        <div class="col-md-3 col-6">
-                                            {!!Form::tel('printer_porta', 'Porta TCP/IP')
-                                            ->id('printer-porta')
-                                            ->attrs(['class' => 'form-control', 'placeholder' => '9100', 'value' => isset($item) && $item->printer_porta ? $item->printer_porta : 9100])
-                                            !!}
-                                        </div>
-                                        <div class="col-md-3 col-12">
+
+                                        <!-- Largura da Bobina -->
+                                        <div class="col-md-3 col-12 secao-printer-ativa">
                                             <label class="form-label fw-semibold">Largura da Bobina</label>
                                             <select name="printer_largura" class="form-select" id="printer-largura">
                                                 <option value="80" @isset($item) @if(($item->printer_largura ?? '80') == '80') selected @endif @else selected @endif>80mm (Padrão de Mercado)</option>
                                                 <option value="58" @isset($item) @if(($item->printer_largura ?? '80') == '58') selected @endif @endif>58mm (Bobina Estreita / Compacta)</option>
                                             </select>
                                         </div>
-                                        <div class="col-12 mt-3 d-flex align-items-center gap-3">
-                                            <button type="button" class="dash-btn dash-btn-light" id="btn-testar-impressora" onclick="testarImpressora()">
-                                                <i class="ri-wifi-line me-1 text-primary"></i> Testar Conexão com a Impressora
-                                            </button>
-                                            <span id="printer-test-result" class="fs-13"></span>
+                                    </div>
+
+                                    <!-- ═══ CAMPOS ESPECÍFICOS DE REDE (TCP/IP) ═══ -->
+                                    <div id="bloco-printer-rede" class="mt-3 p-3 rounded-3 border bg-light-subtle secao-printer-ativa" style="display: none;">
+                                        <h6 class="fw-bold text-dark fs-13 mb-3 d-flex align-items-center gap-1">
+                                            <i class="ri-router-line text-primary"></i> Parâmetros de Rede da Impressora (TCP/IP)
+                                        </h6>
+                                        <div class="row g-3">
+                                            <div class="col-md-4 col-12">
+                                                {!!Form::text('printer_ip', 'Endereço IP na Rede')
+                                                ->id('printer-ip')
+                                                ->attrs(['class' => 'form-control', 'placeholder' => 'Ex: 192.168.1.200'])
+                                                !!}
+                                                <small class="text-muted fs-11">Endereço IP fixado na impressora térmica na mesma rede do PDV.</small>
+                                            </div>
+                                            <div class="col-md-3 col-6">
+                                                {!!Form::tel('printer_porta', 'Porta TCP/IP')
+                                                ->id('printer-porta')
+                                                ->attrs(['class' => 'form-control', 'placeholder' => '9100', 'value' => isset($item) && $item->printer_porta ? $item->printer_porta : 9100])
+                                                !!}
+                                                <small class="text-muted fs-11">Padrão de fábrica: 9100</small>
+                                            </div>
+                                            <div class="col-md-5 col-12 d-flex align-items-end">
+                                                <button type="button" class="dash-btn dash-btn-light w-100" id="btn-testar-impressora" onclick="testarImpressora()">
+                                                    <i class="ri-wifi-line me-1 text-primary"></i> Testar Conexão com a Impressora
+                                                </button>
+                                            </div>
+                                            <div class="col-12 mt-1">
+                                                <span id="printer-test-result" class="fs-13"></span>
+                                            </div>
                                         </div>
                                     </div>
+
+                                    <!-- ═══ AVISO/INSTRUÇÃO DE USB LOCAL ═══ -->
+                                    <div id="bloco-printer-usb" class="mt-3 p-3 rounded-3 border bg-light-subtle secao-printer-ativa" style="display: none;">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <div style="width: 44px; height: 44px; border-radius: 10px; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;">
+                                                <i class="ri-usb-line"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="fw-bold text-dark fs-14 mb-1">Modo Impressora Térmica USB Ativado</h6>
+                                                <p class="text-muted fs-12 mb-2">
+                                                    A impressora está conectada diretamente via <strong>cabo USB</strong> no computador do caixa. Ao finalizar qualquer venda no PDV ou emitir NFC-e, o sistema abrirá o cupom térmico no <strong>modelo oficial padronizado</strong> (idêntico ao da rede) e disparará automaticamente a caixa de impressão do Windows sem quebras de página ou margens indesejadas.
+                                                </p>
+                                                <button type="button" class="dash-btn dash-btn-light btn-sm" onclick="window.open('{{ route('print.termico-teste') }}', '_blank', 'width=450,height=650');">
+                                                    <i class="ri-printer-line me-1 text-success"></i> Imprimir Página de Teste Térmico (USB)
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div class="row mt-4">
                                         <div class="col-12">
                                             <div class="alert alert-info border-0 shadow-sm py-3 px-3 mb-0" style="border-radius: 12px; background: #f0f4ff;">
                                                 <div class="d-flex align-items-start gap-2">
                                                     <i class="ri-information-line fs-18 text-primary mt-0.5"></i>
                                                     <div class="fs-13 text-dark">
-                                                        <strong>Como funciona a Impressão Direta:</strong> Quando habilitada, o sistema envia o comprovante de venda ou NFCe instantaneamente para a impressora via protocolo ESC/POS (porta 9100), sem necessidade de abrir a caixa de diálogo de impressão do navegador. Caso esteja desabilitada, o PDF continuará sendo aberto no navegador normalmente.
+                                                        <strong>Como funciona a Padronização:</strong> Tanto na impressão em <strong>Rede</strong> quanto em <strong>USB</strong>, o sistema emite <strong>exatamente o mesmo modelo</strong> de cupom fiscal (NFC-e) e cupom não fiscal, com tabelas e itens alinhados. Quando a opção estiver desmarcada, o comprovante abrirá em uma nova página normalmente para impressão manual livre.
                                                     </div>
                                                 </div>
                                             </div>
@@ -533,5 +584,31 @@ function testarViaHttpFallback(ip, porta, btn, result, erroServidor) {
         }
     });
 }
+
+function atualizarCamposImpressora() {
+    var ativo = $('#printer-status-toggle').is(':checked');
+    var tipo = $('#printer-tipo-select').val();
+
+    if (!ativo) {
+        $('.secao-printer-ativa').css('opacity', '0.45');
+        $('#bloco-printer-rede').slideUp(200);
+        $('#bloco-printer-usb').slideUp(200);
+    } else {
+        $('.secao-printer-ativa').css('opacity', '1');
+        if (tipo === 'usb') {
+            $('#bloco-printer-rede').slideUp(200);
+            $('#bloco-printer-usb').slideDown(200);
+        } else {
+            $('#bloco-printer-usb').slideUp(200);
+            $('#bloco-printer-rede').slideDown(200);
+        }
+    }
+}
+
+$(document).ready(function() {
+    $('#printer-status-toggle').on('change', atualizarCamposImpressora);
+    $('#printer-tipo-select').on('change', atualizarCamposImpressora);
+    atualizarCamposImpressora();
+});
 </script>
 @endsection

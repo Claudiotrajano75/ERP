@@ -15,7 +15,7 @@ class ConfigGeral extends Model
         'abrir_modal_cartao', 'percentual_desconto_orcamento', 'agrupar_itens', 'tipo_comissao', 'modelo', 'alerta_sonoro',
         'cabecalho_pdv',
         // Impressora termica
-        'printer_nome', 'printer_ip', 'printer_porta', 'printer_largura', 'printer_status'
+        'printer_nome', 'printer_ip', 'printer_porta', 'printer_largura', 'printer_status', 'printer_tipo'
     ];
 
     public static function getNotificacoes(){
@@ -29,9 +29,25 @@ class ConfigGeral extends Model
      */
     public function isPrinterConfigured()
     {
-        return $this->printer_status == 1
-            && !empty($this->printer_ip)
-            && !empty($this->printer_porta);
+        if ($this->printer_status != 1) {
+            return false;
+        }
+
+        $tipo = $this->printer_tipo ?: 'rede';
+        if ($tipo === 'usb') {
+            return true;
+        }
+
+        return !empty($this->printer_ip) && !empty($this->printer_porta);
     }
-    
+
+    public function isPrinterUsb()
+    {
+        return $this->printer_status == 1 && ($this->printer_tipo ?: 'rede') === 'usb';
+    }
+
+    public function isPrinterRede()
+    {
+        return $this->printer_status == 1 && ($this->printer_tipo ?: 'rede') === 'rede' && !empty($this->printer_ip);
+    }
 }

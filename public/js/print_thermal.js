@@ -75,7 +75,10 @@ var PrintThermal = {
             type: 'POST',
             data: { _token: $('meta[name="csrf-token"]').attr('content') },
             success: function(res) {
-                if (res.via_agent && res.payload_base64) {
+                if (res.is_usb && res.url) {
+                    // Modo USB -> abre o cupom térmico padronizado com disparo automático de impressão
+                    PrintThermal.abrirDocumento(res.url, onComplete);
+                } else if (res.via_agent && res.payload_base64) {
                     // Sistema em nuvem (Hostinger) -> envia bytes ESC/POS ao Agente Local (127.0.0.1:9187)
                     PrintThermal.enviarParaAgenteLocal(res.printer_ip, res.printer_porta, res.payload_base64, pdfUrl, onComplete);
                 } else if (res.success) {

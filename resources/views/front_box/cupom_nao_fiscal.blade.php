@@ -95,27 +95,33 @@
 
     <div class="line"></div>
 
-    <!-- Tabela de Itens -->
-    <table style="width: 100%;">
+    <!-- Tabela de Itens (Padronizada em 6 Colunas) -->
+    <table style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr style="border-bottom: 1px solid #000;">
-                <th class="text-left" style="width: 10%;">CÓD</th>
-                <th class="text-left" style="width: 65%;">DESC<br>QTD x UN</th>
-                <th class="text-right" style="width: 25%;">TOTAL</th>
+                <th class="text-left" style="width: 14%;">CÓDIGO</th>
+                <th class="text-left" style="width: 36%;">DESCRIÇÃO</th>
+                <th class="text-right" style="width: 11%;">QTDE</th>
+                <th class="text-right" style="width: 9%;">UN</th>
+                <th class="text-right" style="width: 15%;">VL UNIT</th>
+                <th class="text-right" style="width: 15%;">VL TOTAL</th>
             </tr>
         </thead>
         <tbody>
+            @php $totalItensCount = 0; @endphp
             @foreach($item->itens as $i)
-            <tr>
-                <td class="text-left" valign="top">{{ $i->produto->id }}</td>
-                <td class="text-left">
-                    {{ $i->produto->nome }}<br>
-                    {{ number_format($i->quantidade, 2, ',', '.') }} x {{ number_format($i->valor_unitario, 2, ',', '.') }}
-                </td>
-                <td class="text-right" valign="bottom">
-                    {{ number_format($i->sub_total, 2, ',', '.') }}
-                </td>
-            </tr>
+                @php
+                    $totalItensCount++;
+                    $unidade = $i->produto ? ($i->produto->unidade ?? 'UN') : 'UN';
+                @endphp
+                <tr>
+                    <td class="text-left" valign="top">{{ $i->produto_id }}</td>
+                    <td class="text-left uppercase" valign="top">{{ $i->produto ? $i->produto->nome : ($i->descricao ?? 'Item ' . $i->produto_id) }}</td>
+                    <td class="text-right" valign="top">{{ number_format($i->quantidade, ($i->quantidade == intval($i->quantidade) ? 0 : 2), ',', '.') }}</td>
+                    <td class="text-right uppercase" valign="top">{{ $unidade }}</td>
+                    <td class="text-right" valign="top">{{ number_format($i->valor_unitario, 2, ',', '.') }}</td>
+                    <td class="text-right bold" valign="top">{{ number_format($i->sub_total, 2, ',', '.') }}</td>
+                </tr>
             @endforeach
         </tbody>
     </table>
@@ -123,18 +129,41 @@
     <div class="line"></div>
 
     <!-- Totais -->
-    <table class="totals">
+    @php
+        $valorTotalR = $item->total + ($item->desconto ?? 0) - ($item->acrescimo ?? 0);
+    @endphp
+    <table class="totals" style="width: 100%;">
+        <tr>
+            <td>Qtde total de itens</td>
+            <td class="text-right">{{ $totalItensCount }}</td>
+        </tr>
+        <tr>
+            <td>Valor Total R$</td>
+            <td class="text-right">{{ number_format($valorTotalR, 2, ',', '.') }}</td>
+        </tr>
+        @if(($item->desconto ?? 0) > 0)
+        <tr>
+            <td>Desconto R$</td>
+            <td class="text-right">-{{ number_format($item->desconto, 2, ',', '.') }}</td>
+        </tr>
+        @endif
+        @if(($item->acrescimo ?? 0) > 0)
+        <tr>
+            <td>Acréscimo R$</td>
+            <td class="text-right">+{{ number_format($item->acrescimo, 2, ',', '.') }}</td>
+        </tr>
+        @endif
         <tr>
             <td class="bold">Total da Nota R$</td>
             <td class="text-right bold">{{ number_format($item->total, 2, ',', '.') }}</td>
         </tr>
         <tr>
-            <td class="bold">Valor Recebido R$</td>
-            <td class="text-right bold">{{ number_format($item->dinheiro_recebido > 0 ? $item->dinheiro_recebido : $item->total, 2, ',', '.') }}</td>
+            <td>Valor Recebido R$</td>
+            <td class="text-right">{{ number_format($item->dinheiro_recebido > 0 ? $item->dinheiro_recebido : $item->total, 2, ',', '.') }}</td>
         </tr>
         <tr>
-            <td class="bold">Troco R$</td>
-            <td class="text-right bold">{{ number_format($item->troco, 2, ',', '.') }}</td>
+            <td>Troco R$</td>
+            <td class="text-right">{{ number_format($item->troco ?? 0, 2, ',', '.') }}</td>
         </tr>
     </table>
 

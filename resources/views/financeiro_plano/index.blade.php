@@ -313,7 +313,7 @@
                             </p>
                         </div>
                         <div>
-                            <a href="{{ route('gerenciar-planos.index') }}" class="btn btn-outline-light px-3 shadow-sm" style="border-radius: 10px;">
+                            <a href="{{ route('gerenciar-planos.index') }}" class="btn btn-primary px-3 shadow-sm" style="border-radius: 10px; font-weight: 600;">
                                 <i class="ri-exchange-funds-line me-1"></i> Gerenciar Planos & Atribuições
                             </a>
                         </div>

@@ -1,92 +1,124 @@
+<!DOCTYPE html>
 <html>
-
 <head>
-    <meta charset="utf-8">
-
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <style type="text/css">
-        /* ═══════════════ PÁGINA ═══════════════ */
         @page {
-            margin: 13mm 11mm 20mm 11mm;
+            margin: 10mm 10mm 18mm 10mm;
         }
 
         * {
-            font-family: 'DejaVu Sans', Helvetica, Arial, sans-serif;
+            font-family: 'DejaVu Sans', Arial, Helvetica, sans-serif;
             box-sizing: border-box;
         }
 
         body {
             margin: 0;
-            color: #212529;
-            font-size: 10.5px;
-            line-height: 1.5;
+            padding: 0;
+            color: #1f2937;
+            font-size: 9.5px;
+            line-height: 1.35;
         }
 
-        /* ═══════════════ CABEÇALHO DO DOCUMENTO (gradiente índigo do ERP) ═══════════════ */
-        .doc-header {
-            background: #ffffff;
-            border: 2px solid #4254ba;
-            color: #4254ba;
-            border-radius: 10px;
-            padding: 14px 18px 12px 18px;
-            margin-bottom: 12px;
+        /* ═══════════════ RODAPÉ FIXO (DOMPDF EXIGE NO INÍCIO DO BODY) ═══════════════ */
+        footer {
+            position: fixed;
+            bottom: -14mm;
+            left: 0;
+            right: 0;
+            height: 12mm;
         }
 
-        .hd-top {
+        footer table {
             width: 100%;
             border-collapse: collapse;
+            border-top: 1px solid #cbd5e1;
         }
 
-        .hd-top td {
-            border: none;
-            padding: 0;
+        footer td {
+            padding: 4px 0 0 0;
+            font-size: 7.5px;
+            color: #64748b;
+        }
+
+        footer td.right {
+            text-align: right;
+        }
+
+        footer img {
+            max-width: 40px;
+            height: auto;
+        }
+
+        /* ═══════════════ CABEÇALHO COMPACTO ═══════════════ */
+        .doc-header-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1.5px solid #4338ca;
+            margin-bottom: 8px;
+        }
+
+        .doc-header-table td {
+            padding: 8px 10px;
             vertical-align: middle;
         }
 
         .hd-logo {
+            width: 25%;
             text-align: left;
-            width: 55%;
         }
 
         .hd-logo img {
-            max-width: 62px;
-            max-height: 62px;
+            max-width: 52px;
+            max-height: 48px;
             height: auto;
         }
 
-        .hd-emissao {
-            text-align: right;
-            width: 45%;
-            font-size: 8.5px;
-            color: #5f6673;
-        }
-
         .hd-title {
+            width: 50%;
             text-align: center;
-            font-size: 16px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #c3cadd;
-        }
-
-        /* ═══════════════ SEÇÕES ═══════════════ */
-        .sec-label {
-            color: #4254ba;
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
+            font-size: 14px;
+            font-weight: bold;
             letter-spacing: 1.2px;
-            margin: 12px 0 6px 0;
-            padding-left: 8px;
-            border-left: 3px solid #4254ba;
+            text-transform: uppercase;
+            color: #4338ca;
         }
 
-        .info-box {
-            border: 1px solid #e4e8f0;
-            border-radius: 8px;
-            padding: 9px 12px;
+        .hd-emissao {
+            width: 25%;
+            text-align: right;
+            font-size: 8px;
+            color: #64748b;
+        }
+
+        /* ═══════════════ BLOCOS DE DADOS (EMPRESA & CLIENTE LADO A LADO) ═══════════════ */
+        .two-cols-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 6px;
+        }
+
+        .two-cols-table td.col-box {
+            width: 49%;
+            vertical-align: top;
+            border: 1px solid #cbd5e1;
+            padding: 6px 8px;
+            background: #fafbfc;
+        }
+
+        .two-cols-table td.col-spacer {
+            width: 2%;
+        }
+
+        .box-title {
+            color: #4338ca;
+            font-size: 8.5px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 4px;
+            padding-bottom: 2px;
+            border-bottom: 1px solid #cbd5e1;
         }
 
         .info-table {
@@ -96,462 +128,532 @@
 
         .info-table td {
             border: none;
-            padding: 2.5px 6px;
+            padding: 1.5px 0;
             vertical-align: top;
-            font-size: 10px;
+            font-size: 8.5px;
         }
 
         .info-table td.k {
-            color: #5f6673;
-            width: 140px;
+            color: #64748b;
+            width: 70px;
             white-space: nowrap;
         }
 
         .info-table td.v {
-            color: #212529;
-            font-weight: 600;
+            color: #1f2937;
+            font-weight: bold;
         }
 
-        /* ═══════════════ TABELA DE ITENS ═══════════════ */
-        .items-table {
+        /* ═══════════════ FAIXA DE INFORMAÇÕES DO DOCUMENTO ═══════════════ */
+        .doc-info-bar {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 4px;
-        }
-
-        .items-table th {
+            border: 1px solid #cbd5e1;
             background: #ffffff;
-            color: #4254ba;
-            border-bottom: 2px solid #4254ba;
+            margin-bottom: 8px;
+        }
+
+        .doc-info-bar td {
+            padding: 5px 6px;
             font-size: 8.5px;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            padding: 7px 8px;
-            text-align: left;
-        }
-
-        .items-table th.num,
-        .items-table td.num {
-            text-align: right;
-        }
-
-        .items-table td {
-            padding: 6px 8px;
-            border-bottom: 1px solid #e4e8f0;
-            font-size: 10px;
-            color: #212529;
+            border-right: 1px solid #cbd5e1;
             vertical-align: middle;
         }
 
-        .items-table tr.total td {
-            background: #ffffff;
-            color: #17a497;
-            border-top: 2px solid #17a497;
-            border-bottom: 2px solid #17a497;
-            font-weight: 700;
-            font-size: 10.5px;
-            padding: 8px;
+        .doc-info-bar td:last-child {
+            border-right: none;
         }
 
-        .items-table td.obs-cel {
-            padding: 3px 8px;
+        .doc-info-bar .lbl {
+            color: #64748b;
+            font-size: 7.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            display: block;
+            margin-bottom: 1px;
         }
 
-        /* ═══════════════ RESUMO DE TOTAIS ═══════════════ */
-        .totals-box {
+        .doc-info-bar .val {
+            color: #1f2937;
+            font-weight: bold;
+        }
+
+        /* ═══════════════ TABELA DE MERCADORIAS (6 COLUNAS) ═══════════════ */
+        .sec-label {
+            color: #4338ca;
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin: 6px 0 4px 0;
+            padding-left: 6px;
+            border-left: 3px solid #4338ca;
+        }
+
+        .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            border: 1px solid #cbd5e1;
+            margin-top: 3px;
         }
 
-        .totals-box td {
-            border: 1px solid #e4e8f0;
-            border-radius: 6px;
-            padding: 8px 10px;
+        .items-table th {
+            background: #f1f5f9;
+            color: #334155;
+            font-size: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 5px 6px;
+            border-bottom: 1.5px solid #cbd5e1;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .items-table th:last-child {
+            border-right: none;
+        }
+
+        .items-table td {
+            padding: 5px 6px;
+            border-bottom: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            font-size: 8.5px;
+            color: #1f2937;
+            vertical-align: middle;
+        }
+
+        .items-table td:last-child {
+            border-right: none;
+        }
+
+        .items-table tr.zebra {
+            background: #f8fafc;
+        }
+
+        .items-table .center {
             text-align: center;
         }
 
-        .totals-box td b {
-            display: block;
-            font-size: 8px;
+        .items-table .num {
+            text-align: center;
+        }
+
+        /* ═══════════════ PAINEL DE TOTAIS ═══════════════ */
+        .totals-wrapper-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px;
+            margin-bottom: 8px;
+        }
+
+        .totals-wrapper-table td.empty-col {
+            width: 45%;
+        }
+
+        .totals-wrapper-table td.content-col {
+            width: 55%;
+            vertical-align: top;
+            text-align: right;
+        }
+
+        .totals-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .totals-summary-table td {
+            padding: 2.5px 4px;
+            font-size: 9px;
+            text-align: right;
+            border: none;
+        }
+
+        .totals-summary-table td.lbl-tot {
+            color: #4b5563;
+        }
+
+        .totals-summary-table td.val-tot {
+            font-weight: bold;
+            color: #1f2937;
+            width: 100px;
+        }
+
+        .totals-summary-table tr.tot-margem td {
+            border-top: 1.5px solid #cbd5e1;
+            padding-top: 4px;
+            font-weight: bold;
+        }
+
+        .totals-summary-table tr.tot-margem td.lbl-tot {
+            color: #1f2937;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: #5f6673;
-            margin-bottom: 3px;
         }
 
-        .totals-box td span {
-            font-size: 12px;
-            font-weight: 700;
-            color: #212529;
+        .totals-summary-table tr.tot-margem td.val-tot {
+            color: #1f2937;
+            font-size: 11px;
+            font-weight: bold;
         }
 
-        .totals-box td.total-final {
-            border: 2px solid #17a497;
-        }
-
-        .totals-box td.total-final b {
-            color: #5f6673;
-        }
-
-        .totals-box td.total-final span {
-            color: #17a497;
-        }
-
-        /* ═══════════════ FATURA / FORMA DE PAGAMENTO ═══════════════ */
+        /* ═══════════════ FATURA / PAGAMENTO ═══════════════ */
         .fatura-table {
             width: 45%;
             border-collapse: collapse;
-            margin-top: 4px;
+            margin-top: 3px;
+            border: 1px solid #cbd5e1;
         }
 
         .fatura-table th {
-            color: #4254ba;
-            font-size: 8.5px;
+            background: #f1f5f9;
+            color: #4338ca;
+            font-size: 8px;
             text-transform: uppercase;
-            letter-spacing: 0.6px;
-            padding: 6px 8px;
+            padding: 4px 6px;
             text-align: left;
-            border-bottom: 2px solid #4254ba;
+            border-bottom: 1.5px solid #cbd5e1;
         }
 
         .fatura-table td {
-            padding: 5px 8px;
-            border-bottom: 1px solid #e4e8f0;
-            font-size: 10px;
+            padding: 4px 6px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 8.5px;
         }
 
-        .tag-pagamento {
-            color: #4254ba;
-            font-weight: 700;
-        }
-
-        /* ═══════════════ OBSERVAÇÃO ═══════════════ */
+        /* ═══════════════ OBSERVAÇÃO & ASSINATURA ═══════════════ */
         .obs-box {
-            border: 1px dashed #c3cadd;
-            border-radius: 8px;
-            padding: 9px 12px;
-            margin-top: 10px;
-            font-size: 10px;
+            border: 1px dashed #cbd5e1;
+            padding: 6px 8px;
+            margin-top: 8px;
+            font-size: 8.5px;
+            background: #fafbfc;
         }
 
         .obs-box b {
-            color: #4254ba;
+            color: #4338ca;
         }
 
-        /* ═══════════════ ASSINATURAS ═══════════════ */
         .sign-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 26px;
+            margin-top: 20px;
         }
 
         .sign-table td {
             width: 50%;
             text-align: center;
             vertical-align: bottom;
-            padding: 10px;
+            padding: 8px;
         }
 
         .sign-table .line {
-            border-top: 1px solid #212529;
-            padding-top: 5px;
-            font-size: 10px;
-            font-weight: 600;
-            margin: 0 8px;
-        }
-
-        /* ═══════════════ RODAPÉ FIXO (repete em todas as páginas) ═══════════════ */
-        footer {
-            position: fixed;
-            bottom: -16mm;
-            left: 11mm;
-            right: 11mm;
-        }
-
-        footer table {
-            width: 100%;
-            border-collapse: collapse;
-            border-top: 1px solid #c3cadd;
-        }
-
-        footer td {
-            padding: 5px 2px 0 2px;
-            font-size: 8px;
-            color: #5f6673;
-        }
-
-        footer td.right {
-            text-align: right;
-        }
-
-        footer img {
-            max-width: 46px;
-            height: auto;
-        }
-
-        .page_break {
-            page-break-after: always;
-        }
-
-        img {
-            max-width: 100px;
-            height: auto;
+            border-top: 1px solid #475569;
+            padding-top: 3px;
+            font-size: 8.5px;
+            font-weight: bold;
+            margin: 0 16px;
+            color: #334155;
         }
     </style>
 </head>
 
-<!-- ═══════════════ CABEÇALHO ═══════════════ -->
-<header>
-    <div class="doc-header">
-        <table class="hd-top">
-            <tr>
-                <td class="hd-logo">
-                    @if($config->logo != null && file_exists(public_path('/uploads/logos/'. $config->logo)))
-                    <img src="{{'data:image/png;base64,' . base64_encode(file_get_contents(public_path('/uploads/logos/'. $config->logo)))}}" alt="Logo">
-                    @elseif(file_exists(public_path('logo.png')))
-                    <img src="{{'data:image/png;base64,' . base64_encode(file_get_contents(public_path('logo.png')))}}" alt="Logo">
-                    @endif
-                </td>
-                <td class="hd-emissao">
-                    Emissão: {{ date('d/m/Y - H:i') }}
-                </td>
-            </tr>
-        </table>
-        <div class="hd-title">
-            @if($item->tpNF == 1)
-            Pedido de Venda
-            @else
-            Pedido de Compra
-            @endif
-        </div>
-    </div>
-</header>
-
 <body>
 
-    <!-- ═══════════════ DADOS DA EMPRESA ═══════════════ -->
-    <div class="sec-label">Dados da Empresa</div>
-    <div class="info-box">
-        <table class="info-table">
-            <tr>
-                <td class="k">Razão Social:</td>
-                <td class="v">{{$config->nome}}</td>
-                <td class="k">Documento:</td>
-                <td class="v">{{ __setMask($config->cpf_cnpj) }}</td>
-            </tr>
-            <tr>
-                <td class="k">Endereço:</td>
-                <td class="v">{{$config->rua}}, {{$config->numero}} - {{$config->bairro}} - {{$config->cidade->nome}} ({{$config->cidade->uf}})</td>
-                <td class="k">Complemento:</td>
-                <td class="v">{{$config->complemento}}</td>
-            </tr>
-            <tr>
-                <td class="k">CEP:</td>
-                <td class="v">{{$config->cep}}</td>
-                <td class="k">Telefone:</td>
-                <td class="v">{{$config->celular}}</td>
-            </tr>
-            <tr>
-                <td class="k">Email:</td>
-                <td class="v" colspan="3">{{$config->email}}</td>
-            </tr>
+    <!-- ═══════════════ RODAPÉ FIXO ═══════════════ -->
+    <footer id="footer_imagem">
+        <table>
+            <tbody>
+                <tr>
+                    <td>
+                        {{env('SITE_SUPORTE')}}
+                    </td>
+                    <td class="right">
+                        @if(file_exists(public_path('logo.png')))
+                        <img src="{{'data:image/png;base64,' . base64_encode(file_get_contents(public_path('logo.png')))}}" alt="Logo">
+                        @endif
+                    </td>
+                </tr>
+            </tbody>
         </table>
-    </div>
+    </footer>
 
-    <!-- ═══════════════ DADOS DO FORNECEDOR / CLIENTE ═══════════════ -->
-    @if($item->tpNF == 0)
-    <div class="sec-label">Dados do Fornecedor</div>
-    <div class="info-box">
-        <table class="info-table">
-            <tr>
-                <td class="k">Nome:</td>
-                <td class="v">{{$item->fornecedor->razao_social}}</td>
-                <td class="k">CPF/CNPJ:</td>
-                <td class="v">{{$item->fornecedor->cpf_cnpj}}</td>
-            </tr>
-            <tr>
-                <td class="k">Endereço:</td>
-                <td class="v">{{$item->fornecedor->rua}}, {{$item->fornecedor->numero}} - {{$item->fornecedor->bairro}} - {{$item->fornecedor->cidade->nome}} ({{$item->fornecedor->cidade->uf}})</td>
-                <td class="k">CEP:</td>
-                <td class="v">{{$item->fornecedor->cep}}</td>
-            </tr>
-            <tr>
-                <td class="k">Complemento:</td>
-                <td class="v">{{$item->fornecedor->complemento }}</td>
-                <td class="k">Telefone:</td>
-                <td class="v">{{$item->fornecedor->telefone}}</td>
-            </tr>
-            <tr>
-                <td class="k">Email:</td>
-                <td class="v" colspan="3">{{$item->fornecedor->email}}</td>
-            </tr>
-        </table>
-    </div>
-    @else
-    <div class="sec-label">Dados do Cliente</div>
-    <div class="info-box">
-        <table class="info-table">
-            <tr>
-                <td class="k">Nome:</td>
-                <td class="v">{{$item->cliente->razao_social}}</td>
-                <td class="k">CPF/CNPJ:</td>
-                <td class="v">{{$item->cliente->cpf_cnpj}}</td>
-            </tr>
-            <tr>
-                <td class="k">Endereço:</td>
-                <td class="v">{{$item->cliente->rua}}, {{$item->cliente->numero}} - {{$item->cliente->bairro}} - {{$item->cliente->cidade->nome}} ({{$item->cliente->cidade->uf}})</td>
-                <td class="k">CEP:</td>
-                <td class="v">{{$item->cliente->cep}}</td>
-            </tr>
-            <tr>
-                <td class="k">Complemento:</td>
-                <td class="v">{{$item->cliente->complemento }}</td>
-                <td class="k">Telefone:</td>
-                <td class="v">{{$item->cliente->telefone}}</td>
-            </tr>
-            <tr>
-                <td class="k">Email:</td>
-                <td class="v" colspan="3">{{$item->cliente->email}}</td>
-            </tr>
-        </table>
-    </div>
-    @endif
-
-    <!-- ═══════════════ INFORMAÇÕES DO DOCUMENTO ═══════════════ -->
-    <div class="sec-label">Informações do Documento</div>
-    <div class="info-box">
-        <table class="info-table">
-            <tr>
-                <td class="k">Nº Doc:</td>
-                <td class="v">{{ $item->numero_sequencial }}</td>
-                <td class="k">Forma de Pagamento:</td>
-                <td class="v">
-                    @if(isset($item->fatura) && sizeof($item->fatura) > 0)
-                    @foreach ($item->fatura as $f)
-                    <span class="tag-pagamento">{{ $f->getTipo($f->tipo_pagamento) }}</span>
-                    @endforeach
-                    @else
-                    <span>Não Informado</span>
-                    @endif
-                </td>
-            </tr>
-            <tr>
-                <td class="k">Frete por Conta:</td>
-                <td class="v">
-                    @if($item->frete)
-                    @if($item->frete->tipo == 0)
-                    Emitente
-                    @elseif($item->frete->tipo == 1)
-                    Destinatário
-                    @elseif($item->frete->tipo == 2)
-                    Terceiros
-                    @else
-                    Outros
-                    @endif
-                    @else
-                    sem frete
-                    @endif
-                </td>
-                <td class="k">Data da Venda:</td>
-                <td class="v">{{ __data_pt($item->created_at) }}</td>
-            </tr>
-            <tr>
-                @if($item->vendedor_id)
-                <td class="k">Vendedor:</td>
-                <td class="v">{{ $item->vendedor_setado->funcionario->nome }}</td>
+    <!-- ═══════════════ CABEÇALHO COMPACTO ═══════════════ -->
+    <table class="doc-header-table">
+        <tr>
+            <td class="hd-logo">
+                @if($config->logo != null && file_exists(public_path('/uploads/logos/'. $config->logo)))
+                <img src="{{'data:image/png;base64,' . base64_encode(file_get_contents(public_path('/uploads/logos/'. $config->logo)))}}" alt="Logo">
+                @elseif(file_exists(public_path('logo.png')))
+                <img src="{{'data:image/png;base64,' . base64_encode(file_get_contents(public_path('logo.png')))}}" alt="Logo">
                 @endif
-                <td class="k">Data de Entrega:</td>
-                <td class="v">
-                    @if($item->data_entrega != null)
-                    {{ __data_pt($item->data_entrega, 0) }}
-                    @endif
-                </td>
-            </tr>
-        </table>
-    </div>
+            </td>
+            <td class="hd-title">
+                @if($item->tpNF == 1)
+                ORÇAMENTO DE VENDA
+                @else
+                ORÇAMENTO DE COMPRA
+                @endif
+            </td>
+            <td class="hd-emissao">
+                Emissão: {{ date('d/m/Y - H:i') }}
+            </td>
+        </tr>
+    </table>
 
-    <!-- ═══════════════ MERCADORIAS ═══════════════ -->
+    <!-- ═══════════════ DADOS DA EMPRESA E CLIENTE LADO A LADO ═══════════════ -->
+    <table class="two-cols-table">
+        <tr>
+            <!-- Coluna 1: Empresa -->
+            <td class="col-box">
+                <div class="box-title">Dados da Empresa</div>
+                <table class="info-table">
+                    <tr>
+                        <td class="k">Razão Social:</td>
+                        <td class="v">{{$config->nome}}</td>
+                    </tr>
+                    <tr>
+                        <td class="k">Documento:</td>
+                        <td class="v">{{ __setMask($config->cpf_cnpj) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="k">Endereço:</td>
+                        <td class="v">{{$config->rua}}, {{$config->numero}} - {{$config->bairro}} - {{$config->cidade->nome}} ({{$config->cidade->uf}})</td>
+                    </tr>
+                    <tr>
+                        <td class="k">CEP / Fone:</td>
+                        <td class="v">{{$config->cep}} | {{$config->celular ?: $config->telefone ?: '--'}}</td>
+                    </tr>
+                    @if($config->email)
+                    <tr>
+                        <td class="k">Email:</td>
+                        <td class="v">{{$config->email}}</td>
+                    </tr>
+                    @endif
+                </table>
+            </td>
+
+            <td class="col-spacer"></td>
+
+            <!-- Coluna 2: Fornecedor / Cliente -->
+            <td class="col-box">
+                @if($item->tpNF == 0)
+                <div class="box-title">Dados do Fornecedor</div>
+                <table class="info-table">
+                    <tr>
+                        <td class="k">Nome:</td>
+                        <td class="v">{{$item->fornecedor ? $item->fornecedor->razao_social : 'Consumidor Final'}}</td>
+                    </tr>
+                    <tr>
+                        <td class="k">CPF/CNPJ:</td>
+                        <td class="v">{{$item->fornecedor ? $item->fornecedor->cpf_cnpj : '--'}}</td>
+                    </tr>
+                    <tr>
+                        <td class="k">Endereço:</td>
+                        <td class="v">
+                            @if($item->fornecedor)
+                            {{$item->fornecedor->rua}}, {{$item->fornecedor->numero}} - {{$item->fornecedor->bairro}} - {{$item->fornecedor->cidade->nome}} ({{$item->fornecedor->cidade->uf}})
+                            @else
+                            --
+                            @endif
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="k">CEP / Fone:</td>
+                        <td class="v">
+                            {{$item->fornecedor ? $item->fornecedor->cep : '--'}} | {{$item->fornecedor ? ($item->fornecedor->telefone ?: $item->fornecedor->celular ?: '--') : '--'}}
+                        </td>
+                    </tr>
+                    @if($item->fornecedor && $item->fornecedor->email)
+                    <tr>
+                        <td class="k">Email:</td>
+                        <td class="v">{{$item->fornecedor->email}}</td>
+                    </tr>
+                    @endif
+                </table>
+                @else
+                <div class="box-title">Dados do Cliente</div>
+                <table class="info-table">
+                    <tr>
+                        <td class="k">Nome:</td>
+                        <td class="v">{{$item->cliente ? $item->cliente->razao_social : 'Consumidor Final'}}</td>
+                    </tr>
+                    <tr>
+                        <td class="k">CPF/CNPJ:</td>
+                        <td class="v">{{$item->cliente ? $item->cliente->cpf_cnpj : '--'}}</td>
+                    </tr>
+                    <tr>
+                        <td class="k">Endereço:</td>
+                        <td class="v">
+                            @if($item->cliente)
+                            {{$item->cliente->rua}}, {{$item->cliente->numero}} - {{$item->cliente->bairro}} - {{$item->cliente->cidade->nome}} ({{$item->cliente->cidade->uf}})
+                            @else
+                            --
+                            @endif
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="k">CEP / Fone:</td>
+                        <td class="v">
+                            {{$item->cliente ? $item->cliente->cep : '--'}} | {{$item->cliente ? ($item->cliente->telefone ?: $item->cliente->celular ?: '--') : '--'}}
+                        </td>
+                    </tr>
+                    @if($item->cliente && $item->cliente->email)
+                    <tr>
+                        <td class="k">Email:</td>
+                        <td class="v">{{$item->cliente->email}}</td>
+                    </tr>
+                    @endif
+                </table>
+                @endif
+            </td>
+        </tr>
+    </table>
+
+    <!-- ═══════════════ INFORMAÇÕES DO DOCUMENTO COMPACTAS ═══════════════ -->
+    <table class="doc-info-bar">
+        <tr>
+            <td style="width: 16%;">
+                <span class="lbl">Nº Documento</span>
+                <span class="val">{{ $item->numero_sequencial ?: ($item->numero ?: $item->id) }}</span>
+            </td>
+            <td style="width: 22%;">
+                <span class="lbl">Data da Venda</span>
+                <span class="val">{{ __data_pt($item->created_at) }}</span>
+            </td>
+            <td style="width: 26%;">
+                <span class="lbl">Forma de Pagamento</span>
+                <span class="val">
+                    @if(isset($item->fatura) && sizeof($item->fatura) > 0)
+                        @foreach ($item->fatura as $f)
+                            {{ $f->getTipo($f->tipo_pagamento) }}@if(!$loop->last), @endif
+                        @endforeach
+                    @else
+                        Não Informado
+                    @endif
+                </span>
+            </td>
+            <td style="width: 18%;">
+                <span class="lbl">Frete</span>
+                <span class="val">
+                    @if($item->frete)
+                        @if($item->frete->tipo == 0) Emitente
+                        @elseif($item->frete->tipo == 1) Destinatário
+                        @elseif($item->frete->tipo == 2) Terceiros
+                        @else Outros @endif
+                    @else
+                        sem frete
+                    @endif
+                </span>
+            </td>
+            <td style="width: 18%;">
+                <span class="lbl">Vendedor</span>
+                <span class="val">
+                    @if($item->vendedor_id && $item->vendedor_setado)
+                        {{ $item->vendedor_setado->funcionario ? $item->vendedor_setado->funcionario->nome : '--' }}
+                    @elseif($item->user)
+                        {{ $item->user->name }}
+                    @else
+                        --
+                    @endif
+                </span>
+            </td>
+        </tr>
+    </table>
+
+    <!-- ═══════════════ MERCADORIAS (GRID COM 6 COLUNAS) ═══════════════ -->
     <div class="sec-label">Mercadorias</div>
     <table class="items-table">
         <thead>
             <tr>
-                <th style="width: 90px;">Cod/Ref</th>
-                <th>Descrição</th>
-                <th class="num" style="width: 75px;">Qtd.</th>
-                <th class="num" style="width: 85px;">Vl Uni</th>
-                <th class="num" style="width: 85px;">Vl Liq.</th>
+                <th style="width: 38%; text-align: left;">Produto</th>
+                <th class="center" style="width: 10%;">Quantidade</th>
+                <th class="center" style="width: 8%;">Unidade</th>
+                <th class="center" style="width: 14%;">Valor Venda</th>
+                <th class="center" style="width: 14%;">Valor Compra</th>
+                <th class="center" style="width: 16%;">Total C/ Desconto</th>
             </tr>
         </thead>
         @php
-        $somaItens = 0;
-        $somaTotalItens = 0;
-        $tipoDimensao = false;
-        $tipoReceita = false;
-        $casasDecimais = $config->casas_decimais;
-        $casasDecimaisQtd = 2;
+            $somaTotalVenda = 0;
+            $somaTotalCompra = 0;
+            $tipoDimensao = false;
+            $tipoReceita = false;
         @endphp
         <tbody>
             @foreach($item->itens as $i)
+            @php
+                $qtd = (float) $i->quantidade;
+                $vendaUnit = (float) $i->valor_unitario;
+                $unidadeMedida = $i->produto->unidade ?? 'UN';
+                $vlrCompra = (float) ($i->produto->valor_compra ?? 0);
+
+                $totItemVenda = $qtd * $vendaUnit;
+                $totItemCompra = $qtd * $vlrCompra;
+
+                // Total C/ Desconto = (Valor Venda - Valor Compra) * Quantidade
+                $totCDesc = ($vendaUnit - $vlrCompra) * $qtd;
+
+                $somaTotalVenda += $totItemVenda;
+                $somaTotalCompra += $totItemCompra;
+
+                if($i->altura > 0 || $i->esquerda > 0){
+                    $tipoDimensao = true;
+                }
+                if($i->produto && $i->produto->receita){
+                    $tipoReceita = true;
+                }
+            @endphp
             <tr class="{{ $loop->index % 2 == 0 ? '' : 'zebra' }}">
-                <td>
-                    {{$i->produto->id}} {{$i->produto->referencia != "" ? "/ " . $i->produto->referencia : "" }}
-                </td>
-                <td>
-                    {{$i->descricao()}}
-                </td>
-                <td class="num">
-                    {{__moeda($i->quantidade)}}
-                    @if($i->largura > 0 || $i->esquerda > 0)
-                    <span style="font-size: 8px;">x{{__moeda($i->quantidade_dimensao)}}</span>
+                <td style="text-align: left;">
+                    <div style="font-weight: bold; color: #1f2937;">{{ $i->descricao() }}</div>
+                    @if($i->produto && $i->produto->codigo_barras)
+                    <div style="font-size: 7.5px; color: #64748b;">Cód: {{ $i->produto->codigo_barras }}</div>
+                    @elseif($i->produto && $i->produto->referencia)
+                    <div style="font-size: 7.5px; color: #64748b;">Ref: {{ $i->produto->referencia }}</div>
                     @endif
                 </td>
-                <td class="num">{{__moeda($i->valor_unitario)}}</td>
-                <td class="num">{{__moeda($i->quantidade * $i->valor_unitario)}}</td>
+                <td class="center" style="font-weight: bold;">
+                    {{ number_format($qtd, 2, ',', '.') }}
+                </td>
+                <td class="center">
+                    {{ strtoupper($unidadeMedida) }}
+                </td>
+                <td class="num" style="font-weight: bold;">
+                    R$ {{ __moeda($vendaUnit) }}
+                </td>
+                <td class="num" style="font-weight: bold;">
+                    {{ number_format($vlrCompra, 2, ',', '.') }}
+                </td>
+                <td class="num" style="font-weight: bold;">
+                    R$ {{ __moeda($totCDesc) }}
+                </td>
             </tr>
-            @php
-            $somaItens += $i->quantidade;
-            $somaTotalItens += $i->quantidade * $i->valor_unitario;
-            if($i->altura > 0 || $i->esquerda > 0){
-                $tipoDimensao = true;
-            }
-
-            if($i->produto->receita){
-                $tipoReceita = true;
-            }
-            @endphp
             @endforeach
-            <tr class="total">
-                <td colspan="3">Quantidade Total: {{ $somaItens }}</td>
-                <td colspan="2" style="text-align: right;">Valor Total dos Itens: {{ __moeda($somaTotalItens) }}</td>
-            </tr>
         </tbody>
     </table>
 
-    <!-- ═══════════════ TOTAIS ═══════════════ -->
-    <table class="totals-box">
+    @php
+        $somaMargemLucro = $somaTotalVenda - $somaTotalCompra;
+    @endphp
+
+    <!-- ═══════════════ PAINEL DE TOTAIS (FECHAMENTO À DIREITA) ═══════════════ -->
+    <table class="totals-wrapper-table">
         <tr>
-            <td style="width: 25%;">
-                <b>Desconto (-)</b>
-                <span>{{__moeda($item->desconto)}}</span>
-            </td>
-            <td style="width: 25%;">
-                <b>Acréscimo (+)</b>
-                <span>{{__moeda($item->acrescimo)}}</span>
-            </td>
-            <td style="width: 25%;">
-                <b>Frete (+)</b>
-                <span>
-                    @if($item->frete)
-                    {{__moeda($item->valor_frete)}}
-                    @else
-                    0,00
-                    @endif
-                </span>
-            </td>
-            <td style="width: 25%;" class="total-final">
-                <b>Valor Líquido</b>
-                <span>{{__moeda($item->valor_produtos - $item->desconto + $item->acrescimo)}}</span>
+            <td class="empty-col"></td>
+            <td class="content-col">
+                <table class="totals-summary-table">
+                    <tr>
+                        <td class="lbl-tot">Total do Subtotal (Sem Desconto):</td>
+                        <td class="val-tot">R$ {{ __moeda($somaTotalVenda) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="lbl-tot">Total do Subtotal (Com Desconto):</td>
+                        <td class="val-tot">R$ {{ __moeda($somaTotalCompra) }}</td>
+                    </tr>
+                    <tr class="tot-margem">
+                        <td class="lbl-tot">TOTAL (Margem lucro):</td>
+                        <td class="val-tot">R$ {{ __moeda($somaMargemLucro) }}</td>
+                    </tr>
+                </table>
             </td>
         </tr>
     </table>
@@ -562,9 +664,9 @@
     <table class="items-table">
         <thead>
             <tr>
-                <th style="width: 210px;">Produto</th>
-                <th style="width: 130px;">Código</th>
-                <th>Observação</th>
+                <th style="width: 210px; text-align: left;">Produto</th>
+                <th style="width: 130px; text-align: left;">Código</th>
+                <th style="text-align: left;">Observação</th>
             </tr>
         </thead>
         <tbody>
@@ -586,7 +688,7 @@
         <thead>
             <tr>
                 <th>Vencimento</th>
-                <th>Valor</th>
+                <th style="text-align: right;">Valor</th>
             </tr>
         </thead>
         <tbody>
@@ -595,8 +697,8 @@
                 <td>
                     <strong>{{ \Carbon\Carbon::parse($d->data_vencimento)->format('d/m/Y')}}</strong>
                 </td>
-                <td>
-                    <strong>{{ __moeda($d->valor)}}</strong>
+                <td style="text-align: right;">
+                    <strong>R$ {{ __moeda($d->valor)}}</strong>
                 </td>
             </tr>
             @endforeach
@@ -605,10 +707,10 @@
     @endif
 
     <!-- ═══════════════ OBSERVAÇÃO ═══════════════ -->
-    @if($item->observacao != "" || $config->campo_obs_pedido != "")
+    @if($item->observacao != "" || (isset($config->campo_obs_pedido) && $config->campo_obs_pedido != ""))
     <div class="obs-box">
         <b>Observação:</b>
-        {{$config->campo_obs_pedido}} {{$item->observacao}}
+        {{$config->campo_obs_pedido ?? ''}} {{$item->observacao}}
     </div>
     @endif
 
@@ -621,198 +723,14 @@
             <td>
                 <div class="line">
                     @if($item->tpNF == 1)
-                    {{$item->cliente->razao_social}}
+                    {{$item->cliente ? $item->cliente->razao_social : 'Consumidor Final'}}
                     @else
-                    {{$item->fornecedor->razao_social}}
+                    {{$item->fornecedor ? $item->fornecedor->razao_social : 'Consumidor Final'}}
                     @endif
                 </div>
             </td>
         </tr>
     </table>
 
-    <!-- ═══════════════ SEÇÃO DE DIMENSÃO (quando houver) ═══════════════ -->
-    @if($tipoDimensao)
-    <div class="page_break"></div>
-    <div class="sec-label">Dados do Cliente</div>
-    <div class="info-box">
-        <table class="info-table">
-            <tr>
-                <td class="k">Nome:</td>
-                <td class="v">{{$item->cliente->razao_social}}</td>
-                <td class="k">CPF/CNPJ:</td>
-                <td class="v">{{$item->cliente->cpf_cnpj}}</td>
-            </tr>
-            <tr>
-                <td class="k">Endereço:</td>
-                <td class="v">{{$item->cliente->rua}}, {{$item->cliente->numero}} - {{$item->cliente->bairro}} - {{$item->cliente->cidade->nome}} ({{$item->cliente->cidade->uf}})</td>
-                <td class="k">Telefone:</td>
-                <td class="v">{{$item->cliente->telefone}}</td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="sec-label">Mercadorias</div>
-    <table class="items-table">
-        <thead>
-            <tr>
-                <th style="width: 70px;">Cod</th>
-                <th>Descrição</th>
-                <th class="num" style="width: 70px;">Qtd. Dim.</th>
-                <th class="num" style="width: 70px;">Qtd.</th>
-            </tr>
-        </thead>
-        @php
-        $somaItens = 0;
-        $somaTotalItens = 0;
-        $tipoDimensao = false;
-        @endphp
-        <tbody>
-            @foreach($item->itens as $i)
-            <tr class="{{ $loop->index % 2 == 0 ? '' : 'zebra' }}">
-                <td>{{$i->produto->id}}</td>
-                <td>
-                    {{$i->produto->nome}}
-                    {{$i->produto->grade ? " (" . $i->produto->str_grade . ")" : ""}}
-                    @if($i->produto->lote != "")
-                    | Lote: {{$i->produto->lote}},
-                    Vencimento: {{$i->produto->vencimento}}
-                    @endif
-                    @if($i->produto->tipo_dimensao != '')
-                    @if($i->produto->tipo_dimensao == 'area')
-                    [Altura: {{$i->altura}}, Largura: {{$i->largura}}, Profundidade: {{$i->profundidade}}]
-                    @else
-                    [Superior: {{$i->superior}}, Infeior: {{$i->inferior}}, Esquerda: {{$i->esquerda}}, Direita: {{$i->direita}}]
-                    @endif
-                    @endif
-                </td>
-                <td class="num">{{number_format($i->quantidade, 2, ',', '.')}}</td>
-                <td class="num">{{number_format($i->quantidade_dimensao, 2, ',', '.')}}</td>
-            </tr>
-            @php
-            $somaItens += $i->quantidade;
-            $somaTotalItens += $i->quantidade * $i->valor;
-            if($i->altura > 0 || $i->esquerda > 0){
-                $tipoDimensao = true;
-            }
-            @endphp
-            @endforeach
-        </tbody>
-    </table>
-
-    <div class="info-box" style="margin-top: 8px;">
-        <table class="info-table">
-            <tr>
-                <td class="k">Vendedor:</td>
-                <td class="v">{{$item->usuario->nome}}</td>
-                <td class="k">Data da Venda:</td>
-                <td class="v">{{ \Carbon\Carbon::parse($item->created_at)->format('d/m/Y H:i')}}</td>
-                <td class="k">Data da Entrega:</td>
-                <td class="v">{{ \Carbon\Carbon::parse($item->data_entrega)->format('d/m/Y')}}</td>
-            </tr>
-        </table>
-    </div>
-
-    @if($item->observacao != "")
-    <div class="obs-box">
-        <b>Observação:</b>
-        {{$item->observacao}}
-    </div>
-    @endif
-    @endif
-
-    <!-- ═══════════════ SEÇÃO DE RECEITA (quando houver) ═══════════════ -->
-    @if($tipoReceita)
-    <div class="page_break"></div>
-    <div class="sec-label">Dados do Cliente</div>
-    <div class="info-box">
-        <table class="info-table">
-            <tr>
-                <td class="k">Nome:</td>
-                <td class="v">{{$item->cliente->razao_social}}</td>
-                <td class="k">CPF/CNPJ:</td>
-                <td class="v">{{$item->cliente->cpf_cnpj}}</td>
-            </tr>
-            <tr>
-                <td class="k">Endereço:</td>
-                <td class="v">{{$item->cliente->rua}}, {{$item->cliente->numero}} - {{$item->cliente->bairro}} - {{$item->cliente->cidade->nome}} ({{$item->cliente->cidade->uf}})</td>
-                <td class="k">Telefone:</td>
-                <td class="v">{{$item->cliente->telefone}}</td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="sec-label">Produtos</div>
-    <table class="items-table">
-        <thead>
-            <tr>
-                <th style="width: 70px;">Cod</th>
-                <th>Descrição</th>
-                <th class="num" style="width: 70px;">Qtd.</th>
-            </tr>
-        </thead>
-        @php
-        $somaItens = 0;
-        $somaTotalItens = 0;
-        $tipoDimensao = false;
-        @endphp
-        <tbody>
-            @foreach($item->itens as $i)
-            <tr class="{{ $loop->index % 2 == 0 ? '' : 'zebra' }}">
-                <td>{{$i->produto->id}}</td>
-                <td>
-                    {{$i->produto->nome}}
-                    {{$i->produto->grade ? " (" . $i->produto->str_grade . ")" : ""}}
-                    @if($i->produto->lote != "")
-                    | Lote: {{$i->produto->lote}},
-                    Vencimento: {{$i->produto->vencimento}}
-                    @endif
-                </td>
-                <td class="num">{{number_format($i->quantidade, 2, ',', '.')}}</td>
-            </tr>
-            @php
-            $somaItens += $i->quantidade;
-            $somaTotalItens += $i->quantidade * $i->valor;
-            @endphp
-
-            <tr class="{{ $loop->index % 2 == 0 ? '' : 'zebra' }}">
-                <td colspan="3" style="font-size: 9px; color: #4254ba; font-weight: 600;">Composição do item:</td>
-            </tr>
-            @foreach($i->produto->receita->itens as $ir)
-            <tr>
-                <td style="text-align: left;" colspan="2">{{$ir->produto->nome}}</td>
-                <td class="num">{{$ir->quantidade}} {{$ir->medida}}</td>
-            </tr>
-            @endforeach
-            @endforeach
-        </tbody>
-    </table>
-
-    <h4 style="color: #4254ba; margin-top: 14px;">Informação técnica do(s) produto(s):</h4>
-    @foreach($item->itens as $i)
-    @if($i->produto->info_tecnica_composto != "")
-    <p style="font-size: 10px;"><strong>{{$i->produto->nome}}: {!! $i->produto->info_tecnica_composto !!}</p>
-    @endif
-    @endforeach
-    @endif
-
 </body>
-
-<!-- ═══════════════ RODAPÉ ═══════════════ -->
-<footer id="footer_imagem">
-    <table>
-        <tbody>
-            <tr>
-                <td>
-                    {{env('SITE_SUPORTE')}}
-                </td>
-                <td class="right">
-                    @if(file_exists(public_path('logo.png')))
-                    <img src="{{'data:image/png;base64,' . base64_encode(file_get_contents(public_path('logo.png')))}}" alt="Logo">
-                    @endif
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</footer>
-
 </html>

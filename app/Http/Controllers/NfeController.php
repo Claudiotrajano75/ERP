@@ -1383,7 +1383,7 @@ public function storeEstado(Request $request, $id)
         $domPdf->setPaper("A4");
         $domPdf->render();
 
-        $nomeArquivo = $item->tpNF == 1 ? 'Pedido de Venda' : 'Pedido de Compra';
+        $nomeArquivo = $item->tpNF == 1 ? 'Orçamento de Venda' : 'Orçamento de Compra';
         return response($domPdf->output())
         ->header('Content-Type', 'application/pdf')
         ->header('Content-Disposition', 'inline; filename="' . $nomeArquivo . '.pdf"');
@@ -1868,4 +1868,47 @@ public function setarCodigoUnico(Request $request)
     return redirect()->route('nfe.index');
 }
 
+    public function atualizarValorCompra(Request $request)
+    {
+        try {
+            $empresa_id = request()->empresa_id ?: (\Illuminate\Support\Facades\Auth::user() && \Illuminate\Support\Facades\Auth::user()->empresa ? \Illuminate\Support\Facades\Auth::user()->empresa->empresa_id : null);
+
+            $produto = Produto::when($empresa_id, function ($q) use ($empresa_id) {
+                return $q->where('empresa_id', $empresa_id);
+            })->findOrFail($request->produto_id);
+
+            $valorStr = (string) $request->valor_compra;
+            $valorStr = str_replace(['R$', ' '], '', $valorStr);
+            if (strpos($valorStr, ',') !== false) {
+                $valorStr = str_replace('.', '', $valorStr);
+                $valorStr = str_replace(',', '.', $valorStr);
+            }
+            $valor = (float) $valorStr;
+
+            $produto->valor_compra = $valor;
+            $produto->save();
+
+            if ($request->item_id) {
+                $item = ItemNfe::find($request->item_id);
+                if ($item && \Illuminate\Support\Facades\Schema::hasColumn('item_nves', 'valor_custo')) {
+                    $item->valor_custo = $valor;
+                    $item->save();
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Valor de compra atualizado com sucesso!',
+                'valor' => $valor,
+                'valor_formatado' => number_format($valor, 2, ',', '.')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao atualizar valor de compra: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 }
+

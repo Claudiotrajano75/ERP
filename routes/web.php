@@ -269,6 +269,7 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
     Route::put('nfe/storeEstado/{id}', 'NfeController@storeEstado')->name('nfe.storeEstado');
     Route::get('nfe/imprimirVenda/{id}', 'NfeController@imprimirVenda')->name('nfe.imprimirVenda');
     Route::get('nfe-download-xml/{id}', 'NfeController@downloadXml')->name('nfe.download-xml');
+    Route::post('nfe/atualizar-valor-compra', 'NfeController@atualizarValorCompra')->name('nfe.atualizar-valor-compra');
 
     Route::resource('nfce-contigencia', 'NfceContigenciaController');
 

@@ -1,0 +1,4 @@
+INSERT INTO produto_localizacaos (produto_id, localizacao_id, created_at, updated_at)
+SELECT id, 9, NOW(), NOW()
+FROM produtos
+WHERE empresa_id = 51;

@@ -73,25 +73,16 @@ class CompraController extends Controller
     }
 
     private function corrigeNumeros($empresa_id){
-        $empresa = Empresa::findOrFail($empresa_id);
-        if($empresa->ambiente == 1){
-            $numero = $empresa->numero_ultima_nfe_producao;
-        }else{
-            $numero = $empresa->numero_ultima_nfe_homologacao;
-        }
-        
-        if($numero){
-            Nfe::where('estado', 'novo')
-            ->where('empresa_id', $empresa_id)
-            ->update(['numero' => $numero+1]);
-        }
+        // Em compras (NF-e de entrada/fornecedor), o número do documento pertence ao fornecedor (emitente).
+        // Não deve ser sobrescrito pelo sequencial de emissão própria de NF-e da empresa.
+        return;
     }
 
     public function index(Request $request)
     {
         $locais = __getLocaisAtivoUsuario();
         $locais = $locais->pluck(['id']);
-        $this->corrigeNumeros($request->empresa_id);
+        // $this->corrigeNumeros($request->empresa_id);
 
         $fornecedores = Fornecedor::where('empresa_id', request()->empresa_id)->get();
 
@@ -655,6 +646,9 @@ class CompraController extends Controller
                 $contSemRegistro++;
             }
 
+            $uComUpper = strtoupper(trim((string)$item->prod->uCom));
+            $isDuzia = in_array($uComUpper, ['DZ', 'DUZIA', 'DÚZIA', 'DUZIAS', 'DÚZIAS']);
+
             $prod = new \stdClass();
             $prod->id = $produto != null ? $produto->id : 0;
             $prod->codigo = $codigo;
@@ -662,7 +656,21 @@ class CompraController extends Controller
             $prod->ncm = (string)$item->prod->NCM;
             $prod->cest = (string)($item->prod->CEST ?? '');
             $prod->cfop = (string)$item->prod->CFOP;
-            $prod->unidade = (string)$item->prod->uCom;
+            $prod->unidade_original = $uComUpper;
+
+            if ($produto != null && !empty($produto->unidade)) {
+                $prod->unidade = $produto->unidade;
+                $prod->conversao_estoque = ($isDuzia && strtoupper($produto->unidade) == 'UN') ? 12 : 1;
+            } else {
+                if ($isDuzia) {
+                    $prod->unidade = 'UN';
+                    $prod->conversao_estoque = 12;
+                } else {
+                    $prod->unidade = $uComUpper;
+                    $prod->conversao_estoque = 1;
+                }
+            }
+
             $prod->valor_unitario = number_format((float)$item->prod->vUnCom + $vIpi + $vICMSST, 2, '.', '');
             $prod->quantidade = (float)$item->prod->qCom;
             $prod->sub_total = $prod->valor_unitario * $prod->quantidade;
@@ -940,6 +948,9 @@ class CompraController extends Controller
                     ]);
 
                     $product->valor_compra = $valorUnitario;
+                    if (!empty($request->unidade[$i])) {
+                        $product->unidade = strtoupper(trim($request->unidade[$i]));
+                    }
                     $product->save();
 
                     if ($product->gerenciar_estoque) {
@@ -1013,7 +1024,7 @@ private function cadastrarProduto($request, $i, $local_id)
         'ncm' => $request->ncm[$i],
         'codigo_barras' => $request->codigo_barras[$i],
         'gerenciar_estoque' => $request->gerenciar_estoque,
-        'unidade' => $request->unidade[$i],
+        'unidade' => strtoupper(trim($request->unidade[$i] ?? 'UN')),
         'valor_unitario' => __convert_value_bd($request->valor_venda[$i]),
         'perc_red_bc' => __convert_value_bd($request->perc_red_bc[$i]),
         'cfop_estadual' => $cfopEstado,

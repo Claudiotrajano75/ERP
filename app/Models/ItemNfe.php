@@ -28,6 +28,9 @@ class ItemNfe extends Model
     }
 
     public function descricao(){
+        if (!$this->produto) {
+            return "Item não localizado";
+        }
         if($this->variacao_id == null){
             return $this->produto->nome;
         }

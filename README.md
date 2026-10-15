@@ -245,3 +245,15 @@ Deixamos no seu projeto o script de auditoria e correção automática. Se algum
 bash
 php scratch/audit_and_fix_db.php
 Isso varrerá todas as tabelas e corrigirá automaticamente qualquer falta de PRIMARY KEY ou AUTO_INCREMENT.
+
+
+Como podemos resolver quando você autorizar:
+Para que todos os 22.412 produtos apareçam imediatamente na listagem, basta inserirmos os registros na tabela produto_localizacaos associando cada produto da empresa 51 à sua localização 9.
+
+Um comando SQL direto ou script que fará isso:
+
+sql
+INSERT INTO produto_localizacaos (produto_id, localizacao_id, created_at, updated_at)
+SELECT id, 9, NOW(), NOW()
+FROM produtos
+WHERE empresa_id = 51;

@@ -6,6 +6,27 @@
         @endif
 
         <input type="hidden" id="is_xml" value="1">
+
+        <!-- Resumo / Lembretes de Operação da Importação -->
+        <div class="alert alert-light border shadow-sm mb-3 py-2 px-3" style="border-radius: 10px; background: #fdfefe; border-left: 4px solid #4f46e5 !important;">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-primary-subtle text-primary p-2 fs-14 rounded-circle">
+                        <i class="ri-information-line"></i>
+                    </span>
+                    <div>
+                        <strong class="text-dark fs-13">Ações automáticas ao confirmar esta importação:</strong>
+                        <div class="d-flex flex-wrap gap-3 text-muted fs-12 mt-1">
+                            <span><i class="ri-user-star-line text-success me-1"></i><strong>Fornecedor:</strong> cadastrado/atualizado</span>
+                            <span><i class="ri-box-3-line text-primary me-1"></i><strong>Produtos:</strong> novos cadastrados / existentes vinculados</span>
+                            <span><i class="ri-inbox-archive-line text-info me-1"></i><strong>Estoque:</strong> entrada com conversão</span>
+                            <span><i class="ri-bank-card-line text-warning me-1"></i><strong>Contas a Pagar:</strong> gera faturas no financeiro</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <ul class="nav nav-tabs nav-primary" role="tablist">
             <li class="nav-item" role="presentation">
                 <a class="nav-link active" data-bs-toggle="tab" href="#fornecedor" role="tab" aria-selected="true">
@@ -217,22 +238,27 @@
                                             <div style="width: 400px"></div>
                                         </td>
                                         <td>
-                                            <input readonly style="width: 120px" value="{{ $prod->unidade }}" class="form-control" type="text" name="unidade[]">
+                                            <input style="width: 100px; text-transform: uppercase;" value="{{ $prod->unidade }}" class="form-control unidade_item text-center fw-bold" type="text" name="unidade[]" list="lista-unidades-padrao" placeholder="Ex: UN" data-unidade-original="{{ $prod->unidade_original ?? $prod->unidade }}">
                                         </td> 
                                         <td>
-                                            <input readonly style="width: 120px" value="{{ __moedaInput($prod->quantidade) }}" class="form-control qtd" type="tel" name="quantidade[]" id="inp-quantidade">
+                                            <input readonly style="width: 110px" value="{{ __moedaInput($prod->quantidade) }}" class="form-control qtd" type="tel" name="quantidade[]" id="inp-quantidade" data-quantidade-original="{{ $prod->quantidade }}">
                                         </td>
                                         <td>
-                                            <input readonly style="width: 120px" value="{{ __moedaInput($prod->valor_unitario) }}" class="form-control moeda valor_unit" type="tel" name="valor_unitario[]" id="inp-valor_unitario">
+                                            <input readonly style="width: 120px" value="{{ __moedaInput($prod->valor_unitario) }}" class="form-control moeda valor_unit inp-valor-compra-bruto" type="tel" name="valor_unitario[]" id="inp-valor_unitario" data-valor-bruto="{{ $prod->valor_unitario }}">
                                         </td>
                                         <td>
                                             <input readonly style="width: 120px" value="{{ __moedaInput($prod->sub_total) }}" class="form-control moeda sub_total" type="tel" name="sub_total[]" id="inp-subtotal">
                                         </td>
                                         <td>
-                                            <input style="width: 120px" value="{{ __moedaInput($prod->valor_unitario + ($prod->valor_unitario * $lucroPadraoProduto)/100) }}" class="form-control moeda valor_unit" type="tel" name="valor_venda[]" id="inp-valor_unitario">
+                                            @php
+                                                $fatorInit = isset($prod->conversao_estoque) && (float)$prod->conversao_estoque > 0 ? (float)$prod->conversao_estoque : 1;
+                                                $custoCalc = (float)$prod->valor_unitario / $fatorInit;
+                                                $vendaSugerida = $custoCalc + ($custoCalc * (float)$lucroPadraoProduto) / 100;
+                                            @endphp
+                                            <input style="width: 120px" value="{{ __moedaInput($prod->valor_venda > 0 ? $prod->valor_venda : $vendaSugerida) }}" class="form-control moeda valor_unit inp-valor-venda" type="tel" name="valor_venda[]" id="inp-valor_unitario" data-lucro="{{ $lucroPadraoProduto }}">
                                         </td>
                                         <td>
-                                            <input required style="width: 150px" value="1" class="form-control" data-mask="000" type="tel" name="conversao_estoque[]">
+                                            <input required style="width: 110px" value="{{ $prod->conversao_estoque ?? 1 }}" class="form-control inp-conversao-estoque text-center fw-bold" data-mask="000" type="tel" name="conversao_estoque[]" data-unidade-original="{{ $prod->unidade_original ?? $prod->unidade }}" data-valor-unitario="{{ $prod->valor_unitario }}" data-lucro="{{ $lucroPadraoProduto }}">
                                         </td>
                                         <td>
                                             <input style="width: 120px" value="{{ $prod->perc_icms }}" class="form-control percentual" type="tel" name="perc_icms[]" id="inp-perc_icms">
@@ -504,9 +530,9 @@
 
                         <div class="col-md-2 mt-3">
                             {!!Form::select('gerar_conta_pagar', 'Gerar conta a pagar', [
-                            0 => 'Não',
-                            1 => 'Sim'])
-                            ->attrs(['class' => 'form-select'])
+                            1 => 'Sim',
+                            0 => 'Não'])
+                            ->attrs(['class' => 'form-select select-gerar-conta-pagar', 'id' => 'inp-gerar_conta_pagar'])
                             !!}
                         </div>
 
@@ -641,3 +667,20 @@
         <button type="submit" class="btn btn-success btn-salvar-nfe px-5 m-3">Salvar</button>
     </div>
 </div>
+
+<datalist id="lista-unidades-padrao">
+    <option value="UN">Unidade (UN)</option>
+    <option value="DZ">Dúzia (DZ)</option>
+    <option value="CX">Caixa (CX)</option>
+    <option value="FD">Fardo (FD)</option>
+    <option value="KG">Quilo (KG)</option>
+    <option value="LT">Litro (LT)</option>
+    <option value="LATA">Lata (LATA)</option>
+    <option value="GF">Garrafa (GF)</option>
+    <option value="PC">Peça (PC)</option>
+    <option value="PCT">Pacote (PCT)</option>
+    <option value="AMPOLA">Ampola</option>
+    <option value="BALDE">Balde</option>
+    <option value="FARDO">Fardo</option>
+    <option value="DUZIA">Dúzia</option>
+</datalist>

@@ -227,7 +227,7 @@ class Nfe extends Model
     public function isItemValidade ()
     {
         foreach($this->itens as $i){
-            if($i->produto->alerta_validade > 0) 
+            if($i->produto && $i->produto->alerta_validade > 0) 
             return 1;
         }
         return 0;

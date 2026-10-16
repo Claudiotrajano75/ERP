@@ -472,7 +472,7 @@
     <!-- LADO ESQUERDO: Branding + Banner customizável -->
     <div class="auth-left d-none d-md-flex">
         <!-- ⬇️ Imagem do software (enviada pela Configuração > Identidade do ERP). -->
-        <img src="{{ $loginBannerUrl ?: '/login-banner.jpg' }}" alt="Sistema de Gestão ERP" class="auth-bg-img"
+        <img src="{{ $loginBannerUrl ?: asset('Dashboard ERP.png') }}" alt="Sistema de Gestão ERP" class="auth-bg-img"
             onerror="this.style.display='none';"
             loading="eager">
         <div class="auth-bg-overlay"></div>

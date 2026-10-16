@@ -1,4 +1,4 @@
-﻿@php
+@php
     $login = isset($_COOKIE['ckLogin']) ? base64_decode($_COOKIE['ckLogin']) : '';
     $pass = isset($_COOKIE['ckPass']) ? base64_decode($_COOKIE['ckPass']) : '';
     $remember = isset($_COOKIE['ckRemember']) ? $_COOKIE['ckRemember'] : '';
@@ -67,8 +67,8 @@
             justify-content: space-between;
             padding: 4rem 4.5rem;
             background-image: 
-                linear-gradient(135deg, rgba(11, 17, 32, 0.94) 0%, rgba(15, 23, 42, 0.85) 50%, rgba(30, 41, 59, 0.65) 100%),
-                url('/login-banner.jpg');
+                linear-gradient(135deg, rgba(11, 17, 32, 0.85) 0%, rgba(15, 23, 42, 0.72) 50%, rgba(30, 41, 59, 0.50) 100%),
+                url('{{ asset('Dashboard ERP.png') }}');
             background-size: cover;
             background-position: center;
             overflow: hidden;

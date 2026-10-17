@@ -415,6 +415,14 @@ class NfeController extends Controller
     {
 
         try {
+            // Valida obrigatoriedade da forma de pagamento para NF-e normal de saída
+            if (($request->orcamento == 0) && (!isset($request->is_compra)) && ($request->finNFe == 1 || !isset($request->finNFe))) {
+                if (!$request->tipo_pagamento || empty($request->tipo_pagamento[0])) {
+                    session()->flash("flash_error", "A forma de pagamento é obrigatória para emitir a NF-e!");
+                    return redirect()->back()->withInput();
+                }
+            }
+
             $retornoCredito = $this->validaCreditoCliente($request);
             if($retornoCredito != 0){
 
@@ -907,9 +915,17 @@ public function update(Request $request, $id)
 {
         // dd($request);
     try {
+        $item = Nfe::findOrFail($id);
 
-        DB::transaction(function () use ($request, $id) {
-            $item = Nfe::findOrFail($id);
+        // Valida obrigatoriedade da forma de pagamento para NF-e normal de saída
+        if (($item->orcamento == 0) && (!isset($request->is_compra)) && ($item->finNFe == 1)) {
+            if (!$request->tipo_pagamento || empty($request->tipo_pagamento[0])) {
+                session()->flash("flash_error", "A forma de pagamento é obrigatória para emitir a NF-e!");
+                return redirect()->back()->withInput();
+            }
+        }
+
+        DB::transaction(function () use ($request, $id, $item) {
 
             $cliente_id = isset($request->cliente_id) ? $request->cliente_id : $item->cliente_id;
             $fornecedor_id = isset($request->fornecedor_id) ? $request->fornecedor_id : $item->fornecedor_id;

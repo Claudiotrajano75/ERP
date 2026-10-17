@@ -576,12 +576,17 @@ $(document).on("click", ".btn-add-tr-fatura, .table-fatura ~ .row .btn-add-tr", 
             $('#inp-contribuinte').val(res.contribuinte).change()
             $('#inp-consumidor_final').val(res.consumidor_final).change()
             $('#inp-email').val(res.email)
-            $('#inp-cidade_cliente').val(res.cidade_id).change()
             $('#inp-cliente_rua').val(res.rua)
             $('#inp-cliente_numero').val(res.numero)
             $('#inp-cep').val(res.cep)
             $('#inp-cliente_bairro').val(res.bairro)
             $('#inp-complemento').val(res.complemento)
+
+            // Preenche o select2 de Cidade/UF corretamente (new Option + trigger é o padrão do select2)
+            if (res.cidade && res.cidade.id) {
+                var newOption = new Option(res.cidade.nome + ' - ' + res.cidade.uf, res.cidade.id, true, true);
+                $('#inp-cidade_cliente').html('').append(newOption).trigger('change');
+            }
         })
         .fail((err) => {
             console.error(err)
@@ -715,15 +720,46 @@ function calTotalNfe() {
         $('.total_frete').html("R$ " + convertFloatToMoeda(total_fr))
         $('.total_nfe').html("R$ " + convertFloatToMoeda(total_nfe))
         // $('.valor_fatura').val(convertFloatToMoeda(total_nfe))
-        $('.valor_total').val(convertFloatToMoeda(total_nfe))
+        let $faturas = $('#body-pagamento tr');
+        if ($faturas.length === 1 && total_nfe > 0) {
+            $faturas.find('.valor_fatura').val(convertFloatToMoeda(total_nfe));
+        }
         calcTotalFatura()
     }, 100)
 }
 
+$(document).on('change', '.tipo_pagamento', function () {
+    $(this).removeClass('is-invalid');
+    $(this).next('.select2-container').find('.select2-selection').removeClass('border-danger');
+    let $faturas = $('#body-pagamento tr');
+    if ($faturas.length === 1 && total_nfe > 0) {
+        $faturas.find('.valor_fatura').val(convertFloatToMoeda(total_nfe));
+        calcTotalFatura();
+    }
+});
 
-$('.btn-salvar-nfe').click(() => {
-    addClassRequired()
-})
+$(document).on('shown.bs.tab', 'a[data-bs-toggle="tab"], a[data-toggle="tab"], .nav-link', function () {
+    let $faturas = $('#body-pagamento tr');
+    if ($faturas.length === 1 && total_nfe > 0) {
+        $faturas.find('.valor_fatura').val(convertFloatToMoeda(total_nfe));
+        calcTotalFatura();
+    }
+});
+
+$(document).on('click', '.btn-salvar-nfe', function (e) {
+    e.preventDefault();
+    if (!addClassRequired()) {
+        return false;
+    }
+    $('#form-nfe').submit();
+});
+
+$(document).on('submit', '#form-nfe', function (e) {
+    if (!addClassRequired()) {
+        e.preventDefault();
+        return false;
+    }
+});
 
 function addClassRequired() {
     let infMsg = ""
@@ -762,12 +798,62 @@ function addClassRequired() {
     });
 
     if (!hasProduct) {
-        infMsg += "Produto\n";
+        infMsg += "Produto (adicione pelo menos um item à venda)\n";
     }
+
+    // Validação obrigatória da Forma de Pagamento e Fatura
+    let isOrcamento = $('#is_orcamento').val() == '1';
+    let finNFe = $('select[name="finNFe"]').length ? $('select[name="finNFe"]').val() : '1';
+    let isDevolucaoOuAjuste = (finNFe == '3' || finNFe == '4');
+
+    if (!isOrcamento && !isDevolucaoOuAjuste) {
+        let hasPagamento = false;
+        let totalFaturaSoma = 0;
+        let parcelaSemValor = false;
+
+        $('#body-pagamento tr').each(function () {
+            let tipo = $(this).find('.tipo_pagamento').val();
+            let valFat = convertMoedaToFloat($(this).find('.valor_fatura').val());
+
+            if (tipo && tipo !== '' && tipo !== 'null') {
+                hasPagamento = true;
+                totalFaturaSoma += valFat;
+                if (valFat <= 0) {
+                    parcelaSemValor = true;
+                    $(this).find('.valor_fatura').addClass('is-invalid');
+                } else {
+                    $(this).find('.valor_fatura').removeClass('is-invalid');
+                }
+                $(this).find('.tipo_pagamento').removeClass('is-invalid');
+                $(this).find('.select2-selection').removeClass('border-danger');
+            }
+        });
+
+        if (!hasPagamento) {
+            infMsg += "Forma de Pagamento (selecione no quadro Parcelamento & Fatura)\n";
+            let $firstTipo = $('#body-pagamento tr:first .tipo_pagamento');
+            $firstTipo.addClass('is-invalid');
+            $firstTipo.next('.select2-container').find('.select2-selection').addClass('border-danger');
+            if (!tabSwitched && $('.table-fatura').length) {
+                $('html, body').animate({
+                    scrollTop: $('.table-fatura').offset().top - 140
+                }, 300);
+            }
+        } else if (parcelaSemValor) {
+            infMsg += "O valor da parcela da fatura deve ser maior que zero\n";
+        } else if (total_nfe > 0) {
+            let diff = Math.abs(totalFaturaSoma - total_nfe);
+            if (diff > 0.05) {
+                infMsg += "A soma das parcelas (R$ " + convertFloatToMoeda(totalFaturaSoma) + ") não confere com o Total da Nota (R$ " + convertFloatToMoeda(total_nfe) + ")\n";
+            }
+        }
+    }
+
     if (infMsg != "") {
-        swal("Campos pendentes", infMsg, "warning")
+        swal("Campos Obrigatórios Pendentes", infMsg, "warning")
         return false
     }
     return true
 }
+
 

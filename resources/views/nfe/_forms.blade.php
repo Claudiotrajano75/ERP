@@ -931,7 +931,7 @@
                 <!-- FATURA / PARCELAS -->
                 <div class="card card-secao-fiscal mb-4">
                     <div class="card-header d-flex align-items-center justify-content-between">
-                        <h5><i class="ri-money-dollar-circle-line text-primary"></i> Parcelamento & Fatura</h5>
+                        <h5><i class="ri-money-dollar-circle-line text-primary"></i> Parcelamento & Fatura <span class="text-danger fs-12 fw-normal ms-1">* Obrigatório para emissão</span></h5>
                         <button type="button" class="btn btn-outline-primary btn-sm btn-gerar-fatura" data-bs-toggle="modal" data-bs-target="#modal_fatura_venda">
                             <i class="ri-list-indefinite"></i> Gerar Fatura Automática
                         </button>
@@ -941,9 +941,9 @@
                             <table class="table table-custom table-dynamic table-fatura mb-3">
                                 <thead>
                                     <tr>
-                                        <th>Forma de Pagamento</th>
+                                        <th>Forma de Pagamento <span class="text-danger">*</span></th>
                                         <th>Data de Vencimento</th>
-                                        <th>Valor da Parcela</th>
+                                        <th>Valor da Parcela <span class="text-danger">*</span></th>
                                         <th width="60">Ações</th>
                                     </tr>
                                 </thead>
@@ -1098,7 +1098,7 @@
         <a href="{{ isset($isCompra) ? route('compras.index') : route('nfe.index') }}" class="dash-btn dash-btn-light">
             <i class="ri-close-line me-1"></i> Cancelar
         </a>
-        <button type="submit" class="dash-btn dash-btn-primary btn-salvar-nfe px-5">
+        <button type="button" class="dash-btn dash-btn-primary btn-salvar-nfe px-5">
             <i class="ri-save-line me-1"></i> {{ isset($isCompra) ? 'Salvar Compra' : (isset($isOrcamento) && $isOrcamento == 1 ? 'Salvar Orçamento' : 'Salvar Venda') }}
         </button>
     </div>

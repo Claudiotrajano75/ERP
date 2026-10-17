@@ -26,12 +26,25 @@ class PrintService
      */
     public function isLocalServer()
     {
+        // Se estiver rodando via CLI / artisan serve
+        $sapi = php_sapi_name();
+        if ($sapi === 'cli' || $sapi === 'cli-server') {
+            return true;
+        }
+
         $serverAddr = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '';
         $httpHost = $_SERVER['HTTP_HOST'] ?? '';
-        if (empty($serverAddr)) {
-            return strpos($httpHost, 'localhost') !== false || strpos($httpHost, '127.0.0.1') !== false;
+        $hostOnly = explode(':', $httpHost)[0];
+
+        if ($hostOnly === 'localhost' || $hostOnly === '127.0.0.1' || $this->isPrivateIp($hostOnly)) {
+            return true;
         }
-        return $this->isPrivateIp($serverAddr) || strpos($httpHost, 'localhost') !== false || strpos($httpHost, '127.0.0.1') !== false;
+
+        if (!empty($serverAddr) && ($this->isPrivateIp($serverAddr) || $serverAddr === '127.0.0.1')) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -56,10 +69,11 @@ class PrintService
 
         $ip = $config->printer_ip;
         $porta = (int)($config->printer_porta ?: 9100);
+        $isLocal = $this->isLocalServer();
 
-        // Se o ERP estiver na nuvem (Hostinger) e a impressora for IP local (192.168.x.x):
+        // Se o ERP estiver na nuvem (Hostinger com IP público) e a impressora for IP privado local (192.168.x.x):
         // Retorna o payload INSTANTANEAMENTE (em 1ms) para o Agente Local WebSocket imprimir sem delay!
-        if ($this->isPrivateIp($ip) && !$this->isLocalServer()) {
+        if ($this->isPrivateIp($ip) && !$isLocal) {
             return [
                 'success'        => true,
                 'via_agent'      => true,
@@ -70,14 +84,28 @@ class PrintService
             ];
         }
 
-        $timeout = 1; // 1s max para rede local
+        $timeout = 2; // 2s para conexao de rede local
 
         try {
-            // Abre conexao TCP/IP com a impressora
+            // Abre conexao TCP/IP direta com a impressora
             $socket = @fsockopen($ip, $porta, $errno, $errstr, $timeout);
 
-            if (!$socket) {
-                // Fallback para Agente Local
+            if ($socket) {
+                // Envia os dados para a impressora
+                fwrite($socket, $texto);
+                fclose($socket);
+
+                Log::info("PrintService: Impressao enviada para {$ip}:{$porta} com sucesso");
+                return [
+                    'success' => true,
+                    'message' => 'Impressao enviada com sucesso!'
+                ];
+            }
+
+            Log::warning("PrintService: Falha ao conectar em {$ip}:{$porta} - {$errstr} ({$errno})");
+
+            // Se falhou e estiver na nuvem, tenta Agente Local
+            if (!$isLocal) {
                 return [
                     'success'        => true,
                     'via_agent'      => true,
@@ -88,25 +116,28 @@ class PrintService
                 ];
             }
 
-            // Envia os dados para a impressora
-            fwrite($socket, $texto);
-            fclose($socket);
-
-            Log::info("PrintService: Impressao enviada para {$ip}:{$porta} com sucesso");
             return [
-                'success' => true,
-                'message' => 'Impressao enviada com sucesso!'
+                'success' => false,
+                'message' => "Não foi possível conectar na impressora {$ip}:{$porta}. Verifique se ela está ligada e na mesma rede."
             ];
 
         } catch (\Exception $e) {
             Log::error("PrintService: Erro ao imprimir - " . $e->getMessage());
+
+            if (!$isLocal) {
+                return [
+                    'success'        => true,
+                    'via_agent'      => true,
+                    'printer_ip'     => $ip,
+                    'printer_porta'  => $porta,
+                    'payload_base64' => base64_encode($texto),
+                    'message'        => 'Enviando para o Agente Local de Impressão...',
+                ];
+            }
+
             return [
-                'success'        => true,
-                'via_agent'      => true,
-                'printer_ip'     => $ip,
-                'printer_porta'  => $porta,
-                'payload_base64' => base64_encode($texto),
-                'message'        => 'Enviando para o Agente Local de Impressão...',
+                'success' => false,
+                'message' => 'Erro ao enviar para impressora: ' . $e->getMessage()
             ];
         }
     }

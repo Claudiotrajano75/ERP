@@ -20,14 +20,15 @@
             background: #fff;
             color: #000;
             font-family: 'Courier New', Courier, monospace;
-            font-size: {{ ($largura ?? '80') == '58' ? '9px' : '11px' }};
+            font-size: {{ ($largura ?? '80') == '58' ? '8.5px' : '10.5px' }};
             line-height: 1.25;
             font-weight: 600;
         }
         .cupom-container {
-            width: {{ ($largura ?? '80') == '58' ? '54mm' : '74mm' }};
+            width: {{ ($largura ?? '80') == '58' ? '50mm' : '70mm' }};
+            max-width: 95%;
             margin: 0 auto;
-            padding: 8px 4px 20px 4px;
+            padding: 6px 3px 20px 3px;
         }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
@@ -119,10 +120,15 @@
             .barra-acoes {
                 display: none !important;
             }
-            .cupom-container {
-                width: 100% !important;
-                padding: 0 !important;
+            html, body {
                 margin: 0 !important;
+                padding: 0 !important;
+            }
+            .cupom-container {
+                width: {{ ($largura ?? '80') == '58' ? '48mm' : '70mm' }} !important;
+                max-width: 95% !important;
+                padding: 0 1.5mm !important;
+                margin: 0 auto !important;
             }
         }
     </style>

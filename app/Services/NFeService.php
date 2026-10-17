@@ -830,27 +830,49 @@ class NFeService{
 			$nfe->taginfRespTec($stdResp);
 		}
 
-		//Fatura
-		$stdFat = new \stdClass();
-		$stdFat->nFat = $stdIde->nNF;
-		$vOrigCalculado = $somaProdutos + $item->valor_frete + ($item->acrescimo ?? 0);
-		$stdFat->vOrig = $this->format($vOrigCalculado);
-		$stdFat->vDesc = $this->format($item->desconto);
-		$stdFat->vLiq = $this->format($vOrigCalculado - $item->desconto);
+		// Identifica se a venda tem cobrança / duplicatas a prazo
+		// A SEFAZ (Regra 853) proíbe grupo <cobr> (fatura/duplicatas) quando:
+		// 1. O pagamento for em Dinheiro (tPag = 01)
+		// 2. Ou quando o pagamento for à vista (vencimento hoje ou sem parcelamento futuro)
+		$temCobrancaAPrazo = false;
+		$dataHoje = date('Y-m-d');
 
-		$fatura = $nfe->tagfat($stdFat);
+		if (sizeof($item->fatura) > 0) {
+			if (sizeof($item->fatura) > 1) {
+				$temCobrancaAPrazo = true;
+			} else {
+				$ftUnica = $item->fatura[0];
+				if ($ftUnica->tipo_pagamento != '01') {
+					$venc = substr($ftUnica->data_vencimento, 0, 10);
+					if ($venc > $dataHoje) {
+						$temCobrancaAPrazo = true;
+					}
+				}
+			}
+		}
 
-		$contFatura = 1;
+		// Só gera grupo <cobr> (fat e dup) se for realmente a prazo
+		if ($temCobrancaAPrazo) {
+			$stdFat = new \stdClass();
+			$stdFat->nFat = $stdIde->nNF;
+			$vOrigCalculado = $somaProdutos + $item->valor_frete + ($item->acrescimo ?? 0);
+			$stdFat->vOrig = $this->format($vOrigCalculado);
+			$stdFat->vDesc = $this->format($item->desconto);
+			$stdFat->vLiq = $this->format($vOrigCalculado - $item->desconto);
 
-		foreach ($item->fatura as $ft) {
-			if($ft->valor > 0){
-				$stdDup = new \stdClass();
-				$stdDup->nDup = "00" . $contFatura;
-				$stdDup->dVenc = substr($ft->data_vencimento, 0, 10);
-				$stdDup->vDup = $this->format($ft->valor);
+			$fatura = $nfe->tagfat($stdFat);
 
-				$nfe->tagdup($stdDup);
-				$contFatura++;
+			$contFatura = 1;
+			foreach ($item->fatura as $ft) {
+				if($ft->valor > 0){
+					$stdDup = new \stdClass();
+					$stdDup->nDup = "00" . $contFatura;
+					$stdDup->dVenc = substr($ft->data_vencimento, 0, 10);
+					$stdDup->vDup = $this->format($ft->valor);
+
+					$nfe->tagdup($stdDup);
+					$contFatura++;
+				}
 			}
 		}
 
@@ -866,14 +888,21 @@ class NFeService{
 					$stdDetPag->tPag = '05'; 
 				}
 				$stdDetPag->vPag = $this->format($ft->valor);
-				$stdDetPag->indPag = 1;
+				$stdDetPag->indPag = $temCobrancaAPrazo ? 1 : 0;
 				$detPag = $nfe->tagdetPag($stdDetPag);
 			}
 		}else{
 			$stdDetPag = new \stdClass();
-			$stdDetPag->tPag = 90;
-			$stdDetPag->vPag = 0;
-			$stdDetPag->indPag = 1;
+			if ($item->finNFe == 4 || $item->finNFe == 3) {
+				$stdDetPag->tPag = 90;
+				$stdDetPag->vPag = 0;
+				$stdDetPag->indPag = 0;
+			} else {
+				$stdDetPag->tPag = '01';
+				$vTotalNota = $somaProdutos + $item->valor_frete + ($item->acrescimo ?? 0) - $item->desconto;
+				$stdDetPag->vPag = $this->format($vTotalNota);
+				$stdDetPag->indPag = 0;
+			}
 			$detPag = $nfe->tagdetPag($stdDetPag);
 		}
 

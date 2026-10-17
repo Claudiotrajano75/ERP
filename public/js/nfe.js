@@ -738,11 +738,43 @@ $(document).on('change', '.tipo_pagamento', function () {
     }
 });
 
-$(document).on('shown.bs.tab', 'a[data-bs-toggle="tab"], a[data-toggle="tab"], .nav-link', function () {
+function switchTab(tabId) {
+    let tabTarget = tabId.replace('#', '');
+    let $link = $('a.nav-link[href="#' + tabTarget + '"], a[data-bs-target="#' + tabTarget + '"]');
+    if ($link.length) {
+        if (typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+            try {
+                bootstrap.Tab.getOrCreateInstance($link[0]).show();
+            } catch (e) {
+                $link.trigger('click');
+            }
+        } else {
+            $link.trigger('click');
+        }
+    }
+}
+
+function showWarning(title, msg) {
+    if (typeof swal === 'function') {
+        swal(title, msg, "warning");
+    } else {
+        alert(title + "\n\n" + msg);
+    }
+}
+
+$(function () {
+    calcTotal();
+    calcTotalFatura();
+});
+
+$(document).on('shown.bs.tab', 'a[data-bs-toggle="tab"], a[data-toggle="tab"], a[data-bs-toggle="pill"], .nav-link', function () {
     let $faturas = $('#body-pagamento tr');
     if ($faturas.length === 1 && total_nfe > 0) {
-        $faturas.find('.valor_fatura').val(convertFloatToMoeda(total_nfe));
-        calcTotalFatura();
+        let curVal = convertMoedaToFloat($faturas.find('.valor_fatura').val());
+        if (curVal <= 0) {
+            $faturas.find('.valor_fatura').val(convertFloatToMoeda(total_nfe));
+            calcTotalFatura();
+        }
     }
 });
 
@@ -762,32 +794,34 @@ $(document).on('submit', '#form-nfe', function (e) {
 });
 
 function addClassRequired() {
-    let infMsg = ""
-    let tabSwitched = false
+    let infMsg = "";
+    let tabSwitched = false;
+
     $("body #form-nfe").find('input, select').each(function () {
         if ($(this).prop('required')) {
             if ($(this).val() == "" || $(this).val() == null) {
                 try {
-                    infMsg += $(this).prev()[0].textContent + "\n"
+                    infMsg += $(this).prev()[0].textContent + "\n";
                 } catch {
-                    infMsg += ($(this).attr('name') || 'Campo') + "\n"
+                    infMsg += ($(this).attr('name') || 'Campo obrigatório') + "\n";
                 }
-                $(this).addClass('is-invalid')
+                $(this).addClass('is-invalid');
                 // Leva o usuário para a aba que contém o primeiro campo pendente
                 if (!tabSwitched) {
-                    let $pane = $(this).closest('.tab-pane')
+                    let $pane = $(this).closest('.tab-pane');
                     if ($pane.length && $pane.attr('id')) {
-                        $('a.nav-link[href="#' + $pane.attr('id') + '"]').trigger('click')
-                        tabSwitched = true
+                        switchTab($pane.attr('id'));
+                        tabSwitched = true;
                     }
                 }
             } else {
-                $(this).removeClass('is-invalid')
+                $(this).removeClass('is-invalid');
             }
         } else {
-            $(this).removeClass('is-invalid')
+            $(this).removeClass('is-invalid');
         }
-    })
+    });
+
     // Valida se há pelo menos um produto selecionado em qualquer linha
     let hasProduct = false;
     $('.table-produtos tbody tr').each(function () {
@@ -799,6 +833,10 @@ function addClassRequired() {
 
     if (!hasProduct) {
         infMsg += "Produto (adicione pelo menos um item à venda)\n";
+        if (!tabSwitched) {
+            switchTab('produtos');
+            tabSwitched = true;
+        }
     }
 
     // Validação obrigatória da Forma de Pagamento e Fatura
@@ -834,26 +872,33 @@ function addClassRequired() {
             let $firstTipo = $('#body-pagamento tr:first .tipo_pagamento');
             $firstTipo.addClass('is-invalid');
             $firstTipo.next('.select2-container').find('.select2-selection').addClass('border-danger');
-            if (!tabSwitched && $('.table-fatura').length) {
-                $('html, body').animate({
-                    scrollTop: $('.table-fatura').offset().top - 140
-                }, 300);
+            if (!tabSwitched) {
+                switchTab('fatura');
+                tabSwitched = true;
             }
         } else if (parcelaSemValor) {
             infMsg += "O valor da parcela da fatura deve ser maior que zero\n";
+            if (!tabSwitched) {
+                switchTab('fatura');
+                tabSwitched = true;
+            }
         } else if (total_nfe > 0) {
             let diff = Math.abs(totalFaturaSoma - total_nfe);
             if (diff > 0.05) {
                 infMsg += "A soma das parcelas (R$ " + convertFloatToMoeda(totalFaturaSoma) + ") não confere com o Total da Nota (R$ " + convertFloatToMoeda(total_nfe) + ")\n";
+                if (!tabSwitched) {
+                    switchTab('fatura');
+                    tabSwitched = true;
+                }
             }
         }
     }
 
     if (infMsg != "") {
-        swal("Campos Obrigatórios Pendentes", infMsg, "warning")
-        return false
+        showWarning("Campos Obrigatórios Pendentes", infMsg);
+        return false;
     }
-    return true
+    return true;
 }
 
 

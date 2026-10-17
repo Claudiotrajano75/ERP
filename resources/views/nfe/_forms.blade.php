@@ -98,6 +98,13 @@
                                         <select required id="inp-cliente_id" name="cliente_id" class="cliente_id">
                                             @if(isset($item) && $item->cliente)
                                             <option value="{{ $item->cliente_id }}">{{ $item->cliente->razao_social }}</option>
+                                            @elseif(old('cliente_id'))
+                                            @php
+                                                $oldCliente = \App\Models\Cliente::find(old('cliente_id'));
+                                            @endphp
+                                            @if($oldCliente)
+                                            <option value="{{ $oldCliente->id }}" selected>{{ $oldCliente->razao_social }}</option>
+                                            @endif
                                             @endif
                                         </select>
                                     </div>
@@ -163,9 +170,20 @@
                                 <label class="form-label required" for="inp-cidade_cliente">Cidade / UF</label>
                                 <select required class="form-control select2 cidade_id" name="cliente_cidade" id="inp-cidade_cliente">
                                     <option value="">Selecione..</option>
+                                    @php
+                                        $selCidadeId = old('cliente_cidade') ?? (isset($item) && $item->cliente ? $item->cliente->cidade_id : null);
+                                    @endphp
                                     @foreach ($cidades as $c)
-                                    <option @isset($item) @if($item->cliente->cidade_id == $c->id) selected @endif @endisset value="{{$c->id}}">{{$c->nome}} - {{$c->uf}}</option>
+                                    <option @if($selCidadeId == $c->id) selected @endif value="{{$c->id}}">{{$c->nome}} - {{$c->uf}}</option>
                                     @endforeach
+                                    @if($selCidadeId)
+                                        @php
+                                            $cidadeExtra = \App\Models\Cidade::find($selCidadeId);
+                                        @endphp
+                                        @if($cidadeExtra && !$cidades->contains('id', $cidadeExtra->id))
+                                            <option value="{{ $cidadeExtra->id }}" selected>{{ $cidadeExtra->nome }} - {{ $cidadeExtra->uf }}</option>
+                                        @endif
+                                    @endif
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -216,6 +234,13 @@
                                             @else
                                             @isset($item)
                                             <option value="{{ $item->fornecedor_id }}">{{ $item->fornecedor->razao_social }}</option>
+                                            @elseif(old('fornecedor_id'))
+                                            @php
+                                                $oldForn = \App\Models\Fornecedor::find(old('fornecedor_id'));
+                                            @endphp
+                                            @if($oldForn)
+                                            <option value="{{ $oldForn->id }}" selected>{{ $oldForn->razao_social }}</option>
+                                            @endif
                                             @endif
                                             @endif
                                         </select>
@@ -282,9 +307,20 @@
                                 <label class="form-label required" for="inp-fornecedor_cidade">Cidade / UF</label>
                                 <select required class="form-control select2 cidade_id" name="fornecedor_cidade" id="inp-fornecedor_cidade">
                                     <option value="">Selecione..</option>
+                                    @php
+                                        $selFornCid = old('fornecedor_cidade') ?? (isset($item) && $item->fornecedor ? $item->fornecedor->cidade_id : null);
+                                    @endphp
                                     @foreach ($cidades as $c)
-                                    <option @isset($item) @if($item->fornecedor->cidade_id == $c->id) selected @endif @endisset value="{{$c->id}}">{{$c->nome}} - {{$c->uf}}</option>
+                                    <option @if($selFornCid == $c->id) selected @endif value="{{$c->id}}">{{$c->nome}} - {{$c->uf}}</option>
                                     @endforeach
+                                    @if($selFornCid)
+                                        @php
+                                            $cidFornExtra = \App\Models\Cidade::find($selFornCid);
+                                        @endphp
+                                        @if($cidFornExtra && !$cidades->contains('id', $cidFornExtra->id))
+                                            <option value="{{ $cidFornExtra->id }}" selected>{{ $cidFornExtra->nome }} - {{ $cidFornExtra->uf }}</option>
+                                        @endif
+                                    @endif
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -358,7 +394,124 @@
                                 </thead>
                                 <tbody>
 
-                                    @if(isset($item))
+                                    @if(old('produto_id') && is_array(old('produto_id')) && count(old('produto_id')) > 0)
+
+                                    @for($i = 0; $i < count(old('produto_id')); $i++)
+                                    @if(!empty(old('produto_id')[$i]))
+                                    @php
+                                        $oldProd = \App\Models\Produto::find(old('produto_id')[$i]);
+                                    @endphp
+                                    @if($oldProd)
+                                    <tr class="dynamic-form">
+                                        <td width="250">
+                                            <select style="width: 300px" class="form-control select2 produto_id" name="produto_id[]" id="inp-produto_id">
+                                                <option value="{{ $oldProd->id }}" selected>{{ $oldProd->nome }}</option>
+                                            </select>
+                                            @if(!empty(old('variacao_id')[$i]))
+                                                @php $oldVar = \App\Models\ProdutoVariacao::find(old('variacao_id')[$i]); @endphp
+                                                @if($oldVar)
+                                                <span>variação: <strong>{{ $oldVar->descricao }}</strong></span>
+                                                @endif
+                                            @endif
+                                            <input name="variacao_id[]" type="hidden" value="{{ old('variacao_id')[$i] ?? '' }}">
+                                            <div style="width: 400px;"></div>
+                                        </td>
+                                        <td width="80">
+                                            <input style="width: 150px" value="{{ old('quantidade')[$i] ?? '1,00' }}" class="form-control qtd next" type="tel" name="quantidade[]" id="inp-quantidade">
+                                        </td>
+                                        <td width="100">
+                                            <input style="width: 150px" value="{{ old('valor_unitario')[$i] ?? '' }}" class="form-control moeda valor_unit next" type="tel" name="valor_unitario[]" id="inp-valor_unitario">
+                                        </td>
+                                        <td width="150">
+                                            <input style="width: 150px" value="{{ old('sub_total')[$i] ?? '' }}" class="form-control moeda sub_total next" type="tel" name="sub_total[]" id="inp-subtotal">
+                                        </td>
+                                        <td width="120">
+                                            <input style="width: 120px" value="{{ old('perc_icms')[$i] ?? '' }}" class="form-control percentual" type="tel" name="perc_icms[]" id="inp-perc_icms">
+                                        </td>
+                                        <td width="120">
+                                            <input style="width: 120px" value="{{ old('perc_pis')[$i] ?? '' }}" class="form-control percentual" type="tel" name="perc_pis[]" id="inp-perc_pis">
+                                        </td>
+                                        <td width="120">
+                                            <input style="width: 120px" value="{{ old('perc_cofins')[$i] ?? '' }}" class="form-control percentual" type="tel" name="perc_cofins[]" id="inp-perc_cofins">
+                                        </td>
+                                        <td width="120">
+                                            <input style="width: 120px" value="{{ old('perc_ipi')[$i] ?? '' }}" class="form-control percentual" type="tel" name="perc_ipi[]" id="inp-perc_ipi">
+                                        </td>
+                                        <td width="120">
+                                            <input style="width: 120px" value="{{ old('perc_ibs')[$i] ?? '' }}" class="form-control percentual" type="tel" name="perc_ibs[]" id="inp-perc_ibs">
+                                        </td>
+                                        <td width="120">
+                                            <input style="width: 120px" value="{{ old('perc_cbs')[$i] ?? '' }}" class="form-control percentual" type="tel" name="perc_cbs[]" id="inp-perc_cbs">
+                                        </td>
+                                        <td width="120">
+                                            <input style="width: 120px" value="{{ old('perc_red_bc')[$i] ?? '' }}" class="form-control percentual ignore" type="tel" name="perc_red_bc[]" id="inp-perc_red_bc">
+                                        </td>
+                                        <td width="120">
+                                            <input style="width: 120px" required value="{{ old('cfop')[$i] ?? '' }}" class="form-control cfop" type="tel" name="cfop[]" id="inp-cfop_estadual">
+                                        </td>
+
+                                        <td width="150">
+                                            <input style="width: 120px" required value="{{ old('ncm')[$i] ?? '' }}" class="form-control ncm" type="tel" name="ncm[]" id="inp-ncm2">
+                                        </td>
+                                        <td width="120">
+                                            <input style="width: 120px" value="{{ old('codigo_beneficio_fiscal')[$i] ?? '' }}" class="form-control ignore codigo_beneficio_fiscal" type="text" name="codigo_beneficio_fiscal[]">
+                                        </td>
+
+                                        <td>
+                                            <select name="cst_csosn[]" class="form-control select2">
+                                                @foreach(App\Models\Produto::listaCSTCSOSN() as $key => $c)
+                                                <option @if((old('cst_csosn')[$i] ?? '') == $key) selected @endif value="{{$key}}">{{$c}}</option>
+                                                @endforeach
+                                            </select>
+                                            <div style="width: 400px"></div>
+                                        </td>
+                                        <td>
+                                            <select name="cst_pis[]" class="form-control select2">
+                                                @foreach(App\Models\Produto::listaCST_PIS_COFINS() as $key => $c)
+                                                <option @if((old('cst_pis')[$i] ?? '') == $key) selected @endif value="{{$key}}">{{$c}}</option>
+                                                @endforeach
+                                            </select>
+                                            <div style="width: 400px"></div>
+                                        </td>
+                                        <td>
+                                            <select name="cst_cofins[]" class="form-control select2">
+                                                @foreach(App\Models\Produto::listaCST_PIS_COFINS() as $key => $c)
+                                                <option @if((old('cst_cofins')[$i] ?? '') == $key) selected @endif value="{{$key}}">{{$c}}</option>
+                                                @endforeach
+                                            </select>
+                                            <div style="width: 400px"></div>
+                                        </td>
+                                        <td>
+                                            <select name="cst_ipi[]" class="form-control select2">
+                                                @foreach(App\Models\Produto::listaCST_IPI() as $key => $c)
+                                                <option @if((old('cst_ipi')[$i] ?? '') == $key) selected @endif value="{{$key}}">{{$c}}</option>
+                                                @endforeach
+                                            </select>
+                                            <div style="width: 400px"></div>
+                                        </td>
+                                        <td>
+                                            <input value="{{ old('xPed')[$i] ?? '' }}" class="form-control ignore" maxlength="15" type="text" name="xPed[]">
+                                            <div style="width: 200px"></div>
+                                        </td>
+                                        <td>
+                                            <input value="{{ old('nItemPed')[$i] ?? '' }}" class="form-control ignore" maxlength="6" type="text" name="nItemPed[]">
+                                            <div style="width: 200px"></div>
+                                        </td>
+                                        <td>
+                                            <input value="{{ old('infAdProd')[$i] ?? '' }}" class="form-control ignore" maxlength="200" type="text" name="infAdProd[]">
+                                            <div style="width: 300px"></div>
+                                        </td>
+                                        <td width="30">
+                                            <button class="btn btn-danger btn-sm btn-remove-tr">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                    @endif
+                                    @endfor
+
+                                    @elseif(isset($item))
 
                                     @foreach ($item->itens as $prod)
 
@@ -948,7 +1101,31 @@
                                     </tr>
                                 </thead>
                                 <tbody id="body-pagamento" class="datatable-body">
-                                    @isset($cotacao)
+                                    @if(old('tipo_pagamento') && is_array(old('tipo_pagamento')) && count(old('tipo_pagamento')) > 0)
+                                    @for($i = 0; $i < count(old('tipo_pagamento')); $i++)
+                                    <tr class="dynamic-form">
+                                        <td>
+                                            <select name="tipo_pagamento[]" class="form-select tipo_pagamento select2">
+                                                <option value="">Selecione..</option>
+                                                @foreach(App\Models\Nfe::tiposPagamento() as $key => $c)
+                                                <option @if((old('tipo_pagamento')[$i] ?? '') == $key) selected @endif value="{{$key}}">{{$c}}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input value="{{ old('data_vencimento')[$i] ?? date('Y-m-d') }}" type="date" class="form-control" name="data_vencimento[]">
+                                        </td>
+                                        <td>
+                                            <input value="{{ old('valor_fatura')[$i] ?? '' }}" type="tel" class="form-control moeda valor_fatura" name="valor_fatura[]">
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-danger btn-sm btn-remove-tr">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endfor
+                                    @elseif(isset($cotacao))
                                     @if(sizeof($cotacao->fatura) > 0)
                                     @foreach ($cotacao->fatura as $f)
                                     <tr class="dynamic-form">

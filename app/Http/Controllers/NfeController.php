@@ -799,7 +799,7 @@ private function cadastrarCliente($request)
 private function atualizaCliente($request)
 {
     $cliente = Cliente::findOrFail($request->cliente_id);
-    $cliente->update([
+    $dados = [
         'razao_social' => $request->cliente_nome,
         'nome_fantasia' => $request->nome_fantasia ?? '',
         'cpf_cnpj' => $request->cliente_cpf_cnpj,
@@ -808,13 +808,16 @@ private function atualizaCliente($request)
         'consumidor_final' => $request->consumidor_final,
         'email' => $request->email ?? '',
         'telefone' => $request->telefone ?? '',
-        'cidade_id' => $request->cliente_cidade,
         'rua' => $request->cliente_rua,
         'cep' => $request->cep,
         'numero' => $request->cliente_numero,
         'bairro' => $request->cliente_bairro,
         'complemento' => $request->complemento
-    ]);
+    ];
+    if (!empty($request->cliente_cidade)) {
+        $dados['cidade_id'] = $request->cliente_cidade;
+    }
+    $cliente->update($dados);
     return $cliente->id;
 }
 
@@ -843,7 +846,7 @@ private function cadastrarFornecedor($request)
 private function atualizaFornecedor($request)
 {
     $fornecedor = Fornecedor::findOrFail($request->fornecedor_id);
-    $fornecedor->update([
+    $dados = [
         'razao_social' => $request->fornecedor_nome,
         'nome_fantasia' => $request->nome_fantasia ?? '',
         'cpf_cnpj' => $request->fornecedor_cpf_cnpj,
@@ -852,13 +855,16 @@ private function atualizaFornecedor($request)
         'consumidor_final' => $request->consumidor_final,
         'email' => $request->email ?? '',
         'telefone' => $request->telefone ?? '',
-        'cidade_id' => $request->fornecedor_cidade,
         'rua' => $request->fornecedor_rua,
         'cep' => $request->cep,
         'numero' => $request->fornecedor_numero,
         'bairro' => $request->fornecedor_bairro,
         'complemento' => $request->complemento
-    ]);
+    ];
+    if (!empty($request->fornecedor_cidade)) {
+        $dados['cidade_id'] = $request->fornecedor_cidade;
+    }
+    $fornecedor->update($dados);
     return $fornecedor->id;
 }
 

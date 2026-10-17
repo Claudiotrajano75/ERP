@@ -37,11 +37,25 @@ function __validaObjetoEmpresa($objeto)
 
 function __moeda($valor, $casas_decimais = 2)
 {
+	if (is_string($valor)) {
+		if (strpos($valor, ',') !== false) {
+			$valor = str_replace('.', '', $valor);
+			$valor = str_replace(',', '.', $valor);
+		}
+	}
+	$valor = (float)($valor ?? 0);
 	return number_format($valor, $casas_decimais, ',', '.');
 }
 
 function __moedaInput($valor, $casas_decimais = 2)
 {
+	if (is_string($valor)) {
+		if (strpos($valor, ',') !== false) {
+			$valor = str_replace('.', '', $valor);
+			$valor = str_replace(',', '.', $valor);
+		}
+	}
+	$valor = (float)($valor ?? 0);
 	return number_format($valor, $casas_decimais, ',', '');
 }
 

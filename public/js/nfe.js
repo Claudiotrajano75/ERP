@@ -719,7 +719,7 @@ function calTotalNfe() {
         total_nfe = total_prod + total_fr + acrescimo - desconto
         $('.total_frete').html("R$ " + convertFloatToMoeda(total_fr))
         $('.total_nfe').html("R$ " + convertFloatToMoeda(total_nfe))
-        // $('.valor_fatura').val(convertFloatToMoeda(total_nfe))
+        $('.valor_total').val(convertFloatToMoeda(total_nfe))
         let $faturas = $('#body-pagamento tr');
         if ($faturas.length === 1 && total_nfe > 0) {
             $faturas.find('.valor_fatura').val(convertFloatToMoeda(total_nfe));

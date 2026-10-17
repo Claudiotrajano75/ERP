@@ -464,7 +464,17 @@ class NfeController extends Controller
                 if(isset($request->local_id)){
                     $local_id = $request->local_id;
                 }
-                $valor_produto =  number_format($request->valor_produtos, 2);
+                $totalCalculado = 0;
+                if ($request->sub_total && is_array($request->sub_total)) {
+                    foreach ($request->sub_total as $st) {
+                        $totalCalculado += (float)__convert_value_bd($st);
+                    }
+                }
+                $valorFrete = $request->valor_frete ? (float)__convert_value_bd($request->valor_frete) : 0;
+                $desconto = $request->desconto ? (float)__convert_value_bd($request->desconto) : 0;
+                $acrescimo = $request->acrescimo ? (float)__convert_value_bd($request->acrescimo) : 0;
+                $totalFinal = $request->valor_total ? (float)__convert_value_bd($request->valor_total) : ($totalCalculado + $valorFrete + $acrescimo - $desconto);
+                $valorProdutos = $request->valor_produtos ? (float)__convert_value_bd($request->valor_produtos) : $totalCalculado;
 
                 if($caixa != null){
                     $empresa = __objetoParaEmissao($empresa, $local_id);
@@ -480,11 +490,11 @@ class NfeController extends Controller
                     'numero_serie' => $empresa->numero_serie_nfe ? $empresa->numero_serie_nfe : 0,
                     'numero' => $request->numero_nfe ? $request->numero_nfe : 0,
                     'estado' => 'novo',
-                    'total' => __convert_value_bd($request->valor_total),
-                    'desconto' => $request->desconto ? __convert_value_bd($request->desconto) : 0,
-                    'acrescimo' => $request->acrescimo ? __convert_value_bd($request->acrescimo) : 0,
-                    'valor_produtos' => __convert_value_bd($valor_produto),
-                    'valor_frete' => $request->valor_frete ? __convert_value_bd($request->valor_frete) : 0,
+                    'total' => $totalFinal,
+                    'desconto' => $desconto,
+                    'acrescimo' => $acrescimo,
+                    'valor_produtos' => $valorProdutos,
+                    'valor_frete' => $valorFrete,
                     'caixa_id' => $caixa ? $caixa->id : null,
                     'local_id' => $local_id,
                     // 'numero' => $request->numero ?? 0,
@@ -701,15 +711,15 @@ session()->flash("flash_success", "Venda cadastrada!");
 }
 
 if ($request->orcamento == 1) {
-    $descricaoLog = $nfe->cliente->info . " R$ " . __moeda($nfe->total);
+    $clienteInfo = ($nfe->cliente ? $nfe->cliente->info : 'Cliente');
+    $descricaoLog = $clienteInfo . " R$ " . __moeda($nfe->total);
     __createLog($request->empresa_id, 'Orçamento', 'cadastrar', $descricaoLog);
     session()->flash("flash_success", "Orçamento cadastrado!");
     return redirect()->route('orcamentos.index');
 }
 if (isset($request->is_compra)) {
-
-
-    $descricaoLog = $nfe->fornecedor->info . " R$ " . __moeda($nfe->total);
+    $fornInfo = ($nfe->fornecedor ? $nfe->fornecedor->info : 'Fornecedor');
+    $descricaoLog = $fornInfo . " R$ " . __moeda($nfe->total);
     __createLog($request->empresa_id, 'Compra', 'cadastrar', $descricaoLog);
     session()->flash("flash_success", "Compra cadastrada!");
     if($nfe){
@@ -718,18 +728,19 @@ if (isset($request->is_compra)) {
         }
 
         foreach($nfe->itens as $i){
-            if($i->produto->tipo_unico){
+            if($i->produto && $i->produto->tipo_unico){
                 return redirect()->route('compras.set-codigo-unico', $nfe->id);
             }
         }
     }
     return redirect()->route('compras.index');
 } else {
-    $descricaoLog = $nfe->cliente->info . " R$ " . __moeda($nfe->total);
+    $clienteInfo = ($nfe->cliente ? $nfe->cliente->info : 'Cliente');
+    $descricaoLog = $clienteInfo . " R$ " . __moeda($nfe->total);
     __createLog($request->empresa_id, 'Venda', 'cadastrar', $descricaoLog);
 
     foreach($nfe->itens as $i){
-        if($i->produto->tipo_unico){
+        if($i->produto && $i->produto->tipo_unico){
             return redirect()->route('nfe.set-codigo-unico', $nfe->id);
         }
     }
@@ -1127,18 +1138,21 @@ session()->flash("flash_success", "Venda alterada com sucesso!");
 $item = Nfe::findOrFail($id);
 
 if ($item->orcamento == 1) {
-    $descricaoLog = $item->cliente->info . " R$ " . __moeda($item->total);
+    $clienteInfo = ($item->cliente ? $item->cliente->info : 'Cliente');
+    $descricaoLog = $clienteInfo . " R$ " . __moeda($item->total);
     __createLog($request->empresa_id, 'Orçamento', 'editar', $descricaoLog);
     session()->flash("flash_success", "Orçamento atualizado!");
     return redirect()->route('orcamentos.index');
 }
 if (isset($request->is_compra)) {
-    $descricaoLog = $item->fornecedor->info . " R$ " . __moeda($item->total);
+    $fornInfo = ($item->fornecedor ? $item->fornecedor->info : 'Fornecedor');
+    $descricaoLog = $fornInfo . " R$ " . __moeda($item->total);
     __createLog($request->empresa_id, 'Compra', 'editar', $descricaoLog);
     session()->flash("flash_success", "Compra atualizada!");
     return redirect()->route('compras.index');
 } else {
-    $descricaoLog = $item->cliente->info . " R$ " . __moeda($item->total);
+    $clienteInfo = ($item->cliente ? $item->cliente->info : 'Cliente');
+    $descricaoLog = $clienteInfo . " R$ " . __moeda($item->total);
     __createLog($request->empresa_id, 'Venda', 'editar', $descricaoLog);
 
     return redirect()->route('nfe.index');
@@ -1176,15 +1190,18 @@ public function destroy($id)
         $item->delete();
 
         if($item->orcamento == 1){
-            $descricaoLog = $item->cliente->info . " R$ " . __moeda($item->total);
+            $clienteInfo = ($item->cliente ? $item->cliente->info : 'Cliente');
+            $descricaoLog = $clienteInfo . " R$ " . __moeda($item->total);
             __createLog(request()->empresa_id, 'Orçamento', 'excluir', $descricaoLog);
             session()->flash("flash_success", "Orçamento removido!");
         }else if($item->tpNF == 0){
-            $descricaoLog = $item->fornecedor->info . " R$ " . __moeda($item->total);
+            $fornInfo = ($item->fornecedor ? $item->fornecedor->info : 'Fornecedor');
+            $descricaoLog = $fornInfo . " R$ " . __moeda($item->total);
             __createLog(request()->empresa_id, 'Compra', 'excluir', $descricaoLog);
             session()->flash("flash_success", "Compra removida!");
         }else{
-            $descricaoLog = $item->cliente->info . " R$ " . __moeda($item->total);
+            $clienteInfo = ($item->cliente ? $item->cliente->info : 'Cliente');
+            $descricaoLog = $clienteInfo . " R$ " . __moeda($item->total);
             __createLog(request()->empresa_id, 'Venda', 'excluir', $descricaoLog);
             session()->flash("flash_success", "Venda removida!");
         }

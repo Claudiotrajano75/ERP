@@ -2,234 +2,293 @@
 
 @section('css')
 <style>
-/* ─── Header Gradiente & Ícone ─── */
-.modulo-header-gradient { background: linear-gradient(135deg, #f2f3ff 0%, #e6e9ff 100%) !important; border-radius: 14px 14px 0 0 !important; border-bottom: 1px solid #e2e8f0 !important; }
-.modulo-header-gradient .modulo-title { color: #4338ca !important; font-weight: 700; letter-spacing: -0.3px; }
-.header-title-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 11px;
-    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%) !important;
-    color: #ffffff !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.28);
+/* =====================================================
+   PAINEL DE VENDAS / NF-e — PADRÃO PREMIUM ERP
+   ===================================================== */
+/* ─── Cards de Estatísticas da Skill ─── */
+.stat-card {
+    border: 0;
+    border-radius: 16px;
+    padding: 18px 20px;
+    height: 100%;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    transition: transform .18s ease, box-shadow .18s ease;
 }
-.header-title-icon i {
-    background: transparent !important;
-    padding: 0 !important;
-    color: #ffffff !important;
-    font-size: 20px !important;
-    line-height: 1 !important;
+.stat-card:hover {
+    transform: translateY(-3px);
 }
-.modulo-header-gradient .modulo-subtitle { color: #64748b !important; font-weight: 400; }
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: -44px;
+    right: -44px;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.12);
+}
+.stat-indigo { background: linear-gradient(135deg,#6366f1,#4f46e5); box-shadow: 0 6px 18px rgba(79,70,229,.28); }
+.stat-green  { background: linear-gradient(135deg,#24c98a,#109f61); box-shadow: 0 6px 18px rgba(16,185,129,.28); }
+.stat-amber  { background: linear-gradient(135deg,#fbbf24,#d97706); box-shadow: 0 6px 18px rgba(245,158,11,.28); }
+.stat-rose   { background: linear-gradient(135deg,#fb7185,#dc2626); box-shadow: 0 6px 18px rgba(220,38,38,.28); }
+.stat-card .st-label { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: rgba(255,255,255,.85); }
+.stat-card .st-value { font-size: 24px; font-weight: 800; color: #fff; margin-top: 4px; line-height: 1.1; }
+.stat-card .st-sub { font-size: 11.5px; color: rgba(255,255,255,.75); margin-top: 4px; }
+.stat-card .st-icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,.22); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 22px; }
 
-/* ─── Botões do Cabeçalho Modernizados ─── */
-.btn-nova-venda {
-    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
-    color: #ffffff !important;
-    border: none !important;
-    border-radius: 10px !important;
-    padding: 8px 18px !important;
-    font-weight: 600 !important;
-    font-size: 13px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 6px;
-    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.28) !important;
-    transition: all 0.2s ease !important;
-    text-decoration: none;
+/* ─── Filtro ─── */
+.filter-wrap {
+    background: #fff;
+    border: 1px solid #e9ecf3;
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(16,24,40,.04);
+    padding: 18px 20px;
+    margin-bottom: 20px;
 }
-.btn-nova-venda:hover {
-    background: linear-gradient(135deg, #047857 0%, #065f46 100%) !important;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(5, 150, 105, 0.38) !important;
-    color: #ffffff !important;
-    text-decoration: none;
-}
-.btn-status-sefaz {
-    background: #ffffff !important;
-    color: #334155 !important;
-    border: 1px solid #cbd5e1 !important;
-    border-radius: 10px !important;
-    padding: 8px 16px !important;
-    font-weight: 600 !important;
-    font-size: 13px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 6px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-    transition: all 0.2s ease !important;
-}
-.btn-status-sefaz:hover {
-    background: #f8fafc !important;
-    border-color: #94a3b8 !important;
-    color: #1e293b !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-}
-
-/* ─── Glass Filters ─── */
-.modulo-glass-filter { background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8) !important; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.04); }
-.modulo-glass-filter label { font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #5a5a7a; margin-bottom: 2px; }
-.modulo-glass-filter .form-control, .modulo-glass-filter .form-select { height: 38px; } .modulo-glass-filter .btn { border-radius: 8px; font-weight: 600; font-size: 13px; height: 38px; padding-top: 0; padding-bottom: 0; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
-.modulo-glass-filter .btn:hover { transform: translateY(-1px); }
-
-/* --- Novo Filtro de Pesquisa Premium --- */
-.modulo-glass-filter-premium {
-    background: #ffffff;
-    border: 1px solid #eef0f6 !important;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-    padding: 20px !important;
-    margin-bottom: 24px;
-}
-
-/* Título e Header do Filtro */
-.filtro-premium-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #f1f3f9;
-    padding-bottom: 12px;
-    margin-bottom: 16px;
-}
-.filtro-premium-title {
+.filter-title {
     font-size: 13px;
     font-weight: 700;
     color: #3f3e6a;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0;
+    letter-spacing: .5px;
 }
-.filtro-premium-title i {
-    color: #5572f5;
+.filter-title i {
+    color: #4f46e5;
     margin-right: 6px;
 }
-
-/* Customização dos Inputs dentro do Filtro */
-.modulo-glass-filter-premium label {
-    font-size: 10px !important;
-    font-weight: 700 !important;
+.filter-wrap label {
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #8c8ca6 !important;
-    margin-bottom: 6px !important;
+    letter-spacing: .4px;
+    color: #64748b;
+    margin-bottom: 6px;
     display: flex;
     align-items: center;
     gap: 4px;
 }
-.modulo-glass-filter-premium label i {
+.filter-wrap label i {
+    color: #94a3b8;
     font-size: 12px;
-    color: #a8a8c0;
 }
-
-.modulo-glass-filter-premium .form-control,
-.modulo-glass-filter-premium .form-select {
-    height: 38px !important;
-    border-radius: 8px !important;
+.filter-wrap .form-control,
+.filter-wrap .form-select {
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid #dcdce9;
+    font-size: 13px;
+    background: #fcfdfe;
+}
+.filter-wrap .form-control:focus,
+.filter-wrap .form-select:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+    background: #fff;
+}
+.filter-wrap .select2-container .select2-selection--single {
+    height: 40px !important;
+    line-height: 40px !important;
     border: 1px solid #dcdce9 !important;
-    font-size: 13px !important;
-    padding: 6px 12px !important;
-    color: #374151 !important;
-    background-color: #fcfdfe !important;
-    transition: all 0.2s ease;
+    border-radius: 10px !important;
+    background: #fcfdfe !important;
+    font-size: 13px;
+}
+.filter-wrap .select2-container .select2-selection--single .select2-selection__rendered {
+    line-height: 38px !important;
+    color: #1f2937;
+    padding-left: 12px;
+}
+.filter-wrap .select2-container .select2-selection--single .select2-selection__arrow {
+    height: 38px !important;
+}
+.filter-wrap .select2-container .select2-selection--single .select2-selection__arrow b {
+    display: none;
+}
+.filter-wrap .select2-container .select2-selection--single .select2-selection__clear {
+    line-height: 38px !important;
+    font-size: 16px !important;
+    color: #94a3b8 !important;
+    cursor: pointer !important;
+    margin-right: 6px !important;
+    font-weight: bold !important;
+}
+.filter-wrap .select2-container .select2-selection--single .select2-selection__clear:hover {
+    color: #ef4444 !important;
 }
 
-.modulo-glass-filter-premium .form-control:focus,
-.modulo-glass-filter-premium .form-select:focus {
-    border-color: #5572f5 !important;
-    background-color: #fff !important;
-    box-shadow: 0 0 0 3px rgba(85, 114, 245, 0.12) !important;
+/* ─── Tabela ─── */
+.tb-wrap {
+    border-radius: 14px;
+    border: 1px solid #eef0f5;
+    overflow: hidden;
+    background: #fff;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+.tb-wrap table {
+    margin-bottom: 0;
+}
+.tb-wrap thead th {
+    background: #f8f9fc;
+    color: #5a5a7a;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    padding: 13px 16px;
+    border-bottom: 1px solid #e8eaf6;
+    white-space: nowrap;
+}
+.tb-wrap tbody td {
+    padding: 12px 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f2f8;
+    font-size: 13px;
+    color: #374151;
+}
+.tb-wrap tbody tr:hover {
+    background: #f8faff;
+}
+.tb-wrap tbody tr:last-child td {
+    border-bottom: none;
 }
 
-/* Botões do Filtro */
-.modulo-glass-filter-premium .btn-pesquisar {
-    background: linear-gradient(135deg, #5572f5 0%, #3d56d4 100%) !important;
-    border: none !important;
-    color: #fff !important;
-    font-weight: 600 !important;
-    height: 38px;
-    border-radius: 8px !important;
-    font-size: 13px !important;
-    transition: all 0.2s ease !important;
+/* ─── Avatar do Cliente ─── */
+.cf-avatar-cliente {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #eef2ff;
+    color: #4f46e5;
+    font-weight: 700;
+    font-size: 11.5px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-}
-.modulo-glass-filter-premium .btn-pesquisar:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(85, 114, 245, 0.25) !important;
+    letter-spacing: -0.5px;
+    flex-shrink: 0;
 }
 
-.modulo-glass-filter-premium .btn-limpar {
-    background: #f1f3f9 !important;
-    border: 1px solid #e2e5ec !important;
-    color: #5a5a7a !important;
-    font-weight: 600 !important;
-    height: 38px;
-    border-radius: 8px !important;
-    font-size: 13px !important;
-    transition: all 0.2s ease !important;
+/* ─── Badges (pills da skill) ─── */
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.pill-ok { background: #dcfce7; color: #15803d; }
+.pill-no { background: #f1f5f9; color: #64748b; }
+.pill-role { background: #eef0ff; color: #4f46e5; }
+.pill-amber { background: #fef3c7; color: #b45309; }
+.pill-red { background: #fee2e2; color: #b91c1c; }
+
+/* ─── Botão Dropdown Trigger Centralizado ─── */
+.dropdown-action-menu {
+    position: relative;
+}
+.btn-action-trigger {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #64748b;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    font-size: 16px;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.15s ease;
 }
-.modulo-glass-filter-premium .btn-limpar:hover {
-    background: #e8ebf3 !important;
-    color: #302b63 !important;
+.btn-action-trigger:hover,
+.dropdown-action-menu.show .btn-action-trigger {
+    background: #4f46e5;
+    color: #ffffff;
+    border-color: #4f46e5;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
 }
 
-/* ─── Premium Table ─── */
-.modulo-table-wrap { border-radius: 12px; border: 1px solid #eef0f5; overflow: hidden; }
-.modulo-table-wrap table { margin-bottom: 0; }
-.modulo-table-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding: 12px 14px; border-bottom: 2px solid #e8eaf6; }
-.modulo-table-wrap tbody td { padding: 12px 14px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; transition: background 0.15s ease; font-size: 13px; }
-.modulo-table-wrap tbody tr { transition: all 0.15s ease; }
-.modulo-table-wrap tbody tr:hover { background: #f5f6fe; }
-.modulo-table-wrap tbody tr:last-child td { border-bottom: none; }
+.action-dropdown-card {
+    min-width: 250px;
+    border-radius: 12px !important;
+    border: 1px solid rgba(0,0,0,0.06) !important;
+    padding: 6px !important;
+    background: #ffffff;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12), 0 4px 10px rgba(15, 23, 42, 0.05) !important;
+    z-index: 1060;
+}
+.action-menu-item {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px !important;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    background: transparent;
+    cursor: pointer;
+}
+.action-menu-item:hover {
+    background-color: #f8fafc !important;
+    transform: translateX(2px);
+}
+.action-item-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.action-item-icon.icon-primary { background: #eff6ff; color: #2563eb; }
+.action-item-icon.icon-info    { background: #f0f9ff; color: #0284c7; }
+.action-item-icon.icon-purple  { background: #faf5ff; color: #7c3aed; }
+.action-item-icon.icon-teal    { background: #f0fdfa; color: #0d9488; }
+.action-item-icon.icon-success { background: #f0fdf4; color: #16a34a; }
+.action-item-icon.icon-cyan    { background: #ecfeff; color: #0891b2; }
+.action-item-icon.icon-warning { background: #fffbeb; color: #d97706; }
+.action-item-icon.icon-danger  { background: #fef2f2; color: #dc2626; }
+.action-item-content {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    line-height: 1.2;
+}
+.action-item-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1e293b;
+}
+.action-item-desc {
+    font-size: 10.5px;
+    color: #94a3b8;
+}
 
-/* ─── Empty State ─── */
-.modulo-empty { padding: 48px 20px; text-align: center; }
-.modulo-empty i { font-size: 48px; color: #c5cae9; margin-bottom: 12px; display: block; }
-.modulo-empty p { color: #9e9eb8; font-size: 14px; margin: 0; }
-
-        /* ─── Botão Transmitir em Destaque Compacto ─── */
-        .btn-transmitir-destaque {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
-            color: #ffffff !important;
-            border: none !important;
-            border-radius: 6px !important;
-            font-size: 11px !important;
-            font-weight: 600 !important;
-            padding: 4px 10px !important;
-            height: 30px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25) !important;
-            transition: all 0.2s ease !important;
-            letter-spacing: 0.1px;
-            white-space: nowrap;
-            text-decoration: none !important;
-        }
-        .btn-transmitir-destaque:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35) !important;
-            background: linear-gradient(135deg, #047857 0%, #065f46 100%) !important;
-            color: #ffffff !important;
-        }
-        .btn-transmitir-destaque:active {
-            transform: translateY(0);
-        }
-        .btn-transmitir-destaque i {
-            font-size: 12px;
-        }
+/* EMPTY STATE */
+.modulo-empty {
+    padding: 48px 20px;
+    text-align: center;
+}
+.modulo-empty i {
+    font-size: 44px;
+    color: #cbd5e1;
+    margin-bottom: 10px;
+    display: block;
+}
+.modulo-empty p {
+    color: #64748b;
+    font-size: 13.5px;
+    margin: 0;
+}
 
         /* ─── Estilos Modais Premium NF-e ─── */
         .modal-nfe-header-red {
@@ -587,43 +646,91 @@
 @endsection
 
 @section('content')
-<div class="mt-3 text-dark">
+<div class="mt-3">
     <div class="row">
-        <div class="card border-0 shadow-sm text-dark">
+        <div class="card border-0 shadow-sm">
 
-            <!-- CABEÇALHO PREMIUM -->
+            <!-- ═══ CABEÇALHO PADRÃO DO ERP ═══ -->
             <div class="card-header modulo-header-gradient py-3 px-4">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="header-title-icon">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
                             <i class="ri-file-text-line"></i>
-                        </div>
-                        <div>
-                            <h4 class="mb-0 modulo-title fw-bold fs-18">
-                                Painel de Vendas (NFe)
-                            </h4>
-                            <p class="modulo-subtitle mb-0 fs-12 mt-0.5">Gerencie notas fiscais de saída: emissão, transmissão ao SEFAZ, cancelamento e impressão do DANFE.</p>
-                        </div>
+                            Vendas & NF-e
+                        </h4>
+                        <p class="text-muted mb-0 modulo-subtitle fs-13">Gerencie vendas, orçamentos e emissões fiscais autorizadas na SEFAZ.</p>
                     </div>
-                    <div class="d-inline-flex align-items-center gap-2">
-                        @can('nfe_create')
-                        <a href="{{ route('nfe.create') }}" class="btn btn-nova-venda">
-                            <i class="ri-add-circle-line fs-16"></i> Nova Venda
-                        </a>
-                        @endcan
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ url('/faturamento-nfe') }}" class="dash-btn dash-btn-light" title="Abrir Central Operacional de Faturamento"><i class="ri-dashboard-line"></i> Central</a>
                         @if(__isPlanoFiscal())
-                        <button id="btn-consulta-sefaz" class="btn btn-status-sefaz" type="button">
-                            <i class="ri-refresh-line fs-15"></i> Status SEFAZ
-                        </button>
+                        <button id="btn-consulta-sefaz" class="dash-btn dash-btn-light" type="button" title="Consultar status de serviço da SEFAZ"><i class="ri-pulse-line"></i> Status SEFAZ</button>
                         @endif
+                        <a href="{{ route('nfe.index') }}" class="dash-btn dash-btn-light"><i class="ri-refresh-line"></i> Atualizar</a>
+                        @can('nfe_create')
+                        <a href="{{ route('nfe.create') }}" class="dash-btn dash-btn-primary"><i class="ri-add-line"></i> Nova Venda</a>
+                        @endcan
                     </div>
                 </div>
             </div>
 
             <div class="card-body p-4">
 
+                <!-- ═══ CARDS DE ESTATÍSTICA (KPIs DA SKILL) ═══ -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-indigo">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Total de Vendas</div>
+                                    <div class="st-value">{{ $data->total() }}</div>
+                                    <div class="st-sub">registros no sistema</div>
+                                </div>
+                                <div class="st-icon"><i class="ri-file-text-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-green">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Valor na Página</div>
+                                    <div class="st-value">R$ {{ __moeda($data->sum('total')) }}</div>
+                                    <div class="st-sub">soma das notas listadas</div>
+                                </div>
+                                <div class="st-icon"><i class="ri-money-dollar-circle-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-amber">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Notas no Filtro</div>
+                                    <div class="st-value">{{ $data->count() }}</div>
+                                    <div class="st-sub">nesta página atual</div>
+                                </div>
+                                <div class="st-icon"><i class="ri-filter-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-rose">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Ambiente SEFAZ</div>
+                                    <div class="st-value" style="font-size: 19px; line-height: 1.3; padding-top: 4px;">
+                                        {{ (isset($data[0]) && $data[0]->ambiente == 2) ? 'Homologação' : 'Produção' }}
+                                    </div>
+                                    <div class="st-sub">emissor fiscal ativo</div>
+                                </div>
+                                <div class="st-icon"><i class="ri-shield-check-line"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 @if($contigencia != null)
-                <div class="alert alert-danger border-danger-subtle bg-danger-subtle text-danger p-3 mb-4 d-flex align-items-start">
+                <div class="alert alert-danger border-danger-subtle bg-danger-subtle text-danger p-3 mb-3 d-flex align-items-start rounded-3">
                     <i class="ri-error-warning-line me-2 fs-20 mt-0.5"></i>
                     <div>
                         <strong>Contingência Ativada!</strong>
@@ -632,44 +739,46 @@
                 </div>
                 @endif
 
-                <!-- ═══ Filtros de Busca Premium ═══ -->
-                <div class="modulo-glass-filter-premium">
-                    <div class="filtro-premium-header">
-                        <h5 class="filtro-premium-title">
-                            <i class="ri-search-line"></i> Filtrar Notas Fiscais (NF-e)
+                <!-- ═══ PAINEL DE FILTROS ═══ -->
+                <div class="filter-wrap">
+                    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                        <h5 class="filter-title mb-0">
+                            <i class="ri-search-line"></i> Filtrar Vendas & NF-e
                         </h5>
+                        <span class="text-muted fs-11">Refine por cliente, período ou estado fiscal</span>
                     </div>
 
                     <form method="get" action="{{ route('nfe.index') }}">
                         <div class="row g-3 align-items-end">
-                            <div class="col-md-3 col-12">
-                                <label class="form-label"><i class="ri-user-line"></i> Cliente / Fornecedor</label>
-                                <select class="select2 form-select" name="cliente_id">
+                            <div class="col-lg-3 col-md-6 col-12">
+                                <label><i class="ri-user-line"></i> Cliente / Fornecedor</label>
+                                <select class="form-select" id="inp-cliente_id" name="cliente_id">
+                                    <option value=""></option>
                                     @if(isset($cliente) && $cliente)
-                                        <option value="{{ $cliente->id }}" selected>{{ $cliente->info }}</option>
+                                        <option value="{{ $cliente->id }}" selected>{{ $cliente->razao_social }} ({{ $cliente->cpf_cnpj }})</option>
                                     @endif
                                 </select>
                             </div>
 
                             <!-- Data Inicial -->
-                            <div class="col-md-2 col-6">
-                                <label class="form-label"><i class="ri-calendar-line"></i> Data Inicial</label>
+                            <div class="col-lg-2 col-md-3 col-6">
+                                <label><i class="ri-calendar-line"></i> Data Inicial</label>
                                 <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control">
                             </div>
 
                             <!-- Data Final -->
-                            <div class="col-md-2 col-6">
-                                <label class="form-label"><i class="ri-calendar-line"></i> Data Final</label>
+                            <div class="col-lg-2 col-md-3 col-6">
+                                <label><i class="ri-calendar-line"></i> Data Final</label>
                                 <input type="date" name="end_date" value="{{ request('end_date') }}" class="form-control">
                             </div>
 
                             @if(__isPlanoFiscal())
                             <!-- Estado NFe -->
-                            <div class="col-md-2 col-6">
-                                <label class="form-label"><i class="ri-equalizer-line"></i> Estado NFe</label>
+                            <div class="col-lg-2 col-md-4 col-6">
+                                <label><i class="ri-equalizer-line"></i> Estado NF-e</label>
                                 <select name="estado" class="form-select">
-                                    <option value="" @selected(request('estado') == '')>Todos</option>
-                                    <option value="novo" @selected(request('estado') == 'novo')>Novas</option>
+                                    <option value="" @selected(request('estado') == '')>Todos os Estados</option>
+                                    <option value="novo" @selected(request('estado') == 'novo')>Novas (Digitação)</option>
                                     <option value="rejeitado" @selected(request('estado') == 'rejeitado')>Rejeitadas</option>
                                     <option value="cancelado" @selected(request('estado') == 'cancelado')>Canceladas</option>
                                     <option value="aprovado" @selected(request('estado') == 'aprovado')>Aprovadas</option>
@@ -677,8 +786,8 @@
                             </div>
 
                             <!-- Tipo (Saída / Entrada) -->
-                            <div class="col-md-1 col-6">
-                                <label class="form-label"><i class="ri-arrow-left-right-line"></i> Tipo</label>
+                            <div class="col-lg-1 col-md-2 col-6">
+                                <label><i class="ri-arrow-left-right-line"></i> Tipo</label>
                                 <select name="tpNF" class="form-select">
                                     <option value="-" @selected(request('tpNF') == '-' || request('tpNF') == '')>Todos</option>
                                     <option value="1" @selected(request('tpNF') === '1')>Saída</option>
@@ -689,8 +798,8 @@
 
                             @if(__countLocalAtivo() > 1)
                             <!-- Localização -->
-                            <div class="col-md-2 col-6">
-                                <label class="form-label"><i class="ri-store-2-line"></i> Local</label>
+                            <div class="col-lg-2 col-md-3 col-6">
+                                <label><i class="ri-store-2-line"></i> Local</label>
                                 <select name="local_id" class="select2 form-select">
                                     <option value="">Selecione</option>
                                     @foreach(__getLocaisAtivoUsuario() as $loc)
@@ -701,11 +810,11 @@
                             @endif
 
                             <!-- Botões de Ação -->
-                            <div class="col-md-2 col-12 ms-auto d-flex gap-2">
-                                <button class="btn btn-pesquisar flex-grow-1" type="submit">
+                            <div class="col-lg-2 col-md-3 col-12 ms-auto d-flex gap-2">
+                                <button class="btn btn-primary flex-grow-1" type="submit" style="border-radius:10px; height:40px;">
                                     <i class="ri-search-line"></i> Buscar
                                 </button>
-                                <a class="btn btn-limpar px-3" href="{{ route('nfe.index') }}" title="Limpar Filtros">
+                                <a class="btn btn-light border px-3 d-flex align-items-center justify-content-center" href="{{ route('nfe.index') }}" title="Limpar Filtros" style="border-radius:10px; height:40px;">
                                     <i class="ri-eraser-line"></i>
                                 </a>
                             </div>
@@ -713,41 +822,39 @@
                     </form>
                 </div>
 
-                <!-- TABELA PREMIUM -->
-                <div class="modulo-table-wrap mb-4">
+                <!-- ═══ TABELA PADRÃO PREMIUM ═══ -->
+                <div class="tb-wrap">
                     <div class="table-responsive" style="min-height: 280px;">
                         <table class="table table-centered table-hover align-middle mb-0 text-dark">
                             <thead>
                                 <tr>
-                                    <th style="width: 70px;">Ações</th>
+                                    <th style="width: 50px; text-align: center;">Ações</th>
                                     <th>Cliente / Fornecedor</th>
                                     @if(__countLocalAtivo() > 1)
                                     <th>Local</th>
                                     @endif
                                     <th>Usuário</th>
                                     <th>Nº Nota</th>
-                                    <th>Valor (R$)</th>
+                                    <th>Valor Total</th>
                                     @if(__isPlanoFiscal())
-                                    <th>Estado</th>
+                                    <th>Estado SEFAZ</th>
                                     <th>Ambiente</th>
                                     @endif
                                     <th>Cadastro</th>
                                     <th>Emissão</th>
-                                    <th>Origem</th>
                                     <th>Tipo</th>
-                                    <th>Ref.</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($data as $item)
                                 <tr>
-                                    {{-- 1ª Coluna: Ações com Menu Dropdown --}}
-                                    <td style="white-space: nowrap; width: 70px;">
+                                    {{-- 1ª Coluna: Ações com Menu Dropdown Centralizado (50px) --}}
+                                    <td class="text-center" style="width: 50px;">
                                         <form action="{{ route('nfe.destroy', $item->id) }}" method="post" id="form-{{$item->id}}" class="m-0 d-inline">
                                             @method('delete')
                                             @csrf
                                             <div class="dropdown dropdown-action-menu d-inline-block">
-                                                <button type="button" class="btn btn-action-trigger" data-bs-toggle="dropdown" aria-expanded="false" title="Opções da Venda">
+                                                <button type="button" class="btn btn-action-trigger" data-bs-toggle="dropdown" aria-expanded="false" title="Mais Opções">
                                                     <i class="ri-more-2-fill"></i>
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-start action-dropdown-card shadow-lg">
@@ -1032,28 +1139,29 @@
                                                 @endif
 
                                                 </ul>
+                                                </div>
                                             </div>
                                         </form>
                                     </td>
 
-                                    {{-- 2ª Coluna: Cliente / Fornecedor (Identificação Principal) --}}
+                                    {{-- 2ª Coluna: Cliente / Fornecedor (Identificação com Avatar) --}}
                                     <td>
-                                        <div class="d-flex flex-column">
-                                            @if($item->cliente)
-                                                <strong class="text-dark">{{ $item->cliente->razao_social }}</strong>
-                                                <div class="d-flex align-items-center gap-2 mt-1">
-                                                    <span class="badge bg-light text-muted border fs-11">#{{ $item->numero_sequencial }}</span>
-                                                    <span class="text-muted fs-11">{{ $item->cliente->cpf_cnpj }}</span>
-                                                </div>
-                                            @else
-                                                <strong class="text-dark">{{ $item->fornecedor ? $item->fornecedor->razao_social : '--' }}</strong>
-                                                <div class="d-flex align-items-center gap-2 mt-1">
-                                                    <span class="badge bg-light text-muted border fs-11">#{{ $item->numero_sequencial }}</span>
-                                                    @if($item->fornecedor && $item->fornecedor->cpf_cnpj)
-                                                        <span class="text-muted fs-11">{{ $item->fornecedor->cpf_cnpj }}</span>
+                                        @php
+                                            $cliNome = $item->cliente ? $item->cliente->razao_social : ($item->fornecedor ? $item->fornecedor->razao_social : '--');
+                                            $cliDoc = $item->cliente ? $item->cliente->cpf_cnpj : ($item->fornecedor ? $item->fornecedor->cpf_cnpj : '');
+                                            $iniciais = mb_strtoupper(mb_substr($cliNome, 0, 2));
+                                        @endphp
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="cf-avatar-cliente">{{ $iniciais }}</div>
+                                            <div class="d-flex flex-column" style="min-width: 140px;">
+                                                <strong class="text-dark">{{ $cliNome }}</strong>
+                                                <div class="d-flex align-items-center gap-1 mt-0.5">
+                                                    <span class="badge bg-light text-muted border fs-10">#{{ $item->numero_sequencial }}</span>
+                                                    @if($cliDoc)
+                                                    <span class="text-muted fs-11">{{ $cliDoc }}</span>
                                                     @endif
                                                 </div>
-                                            @endif
+                                            </div>
                                         </div>
                                     </td>
 
@@ -1069,31 +1177,49 @@
                                     {{-- Usuário --}}
                                     <td class="fs-12 text-dark">{{ $item->user ? $item->user->name : '--' }}</td>
 
-                                    {{-- Nº Nota --}}
+                                    {{-- Nº Nota + Série + Ref Externa --}}
                                     <td>
-                                        <span class="fw-bold text-dark">{{ $item->numero ?: '--' }}</span>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold text-dark">{{ $item->numero ?: '--' }}</span>
+                                            <div class="d-flex align-items-center gap-1 mt-0.5">
+                                                <span class="fs-11 text-muted">Série {{ $item->serie ?? 1 }}</span>
+                                                @if($item->pedidoEcommerce)
+                                                <a title="Pedido E-commerce #{{ $item->pedidoEcommerce->id }}" class="badge bg-danger-subtle text-danger border border-danger-subtle text-decoration-none fs-10 px-1 py-0" href="{{ route('pedidos-ecommerce.show', [$item->pedidoEcommerce->id]) }}">EC #{{ $item->pedidoEcommerce->id }}</a>
+                                                @elseif($item->ordemServico)
+                                                <a title="Ordem de Serviço #{{ $item->ordemServico->id }}" class="badge bg-primary-subtle text-primary border border-primary-subtle text-decoration-none fs-10 px-1 py-0" href="{{ route('ordem-servico.show', [$item->ordemServico->id]) }}">OS #{{ $item->ordemServico->id }}</a>
+                                                @elseif($item->pedidoMercadoLivre)
+                                                <a title="Pedido Mercado Livre" class="badge bg-warning-subtle text-warning border border-warning-subtle text-decoration-none fs-10 px-1 py-0" href="{{ route('mercado-livre-pedidos.show', [$item->pedidoMercadoLivre->id]) }}">ML</a>
+                                                @elseif($item->pedidoNuvemShop)
+                                                <a title="Pedido Nuvem Shop" class="badge bg-dark-subtle text-dark border border-dark-subtle text-decoration-none fs-10 px-1 py-0" href="{{ route('nuvem-shop-pedidos.show', [$item->pedidoNuvemShop->pedido_id]) }}">NS</a>
+                                                @elseif($item->reserva)
+                                                <a title="Reserva" class="badge bg-secondary-subtle text-secondary border border-secondary-subtle text-decoration-none fs-10 px-1 py-0" href="{{ route('reservas.show', [$item->reserva->id]) }}">RS</a>
+                                                @elseif($item->pedidoWoocomerce)
+                                                <a title="Pedido WooCommerce" class="badge bg-info-subtle text-info border border-info-subtle text-decoration-none fs-10 px-1 py-0" href="{{ route('woocommerce-pedidos.show', [$item->pedidoWoocomerce->id]) }}">WO</a>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </td>
 
                                     {{-- Valor Total --}}
                                     <td>
-                                        <strong class="text-success" style="font-size: 13.5px;">R$ {{ __moeda($item->total) }}</strong>
+                                        <strong class="text-success fw-bold" style="font-size: 13.5px;">R$ {{ __moeda($item->total) }}</strong>
                                     </td>
 
                                     {{-- Estado e Ambiente Fiscal --}}
                                     @if(__isPlanoFiscal())
                                     <td>
                                         @if($item->estado == 'aprovado')
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-11">Aprovado</span>
+                                        <span class="pill pill-ok"><i class="ri-checkbox-circle-fill"></i> Aprovado</span>
                                         @elseif($item->estado == 'cancelado')
-                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fs-11">Cancelado</span>
+                                        <span class="pill pill-red"><i class="ri-close-circle-fill"></i> Cancelado</span>
                                         @elseif($item->estado == 'rejeitado')
-                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 fs-11">Rejeitado</span>
+                                        <span class="pill pill-amber"><i class="ri-error-warning-fill"></i> Rejeitado</span>
                                         @else
-                                        <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1 fs-11">Novo</span>
+                                        <span class="pill pill-no"><i class="ri-time-fill"></i> Novo</span>
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="badge bg-light text-dark border fs-11">
+                                        <span class="pill {{ $item->ambiente == 2 ? 'pill-amber' : 'pill-ok' }}" style="font-size: 11px; padding: 3px 8px;">
                                             {{ $item->ambiente == 2 ? 'Homolog.' : 'Produção' }}
                                         </span>
                                     </td>
@@ -1105,47 +1231,24 @@
                                     {{-- Emissão --}}
                                     <td class="fs-12 text-muted">{{ $item->data_emissao ? __data_pt($item->data_emissao, 1) : '--' }}</td>
 
-                                    {{-- Origem --}}
+                                    {{-- Tipo (Saída / Entrada + Tag API se houver) --}}
                                     <td>
-                                        @if($item->api)
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle fs-11">API</span>
-                                        @else
-                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-11">Painel</span>
-                                        @endif
-                                    </td>
-
-                                    {{-- Tipo (Saída / Entrada) --}}
-                                    <td>
-                                        @if($item->tpNF)
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle fs-11">Saída</span>
-                                        @else
-                                        <span class="badge bg-info-subtle text-info border border-info-subtle fs-11">Entrada</span>
-                                        @endif
-                                    </td>
-
-                                    {{-- Referência do Módulo Externo --}}
-                                    <td>
-                                        @if($item->pedidoEcommerce)
-                                        <a title="Pedido E-commerce" class="badge bg-danger text-white text-decoration-none" href="{{ route('pedidos-ecommerce.show', [$item->pedidoEcommerce->id]) }}">EC</a>
-                                        @elseif($item->ordemServico)
-                                        <a title="Ordem de Serviço" class="badge bg-primary text-white text-decoration-none" href="{{ route('ordem-servico.show', [$item->ordemServico->id]) }}">OS</a>
-                                        @elseif($item->pedidoMercadoLivre)
-                                        <a title="Pedido Mercado Livre" class="badge bg-warning text-dark text-decoration-none" href="{{ route('mercado-livre-pedidos.show', [$item->pedidoMercadoLivre->id]) }}">ML</a>
-                                        @elseif($item->pedidoNuvemShop)
-                                        <a title="Pedido Nuvem Shop" class="badge bg-dark text-white text-decoration-none" href="{{ route('nuvem-shop-pedidos.show', [$item->pedidoNuvemShop->pedido_id]) }}">NS</a>
-                                        @elseif($item->reserva)
-                                        <a title="Reserva" class="badge bg-secondary text-white text-decoration-none" href="{{ route('reservas.show', [$item->reserva->id]) }}">RS</a>
-                                        @elseif($item->pedidoWoocomerce)
-                                        <a title="Pedido WooCommerce" class="badge bg-info text-dark text-decoration-none" href="{{ route('woocommerce-pedidos.show', [$item->pedidoWoocomerce->id]) }}">WO</a>
-                                        @else
-                                        <span class="text-muted">--</span>
-                                        @endif
+                                        <div class="d-flex align-items-center gap-1">
+                                            @if($item->tpNF)
+                                            <span class="pill pill-ok" style="font-size: 11px; padding: 3px 8px;">Saída</span>
+                                            @else
+                                            <span class="pill pill-role" style="font-size: 11px; padding: 3px 8px;">Entrada</span>
+                                            @endif
+                                            @if($item->api)
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-10" title="Gerado via API">API</span>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="14">
-                                        <div class="modulo-empty">
+                                    <td colspan="99">
+                                        <div class="empty-state">
                                             <i class="ri-inbox-2-line"></i>
                                             <p>Nenhuma venda encontrada no período.</p>
                                         </div>
@@ -1155,27 +1258,24 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
 
-                <!-- Paginação & Soma -->
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mt-4 pt-3 border-top">
-                    <div class="d-flex align-items-center gap-3 flex-wrap">
-                        <div class="p-2 px-3 rounded-3 bg-light border">
-                            <span class="text-muted fs-12 text-uppercase fw-bold">Total nesta página:</span>
-                            <strong class="text-success fs-15 ms-1">R$ {{ __moeda($data->sum('total')) }}</strong>
+                    <!-- Paginação & Soma -->
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 p-3 border-top bg-light-subtle">
+                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                            <div class="p-2 px-3 rounded-2 bg-white border">
+                                <span class="text-muted fs-11 text-uppercase fw-bold">Total nesta página:</span>
+                                <strong class="text-success fs-14 ms-1">R$ {{ __moeda($data->sum('total')) }}</strong>
+                            </div>
+                            <span class="text-muted fs-12">
+                                Exibindo <strong>{{ $data->firstItem() ?? 0 }}</strong> a <strong>{{ $data->lastItem() ?? 0 }}</strong> de <strong>{{ $data->total() }}</strong> notas
+                            </span>
                         </div>
-                        <span class="text-muted fs-13">
-                            Exibindo <strong>{{ $data->firstItem() ?? 0 }}</strong> a <strong>{{ $data->lastItem() ?? 0 }}</strong> de <strong>{{ $data->total() }}</strong> notas <span class="badge bg-secondary-subtle text-secondary border fs-11 ms-1">10 por página</span>
-                        </span>
-                    </div>
-                    <div>
-                        {!! $data->appends(request()->all())->links() !!}
+                        <div>
+                            {!! $data->appends(request()->all())->links() !!}
+                        </div>
                     </div>
                 </div>
 
-            </div>
-        </div>
-    </div>
 </div>
 
 <!-- Modal Imprimir NFe -->
@@ -1543,5 +1643,49 @@
     function nfeAtualizarContadorCce(el) {
         $('#cce-char-count').text(el.value.length);
     }
+
+    // ─── Inicialização do Select2 com Busca AJAX de Cliente / Fornecedor ───
+    $(document).ready(function() {
+        $('#inp-cliente_id').select2({
+            minimumInputLength: 2,
+            language: "pt-BR",
+            placeholder: "Digite para buscar o cliente...",
+            width: "100%",
+            allowClear: true,
+            ajax: {
+                cache: true,
+                url: path_url + "api/clientes/pesquisa",
+                dataType: "json",
+                delay: 250,
+                data: function (params) {
+                    return {
+                        pesquisa: params.term,
+                        empresa_id: $("#empresa_id").val(),
+                    };
+                },
+                processResults: function (response) {
+                    var results = [];
+                    $.each(response, function (i, v) {
+                        results.push({
+                            id: v.id,
+                            text: v.razao_social + (v.cpf_cnpj ? " (" + v.cpf_cnpj + ")" : "")
+                        });
+                    });
+                    return {
+                        results: results,
+                    };
+                },
+            },
+        });
+
+        // Ao clicar no [x], limpa e esvazia as opções para permitir nova busca ou buscar sem cliente
+        $('#inp-cliente_id').on('select2:clear select2:unselecting', function (e) {
+            var $el = $(this);
+            setTimeout(function() {
+                $el.empty().append('<option value="" selected></option>');
+                $el.val('').trigger('change');
+            }, 10);
+        });
+    });
 </script>
 @endsection

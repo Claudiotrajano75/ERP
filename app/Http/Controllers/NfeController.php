@@ -161,7 +161,11 @@ class NfeController extends Controller
         ->paginate($request->get('per_page', env("PAGINACAO", 10)) ?: 10);
 
         $contigencia = $this->getContigencia($request->empresa_id);
-        return view('nfe.index', compact('data', 'contigencia'));
+        $cliente = null;
+        if (!empty($cliente_id)) {
+            $cliente = Cliente::find($cliente_id);
+        }
+        return view('nfe.index', compact('data', 'contigencia', 'cliente'));
     }
 
     public function create(Request $request)

@@ -53,29 +53,29 @@
         <input type="hidden" name="pedido_woocommerce_id" value="{{$item->id}}">
         @endif
 
-        <ul class="nav nav-pills nav-tabs-custom mb-4" id="pills-tab" role="tablist">
-            <li class="nav-item" role="presentation">
+        <ul class="nav nav-pills nav-tabs-custom mb-4 w-100" id="pills-tab" role="tablist">
+            <li class="nav-item flex-fill" role="presentation">
                 <a class="nav-link active" data-bs-toggle="pill" href="#cliente" role="tab" aria-selected="true">
-                    <i class="ri-file-user-fill"></i>
+                    <i class="ri-user-3-line"></i>
                     <span>@isset($isCompra) Fornecedor @else Cliente @endif</span>
                 </a>
             </li>
-            <li class="nav-item" role="presentation">
+            <li class="nav-item flex-fill" role="presentation">
                 <a class="nav-link" data-bs-toggle="pill" href="#produtos" role="tab" aria-selected="false">
-                    <i class="ri-box-2-line"></i>
+                    <i class="ri-shopping-bag-3-line"></i>
                     <span>Produtos</span>
                 </a>
             </li>
-            <li class="nav-item" role="presentation">
+            <li class="nav-item flex-fill" role="presentation">
                 <a class="nav-link" data-bs-toggle="pill" href="#transportadora" role="tab" aria-selected="false">
                     <i class="ri-truck-line"></i>
                     <span>Frete</span>
                 </a>
             </li>
-            <li class="nav-item" role="presentation">
+            <li class="nav-item flex-fill" role="presentation">
                 <a class="nav-link" data-bs-toggle="pill" href="#fatura" role="tab" aria-selected="false">
-                    <i class="ri-coins-line"></i>
-                    <span>Fatura</span>
+                    <i class="ri-bank-card-line"></i>
+                    <span>Fatura - Pagamentos</span>
                 </a>
             </li>
         </ul>
@@ -358,8 +358,8 @@
             <div class="tab-pane fade" id="produtos" role="tabpanel">
                 <div class="card card-secao-fiscal">
                     <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                        <h5><i class="ri-shopping-cart-2-line text-primary"></i> Grade de Itens da {{ isset($isCompra) ? 'Compra' : 'Venda' }}</h5>
-                        <button type="button" class="dash-btn dash-btn-primary btn-add-tr-nfe" style="font-size: 12px; padding: 6px 14px;">
+                        <h5><i class="ri-shopping-bag-3-line text-primary"></i> Grade de Itens da {{ isset($isCompra) ? 'Compra' : 'Venda' }}</h5>
+                        <button type="button" class="btn btn-primary btn-sm btn-add-tr-nfe" style="border-radius: 8px; font-weight: 700; padding: 6px 14px;">
                             <i class="ri-add-line"></i> Adicionar Produto
                         </button>
                     </div>
@@ -1238,30 +1238,50 @@
                     </div>
                 </div>
 
-                <!-- CARDS DE TOTAIS -->
-                <div class="row g-3 mb-2">
-                    <div class="col-md-3">
-                        <div class="p-3 bg-light rounded-3 border">
-                            <span class="text-muted fs-12 fw-semibold text-uppercase">Total Fatura</span>
-                            <h4 class="mb-0 mt-1 fw-bold text-dark total_fatura">R$ 0,00</h4>
+                <!-- CARDS DE TOTAIS (PADRÃO CENTRAL DE FATURAMENTO) -->
+                <div class="row g-3 mb-3">
+                    <div class="col-xl-3 col-md-6 col-12">
+                        <div class="p-3 bg-white rounded-3 border d-flex align-items-center gap-3">
+                            <div style="width: 42px; height: 42px; border-radius: 10px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+                                <i class="ri-shopping-cart-line"></i>
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <span class="text-muted fs-11 fw-bold text-uppercase d-block">Total Produtos</span>
+                                <h4 class="mb-0 mt-0.5 fw-bold text-dark total_prod fs-17">R$ 0,00</h4>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="p-3 bg-light rounded-3 border">
-                            <span class="text-muted fs-12 fw-semibold text-uppercase">Total Produtos</span>
-                            <h4 class="mb-0 mt-1 fw-bold text-dark total_prod">R$ 0,00</h4>
+                    <div class="col-xl-3 col-md-6 col-12">
+                        <div class="p-3 bg-white rounded-3 border d-flex align-items-center gap-3">
+                            <div style="width: 42px; height: 42px; border-radius: 10px; background: #fffbeb; color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+                                <i class="ri-truck-line"></i>
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <span class="text-muted fs-11 fw-bold text-uppercase d-block">Total Frete</span>
+                                <h4 class="mb-0 mt-0.5 fw-bold text-dark total_frete fs-17">R$ 0,00</h4>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="p-3 bg-light rounded-3 border">
-                            <span class="text-muted fs-12 fw-semibold text-uppercase">Total Frete</span>
-                            <h4 class="mb-0 mt-1 fw-bold text-dark total_frete">R$ 0,00</h4>
+                    <div class="col-xl-3 col-md-6 col-12">
+                        <div class="p-3 bg-white rounded-3 border d-flex align-items-center gap-3">
+                            <div style="width: 42px; height: 42px; border-radius: 10px; background: #f5f3ff; color: #7c3aed; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+                                <i class="ri-coins-line"></i>
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <span class="text-muted fs-11 fw-bold text-uppercase d-block">Total Fatura</span>
+                                <h4 class="mb-0 mt-0.5 fw-bold text-dark total_fatura fs-17">R$ 0,00</h4>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="p-3 bg-primary-subtle rounded-3 border border-primary-subtle">
-                            <span class="text-primary fs-12 fw-bold text-uppercase">Total da Nota Fiscal</span>
-                            <h4 class="mb-0 mt-1 fw-bold text-primary total_nfe">R$ 0,00</h4>
+                    <div class="col-xl-3 col-md-6 col-12">
+                        <div class="p-3 bg-primary-subtle rounded-3 border border-primary-subtle d-flex align-items-center gap-3">
+                            <div style="width: 42px; height: 42px; border-radius: 10px; background: #2563eb; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(37,99,235,0.25);">
+                                <i class="ri-file-text-line"></i>
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <span class="text-primary fs-11 fw-bold text-uppercase d-block">Total da Nota Fiscal</span>
+                                <h4 class="mb-0 mt-0.5 fw-bold text-primary total_nfe fs-18">R$ 0,00</h4>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1272,11 +1292,11 @@
 
     <!-- RODAPÉ DE AÇÕES -->
     <div class="col-12 modulo-actions d-flex align-items-center justify-content-end gap-2 mt-4">
-        <a href="{{ isset($isCompra) ? route('compras.index') : route('nfe.index') }}" class="dash-btn dash-btn-light">
+        <a href="{{ isset($isCompra) ? route('compras.index') : route('nfe.index') }}" class="btn-cf-voltar">
             <i class="ri-close-line me-1"></i> Cancelar
         </a>
-        <button type="button" class="dash-btn dash-btn-primary btn-salvar-nfe px-5">
-            <i class="ri-save-line me-1"></i> {{ isset($isCompra) ? 'Salvar Compra' : (isset($isOrcamento) && $isOrcamento == 1 ? 'Salvar Orçamento' : 'Salvar Venda') }}
+        <button type="button" class="btn-salvar-nfe">
+            <i class="ri-checkbox-circle-line me-1"></i> {{ isset($isCompra) ? 'Salvar Compra' : (isset($isOrcamento) && $isOrcamento == 1 ? 'Salvar Orçamento' : 'Salvar Venda') }}
         </button>
     </div>
 </div>

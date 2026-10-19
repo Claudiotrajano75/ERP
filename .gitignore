@@ -12,6 +12,7 @@
 /storage/framework/views/*
 /storage/framework/testing/*
 /storage/logs/*
+/storage/backups/*
 /storage/app/*
 !storage/app/public
 /public/storage

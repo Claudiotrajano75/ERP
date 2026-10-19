@@ -2,167 +2,238 @@
 
 @section('css')
 <style>
-/* ─── Padrão Oficial ERP Layout Modernization ─── */
+/* =====================================================
+   EDITAR NF-e / VENDA / COMPRA - PADRÃO CENTRAL
+   ===================================================== */
+.cf-wrap {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1e293b;
+}
+
+/* CABEÇALHO */
+.cf-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+.cf-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.cf-header-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.25);
+}
+.cf-page-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 2px;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.cf-page-subtitle {
+    font-size: 12px;
+    color: #64748b;
+    margin: 0;
+}
+.btn-cf-voltar {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #475569 !important;
+    font-weight: 600;
+    font-size: 12.5px;
+    border-radius: 8px;
+    padding: 8px 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    cursor: pointer;
+}
+.btn-cf-voltar:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a !important;
+    transform: translateY(-1px);
+}
+
+/* CARDS DE SEÇÃO FISCAL */
 .card-secao-fiscal {
-    border: 1px solid #eef2f6 !important;
+    border: 1px solid #f1f5f9 !important;
     border-radius: 12px !important;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.02) !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02) !important;
     margin-bottom: 20px !important;
     background: #ffffff;
 }
-
 .card-secao-fiscal .card-header {
     background: #f8fafc;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 1px solid #eef2f6;
     padding: 14px 20px;
     border-radius: 12px 12px 0 0 !important;
 }
-
 .card-secao-fiscal .card-header h5 {
     margin: 0;
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 700;
     color: #1e293b;
     display: flex;
     align-items: center;
     gap: 8px;
 }
-
 .card-secao-fiscal .card-body {
-    padding: 22px !important;
+    padding: 20px !important;
 }
 
-/* ─── Navegação por Abas (Tabs) ─── */
+/* NAVEGAÇÃO POR ABAS PILLS */
 .nav-tabs-custom {
-    background: #f8fafc;
+    background: #f1f5f9;
     padding: 6px;
-    border-radius: 14px;
+    border-radius: 12px;
     border: 1px solid #e2e8f0;
     margin-bottom: 24px;
     display: flex;
-    gap: 6px;
+    gap: 8px;
+    width: 100%;
 }
-
+.nav-tabs-custom .nav-item {
+    flex: 1 1 0;
+    display: flex;
+}
 .nav-tabs-custom .nav-link {
-    flex: 1;
+    width: 100%;
     border-radius: 10px !important;
-    padding: 11px 18px;
-    font-weight: 600;
-    font-size: 13.5px;
-    color: #64748b;
+    padding: 13px 20px;
+    font-weight: 700;
+    font-size: 14px;
+    color: #475569;
     border: none !important;
     background: transparent;
     text-align: center;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
+    min-height: 48px;
 }
-
+.nav-tabs-custom .nav-link i {
+    font-size: 18px;
+    transition: transform 0.2s ease;
+}
 .nav-tabs-custom .nav-link:hover {
-    color: #334155;
-    background: rgba(255, 255, 255, 0.7);
+    color: #1e293b;
+    background: rgba(255, 255, 255, 0.6);
 }
-
 .nav-tabs-custom .nav-link.active {
     background: #ffffff !important;
-    color: #4f46e5 !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    color: #2563eb !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12), 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.nav-tabs-custom .nav-link.active i {
+    transform: scale(1.1);
 }
 
-/* ─── Botões de Ação Squircle ─── */
-.act-group { display: inline-flex; gap: 6px; align-items: center; justify-content: flex-end; }
-.act-btn { 
-    width: 34px; 
-    height: 34px; 
-    border-radius: 10px; 
-    border: 1px solid transparent; 
-    display: inline-flex; 
-    align-items: center; 
-    justify-content: center; 
-    font-size: 15px; 
-    text-decoration: none; 
-    cursor: pointer; 
-    transition: all .2s ease; 
-    padding: 0;
-}
-.act-btn:hover { transform: translateY(-2px); text-decoration: none; }
-.act-edit { background: #eef2ff; color: #4f46e5; border-color: #c7d2fe; }
-.act-edit:hover { background: #e0e7ff; color: #3730a3; box-shadow: 0 4px 12px rgba(79,70,229,.2); }
-.act-del  { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
-.act-del:hover  { background: #fee2e2; color: #b91c1c; box-shadow: 0 4px 12px rgba(220,38,38,.2); }
-
-/* ─── Tabela ─── */
-.tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
-.tb-wrap table { margin-bottom: 0; }
-.tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 16px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
-.tb-wrap tbody td { padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13px; color: #374151; }
-.tb-wrap tbody tr:hover { background: #f5f6fe; }
-.tb-wrap tbody tr:last-child td { border-bottom: none; }
-
-/* ─── Botões de Ação Footer ─── */
+/* BOTÕES DE AÇÃO RODAPÉ */
 .modulo-actions {
     background: #f8fafc;
     border-top: 1px solid #eef0f5;
-    margin: 24px -24px -24px -24px;
-    padding: 20px 24px;
+    margin: 20px -20px -20px -20px;
+    padding: 16px 20px;
     border-radius: 0 0 12px 12px;
+}
+.btn-salvar-nfe {
+    background: #2563eb;
+    border: none;
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 13px;
+    border-radius: 8px;
+    padding: 10px 24px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    cursor: pointer;
+}
+.btn-salvar-nfe:hover {
+    background: #1d4ed8;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
 }
 </style>
 @endsection
 
 @section('content')
-<div class="mt-3 text-dark">
-    <div class="row justify-content-center">
-        <div class="col-lg-12">
-            <div class="card border-0 shadow-sm text-dark modulo-form-card">
-                
-                <!-- CABEÇALHO PREMIUM -->
-                <div class="card-header modulo-header-gradient py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                        <div>
-                            <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
-                                <i class="ri-pencil-line"></i>
-                                {{ $item->orcamento ? 'Editar Orçamento' : ($item->tpNF == 1 ? 'Editar Venda' : 'Editar Compra') }}
-                                <span class="badge bg-primary text-white fs-13 ms-2">#{{ $item->numero_sequencial }}</span>
-                            </h4>
-                            <p class="text-muted mb-0 modulo-subtitle fs-13">Altere as informações necessárias e grave as atualizações do documento fiscal.</p>
+<div class="mt-3">
+    <div class="row">
+        <div class="card border-0 shadow-sm text-dark">
+            <div class="card-header modulo-header-gradient py-3 px-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
+                            <i class="ri-pencil-line"></i>
+                            {{ $item->orcamento ? 'Editar Orçamento' : ($item->tpNF == 1 ? 'Editar Venda' : 'Editar Compra') }}
+                            <span class="badge bg-primary text-white fs-12 ms-2">#{{ $item->numero_sequencial }}</span>
                             @if(__countLocalAtivo() > 1 && isset($caixa))
-                            <p class="text-muted mb-0 modulo-subtitle fs-13">Local / Filial: <strong class="text-danger">{{ $caixa->localizacao ? $caixa->localizacao->descricao : '' }}</strong></p>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-12 ms-2">
+                                Filial: {{ $caixa->localizacao ? $caixa->localizacao->descricao : '' }}
+                            </span>
                             @endif
-                        </div>
-                        <div>
-                            @if($item->tpNF == 0)
-                            <a href="{{ route('compras.index') }}" class="dash-btn dash-btn-light">
-                                <i class="ri-arrow-left-line"></i> Voltar
-                            </a>
-                            @else
-                            <a href="{{ route('nfe.index') }}" class="dash-btn dash-btn-light">
-                                <i class="ri-arrow-left-line"></i> Voltar
-                            </a>
-                            @endif
-                        </div>
+                        </h4>
+                        <p class="text-muted mb-0 modulo-subtitle fs-13">Altere as informações necessárias e grave as atualizações do documento fiscal.</p>
+                    </div>
+
+                    <div class="d-flex gap-2 flex-wrap align-items-center">
+                        @if($item->tpNF == 0)
+                        <a href="{{ route('compras.index') }}" class="dash-btn dash-btn-light">
+                            <i class="ri-arrow-left-line"></i> Voltar
+                        </a>
+                        @else
+                        <a href="{{ route('nfe.index') }}" class="dash-btn dash-btn-light">
+                            <i class="ri-arrow-left-line"></i> Voltar
+                        </a>
+                        @endif
                     </div>
                 </div>
-
-                <!-- CORPO DO FORMULÁRIO -->
-                <div class="card-body p-4">
-                    {!!Form::open()->fill($item)
-                    ->put()
-                    ->id('form-nfe')
-                    ->route('nfe.update', [$item->id])
-                    ->multipart()
-                    !!}
-                    <div class="pl-lg-2">
-                        @include('nfe._forms')
-                    </div>
-                    {!!Form::close()!!}
-                </div>
-
             </div>
+
+            <div class="card-body p-4">
+            {!!Form::open()->fill($item)
+            ->put()
+            ->id('form-nfe')
+            ->route('nfe.update', [$item->id])
+            ->multipart()
+            !!}
+            <div>
+                @include('nfe._forms')
+            </div>
+            {!!Form::close()!!}
         </div>
     </div>
+</div>
 </div>
 
 @section('js')

@@ -29,10 +29,15 @@ class ClienteController extends Controller
 
     public function pesquisa(Request $request)
     {
-        $data = Cliente::orderBy('razao_social', 'desc')
+        $pesquisa = $request->pesquisa;
+        $data = Cliente::orderBy('razao_social', 'asc')
         ->where('empresa_id', $request->empresa_id)
         ->where('status', 1)
-        ->where('razao_social', 'like', "%$request->pesquisa%")
+        ->where(function($q) use ($pesquisa) {
+            $q->where('razao_social', 'like', "%$pesquisa%")
+              ->orWhere('nome_fantasia', 'like', "%$pesquisa%")
+              ->orWhere('cpf_cnpj', 'like', "%$pesquisa%");
+        })
         ->get();
         return response()->json($data, 200);
     }

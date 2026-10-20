@@ -506,6 +506,9 @@
                             <a href="{{ route('compras.xml') }}" class="dash-btn dash-btn-light">
                                 <i class="ri-file-upload-line"></i> Importar XML
                             </a>
+                            <button type="button" onclick="imprimirRelatorioCompras()" class="dash-btn dash-btn-light" title="Imprimir Relatório com os filtros">
+                                <i class="ri-printer-line"></i> Imprimir Relatório
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -538,7 +541,7 @@
 
                     <form method="get" action="{{ route('compras.index') }}">
                         <div class="row g-3 align-items-end">
-                            <div class="col-md-4 col-12">
+                            <div class="col-md-3 col-12">
                                 <label class="form-label"><i class="ri-truck-line"></i> Fornecedor</label>
                                 <select class="select2 form-select" name="fornecedor_id">
                                     <option value="">Selecione</option>
@@ -576,9 +579,12 @@
                                 </select>
                             </div>
                             @endif
-                            <div class="col-md-2 col-12 ms-auto d-flex gap-2">
-                                <button class="btn btn-primary flex-grow-1" style="border-radius:10px;" type="submit">
+                            <div class="col-md-3 col-12 ms-auto d-flex gap-2">
+                                <button class="btn btn-primary flex-grow-1" style="border-radius:10px; white-space: nowrap;" type="submit">
                                     <i class="ri-search-line"></i> Buscar
+                                </button>
+                                <button type="button" class="btn btn-outline-primary border px-3" onclick="imprimirRelatorioCompras()" style="border-radius:10px;" title="Imprimir Relatório em PDF">
+                                    <i class="ri-printer-line"></i>
                                 </button>
                                 <a class="btn btn-light border px-3" style="border-radius:10px;" href="{{ route('compras.index') }}" title="Limpar Filtros">
                                     <i class="ri-eraser-line"></i>
@@ -1214,6 +1220,13 @@
 
             function comprasAtualizarContadorCce(el) {
                 $('#cce-char-count').text(el.value.length);
+            }
+
+            function imprimirRelatorioCompras() {
+                let form = $('form[action="{{ route('compras.index') }}"]');
+                let params = form.serialize();
+                let url = "{{ route('compras.relatorio-pdf') }}" + (params ? '?' + params : '');
+                window.open(url, '_blank');
             }
         </script>
     @endsection

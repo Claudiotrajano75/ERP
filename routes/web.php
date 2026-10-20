@@ -429,6 +429,7 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         Route::get('/compras-etiqueta/{id}', 'CompraController@etiqueta')->name('compras.etiqueta');
         Route::post('/compras-etiqueta-store/{id}', 'CompraController@etiquetaStore')->name('compras.etiqueta-store');
 
+        Route::get('/compras-relatorio-pdf', 'CompraController@relatorioPdf')->name('compras.relatorio-pdf');
         Route::resource('compras', 'CompraController');
         Route::resource('relacao-dados-fornecedor', 'RelacaoDadosFornecedorController');
         Route::resource('cotacoes', 'CotacaoController');

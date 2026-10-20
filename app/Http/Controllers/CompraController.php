@@ -41,7 +41,7 @@ class CompraController extends Controller
         $this->util = $util;
         $this->middleware('permission:compras_create', ['only' => ['create', 'store']]);
         $this->middleware('permission:compras_edit', ['only' => ['edit', 'update']]);
-        $this->middleware('permission:compras_view', ['only' => ['show', 'index']]);
+        $this->middleware('permission:compras_view', ['only' => ['show', 'index', 'relatorioPdf']]);
         $this->middleware('permission:compras_delete', ['only' => ['destroy']]);
     }
 
@@ -128,6 +128,103 @@ class CompraController extends Controller
         ];
 
         return view('compras.index', compact('data', 'fornecedores', 'contigencia', 'stats'));
+    }
+
+    public function relatorioPdf(Request $request)
+    {
+        $locais = auth()->check() ? __getLocaisAtivoUsuario() : collect();
+        $locaisIds = $locais ? $locais->pluck('id')->toArray() : [];
+
+        $start_date = $request->get('start_date');
+        $end_date = $request->get('end_date');
+        $fornecedor_id = $request->get('fornecedor_id');
+        $estado = $request->get('estado');
+        $local_id = $request->get('local_id');
+
+        $query = Nfe::with(['fornecedor', 'localizacao'])
+            ->where('empresa_id', request()->empresa_id)
+            ->where('tpNF', 0)
+            ->when(!empty($start_date), function ($q) use ($start_date) {
+                return $q->whereDate('created_at', '>=', $start_date);
+            })
+            ->when(!empty($end_date), function ($q) use ($end_date) {
+                return $q->whereDate('created_at', '<=', $end_date);
+            })
+            ->when(!empty($fornecedor_id), function ($q) use ($fornecedor_id) {
+                return $q->where('fornecedor_id', $fornecedor_id);
+            })
+            ->when($estado != "", function ($q) use ($estado) {
+                return $q->where('estado', $estado);
+            })
+            ->when($local_id, function ($q) use ($local_id) {
+                return $q->where('local_id', $local_id);
+            })
+            ->when(!$local_id && !empty($locaisIds), function ($q) use ($locaisIds) {
+                return $q->whereIn('local_id', $locaisIds);
+            })
+            ->orderBy('created_at', 'desc');
+
+        $data = $query->get();
+
+        $stats = [
+            'total'           => $data->count(),
+            'aprovadas'       => $data->where('estado', 'aprovado')->count(),
+            'canceladas'      => $data->where('estado', 'cancelado')->count(),
+            'novas'           => $data->where('estado', 'novo')->count(),
+            'rejeitadas'      => $data->where('estado', 'rejeitado')->count(),
+            'valor_aprovadas' => $data->where('estado', 'aprovado')->sum('total'),
+            'valor_total'     => $data->sum('total'),
+        ];
+
+        $fornecedor_selecionado = null;
+        if (!empty($fornecedor_id)) {
+            $fornecedor_selecionado = Fornecedor::where('empresa_id', request()->empresa_id)->find($fornecedor_id);
+        }
+
+        $local_selecionado = null;
+        if (!empty($local_id)) {
+            $local_selecionado = \App\Models\Localizacao::find($local_id);
+        }
+
+        $empresa = Empresa::findOrFail(request()->empresa_id);
+
+        $logoBase64 = null;
+        if (!empty($empresa->logo) && file_exists(public_path('uploads/logos/' . $empresa->logo))) {
+            $logoPath = public_path('uploads/logos/' . $empresa->logo);
+            $mime = @mime_content_type($logoPath) ?: 'image/png';
+            $logoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($logoPath));
+        } elseif (file_exists(public_path('logo.png'))) {
+            $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('logo.png')));
+        }
+
+        $countLocais = \App\Models\Localizacao::where('empresa_id', $empresa->id)->where('status', 1)->count();
+
+        $html = view('compras.relatorio_pdf', compact(
+            'data',
+            'stats',
+            'empresa',
+            'logoBase64',
+            'countLocais',
+            'start_date',
+            'end_date',
+            'fornecedor_selecionado',
+            'local_selecionado',
+            'estado'
+        ))->render();
+
+        $options = new \Dompdf\Options();
+        $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
+
+        $domPdf = new \Dompdf\Dompdf($options);
+        $domPdf->loadHtml($html);
+        $domPdf->setPaper('A4', 'landscape');
+        $domPdf->render();
+
+        $nomeArquivo = 'Relatorio_Compras_' . date('d_m_Y_His') . '.pdf';
+        return response($domPdf->output(), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="' . $nomeArquivo . '"');
     }
 
     /**

@@ -500,6 +500,7 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         Route::post('bairros-empresa-super', 'BairroEmpresaController@setBairros')->name('bairros-empresa.super');
 
         Route::post('mdfe/importar-xml', 'MdfeController@importarXml')->name('mdfe.importar-xml');
+        Route::post('mdfe/importar-manifesto', 'MdfeController@importarManifesto')->name('mdfe.importar-manifesto');
         Route::resource('mdfe', 'MdfeController');
         Route::get('mdfe-inutilizar', 'MdfeController@inutilizar')->name('mdfe.inutilizar');
         Route::post('mdfe-inutilizar-store', 'MdfeController@inutilStore')->name('mdfe-inutilizar.store');

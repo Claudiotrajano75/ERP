@@ -19,6 +19,7 @@ use App\Models\UnidadeCarga;
 use App\Models\ValePedagio;
 use App\Models\Veiculo;
 use App\Services\MdfeAutoFillService;
+use App\Services\MdfeImportService;
 use App\Services\MDFeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -41,7 +42,7 @@ class MdfeController extends Controller
             mkdir(public_path('xml_mdfe_correcao'), 0777, true);
         }
 
-        $this->middleware('permission:mdfe_create', ['only' => ['create', 'store', 'importarXml']]);
+        $this->middleware('permission:mdfe_create', ['only' => ['create', 'store', 'importarXml', 'importarManifesto']]);
         $this->middleware('permission:mdfe_edit', ['only' => ['edit', 'update']]);
         $this->middleware('permission:mdfe_view', ['only' => ['show', 'index']]);
         $this->middleware('permission:mdfe_delete', ['only' => ['destroy']]);
@@ -153,6 +154,49 @@ class MdfeController extends Controller
             __createLog(request()->empresa_id, 'MDFe', 'erro', 'Importação de XML: ' . $e->getMessage());
 
             return response()->json(['erro' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Importa um ou mais arquivos XML de MDF-e já emitidos (individual ou em pacote ZIP)
+     * e grava o registro diretamente no banco de dados e o arquivo físico no disco.
+     */
+    public function importarManifesto(Request $request)
+    {
+        $request->validate([
+            'arquivo' => 'required|file|max:20480',
+        ], [
+            'arquivo.required' => 'Selecione um arquivo XML ou ZIP para importar.',
+            'arquivo.file' => 'O arquivo enviado não é válido.',
+            'arquivo.max' => 'O arquivo não pode exceder 20MB.',
+        ]);
+
+        try {
+            $servico = new MdfeImportService();
+            $resultado = $servico->importarArquivo($request->file('arquivo'), $request->empresa_id);
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'sucesso' => true,
+                    'mensagem' => $resultado['mensagem'],
+                    'dados' => $resultado
+                ], 200);
+            }
+
+            session()->flash('flash_success', $resultado['mensagem']);
+            return redirect()->route('mdfe.index');
+        } catch (\Exception $e) {
+            __createLog($request->empresa_id, 'MDFe', 'erro', 'Importar manifesto MDF-e: ' . $e->getMessage());
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'sucesso' => false,
+                    'erro' => $e->getMessage()
+                ], 422);
+            }
+
+            session()->flash('flash_error', 'Erro ao importar MDF-e: ' . $e->getMessage());
+            return redirect()->back();
         }
     }
 

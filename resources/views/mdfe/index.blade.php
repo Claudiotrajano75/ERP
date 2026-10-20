@@ -312,6 +312,9 @@
                             <button type="button" class="dash-btn dash-btn-primary" data-bs-toggle="modal" data-bs-target="#modal-importar_documentos">
                                 <i class="ri-add-circle-line"></i> Nova MDF-e
                             </button>
+                            <button type="button" class="dash-btn dash-btn-light" id="btn-modal-importar-mdfe" data-bs-toggle="modal" data-bs-target="#modal-importar-mdfe">
+                                <i class="ri-file-code-line"></i> Importar MDF-e
+                            </button>
                             <button class="dash-btn dash-btn-light" id="btn-importar_nfe"
                                 data-bs-toggle="modal" data-bs-target="#modal-importar_nfe">
                                 <i class="ri-file-upload-line"></i> Selecionar NFe
@@ -822,6 +825,7 @@
 
 @include('modals._importar_nfe')
 @include('modals._importar_documentos')
+@include('modals._importar_mdfe')
 
 @endsection
 

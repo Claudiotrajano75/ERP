@@ -5,6 +5,14 @@
         $valCargaNum = floatval($item->valor_carga);
         $pesoCargaNum = floatval($item->quantidade_carga);
         $valorPorDoc = $qtdDocs > 0 ? ($valCargaNum / $qtdDocs) : 0;
+
+        // Soma total dos rateios para garantir consistência com o peso total da carga
+        $somaRateioDocs = 0;
+        foreach ($item->infoDescarga as $info) {
+            $somaRateioDocs += floatval($info->quantidade_rateio);
+        }
+        $recalcularRateio = ($somaRateioDocs <= 0 || ($pesoCargaNum > 0 && abs($somaRateioDocs - $pesoCargaNum) > 0.05));
+
         foreach ($item->infoDescarga as $info) {
             $chave = '';
             if ($info->nfe && !empty($info->nfe->chave)) {
@@ -16,7 +24,9 @@
             $serieDoc = (strlen($chave) === 44) ? (string) (int) substr($chave, 22, 3) : '1';
             
             $pesoDoc = floatval($info->quantidade_rateio);
-            if ($qtdDocs === 1 && $pesoCargaNum > 0) {
+            if ($recalcularRateio && $qtdDocs > 0 && $pesoCargaNum > 0) {
+                $pesoDoc = $pesoCargaNum / $qtdDocs;
+            } elseif ($qtdDocs === 1 && $pesoCargaNum > 0) {
                 $pesoDoc = $pesoCargaNum;
             } elseif ($pesoDoc <= 0 && $qtdDocs > 0) {
                 $pesoDoc = $pesoCargaNum / $qtdDocs;

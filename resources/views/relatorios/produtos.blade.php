@@ -32,7 +32,25 @@
 		@foreach($data as $key => $item)
 		<tr class="@if($key%2 == 0) pure-table-odd @endif">
 			<td>
-				<img src="{{'data:image/png;base64,' . base64_encode(file_get_contents(@public_path('').$item->img))}}" alt="logo" class="mr-3" style="width: 30px">
+				@php
+					$prodImgSrc = '';
+					if (!empty($item->img)) {
+						$imgPath = public_path($item->img);
+						if (file_exists($imgPath) && is_file($imgPath)) {
+							$rawImg = @file_get_contents($imgPath);
+							if ($rawImg !== false && strlen($rawImg) > 0) {
+								$ext = strtolower(pathinfo($imgPath, PATHINFO_EXTENSION));
+								$mime = in_array($ext, ['jpg', 'jpeg']) ? 'image/jpeg' : 'image/png';
+								$prodImgSrc = 'data:' . $mime . ';base64,' . base64_encode($rawImg);
+							}
+						}
+					}
+				@endphp
+				@if(!empty($prodImgSrc))
+				<img src="{{ $prodImgSrc }}" alt="logo" class="mr-3" style="width: 30px">
+				@else
+				<span style="display:inline-block; width:30px; height:30px; line-height:30px; text-align:center; background:#eee; color:#999; font-size:10px; border-radius:4px;">SEM</span>
+				@endif
 			</td>
 			<td>{{ $item->nome }}</td>
 			<td>{{ __moeda($item->valor_unitario) }}</td>

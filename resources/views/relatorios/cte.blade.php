@@ -19,8 +19,8 @@
 	<tbody>
 		@foreach($data as $key => $item)
 		<tr class="@if($key%2 == 0) pure-table-odd @endif">
-			<td>{{ $item->remetente->razao_social }}</td>
-			<td>{{ $item->destinatario->razao_social }}</td>
+			<td>{{ $item->remetente ? $item->remetente->razao_social : '--' }}</td>
+			<td>{{ $item->destinatario ? $item->destinatario->razao_social : '--' }}</td>
 
 			<td>{{ __moeda($item->valor_receber) }}</td>
 			<td>{{ $item->numero }}</td>
@@ -28,7 +28,7 @@
 			<td>{{ strtoupper($item->estado) }}</td>
 			<td>{{ __data_pt($item->created_at) }}</td>
 			@if(__countLocalAtivo() > 1)
-			<td class="text-danger">{{ $item->localizacao->descricao }}</td>
+			<td class="text-danger">{{ $item->localizacao ? $item->localizacao->descricao : '--' }}</td>
 			@endif
 		</tr>
 		@endforeach

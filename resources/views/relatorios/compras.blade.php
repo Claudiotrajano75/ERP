@@ -20,7 +20,7 @@
                 {{ $item->id }}
             </td>
             <td>
-            {{ $item->fornecedor->razao_social }}
+            {{ $item->fornecedor ? $item->fornecedor->razao_social : '--' }}
             </td>
             <td>
                 {{ __data_pt($item->created_at) }}
@@ -29,7 +29,7 @@
                 {{ __moeda($item->total) }}
             </td>
             @if(__countLocalAtivo() > 1)
-            <td class="text-danger">{{ $item->localizacao->descricao }}</td>
+            <td class="text-danger">{{ $item->localizacao ? $item->localizacao->descricao : '--' }}</td>
             @endif
         </tr>
         @endforeach

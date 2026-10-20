@@ -36,7 +36,9 @@ class RelatorioController extends Controller
         $categorias = CategoriaProduto::where('empresa_id', request()->empresa_id)->get();
         $funcionarios = Funcionario::where('empresa_id', request()->empresa_id)->get();
         $tiposDespesaFrete = TipoDespesaFrete::where('empresa_id', request()->empresa_id)->get();
-        return view('relatorios.index', compact('funcionarios', 'marcas', 'categorias', 'tiposDespesaFrete'));
+        $clientes = Cliente::where('empresa_id', request()->empresa_id)->orderBy('razao_social')->get();
+        $produtos = Produto::where('empresa_id', request()->empresa_id)->where('status', 1)->orderBy('nome')->get();
+        return view('relatorios.index', compact('funcionarios', 'marcas', 'categorias', 'tiposDespesaFrete', 'clientes', 'produtos'));
     }
 
     public function produtos(Request $request)
@@ -558,8 +560,7 @@ class RelatorioController extends Controller
         ->when(!empty($end_date), function ($query) use ($end_date) {
             return $query->whereDate('created_at', '<=', $end_date);
         })
-        ->where('nves.empresa_id', $request->empresa_id)
-        ->where('nves.estado', '!=', 'cancelado')
+        ->where('estado', '!=', 'cancelado')
         ->limit($total_resultados ?? 1000000)
         ->when($local_id, function ($query) use ($local_id) {
             return $query->where('local_id', $local_id);
@@ -576,8 +577,7 @@ class RelatorioController extends Controller
         ->when(!empty($end_date), function ($query) use ($end_date) {
             return $query->whereDate('created_at', '<=', $end_date);
         })
-        ->where('nfces.empresa_id', $request->empresa_id)
-        ->where('nfces.estado', '!=', 'cancelado')
+        ->where('estado', '!=', 'cancelado')
         ->limit($total_resultados ?? 1000000)
         ->when($local_id, function ($query) use ($local_id) {
             return $query->where('local_id', $local_id);
@@ -1084,7 +1084,11 @@ class RelatorioController extends Controller
         usort($data, function($a, $b) use ($ordem){
             if($ordem == 'asc') return $a['quantidade'] > $b['quantidade'] ? 1 : 0;
             else if($ordem == 'desc') return $a['quantidade'] < $b['quantidade'] ? 1 : 0;
-            else return $a['produto']->nome > $b['produto']->nome ? 1 : 0;
+            else {
+                $nomeA = (isset($a['produto']) && $a['produto']) ? $a['produto']->nome : '';
+                $nomeB = (isset($b['produto']) && $b['produto']) ? $b['produto']->nome : '';
+                return strcmp($nomeA, $nomeB);
+            }
         });
         return $data;
     }
@@ -1092,14 +1096,15 @@ class RelatorioController extends Controller
     private function calculaCusto($itens){
         $custo = 0;
         foreach($itens as $i){
-            $custo += $i->quantidade * $i->produto->valor_compra;
+            $valorCompra = ($i->produto) ? (float)$i->produto->valor_compra : 0;
+            $custo += $i->quantidade * $valorCompra;
         }
         return $custo;
     }
 
     private function jaAdicionadoProduto($array, $produtoId){
         for($i=0; $i<sizeof($array); $i++){
-            if($array[$i]['produto']->id == $produtoId){
+            if(isset($array[$i]['produto']) && $array[$i]['produto'] && $array[$i]['produto']->id == $produtoId){
                 return $i;
             }
         }

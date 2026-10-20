@@ -623,12 +623,38 @@
 		}
 
 	</style>
+	@php
+		$logoSrc = '';
+		$empresaAtiva = isset($empresa) ? $empresa : (request()->empresa_id ? \App\Models\Empresa::find(request()->empresa_id) : null);
+		$candidatosLogo = [];
+		if ($empresaAtiva && !empty($empresaAtiva->logo)) {
+			$candidatosLogo[] = public_path('uploads/logos/' . $empresaAtiva->logo);
+			$candidatosLogo[] = public_path($empresaAtiva->logo);
+		}
+		$candidatosLogo[] = public_path('logo.png');
+		$candidatosLogo[] = public_path('imgs/logo.png');
+		$candidatosLogo[] = public_path('logo.jpg');
+		$candidatosLogo[] = public_path('imgs/logo.jpg');
+
+		foreach ($candidatosLogo as $path) {
+			if ($path && file_exists($path) && is_file($path)) {
+				$raw = @file_get_contents($path);
+				if ($raw !== false && strlen($raw) > 0) {
+					$ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+					$mime = in_array($ext, ['jpg', 'jpeg']) ? 'image/jpeg' : 'image/png';
+					$logoSrc = 'data:' . $mime . ';base64,' . base64_encode($raw);
+					break;
+				}
+			}
+		}
+	@endphp
 </head>
 <header>
 	<div class="headReport" style="display:flex; justify-content:  padding-top:1rem">
 
-
-		<img style="margin-top: -75px;" src="{{'data:image/png;base64,' . base64_encode(file_get_contents(@public_path('logo.png')))}}" alt="Logo" class="mb-2">
+		@if(!empty($logoSrc))
+		<img style="margin-top: -75px;" src="{{ $logoSrc }}" alt="Logo" class="mb-2">
+		@endif
 
 		<div class="row text-right">
 			<div class="col-12" style="margin-top: -50px;">
@@ -654,8 +680,9 @@
 					{{env('SITE_SUPORTE')}}
 				</td>
 				<td class="text-right">
-					
-					<img src="{{'data:image/png;base64,' . base64_encode(file_get_contents(@public_path('logo.png')))}}" alt="Logo" class="mr-3">
+					@if(!empty($logoSrc))
+					<img src="{{ $logoSrc }}" alt="Logo" class="mr-3">
+					@endif
 				</td>
 			</tr>
 		</tbody>

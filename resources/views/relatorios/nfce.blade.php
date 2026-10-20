@@ -26,7 +26,7 @@
 			<td>{{ strtoupper($item->estado) }}</td>
 			<td>{{ __data_pt($item->data_emissao) }}</td>
 			@if(__countLocalAtivo() > 1)
-			<td class="text-danger">{{ $item->localizacao->descricao }}</td>
+			<td class="text-danger">{{ $item->localizacao ? $item->localizacao->descricao : '--' }}</td>
 			@endif
 		</tr>
 		@endforeach

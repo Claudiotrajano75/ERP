@@ -26,7 +26,7 @@
     <tbody>
         @foreach($data as $key => $item)
         <tr class="@if($key%2 == 0) pure-table-odd @endif">
-            <td>{{ $item->funcionario->nome }}</td>
+            <td>{{ $item->funcionario ? $item->funcionario->nome : '--' }}</td>
             <td>{{ $item->tabela == 'nfce' ? 'PDV' : 'Pedido' }}</td>
             <td>
                 @if($item->status)

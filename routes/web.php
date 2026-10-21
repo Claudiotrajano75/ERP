@@ -889,6 +889,16 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         Route::resource('config-geral', 'ConfigGeralController');
 
         // ═══════════════════════════════════════════════════════════
+        // BACKUP DA EMPRESA
+        // ═══════════════════════════════════════════════════════════
+        Route::prefix('backup-empresa')->group(function () {
+            Route::post('/gerar', 'BackupEmpresaController@gerar')->name('backup-empresa.gerar');
+            Route::get('/listar', 'BackupEmpresaController@listar')->name('backup-empresa.listar');
+            Route::get('/download-servidor', 'BackupEmpresaController@downloadServidor')->name('backup-empresa.download-servidor');
+            Route::delete('/remover-servidor', 'BackupEmpresaController@removerServidor')->name('backup-empresa.remover-servidor');
+        });
+
+        // ═══════════════════════════════════════════════════════════
         // IMPRESSORA TERMICA - Rotas de impressao
         // ═══════════════════════════════════════════════════════════
         Route::prefix('print')->group(function () {

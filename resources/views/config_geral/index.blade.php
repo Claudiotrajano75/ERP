@@ -95,6 +95,51 @@
     cursor: pointer;
     accent-color: #4f46e5;
 }
+
+/* ─── Aba Backup ─── */
+.backup-card {
+    border: 1px solid #eef0f6;
+    border-radius: 14px;
+    background: #fff;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+.backup-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    background: #f8fafc;
+    border-bottom: 1px solid #eef0f6;
+}
+.backup-card-header h5 { margin: 0; font-size: 14px; font-weight: 700; color: #1e293b; }
+.backup-card-body { padding: 22px; }
+.backup-btn-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+}
+.backup-info-box {
+    background: #f0f4ff;
+    border: 1px solid #d4dcff;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 12.5px;
+    color: #3730a3;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 18px;
+}
+.backup-info-box i { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.backup-history-table th { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: .4px; background: #f8fafc; }
+.backup-history-table td { font-size: 13px; vertical-align: middle; }
+.backup-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 6px; font-size: 11.5px; font-weight: 600; }
+.backup-badge-sql { background: #dcfce7; color: #15803d; }
+.backup-progress { display: none; margin-top: 14px; }
+.backup-spinner { width: 18px; height: 18px; border: 3px solid #e0e7ff; border-top-color: #4f46e5; border-radius: 50%; animation: bspin .7s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+@keyframes bspin { to { transform: rotate(360deg); } }
 </style>
 @endsection
 
@@ -155,6 +200,12 @@
                             <a class="nav-link" data-bs-toggle="pill" href="#tab-alertas" role="tab">
                                 <i class="ri-notification-3-line"></i>
                                 <span>Alertas & Notificações</span>
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" data-bs-toggle="pill" href="#tab-backup" role="tab">
+                                <i class="ri-database-2-line"></i>
+                                <span>Backup</span>
                             </a>
                         </li>
                     </ul>
@@ -439,10 +490,96 @@
                             </div>
                         </div>
 
-                    </div>
+                        <!-- ══════════════ ABA 5: BACKUP DA EMPRESA ══════════════ -->
+                        <div class="tab-pane fade" id="tab-backup" role="tabpanel">
 
-                    <!-- ═══ BOTÃO SALVAR ═══ -->
-                    <div class="d-flex align-items-center justify-content-end gap-2 pt-3 mt-3 border-top">
+                            {{-- Aviso informativo --}}
+                            <div class="backup-info-box">
+                                <i class="ri-shield-check-line"></i>
+                                <div>
+                                    <strong>Backup de Dados da Empresa</strong><br>
+                                    O backup exporta <strong>apenas os dados desta empresa</strong> (filtrados por empresa_id).
+                                    Nenhum dado de outras empresas é incluído. Recomendamos realizar backups regularmente.
+                                </div>
+                            </div>
+
+                            <div class="row g-4">
+
+                                {{-- CARD 1: DOWNLOAD DIRETO --}}
+                                <div class="col-12 col-lg-6">
+                                    <div class="backup-card">
+                                        <div class="backup-card-header">
+                                            <i class="ri-download-cloud-2-line fs-20" style="color:#4f46e5;"></i>
+                                            <h5>Download Direto</h5>
+                                        </div>
+                                        <div class="backup-card-body">
+                                            <p class="text-muted fs-13 mb-3">
+                                                Gera e baixa imediatamente um arquivo <code>.sql</code> com todos os dados desta empresa.
+                                                Salve o arquivo em local seguro.
+                                            </p>
+                                            <button type="button" class="dash-btn dash-btn-primary w-100" id="btn-backup-download" onclick="iniciarBackup('download')">
+                                                <i class="ri-download-2-line me-1"></i> Gerar e Baixar Backup
+                                            </button>
+                                            <div class="backup-progress" id="progress-download">
+                                                <span class="backup-spinner"></span>
+                                                <span class="fs-13 text-muted">Gerando backup, aguarde...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- CARD 2: SALVAR NO SERVIDOR --}}
+                                <div class="col-12 col-lg-6">
+                                    <div class="backup-card">
+                                        <div class="backup-card-header">
+                                            <i class="ri-server-line fs-20" style="color:#10b981;"></i>
+                                            <h5>Salvar no Servidor</h5>
+                                        </div>
+                                        <div class="backup-card-body">
+                                            <p class="text-muted fs-13 mb-3">
+                                                Salva o backup na pasta <code>storage/app/backups/</code> do servidor (Hostinger).
+                                                Útil para manter histórico automático sem baixar o arquivo.
+                                            </p>
+                                            <button type="button" class="dash-btn w-100" style="background:#10b981;color:#fff;border:none;" id="btn-backup-servidor" onclick="iniciarBackup('servidor')">
+                                                <i class="ri-save-line me-1"></i> Salvar Backup no Servidor
+                                            </button>
+                                            <div class="backup-progress" id="progress-servidor">
+                                                <span class="backup-spinner"></span>
+                                                <span class="fs-13 text-muted">Salvando no servidor, aguarde...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            {{-- HISTÓRICO DE BACKUPS NO SERVIDOR --}}
+                            <div class="backup-card mt-2">
+                                <div class="backup-card-header d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="ri-history-line fs-18" style="color:#64748b;"></i>
+                                        <h5>Histórico de Backups no Servidor</h5>
+                                    </div>
+                                    <button type="button" class="dash-btn dash-btn-light" onclick="carregarHistoricoBackup()" id="btn-refresh-backup">
+                                        <i class="ri-refresh-line"></i> Atualizar
+                                    </button>
+                                </div>
+                                <div class="backup-card-body">
+                                    <div id="backup-history-container">
+                                        <div class="text-center py-4 text-muted fs-13">
+                                            <i class="ri-inbox-2-line fs-30 d-block mb-2"></i>
+                                            Clique em "Atualizar" para ver os backups salvos no servidor.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>{{-- /config-tabContent --}}
+
+                    <!-- ═══ BOTÃO SALVAR CONFIGURAÇÕES GERAIS ═══ -->
+                    <div class="d-flex align-items-center justify-content-end gap-2 pt-3 mt-3 border-top" id="footer-config-salvar">
                         <a href="{{ route('home') }}" class="dash-btn dash-btn-light">
                             <i class="ri-close-line me-1"></i> Cancelar
                         </a>
@@ -452,6 +589,12 @@
                     </div>
 
                     {!!Form::close()!!}
+
+                    {{-- Form autônomo para ações de backup (fora do form de config-geral para não aninhar tags form) --}}
+                    <form id="form-backup-executar" method="POST" action="{{ route('backup-empresa.gerar') }}" style="display:none;">
+                        @csrf
+                        <input type="hidden" name="acao" id="input-backup-acao" value="download">
+                    </form>
                 </div>
 
             </div>
@@ -609,6 +752,89 @@ $(document).ready(function() {
     $('#printer-status-toggle').on('change', atualizarCamposImpressora);
     $('#printer-tipo-select').on('change', atualizarCamposImpressora);
     atualizarCamposImpressora();
+});
+
+// ─── Backup: execução e controle ─────────────────────────────────────────────
+function iniciarBackup(acao) {
+    if (acao === 'download') {
+        $('#btn-backup-download').prop('disabled', true).html('<span class="backup-spinner"></span> Gerando backup...');
+        $('#progress-download').show();
+
+        // Restaura o botão após alguns segundos para permitir nova ação
+        setTimeout(function() {
+            $('#btn-backup-download').prop('disabled', false).html('<i class="ri-download-2-line me-1"></i> Gerar e Baixar Backup');
+            $('#progress-download').hide();
+        }, 8000);
+    } else {
+        $('#btn-backup-servidor').prop('disabled', true).html('<span class="backup-spinner"></span> Salvando no servidor...');
+        $('#progress-servidor').show();
+    }
+
+    $('#input-backup-acao').val(acao);
+    $('#form-backup-executar').submit();
+}
+
+// ─── Carregar histórico de backups do servidor via AJAX ─────────────────────
+function carregarHistoricoBackup() {
+    var btn = $('#btn-refresh-backup');
+    btn.prop('disabled', true).html('<span class="backup-spinner"></span> Atualizando...');
+
+    $.get('{{ route("backup-empresa.listar") }}', function(res) {
+        var container = $('#backup-history-container');
+        if (!res.arquivos || res.arquivos.length === 0) {
+            container.html('<div class="text-center py-4 text-muted fs-13"><i class="ri-inbox-2-line fs-30 d-block mb-2"></i>Nenhum backup salvo no servidor ainda.</div>');
+        } else {
+            var html = '<div class="table-responsive"><table class="table table-hover align-middle mb-0 backup-history-table">';
+            html += '<thead><tr><th><i class="ri-file-code-line me-1"></i>Arquivo</th><th>Tamanho</th><th>Data de Criação</th><th class="text-end">Ações</th></tr></thead><tbody>';
+            $.each(res.arquivos, function(i, arq) {
+                html += '<tr>';
+                html += '<td><span class="backup-badge backup-badge-sql"><i class="ri-database-line"></i> ' + arq.nome + '</span></td>';
+                html += '<td class="text-muted fs-13">' + arq.tamanho + '</td>';
+                html += '<td class="text-muted fs-13">' + arq.data + '</td>';
+                html += '<td class="text-end">';
+                html += '<a href="{{ route("backup-empresa.download-servidor") }}?nome=' + encodeURIComponent(arq.nome) + '" class="act-btn act-view me-1" title="Baixar este arquivo"><i class="ri-download-line"></i></a>';
+                html += '<button type="button" class="act-btn act-del" title="Excluir do servidor" onclick="removerBackup(\'' + arq.nome + '\')"><i class="ri-delete-bin-line"></i></button>';
+                html += '</td></tr>';
+            });
+            html += '</tbody></table></div>';
+            container.html(html);
+        }
+    }).fail(function() {
+        $('#backup-history-container').html('<div class="alert alert-danger fs-13">Erro ao carregar lista de backups. Tente novamente.</div>');
+    }).always(function() {
+        btn.prop('disabled', false).html('<i class="ri-refresh-line"></i> Atualizar');
+    });
+}
+
+function removerBackup(nome) {
+    if (!confirm('Tem certeza que deseja remover o backup "' + nome + '" do servidor?')) return;
+
+    $.ajax({
+        url: '{{ route("backup-empresa.remover-servidor") }}',
+        type: 'DELETE',
+        data: { nome: nome, _token: '{{ csrf_token() }}' },
+        success: function(res) {
+            if (res.success) {
+                carregarHistoricoBackup();
+            } else {
+                alert(res.message);
+            }
+        },
+        error: function() {
+            alert('Erro ao excluir o arquivo do servidor.');
+        }
+    });
+}
+
+// ─── Controle das abas: esconde botão Salvar na aba Backup e carrega histórico
+$('a[data-bs-toggle="pill"]').on('shown.bs.tab', function(e) {
+    var target = $(e.target).attr('href');
+    if (target === '#tab-backup') {
+        $('#footer-config-salvar').hide();
+        carregarHistoricoBackup();
+    } else {
+        $('#footer-config-salvar').show();
+    }
 });
 </script>
 @endsection

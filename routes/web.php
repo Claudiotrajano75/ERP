@@ -605,6 +605,14 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         Route::post('produtopadrao-tributacao-set-tributacao', 'PadraoTributacaoProdutoController@setTributacao')
             ->name('produtopadrao-tributacao.set-tributacao');
 
+        // Conferência Fiscal por Padrão de Tributação
+        Route::get('produtopadrao-tributacao-conferencia', 'PadraoTributacaoConferenciaController@index')
+            ->name('produtopadrao-tributacao.conferencia');
+        Route::get('produtopadrao-tributacao-conferencia-pdf', 'PadraoTributacaoConferenciaController@pdf')
+            ->name('produtopadrao-tributacao.conferencia-pdf');
+        Route::get('produtopadrao-tributacao-conferencia-excel', 'PadraoTributacaoConferenciaController@excel')
+            ->name('produtopadrao-tributacao.conferencia-excel');
+
         Route::group(['prefix' => 'funcionarios'], function () {
             Route::get('/atribuir/{id}', 'FuncionarioController@atribuir')->name('funcionarios.atribuir');
             Route::post('/atribuir-servico', 'FuncionarioController@atribuirServico')->name('funcionarios.atribuir-servico');
@@ -884,6 +892,7 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
             Route::get('relatorio-estoque', 'RelatorioController@estoque')->name('relatorios.estoque');
             Route::get('relatorio-despesa-frete', 'RelatorioController@despesaFrete')->name('relatorios.despesa-frete');
             Route::get('totaliza-produtos', 'RelatorioController@totalizaProdutos')->name('relatorios.totaliza-produtos');
+            Route::get('conferencia-padrao-fiscal', 'PadraoTributacaoConferenciaController@index')->name('relatorios.conferencia-padrao-fiscal');
         });
 
         Route::resource('config-geral', 'ConfigGeralController');

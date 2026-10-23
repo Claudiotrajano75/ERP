@@ -109,6 +109,10 @@ class Produto extends Model
 		return $this->belongsTo(CategoriaProduto::class, 'categoria_id');
 	}
 
+	public function padraoTributacao(){
+		return $this->belongsTo(PadraoTributacaoProduto::class, 'padrao_id');
+	}
+
 	public function subcategoria(){
 		return $this->belongsTo(CategoriaProduto::class, 'sub_categoria_id');
 	}

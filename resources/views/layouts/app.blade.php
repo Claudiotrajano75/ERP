@@ -825,6 +825,10 @@
                                                     <a href="{{ route('produtopadrao-tributacao.index') }}">Configuração
                                                         Padrão Fiscal</a>
                                                 </li>
+                                                <li>
+                                                    <a href="{{ route('produtopadrao-tributacao.conferencia') }}">Conferência
+                                                        Fiscal</a>
+                                                </li>
                                             @endcan
                                         @endif
 
@@ -1401,7 +1405,25 @@
 
                                         @can('relatorio_view')
                                             <li>
-                                                <a href="{{ route('relatorios.index') }}">Relatórios</a>
+                                                <a data-bs-toggle="collapse" href="#menuRelatorios" aria-expanded="false"
+                                                    aria-controls="menuRelatorios">
+                                                    <span> Relatórios </span>
+                                                    <span class="menu-arrow"></span>
+                                                </a>
+                                                <div class="collapse" id="menuRelatorios">
+                                                    <ul class="side-nav-third-level">
+                                                        <li>
+                                                            <a href="{{ route('relatorios.index') }}">Central de Relatórios</a>
+                                                        </li>
+                                                        @if (__isPlanoFiscal())
+                                                            @can('config_produto_fiscal_view')
+                                                                <li>
+                                                                    <a href="{{ route('relatorios.conferencia-padrao-fiscal') }}">Conferência por Padrão Fiscal</a>
+                                                                </li>
+                                                            @endcan
+                                                        @endif
+                                                    </ul>
+                                                </div>
                                             </li>
                                         @endcan
 

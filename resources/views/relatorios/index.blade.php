@@ -887,6 +887,52 @@
                                 </form>
                             </div>
 
+                            <!-- Conferência por Padrão Fiscal -->
+                            @if (__isPlanoFiscal())
+                            @can('config_produto_fiscal_view')
+                            <div class="col-12 col-md-6">
+                                <form method="get" action="{{ route('relatorios.conferencia-padrao-fiscal') }}" target="_blank">
+                                    <div class="rep-card">
+                                        <div class="rep-card-header">
+                                            <h5 class="rep-card-title">
+                                                <i class="ri-scales-3-line text-primary"></i>
+                                                Conferência por Padrão Fiscal
+                                            </h5>
+                                            <span class="rep-badge rep-badge-excel">Tela / PDF / Excel</span>
+                                        </div>
+                                        <div class="rep-card-body">
+                                            <div class="row g-2">
+                                                <div class="col-12">
+                                                    {!!Form::select('padrao_id', 'Padrão de Tributação', ['' => 'Todos os Padrões'] + (isset($padroesTributacao) ? $padroesTributacao->pluck('descricao', 'id')->all() : []))->attrs(['class' => 'form-select'])!!}
+                                                </div>
+                                                <div class="col-12">
+                                                    {!!Form::select('filtro_divergencia', 'Filtro de Divergências', [
+                                                        '' => 'Todos os Produtos Cadastrados',
+                                                        'divergentes' => 'Somente Produtos com Divergências Fiscais',
+                                                        'iguais' => 'Somente Produtos em Conformidade'
+                                                    ])->attrs(['class' => 'form-select'])!!}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="rep-card-footer">
+                                            <div class="d-flex gap-2 flex-wrap">
+                                                <button type="submit" class="dash-btn dash-btn-primary flex-grow-1">
+                                                    <i class="ri-eye-line"></i> Ver na Tela
+                                                </button>
+                                                <button type="submit" formaction="{{ route('produtopadrao-tributacao.conferencia-pdf') }}" class="dash-btn dash-btn-light" title="Gerar PDF em A4 Paisagem">
+                                                    <i class="ri-file-pdf-line text-danger"></i> PDF
+                                                </button>
+                                                <button type="submit" formaction="{{ route('produtopadrao-tributacao.conferencia-excel') }}" class="dash-btn dash-btn-light" title="Exportar para Excel (.xlsx)">
+                                                    <i class="ri-file-excel-line text-success"></i> Excel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            @endcan
+                            @endif
+
                         </div>
                     </div>
 

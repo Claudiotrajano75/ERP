@@ -19,4 +19,9 @@ class PadraoTributacaoProduto extends Model
     public function _ncm(){
         return $this->belongsTo(Ncm::class, 'ncm', 'codigo');
     }
+
+    public function produtos(){
+        return $this->hasMany(Produto::class, 'padrao_id');
+    }
 }
+

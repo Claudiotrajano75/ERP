@@ -27,6 +27,7 @@ use App\Models\MovimentacaoProduto;
 use Dompdf\Dompdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\RelatorioEstoqueExport;
+use App\Models\PadraoTributacaoProduto;
 
 class RelatorioController extends Controller
 {
@@ -38,7 +39,8 @@ class RelatorioController extends Controller
         $tiposDespesaFrete = TipoDespesaFrete::where('empresa_id', request()->empresa_id)->get();
         $clientes = Cliente::where('empresa_id', request()->empresa_id)->orderBy('razao_social')->get();
         $produtos = Produto::where('empresa_id', request()->empresa_id)->where('status', 1)->orderBy('nome')->get();
-        return view('relatorios.index', compact('funcionarios', 'marcas', 'categorias', 'tiposDespesaFrete', 'clientes', 'produtos'));
+        $padroesTributacao = PadraoTributacaoProduto::where('empresa_id', request()->empresa_id)->get();
+        return view('relatorios.index', compact('funcionarios', 'marcas', 'categorias', 'tiposDespesaFrete', 'clientes', 'produtos', 'padroesTributacao'));
     }
 
     public function produtos(Request $request)

@@ -15,13 +15,13 @@
 <div class="row">
     <div class="col-md-12">
         @isset($item)
-        @if($item->fornecedor)
+        @if($item->tpNF == 0 && $item->fornecedor)
         @php
         $isCompra = 1;
         @endphp
         @endif
         @endif
-        @isset($isCompra)
+        @if(isset($isCompra) && $isCompra)
         <input type="hidden" id="is_compra" name="is_compra" value="1">
         @endif
 
@@ -57,7 +57,7 @@
             <li class="nav-item flex-fill" role="presentation">
                 <a class="nav-link active" data-bs-toggle="pill" href="#cliente" role="tab" aria-selected="true">
                     <i class="ri-user-3-line"></i>
-                    <span>@isset($isCompra) Fornecedor @else Cliente @endif</span>
+                    <span>@if(isset($isCompra) && $isCompra) Fornecedor @else Cliente @endif</span>
                 </a>
             </li>
             <li class="nav-item flex-fill" role="presentation">
@@ -83,7 +83,7 @@
         <div class="tab-content" id="pills-tabContent">
             <!-- ══════════════ ABA: CLIENTE / FORNECEDOR ══════════════ -->
             <div class="tab-pane fade show active" id="cliente" role="tabpanel">
-                @if(!isset($isCompra))
+                @if(!isset($isCompra) || !$isCompra)
                 <!-- SELEÇÃO DE CLIENTE -->
                 <div class="card card-secao-fiscal mb-4">
                     <div class="card-header">
@@ -128,42 +128,42 @@
                         <div class="row g-3 d-cliente">
                             <div class="col-md-4">
                                 {!!Form::text('cliente_nome', 'Razão Social')->attrs(['class' => 'form-control'])->required()
-                                ->value(isset($item) ? $item->cliente->razao_social : '')
+                                ->value(isset($item) && $item->cliente ? $item->cliente->razao_social : '')
                                 !!}
                             </div>
                             <div class="col-md-4">
                                 {!!Form::text('nome_fantasia', 'Nome Fantasia')->attrs(['class' => 'form-control'])
-                                ->value(isset($item) ? $item->cliente->nome_fantasia : '')
+                                ->value(isset($item) && $item->cliente ? $item->cliente->nome_fantasia : '')
                                 !!}
                             </div>
                             <div class="col-md-4">
                                 {!!Form::tel('cliente_cpf_cnpj', 'CPF / CNPJ')->attrs(['class' => 'form-control cpf_cnpj'])->required()
-                                ->value(isset($item) ? $item->cliente->cpf_cnpj : '')
+                                ->value(isset($item) && $item->cliente ? $item->cliente->cpf_cnpj : '')
                                 !!}
                             </div>
                             <div class="col-md-3">
                                 {!!Form::text('ie', 'Inscrição Estadual')->attrs(['class' => 'form-control'])
-                                ->value(isset($item) ? $item->cliente->ie : '')
+                                ->value(isset($item) && $item->cliente ? $item->cliente->ie : '')
                                 !!}
                             </div>
                             <div class="col-md-3">
                                 {!!Form::tel('telefone', 'Telefone / WhatsApp')->attrs(['class' => 'form-control fone'])
-                                ->value(isset($item) ? $item->cliente->telefone : '')
+                                ->value(isset($item) && $item->cliente ? $item->cliente->telefone : '')
                                 !!}
                             </div>
                             <div class="col-md-3">
                                 {!!Form::select('contribuinte', 'Contribuinte ICMS', [0 => 'Não', 1 => 'Sim'])->attrs(['class' => 'form-select'])
-                                ->value(isset($item) ? $item->cliente->contribuinte : '')
+                                ->value(isset($item) && $item->cliente ? $item->cliente->contribuinte : '')
                                 !!}
                             </div>
                             <div class="col-md-3">
                                 {!!Form::select('consumidor_final', 'Consumidor Final', [0 => 'Não', 1 => 'Sim'])->attrs(['class' => 'form-select'])->required()
-                                ->value(isset($item) ? $item->cliente->consumidor_final : '')
+                                ->value(isset($item) && $item->cliente ? $item->cliente->consumidor_final : '')
                                 !!}
                             </div>
                             <div class="col-md-6">
                                 {!!Form::text('email', 'E-mail do Cliente')->attrs(['class' => 'form-control'])
-                                ->value(isset($item) ? $item->cliente->email : '')
+                                ->value(isset($item) && $item->cliente ? $item->cliente->email : '')
                                 !!}
                             </div>
                             <div class="col-md-6">
@@ -188,27 +188,27 @@
                             </div>
                             <div class="col-md-4">
                                 {!!Form::text('cliente_rua', 'Logradouro / Rua')->attrs(['class' => 'form-control'])->required()
-                                ->value(isset($item) ? $item->cliente->rua : '')
+                                ->value(isset($item) && $item->cliente ? $item->cliente->rua : '')
                                 !!}
                             </div>
                             <div class="col-md-2">
                                 {!!Form::text('cliente_numero', 'Número')->attrs(['class' => 'form-control'])->required()
-                                ->value(isset($item) ? $item->cliente->numero : '')
+                                ->value(isset($item) && $item->cliente ? $item->cliente->numero : '')
                                 !!}
                             </div>
                             <div class="col-md-3">
                                 {!!Form::text('cep', 'CEP')->attrs(['class' => 'form-control cep'])->required()
-                                ->value(isset($item) ? $item->cliente->cep : '')
+                                ->value(isset($item) && $item->cliente ? $item->cliente->cep : '')
                                 !!}
                             </div>
                             <div class="col-md-3">
                                 {!!Form::text('cliente_bairro', 'Bairro')->attrs(['class' => 'form-control'])->required()
-                                ->value(isset($item) ? $item->cliente->bairro : '')
+                                ->value(isset($item) && $item->cliente ? $item->cliente->bairro : '')
                                 !!}
                             </div>
                             <div class="col-md-12">
                                 {!!Form::text('complemento', 'Complemento')->attrs(['class' => 'form-control'])
-                                ->value(isset($item) ? $item->cliente->complemento : '')
+                                ->value(isset($item) && $item->cliente ? $item->cliente->complemento : '')
                                 !!}
                             </div>
                         </div>
@@ -232,7 +232,7 @@
                                             @isset($cotacao)
                                             <option value="{{ $cotacao->fornecedor_id }}">{{ $cotacao->fornecedor->razao_social }}</option>
                                             @else
-                                            @isset($item)
+                                            @if(isset($item) && $item->fornecedor)
                                             <option value="{{ $item->fornecedor_id }}">{{ $item->fornecedor->razao_social }}</option>
                                             @elseif(old('fornecedor_id'))
                                             @php
@@ -265,42 +265,42 @@
                         <div class="row g-3 d-cliente">
                             <div class="col-md-4">
                                 {!!Form::text('fornecedor_nome', 'Razão Social')->attrs(['class' => 'form-control'])->required()
-                                ->value(isset($item) ? $item->fornecedor->razao_social : '')
+                                ->value(isset($item) && $item->fornecedor ? $item->fornecedor->razao_social : '')
                                 !!}
                             </div>
                             <div class="col-md-4">
                                 {!!Form::text('nome_fantasia', 'Nome Fantasia')->attrs(['class' => 'form-control'])->required()
-                                ->value(isset($item) ? $item->fornecedor->nome_fantasia : '')
+                                ->value(isset($item) && $item->fornecedor ? $item->fornecedor->nome_fantasia : '')
                                 !!}
                             </div>
                             <div class="col-md-4">
                                 {!!Form::tel('fornecedor_cpf_cnpj', 'CPF / CNPJ')->attrs(['class' => 'form-control cpf_cnpj'])->required()
-                                ->value(isset($item) ? $item->fornecedor->cpf_cnpj : '')
+                                ->value(isset($item) && $item->fornecedor ? $item->fornecedor->cpf_cnpj : '')
                                 !!}
                             </div>
                             <div class="col-md-3">
                                 {!!Form::text('ie', 'Inscrição Estadual')->attrs(['class' => 'form-control'])
-                                ->value(isset($item) ? $item->fornecedor->ie : '')
+                                ->value(isset($item) && $item->fornecedor ? $item->fornecedor->ie : '')
                                 !!}
                             </div>
                             <div class="col-md-3">
                                 {!!Form::tel('telefone', 'Telefone / WhatsApp')->attrs(['class' => 'form-control fone'])
-                                ->value(isset($item) ? $item->fornecedor->telefone : '')
+                                ->value(isset($item) && $item->fornecedor ? $item->fornecedor->telefone : '')
                                 !!}
                             </div>
                             <div class="col-md-3">
                                 {!!Form::select('contribuinte', 'Contribuinte ICMS', [0 => 'Não', 1 => 'Sim'])->attrs(['class' => 'form-select'])
-                                ->value(isset($item) ? $item->fornecedor->contribuinte : '')
+                                ->value(isset($item) && $item->fornecedor ? $item->fornecedor->contribuinte : '')
                                 !!}
                             </div>
                             <div class="col-md-3">
                                 {!!Form::select('consumidor_final', 'Consumidor Final', [0 => 'Não', 1 => 'Sim'])->attrs(['class' => 'form-select'])->required()
-                                ->value(isset($item) ? $item->fornecedor->consumidor_final : '')
+                                ->value(isset($item) && $item->fornecedor ? $item->fornecedor->consumidor_final : '')
                                 !!}
                             </div>
                             <div class="col-md-6">
                                 {!!Form::text('email', 'E-mail do Fornecedor')->attrs(['class' => 'form-control'])
-                                ->value(isset($item) ? $item->fornecedor->email : '')
+                                ->value(isset($item) && $item->fornecedor ? $item->fornecedor->email : '')
                                 !!}
                             </div>
                             <div class="col-md-6">
@@ -325,27 +325,27 @@
                             </div>
                             <div class="col-md-4">
                                 {!!Form::text('fornecedor_rua', 'Logradouro / Rua')->attrs(['class' => 'form-control'])->required()
-                                ->value(isset($item) ? $item->fornecedor->rua : '')
+                                ->value(isset($item) && $item->fornecedor ? $item->fornecedor->rua : '')
                                 !!}
                             </div>
                             <div class="col-md-2">
                                 {!!Form::text('fornecedor_numero', 'Número')->attrs(['class' => 'form-control'])->required()
-                                ->value(isset($item) ? $item->fornecedor->numero : '')
+                                ->value(isset($item) && $item->fornecedor ? $item->fornecedor->numero : '')
                                 !!}
                             </div>
                             <div class="col-md-3">
                                 {!!Form::text('cep', 'CEP')->attrs(['class' => 'form-control cep'])->required()
-                                ->value(isset($item) ? $item->fornecedor->cep : '')
+                                ->value(isset($item) && $item->fornecedor ? $item->fornecedor->cep : '')
                                 !!}
                             </div>
                             <div class="col-md-3">
                                 {!!Form::text('fornecedor_bairro', 'Bairro')->attrs(['class' => 'form-control'])->required()
-                                ->value(isset($item) ? $item->fornecedor->bairro : '')
+                                ->value(isset($item) && $item->fornecedor ? $item->fornecedor->bairro : '')
                                 !!}
                             </div>
                             <div class="col-md-12">
-{!!Form::text('complemento', 'Complemento')->attrs(['class' => 'form-control'])
-                                ->value(isset($item) ? $item->fornecedor->complemento : '')
+                                {!!Form::text('complemento', 'Complemento')->attrs(['class' => 'form-control'])
+                                ->value(isset($item) && $item->fornecedor ? $item->fornecedor->complemento : '')
                                 !!}
                             </div>
                         </div>
@@ -358,7 +358,7 @@
             <div class="tab-pane fade" id="produtos" role="tabpanel">
                 <div class="card card-secao-fiscal">
                     <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                        <h5><i class="ri-shopping-bag-3-line text-primary"></i> Grade de Itens da {{ isset($isCompra) ? 'Compra' : 'Venda' }}</h5>
+                        <h5><i class="ri-shopping-bag-3-line text-primary"></i> Grade de Itens da {{ (isset($isCompra) && $isCompra) ? 'Compra' : 'Venda' }}</h5>
                         <button type="button" class="btn btn-primary btn-sm btn-add-tr-nfe" style="border-radius: 8px; font-weight: 700; padding: 6px 14px;">
                             <i class="ri-add-line"></i> Adicionar Produto
                         </button>
@@ -994,7 +994,7 @@
                                 !!}
                             </div>
 
-                            @if(!isset($isCompra))
+                            @if(!isset($isCompra) || !$isCompra)
                             <div class="col-md-2">
                                 {!!Form::select('tpNF', 'Tipo NFe', ['1' => 'Saída', '0' => 'Entrada'])
                                 ->attrs(['class' => 'form-select'])
@@ -1054,7 +1054,7 @@
                             @if(isset($isOrcamento) && $isOrcamento == 1)
                             <input type="hidden" value="1" name="orcamento">
                             @else
-                            @if(!isset($isCompra))
+                            @if(!isset($isCompra) || !$isCompra)
                             @if(!isset($item))
                             @can('orcamento_create')
                             <div class="col-md-2">
@@ -1069,7 +1069,7 @@
                             @endif
                             @endif
 
-                            @if(!isset($isCompra))
+                            @if(!isset($isCompra) || !$isCompra)
                             <div class="col-md-3">
                                 {!! Form::select('funcionario_id', 'Vendedor')
                                 ->attrs(['class' => 'form-select'])
@@ -1292,11 +1292,11 @@
 
     <!-- RODAPÉ DE AÇÕES -->
     <div class="col-12 modulo-actions d-flex align-items-center justify-content-end gap-2 mt-4">
-        <a href="{{ isset($isCompra) ? route('compras.index') : route('nfe.index') }}" class="btn-cf-voltar">
+        <a href="{{ (isset($isCompra) && $isCompra) ? route('compras.index') : route('nfe.index') }}" class="btn-cf-voltar">
             <i class="ri-close-line me-1"></i> Cancelar
         </a>
         <button type="button" class="btn-salvar-nfe">
-            <i class="ri-checkbox-circle-line me-1"></i> {{ isset($isCompra) ? 'Salvar Compra' : (isset($isOrcamento) && $isOrcamento == 1 ? 'Salvar Orçamento' : 'Salvar Venda') }}
+            <i class="ri-checkbox-circle-line me-1"></i> {{ (isset($isCompra) && $isCompra) ? 'Salvar Compra' : (isset($isOrcamento) && $isOrcamento == 1 ? 'Salvar Orçamento' : 'Salvar Venda') }}
         </button>
     </div>
 </div>

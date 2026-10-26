@@ -14,6 +14,13 @@ class PrintService
     {
         if (empty($ip)) return false;
         if ($ip === 'localhost' || $ip === '127.0.0.1') return true;
+
+        // Se nao for um IP valido (ex: hostname/dominio publico como erp.code360.dev.br),
+        // nao deve ser tratado como IP privado de rede local
+        if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            return false;
+        }
+
         return !filter_var(
             $ip,
             FILTER_VALIDATE_IP,
@@ -34,13 +41,25 @@ class PrintService
 
         $serverAddr = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '';
         $httpHost = $_SERVER['HTTP_HOST'] ?? '';
-        $hostOnly = explode(':', $httpHost)[0];
+        $hostOnly = strtolower(explode(':', $httpHost)[0]);
+
+        // Host que nao e IP valido (ex: dominio publico como erp.code360.dev.br)
+        // indica acesso ao ERP em nuvem/servidor remoto. Nesta situacao o
+        // SERVER_ADDR NAO pode ser usado como prova de ambiente local, pois em
+        // servidores compartilhados/prox (Hostinger) pode ser IP interno.
+        if ($hostOnly !== 'localhost'
+            && $hostOnly !== '127.0.0.1'
+            && !filter_var($hostOnly, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            return false;
+        }
 
         if ($hostOnly === 'localhost' || $hostOnly === '127.0.0.1' || $this->isPrivateIp($hostOnly)) {
             return true;
         }
 
-        if (!empty($serverAddr) && ($this->isPrivateIp($serverAddr) || $serverAddr === '127.0.0.1')) {
+        if (!empty($serverAddr)
+            && filter_var($serverAddr, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)
+            && ($this->isPrivateIp($serverAddr) || $serverAddr === '127.0.0.1')) {
             return true;
         }
 

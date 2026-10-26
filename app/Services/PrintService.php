@@ -105,8 +105,17 @@ class PrintService
                     'status'         => 'pendente',
                 ]);
             } catch (\Exception $e) {
+                // Falha real ao gravar na fila: informa o frontend para ele
+                // abrir o PDF (fallback) em vez de "mentir" que imprimiu
                 Log::error('PrintService: Falha ao inserir na fila_impressoes: ' . $e->getMessage());
+                return [
+                    'success' => false,
+                    'use_pdf' => true,
+                    'message' => 'Erro ao gravar cupom na fila de impressão. Abrindo comprovante PDF como fallback...',
+                ];
             }
+
+            Log::info("PrintService: Documento {$tipo} #{$documento_id} enfileirado para {$ip}:{$porta} (empresa {$empresaId})");
 
             return [
                 'success'        => true,
@@ -115,7 +124,7 @@ class PrintService
                 'printer_ip'     => $ip,
                 'printer_porta'  => $porta,
                 'payload_base64' => base64_encode($texto),
-                'message'        => 'Documento enviado para a impressora térmica com sucesso!',
+                'message'        => 'Cupom enviado para a fila de impressão! Será impresso pela impressora térmica em segundos.',
             ];
         }
 

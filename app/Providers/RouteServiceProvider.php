@@ -27,6 +27,13 @@ class RouteServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RateLimiter::for('api', function (Request $request) {
+            // Endpoints da fila de impressao termica: o Agente Local faz polling
+            // a cada 1,5s (~40 req/min + POSTs de concluir), acima do limite de
+            // 60/min do grupo api. Sem limite para nao descartar cupons na fila.
+            if ($request->is('api/print-queue*')) {
+                return Limit::none();
+            }
+
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 

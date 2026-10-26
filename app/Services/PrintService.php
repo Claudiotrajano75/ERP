@@ -54,7 +54,7 @@ class PrintService
      * @param ConfigGeral|null $config Configuracao geral (se null, busca automaticamente)
      * @return array ['success' => bool, 'message' => string]
      */
-    public function imprimir($texto, $config = null)
+    public function imprimir($texto, $config = null, $tipo = 'documento', $documento_id = null)
     {
         if ($config === null) {
             $config = ConfigGeral::where('empresa_id', request()->empresa_id)->first();
@@ -70,17 +70,33 @@ class PrintService
         $ip = $config->printer_ip;
         $porta = (int)($config->printer_porta ?: 9100);
         $isLocal = $this->isLocalServer();
+        $empresaId = $config->empresa_id ?? request()->empresa_id;
 
         // Se o ERP estiver na nuvem (Hostinger com IP público) e a impressora for IP privado local (192.168.x.x):
-        // Retorna o payload INSTANTANEAMENTE (em 1ms) para o Agente Local WebSocket imprimir sem delay!
+        // Adiciona à fila de impressão (fila_impressoes) para o Agente Local imprimir diretamente na rede local
         if ($this->isPrivateIp($ip) && !$isLocal) {
+            try {
+                \App\Models\FilaImpressao::create([
+                    'empresa_id'     => $empresaId,
+                    'tipo'           => $tipo,
+                    'documento_id'   => $documento_id,
+                    'printer_ip'     => $ip,
+                    'printer_porta'  => $porta,
+                    'payload_base64' => base64_encode($texto),
+                    'status'         => 'pendente',
+                ]);
+            } catch (\Exception $e) {
+                Log::error('PrintService: Falha ao inserir na fila_impressoes: ' . $e->getMessage());
+            }
+
             return [
                 'success'        => true,
+                'queued'         => true,
                 'via_agent'      => true,
                 'printer_ip'     => $ip,
                 'printer_porta'  => $porta,
                 'payload_base64' => base64_encode($texto),
-                'message'        => 'Enviando para o Agente Local de Impressão...',
+                'message'        => 'Documento enviado para a impressora térmica com sucesso!',
             ];
         }
 
@@ -104,15 +120,28 @@ class PrintService
 
             Log::warning("PrintService: Falha ao conectar em {$ip}:{$porta} - {$errstr} ({$errno})");
 
-            // Se falhou e estiver na nuvem, tenta Agente Local
+            // Se falhou e estiver na nuvem, salva na fila para o Agente Local
             if (!$isLocal) {
+                try {
+                    \App\Models\FilaImpressao::create([
+                        'empresa_id'     => $empresaId,
+                        'tipo'           => $tipo,
+                        'documento_id'   => $documento_id,
+                        'printer_ip'     => $ip,
+                        'printer_porta'  => $porta,
+                        'payload_base64' => base64_encode($texto),
+                        'status'         => 'pendente',
+                    ]);
+                } catch (\Exception $e) {}
+
                 return [
                     'success'        => true,
+                    'queued'         => true,
                     'via_agent'      => true,
                     'printer_ip'     => $ip,
                     'printer_porta'  => $porta,
                     'payload_base64' => base64_encode($texto),
-                    'message'        => 'Enviando para o Agente Local de Impressão...',
+                    'message'        => 'Documento enviado para a impressora térmica com sucesso!',
                 ];
             }
 
@@ -125,13 +154,26 @@ class PrintService
             Log::error("PrintService: Erro ao imprimir - " . $e->getMessage());
 
             if (!$isLocal) {
+                try {
+                    \App\Models\FilaImpressao::create([
+                        'empresa_id'     => $empresaId,
+                        'tipo'           => $tipo,
+                        'documento_id'   => $documento_id,
+                        'printer_ip'     => $ip,
+                        'printer_porta'  => $porta,
+                        'payload_base64' => base64_encode($texto),
+                        'status'         => 'pendente',
+                    ]);
+                } catch (\Exception $ex) {}
+
                 return [
                     'success'        => true,
+                    'queued'         => true,
                     'via_agent'      => true,
                     'printer_ip'     => $ip,
                     'printer_porta'  => $porta,
                     'payload_base64' => base64_encode($texto),
-                    'message'        => 'Enviando para o Agente Local de Impressão...',
+                    'message'        => 'Documento enviado para a impressora térmica com sucesso!',
                 ];
             }
 
@@ -450,7 +492,7 @@ class PrintService
             $cmd .= "\n\n\n";
             $cmd .= "\x1D\x56\x41\x10"; // Corte parcial
 
-            return $this->imprimir($cmd, $config);
+            return $this->imprimir($cmd, $config, 'cupom_nao_fiscal', $nfce->id);
 
         } catch (\Exception $e) {
             Log::error('PrintService: Erro ao gerar Cupom Nao Fiscal - ' . $e->getMessage());
@@ -493,26 +535,71 @@ class PrintService
             $labelCol = $cols - 14;
             $valueCol = 14;
 
-            // Extrai QR Code e URL de consulta do XML
+            // Extrai QR Code e URL de consulta do XML (com fallback remoto e SEFAZ)
             $qrCodeUrl = null;
             $urlChave  = null;
+            $xmlContent = null;
             $xmlPath   = public_path('xml_nfce/') . $nfce->chave . '.xml';
             if (!file_exists($xmlPath)) {
                 $xmlPath = public_path('xml_nfce_contigencia/') . $nfce->chave . '.xml';
             }
             if (file_exists($xmlPath)) {
-                try {
-                    $xml = simplexml_load_string(file_get_contents($xmlPath));
-                    if ($xml && isset($xml->infNFeSupl)) {
-                        $qrCodeUrl = (string) $xml->infNFeSupl->qrCode;
-                        $urlChave  = (string) $xml->infNFeSupl->urlChave;
-                    } elseif ($xml && isset($xml->NFe->infNFeSupl)) {
-                        $qrCodeUrl = (string) $xml->NFe->infNFeSupl->qrCode;
-                        $urlChave  = (string) $xml->NFe->infNFeSupl->urlChave;
-                    }
-                } catch (\Exception $xmlEx) {
-                    Log::warning('PrintService: Nao foi possivel ler XML - ' . $xmlEx->getMessage());
+                $xmlContent = @file_get_contents($xmlPath);
+            } else {
+                // Tenta buscar no servidor em nuvem se o arquivo não estiver na pasta local
+                $remoteUrl = 'https://erp.code360.dev.br/xml_nfce/' . $nfce->chave . '.xml';
+                $ctx = stream_context_create(['http' => ['timeout' => 2]]);
+                $remoteContent = @file_get_contents($remoteUrl, false, $ctx);
+                if ($remoteContent !== false && strpos($remoteContent, '<?xml') !== false) {
+                    $xmlContent = $remoteContent;
+                    @file_put_contents(public_path('xml_nfce/') . $nfce->chave . '.xml', $remoteContent);
                 }
+            }
+
+            if ($xmlContent) {
+                // 1. Extração direta por regex (imune a namespaces e CDATA)
+                if (preg_match('/<qrCode>(.*?)<\/qrCode>/s', $xmlContent, $m)) {
+                    $raw = trim($m[1]);
+                    $qrCodeUrl = preg_replace('/^<!\[CDATA\[(.*)\]\]>$/s', '$1', $raw);
+                }
+                if (preg_match('/<urlChave>(.*?)<\/urlChave>/s', $xmlContent, $m)) {
+                    $raw = trim($m[1]);
+                    $urlChave = preg_replace('/^<!\[CDATA\[(.*)\]\]>$/s', '$1', $raw);
+                }
+
+                // 2. Fallback via SimpleXML
+                if (empty($qrCodeUrl) || empty($urlChave)) {
+                    try {
+                        $xml = simplexml_load_string($xmlContent);
+                        if ($xml && isset($xml->infNFeSupl)) {
+                            if (empty($qrCodeUrl)) $qrCodeUrl = (string) $xml->infNFeSupl->qrCode;
+                            if (empty($urlChave))  $urlChave  = (string) $xml->infNFeSupl->urlChave;
+                        } elseif ($xml && isset($xml->NFe->infNFeSupl)) {
+                            if (empty($qrCodeUrl)) $qrCodeUrl = (string) $xml->NFe->infNFeSupl->qrCode;
+                            if (empty($urlChave))  $urlChave  = (string) $xml->NFe->infNFeSupl->urlChave;
+                        }
+                    } catch (\Exception $xmlEx) {
+                        Log::warning('PrintService: Nao foi possivel ler XML - ' . $xmlEx->getMessage());
+                    }
+                }
+            }
+
+            // 3. Fallback inteligente: se ainda assim não tiver QR Code, monta o oficial da SEFAZ
+            if (empty($qrCodeUrl) && !empty($nfce->chave)) {
+                $uf = strtolower($empresa->cidade->uf ?? 'ce');
+                $amb = $nfce->ambiente ?: 2;
+                if ($uf === 'ce') {
+                    $sub = ($amb == 2) ? 'nfceh' : 'nfce';
+                    $qrCodeUrl = "http://{$sub}.sefaz.ce.gov.br/pages/ShowNFCe.html?p={$nfce->chave}|3|{$amb}";
+                } else {
+                    $sub = ($amb == 2) ? 'homologacao' : 'producao';
+                    $qrCodeUrl = "http://nfce.sefaz.{$uf}.gov.br/qrcode?p={$nfce->chave}|2|{$amb}|1";
+                }
+            }
+
+            if (empty($urlChave)) {
+                $uf = strtolower($empresa->cidade->uf ?? 'ce');
+                $urlChave = "www.sefaz.{$uf}.gov.br/nfce/consulta";
             }
 
             // ── Monta payload ESC/POS ─────────────────────────────────────
@@ -760,7 +847,7 @@ class PrintService
             $cmd .= "\n\n\n";
             $cmd .= "\x1D\x56\x41\x10"; // Corte parcial
 
-            return $this->imprimir($cmd, $config);
+            return $this->imprimir($cmd, $config, 'nfce', $nfce->id);
 
         } catch (\Exception $e) {
             Log::error('PrintService: Erro ao gerar DANFE NFCe termico - ' . $e->getMessage());

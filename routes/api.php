@@ -635,5 +635,12 @@ Route::middleware(['validaApiTokenSuperAdmin'])->group(function () {
     });
 });
 
+// Fila de Impressao Termica em Nuvem para Agente Local
+Route::group(['prefix' => 'print-queue'], function () {
+    Route::get('/pendentes', 'PrintQueueApiController@pendentes');
+    Route::post('/concluir', 'PrintQueueApiController@concluir');
+    Route::post('/limpar', 'PrintQueueApiController@limpar');
+});
+
 
 

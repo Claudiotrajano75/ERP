@@ -1,0 +1,7 @@
+{
+  "cloud_url": "https://erp.code360.dev.br",
+  "empresa_id": "48,2",
+  "poll_interval": 1.5,
+  "default_printer_ip": "192.168.88.87",
+  "default_printer_port": 9100
+}

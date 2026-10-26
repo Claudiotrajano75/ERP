@@ -1,15 +1,18 @@
 <?php
 /**
  * ═══════════════════════════════════════════════════════════════════════
- * ERP - AGENTE LOCAL DE IMPRESSÃO TÉRMICA ESC/POS (WebSocket + HTTP)
+ * ERP - AGENTE LOCAL DE IMPRESSÃO TÉRMICA ESC/POS (Fila Nuvem + WS + HTTP)
  * ═══════════════════════════════════════════════════════════════════════
  * 
- * Permite que o ERP hospedado na nuvem (Hostinger, AWS, etc.) envie 
- * impressões fiscais NFC-e e não fiscais diretamente para impressoras 
+ * Permite que o ERP hospedado na nuvem (Hostinger, AWS, VPS) envie 
+ * impressões fiscais NFC-e e cupons diretamente para impressoras 
  * térmicas na rede local (LAN: 192.168.x.x) com corte e formatação nativa.
  *
- * Suporta WebSocket (ws://127.0.0.1:9187) - sem bloqueios de Mixed Content
- * em páginas HTTPS na nuvem, e HTTP REST como fallback.
+ * Funcionalidades:
+ * 1. Fila de Impressão na Nuvem (Cloud Polling) via HTTPS - imune a bloqueios
+ *    de Mixed Content e Private Network Access (PNA) do Google Chrome.
+ * 2. WebSocket Server (ws://127.0.0.1:9187) para comunicação instantânea.
+ * 3. HTTP REST com cabeçalhos CORS completos e PNA para requisições locais.
  *
  * Porta padrão do Agente: 9187
  */
@@ -18,13 +21,42 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 set_time_limit(0);
 date_default_timezone_set('America/Sao_Paulo');
 
+// Carrega configurações
+$configFile = __DIR__ . '/config.json';
+$config = [
+    'cloud_url'            => 'https://erp.code360.dev.br',
+    'empresa_id'           => '48,2',
+    'poll_interval'        => 1.5,
+    'default_printer_ip'   => '192.168.88.87',
+    'default_printer_port' => 9100,
+];
+
+if (file_exists($configFile)) {
+    $loaded = json_decode(file_get_contents($configFile), true);
+    if (is_array($loaded)) {
+        $config = array_merge($config, $loaded);
+    }
+}
+
+// Suporte a argumentos CLI (ex: php server.php --empresa=48)
+if (isset($argv) && is_array($argv)) {
+    foreach ($argv as $arg) {
+        if (preg_match('/^--empresa=(.+)$/i', $arg, $m)) {
+            $config['empresa_id'] = trim($m[1]);
+        }
+        if (preg_match('/^--url=(.+)$/i', $arg, $m)) {
+            $config['cloud_url'] = trim($m[1]);
+        }
+    }
+}
+
 // Se executado via servidor embutido do PHP (php -S)
 if (php_sapi_name() === 'cli-server') {
-    handleHttpRequestDirect();
+    handleHttpRequestDirect($config);
     exit;
 }
 
-// Execução CLI padrão (Socket Server WebSocket + HTTP)
+// Execução CLI padrão (Socket Server WebSocket + HTTP + Cloud Queue Polling)
 $host = '127.0.0.1';
 $port = 9187;
 
@@ -38,19 +70,31 @@ if (!$server) {
 echo "═══════════════════════════════════════════════════════════════════════\n";
 echo "  ERP - AGENTE LOCAL DE IMPRESSAO TERMICA INICIADO COM SUCESSO!\n";
 echo "═══════════════════════════════════════════════════════════════════════\n";
-echo "  Porta WebSocket / HTTP: {$port}\n";
-echo "  URL WebSocket:          ws://127.0.0.1:{$port}\n";
+echo "  Servidor Nuvem:         " . $config['cloud_url'] . "\n";
+echo "  Empresa(s) Monitoradas: " . $config['empresa_id'] . "\n";
+echo "  Fila na Nuvem:          ATIVA (polling a cada " . $config['poll_interval'] . "s)\n";
+echo "  Porta Local (WS/HTTP):  {$port}\n";
 echo "  Status:                 Pronto para receber impressoes do ERP na nuvem!\n";
 echo "═══════════════════════════════════════════════════════════════════════\n\n";
 
 $clients = [];
 $wsHandshakes = [];
+$lastQueueCheck = 0;
+$pollInterval = (float)($config['poll_interval'] ?: 1.5);
 
 while (true) {
+    // 1. Processa fila de impressão na nuvem
+    $agora = microtime(true);
+    if (($agora - $lastQueueCheck) >= $pollInterval) {
+        $lastQueueCheck = $agora;
+        processarFilaNuvem($config);
+    }
+
     $read = array_merge([$server], $clients);
     $write = null;
     $except = null;
 
+    // Timeout de 1 segundo para o select não travar o loop de polling da nuvem
     if (@stream_select($read, $write, $except, 1) < 1) {
         continue;
     }
@@ -95,7 +139,7 @@ while (true) {
             }
 
             // É uma requisição HTTP tradicional (CORS / REST)
-            handleHttpRawRequest($client, $data);
+            handleHttpRawRequest($client, $data, $config);
             cleanupClient($clientId, $clients, $wsHandshakes);
             continue;
         }
@@ -123,8 +167,8 @@ while (true) {
             }
 
             $action = $payload['action'] ?? 'print';
-            $ip     = trim($payload['ip'] ?? '192.168.88.87');
-            $porta  = (int)($payload['porta'] ?? 9100);
+            $ip     = trim($payload['ip'] ?? ($config['default_printer_ip'] ?? '192.168.88.87'));
+            $porta  = (int)($payload['porta'] ?? ($config['default_printer_port'] ?? 9100));
             $callId = $payload['call_id'] ?? null;
 
             if ($action === 'ping') {
@@ -150,6 +194,83 @@ while (true) {
                 @fwrite($client, encodeWsFrame(json_encode($result)));
                 continue;
             }
+        }
+    }
+}
+
+/**
+ * Consulta e processa trabalhos pendentes na fila da nuvem
+ */
+function processarFilaNuvem($config) {
+    $cloudUrl  = rtrim($config['cloud_url'] ?? 'https://erp.code360.dev.br', '/');
+    $empresaId = $config['empresa_id'] ?? '48';
+
+    $url = "{$cloudUrl}/api/print-queue/pendentes?empresa_id=" . urlencode($empresaId);
+
+    $ctx = stream_context_create([
+        'http' => [
+            'method'  => 'GET',
+            'timeout' => 3,
+            'header'  => "Accept: application/json\r\nUser-Agent: ERP-Print-Agent/2.1\r\n",
+        ],
+        'ssl' => [
+            'verify_peer'      => false,
+            'verify_peer_name' => false,
+        ]
+    ]);
+
+    $resp = @file_get_contents($url, false, $ctx);
+    if ($resp === false || empty($resp)) {
+        return;
+    }
+
+    $json = @json_decode($resp, true);
+    if (!$json || empty($json['data']) || !is_array($json['data'])) {
+        return;
+    }
+
+    foreach ($json['data'] as $job) {
+        $id            = $job['id'];
+        $tipo          = strtoupper($job['tipo'] ?? 'DOC');
+        $docId         = $job['documento_id'] ?? '-';
+        $ip            = !empty($job['printer_ip']) ? $job['printer_ip'] : ($config['default_printer_ip'] ?? '192.168.88.87');
+        $porta         = !empty($job['printer_porta']) ? (int)$job['printer_porta'] : (int)($config['default_printer_port'] ?? 9100);
+        $payloadBase64 = $job['payload_base64'];
+
+        echo "[" . date('H:i:s') . "] [FILA NUVEM] Trabalho #{$id} ({$tipo} #{$docId}) recebido para {$ip}:{$porta}...\n";
+
+        $res = executarImpressao($ip, $porta, $payloadBase64);
+
+        $statusConcluir = $res['success'] ? 'impresso' : 'erro';
+        $erroMsg        = $res['success'] ? null : ($res['message'] ?? 'Erro desconhecido');
+
+        // Notifica o servidor em nuvem da conclusão do trabalho
+        $concluirUrl = "{$cloudUrl}/api/print-queue/concluir";
+        $postData = http_build_query([
+            'id'     => $id,
+            'status' => $statusConcluir,
+            'erro'   => $erroMsg,
+        ]);
+
+        $postCtx = stream_context_create([
+            'http' => [
+                'method'  => 'POST',
+                'header'  => "Content-Type: application/x-www-form-urlencoded\r\nContent-Length: " . strlen($postData) . "\r\nUser-Agent: ERP-Print-Agent/2.1\r\n",
+                'content' => $postData,
+                'timeout' => 3,
+            ],
+            'ssl' => [
+                'verify_peer'      => false,
+                'verify_peer_name' => false,
+            ]
+        ]);
+
+        @file_get_contents($concluirUrl, false, $postCtx);
+
+        if ($res['success']) {
+            echo "[" . date('H:i:s') . "] [FILA NUVEM] Trabalho #{$id} ({$tipo} #{$docId}) IMPRESSO COM SUCESSO!\n";
+        } else {
+            echo "[" . date('H:i:s') . "] [FILA NUVEM] Trabalho #{$id} ERRO: {$erroMsg}\n";
         }
     }
 }
@@ -289,11 +410,17 @@ function executarImpressao($ip, $porta, $dataBase64) {
 /**
  * Trata requisição HTTP quando executado via socket server
  */
-function handleHttpRawRequest($client, $rawHttp) {
-    $corsHeaders = "Access-Control-Allow-Origin: *\r\n" .
+function handleHttpRawRequest($client, $rawHttp, $config = []) {
+    $origin = '*';
+    if (preg_match('/Origin:\s*([^\r\n]+)/i', $rawHttp, $mOrigin)) {
+        $origin = trim($mOrigin[1]);
+    }
+
+    $corsHeaders = "Access-Control-Allow-Origin: {$origin}\r\n" .
                    "Access-Control-Allow-Methods: GET, POST, OPTIONS\r\n" .
-                   "Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With\r\n" .
+                   "Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Access-Control-Request-Private-Network\r\n" .
                    "Access-Control-Allow-Private-Network: true\r\n" .
+                   "Access-Control-Allow-Credentials: true\r\n" .
                    "Content-Type: application/json; charset=utf-8\r\n";
 
     if (strpos($rawHttp, 'OPTIONS ') === 0) {
@@ -315,22 +442,24 @@ function handleHttpRawRequest($client, $rawHttp) {
     $statusCode = '200 OK';
 
     if (strpos($uri, '/test') !== false) {
-        $ip = trim($input['ip'] ?? '192.168.88.87');
-        $porta = (int)($input['porta'] ?? 9100);
+        $ip = trim($input['ip'] ?? ($config['default_printer_ip'] ?? '192.168.88.87'));
+        $porta = (int)($input['porta'] ?? ($config['default_printer_port'] ?? 9100));
         $responseJson = executarTesteImpressao($ip, $porta);
         if (!$responseJson['success']) $statusCode = '400 Bad Request';
     } elseif (strpos($uri, '/print') !== false) {
-        $ip = trim($input['ip'] ?? '');
-        $porta = (int)($input['porta'] ?? 9100);
+        $ip = trim($input['ip'] ?? ($config['default_printer_ip'] ?? '192.168.88.87'));
+        $porta = (int)($input['porta'] ?? ($config['default_printer_port'] ?? 9100));
         $data = $input['data'] ?? '';
         $responseJson = executarImpressao($ip, $porta, $data);
         if (!$responseJson['success']) $statusCode = '400 Bad Request';
     } else {
         $responseJson = [
-            'status' => 'online',
-            'service' => 'ERP Print Agent',
-            'version' => '2.0.0',
-            'timestamp' => date('Y-m-d H:i:s')
+            'status'     => 'online',
+            'service'    => 'ERP Print Agent',
+            'version'    => '2.1.0',
+            'cloud_url'  => $config['cloud_url'] ?? '',
+            'empresa_id' => $config['empresa_id'] ?? '',
+            'timestamp'  => date('Y-m-d H:i:s')
         ];
     }
 
@@ -345,11 +474,13 @@ function handleHttpRawRequest($client, $rawHttp) {
 /**
  * Fallback para php -S
  */
-function handleHttpRequestDirect() {
-    header('Access-Control-Allow-Origin: *');
+function handleHttpRequestDirect($config = []) {
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
+    header("Access-Control-Allow-Origin: {$origin}");
     header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Access-Control-Request-Private-Network');
     header('Access-Control-Allow-Private-Network: true');
+    header('Access-Control-Allow-Credentials: true');
     header('Content-Type: application/json; charset=utf-8');
 
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -362,8 +493,8 @@ function handleHttpRequestDirect() {
     $input = json_decode($rawBody, true) ?? [];
 
     if ($uri === '/test') {
-        $ip = trim($input['ip'] ?? $_GET['ip'] ?? '192.168.88.87');
-        $porta = (int)($input['porta'] ?? $_GET['porta'] ?? 9100);
+        $ip = trim($input['ip'] ?? $_GET['ip'] ?? ($config['default_printer_ip'] ?? '192.168.88.87'));
+        $porta = (int)($input['porta'] ?? $_GET['porta'] ?? ($config['default_printer_port'] ?? 9100));
         $res = executarTesteImpressao($ip, $porta);
         if (!$res['success']) http_response_code(400);
         echo json_encode($res);
@@ -371,8 +502,8 @@ function handleHttpRequestDirect() {
     }
 
     if ($uri === '/print') {
-        $ip = trim($input['ip'] ?? '');
-        $porta = (int)($input['porta'] ?? 9100);
+        $ip = trim($input['ip'] ?? ($config['default_printer_ip'] ?? '192.168.88.87'));
+        $porta = (int)($input['porta'] ?? ($config['default_printer_port'] ?? 9100));
         $data = $input['data'] ?? '';
         $res = executarImpressao($ip, $porta, $data);
         if (!$res['success']) http_response_code(400);
@@ -381,9 +512,11 @@ function handleHttpRequestDirect() {
     }
 
     echo json_encode([
-        'status' => 'online',
-        'service' => 'ERP Print Agent',
-        'version' => '2.0.0',
-        'timestamp' => date('Y-m-d H:i:s')
+        'status'     => 'online',
+        'service'    => 'ERP Print Agent',
+        'version'    => '2.1.0',
+        'cloud_url'  => $config['cloud_url'] ?? '',
+        'empresa_id' => $config['empresa_id'] ?? '',
+        'timestamp'  => date('Y-m-d H:i:s')
     ]);
 }

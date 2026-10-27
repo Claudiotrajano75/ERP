@@ -86,7 +86,7 @@
                         @endcan
                         @can('produtos_edit')
                         <button type="button" class="dash-btn dash-btn-light" data-bs-toggle="modal" data-bs-target="#modal_busca_imagens_lote" id="btn-open-modal-lote">
-                            <i class="ri-image-search-line align-middle me-1"></i> Buscar Imagens
+                            <i class="ri-search-eye-line align-middle me-1"></i> Buscar Imagens
                         </button>
                         <a href="{{ route('produtos.reajuste') }}" class="dash-btn dash-btn-light">
                             <i class="ri-file-edit-fill align-middle me-1"></i> Reajuste

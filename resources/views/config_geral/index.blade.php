@@ -140,6 +140,80 @@
 .backup-progress { display: none; margin-top: 14px; }
 .backup-spinner { width: 18px; height: 18px; border: 3px solid #e0e7ff; border-top-color: #4f46e5; border-radius: 50%; animation: bspin .7s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
 @keyframes bspin { to { transform: rotate(360deg); } }
+
+/* ─── Estilos da Restauração de Backup ─── */
+.backup-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: #475569;
+    margin: 22px 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.backup-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+}
+.backup-restore-box {
+    border: 1px solid #fed7aa;
+    background: #fffbeb;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 12.5px;
+    color: #92400e;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+.backup-restore-box i { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.act-btn.act-restore {
+    background: #fef3c7;
+    color: #b45309;
+    border-color: #fde68a;
+}
+.act-btn.act-restore:hover {
+    background: #fde68a;
+    color: #78350f;
+}
+.backup-file-picker {
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 22px 16px;
+    text-align: center;
+    background: #f8fafc;
+    transition: all .2s ease;
+    cursor: pointer;
+    position: relative;
+}
+.backup-file-picker:hover {
+    border-color: #f59e0b;
+    background: #fffdf5;
+}
+.backup-file-picker input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+.backup-file-info {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    background: #f1f5f9;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-top: 12px;
+    font-size: 13px;
+}
 </style>
 @endsection
 
@@ -490,39 +564,50 @@
                             </div>
                         </div>
 
-                        <!-- ══════════════ ABA 5: BACKUP DA EMPRESA ══════════════ -->
+                        <!-- ══════════════ ABA 5: BACKUP E RESTAURAÇÃO DA EMPRESA ══════════════ -->
                         <div class="tab-pane fade" id="tab-backup" role="tabpanel">
+
+                            @php
+                                $empresaAtualId = request()->empresa_id ?? (Auth::check() && Auth::user()->empresa ? Auth::user()->empresa->empresa_id : ($item ? $item->empresa_id : null));
+                            @endphp
 
                             {{-- Aviso informativo --}}
                             <div class="backup-info-box">
                                 <i class="ri-shield-check-line"></i>
                                 <div>
-                                    <strong>Backup de Dados da Empresa</strong><br>
-                                    O backup exporta <strong>apenas os dados desta empresa</strong> (filtrados por empresa_id).
-                                    Nenhum dado de outras empresas é incluído. Recomendamos realizar backups regularmente.
+                                    <strong>Backup & Restauração com Isolamento por Empresa (Multitenant)</strong><br>
+                                    As operações de backup e restauração trabalham <strong>exclusivamente com os dados desta empresa (ID: {{ $empresaAtualId }})</strong>.
+                                    Nenhum dado de outras empresas é exportado, alterado ou excluído. Backups de outras empresas são bloqueados automaticamente pelo sistema.
                                 </div>
+                            </div>
+
+                            {{-- TÍTULO SEÇÃO 1: EXPORTAR BACKUP --}}
+                            <div class="backup-section-title">
+                                <i class="ri-upload-cloud-line text-primary"></i> 1. Gerar e Exportar Backup
                             </div>
 
                             <div class="row g-4">
 
                                 {{-- CARD 1: DOWNLOAD DIRETO --}}
                                 <div class="col-12 col-lg-6">
-                                    <div class="backup-card">
+                                    <div class="backup-card h-100">
                                         <div class="backup-card-header">
                                             <i class="ri-download-cloud-2-line fs-20" style="color:#4f46e5;"></i>
                                             <h5>Download Direto</h5>
                                         </div>
-                                        <div class="backup-card-body">
+                                        <div class="backup-card-body d-flex flex-column justify-content-between">
                                             <p class="text-muted fs-13 mb-3">
                                                 Gera e baixa imediatamente um arquivo <code>.sql</code> com todos os dados desta empresa.
-                                                Salve o arquivo em local seguro.
+                                                Salve o arquivo em local seguro no seu computador.
                                             </p>
-                                            <button type="button" class="dash-btn dash-btn-primary w-100" id="btn-backup-download" onclick="iniciarBackup('download')">
-                                                <i class="ri-download-2-line me-1"></i> Gerar e Baixar Backup
-                                            </button>
-                                            <div class="backup-progress" id="progress-download">
-                                                <span class="backup-spinner"></span>
-                                                <span class="fs-13 text-muted">Gerando backup, aguarde...</span>
+                                            <div>
+                                                <button type="button" class="dash-btn dash-btn-primary w-100" id="btn-backup-download" onclick="iniciarBackup('download')">
+                                                    <i class="ri-download-2-line me-1"></i> Gerar e Baixar Backup (.sql)
+                                                </button>
+                                                <div class="backup-progress" id="progress-download">
+                                                    <span class="backup-spinner"></span>
+                                                    <span class="fs-13 text-muted">Gerando backup, aguarde...</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -530,22 +615,24 @@
 
                                 {{-- CARD 2: SALVAR NO SERVIDOR --}}
                                 <div class="col-12 col-lg-6">
-                                    <div class="backup-card">
+                                    <div class="backup-card h-100">
                                         <div class="backup-card-header">
                                             <i class="ri-server-line fs-20" style="color:#10b981;"></i>
                                             <h5>Salvar no Servidor</h5>
                                         </div>
-                                        <div class="backup-card-body">
+                                        <div class="backup-card-body d-flex flex-column justify-content-between">
                                             <p class="text-muted fs-13 mb-3">
-                                                Salva o backup na pasta <code>storage/app/backups/</code> do servidor (Hostinger).
-                                                Útil para manter histórico automático sem baixar o arquivo.
+                                                Salva o backup na pasta isolada desta empresa no servidor (Hostinger).
+                                                Permite restaurar com 1 clique a qualquer momento através do histórico abaixo.
                                             </p>
-                                            <button type="button" class="dash-btn w-100" style="background:#10b981;color:#fff;border:none;" id="btn-backup-servidor" onclick="iniciarBackup('servidor')">
-                                                <i class="ri-save-line me-1"></i> Salvar Backup no Servidor
-                                            </button>
-                                            <div class="backup-progress" id="progress-servidor">
-                                                <span class="backup-spinner"></span>
-                                                <span class="fs-13 text-muted">Salvando no servidor, aguarde...</span>
+                                            <div>
+                                                <button type="button" class="dash-btn w-100" style="background:#10b981;color:#fff;border:none;" id="btn-backup-servidor" onclick="iniciarBackup('servidor')">
+                                                    <i class="ri-save-line me-1"></i> Salvar Backup no Servidor
+                                                </button>
+                                                <div class="backup-progress" id="progress-servidor">
+                                                    <span class="backup-spinner"></span>
+                                                    <span class="fs-13 text-muted">Salvando no servidor, aguarde...</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -553,12 +640,93 @@
 
                             </div>
 
+                            {{-- TÍTULO SEÇÃO 2: RESTAURAR BACKUP --}}
+                            <div class="backup-section-title">
+                                <i class="ri-history-line text-warning"></i> 2. Restaurar Dados da Empresa
+                            </div>
+
+                            {{-- CARD DE RESTAURAÇÃO VIA UPLOAD DE ARQUIVO --}}
+                            <div class="backup-card">
+                                <div class="backup-card-header d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="ri-device-recover-line fs-20" style="color:#d97706;"></i>
+                                        <h5>Restaurar a partir de Arquivo (.sql)</h5>
+                                    </div>
+                                    <span class="badge bg-soft-warning text-warning fs-12 px-2 py-1">
+                                        <i class="ri-shield-keyhole-line me-1"></i>Validação Estrita por Empresa
+                                    </span>
+                                </div>
+                                <div class="backup-card-body">
+                                    <div class="backup-restore-box">
+                                        <i class="ri-alert-line"></i>
+                                        <div>
+                                            <strong>Atenção ao Restaurar:</strong>
+                                            O arquivo <code>.sql</code> deve ter sido gerado para esta empresa (<strong>Empresa ID: {{ $empresaAtualId }}</strong>).
+                                            Antes de aplicar qualquer alteração, o sistema verifica a identidade da empresa no arquivo e rejeita comandos não permitidos.
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3 align-items-center">
+                                        <div class="col-12 col-md-7">
+                                            <div class="backup-file-picker" id="dropzone-backup-file">
+                                                <input type="file" id="input-arquivo-backup" accept=".sql" onchange="arquivoBackupSelecionado(this)">
+                                                <div id="picker-placeholder">
+                                                    <i class="ri-file-upload-line fs-28 text-muted d-block mb-1"></i>
+                                                    <span class="fw-semibold text-dark fs-13">Clique ou arraste o arquivo .sql aqui</span>
+                                                    <span class="d-block text-muted fs-12">Tamanho máximo permitido: 100 MB</span>
+                                                </div>
+                                                <div class="backup-file-info" id="picker-file-info">
+                                                    <div class="d-flex align-items-center gap-2 text-start">
+                                                        <i class="ri-file-code-line text-primary fs-20"></i>
+                                                        <div>
+                                                            <div class="fw-bold text-dark fs-13" id="picker-nome-arquivo">arquivo.sql</div>
+                                                            <div class="text-muted fs-11" id="picker-tamanho-arquivo">0 KB</div>
+                                                        </div>
+                                                    </div>
+                                                    <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="limparArquivoBackup(event)" title="Remover seleção">
+                                                        <i class="ri-close-circle-line fs-18"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-md-5">
+                                            <div class="p-3 bg-light rounded-3 border">
+                                                <div class="form-check form-switch mb-3">
+                                                    <input class="form-check-input" type="checkbox" id="check-limpar-antes" checked style="cursor:pointer; width:38px; height:20px;">
+                                                    <label class="form-check-label ms-2 fs-13 fw-semibold text-dark" for="check-limpar-antes" style="cursor:pointer;">
+                                                        Substituir dados atuais da empresa
+                                                    </label>
+                                                    <div class="text-muted fs-11 mt-1">
+                                                        Remove os registros anteriores desta empresa antes de restaurar, mantendo o banco idêntico ao backup e prevenindo erros de chave duplicada.
+                                                    </div>
+                                                </div>
+
+                                                <button type="button" class="dash-btn w-100" style="background:#f59e0b;color:#fff;border:none;font-weight:600;padding:10px 16px;" id="btn-executar-restauracao" onclick="iniciarRestauracaoUpload()">
+                                                    <i class="ri-history-line me-1"></i> Iniciar Restauração do Arquivo
+                                                </button>
+
+                                                <div class="backup-progress" id="progress-restauracao-upload">
+                                                    <span class="backup-spinner" style="border-top-color:#f59e0b;"></span>
+                                                    <span class="fs-13 text-muted">Validando e restaurando dados, aguarde... Não saia desta tela.</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- TÍTULO SEÇÃO 3: HISTÓRICO NO SERVIDOR --}}
+                            <div class="backup-section-title">
+                                <i class="ri-folder-history-line text-secondary"></i> 3. Histórico de Backups no Servidor
+                            </div>
+
                             {{-- HISTÓRICO DE BACKUPS NO SERVIDOR --}}
-                            <div class="backup-card mt-2">
+                            <div class="backup-card">
                                 <div class="backup-card-header d-flex justify-content-between align-items-center">
                                     <div class="d-flex align-items-center gap-2">
                                         <i class="ri-history-line fs-18" style="color:#64748b;"></i>
-                                        <h5>Histórico de Backups no Servidor</h5>
+                                        <h5>Backups Armazenados para Esta Empresa</h5>
                                     </div>
                                     <button type="button" class="dash-btn dash-btn-light" onclick="carregarHistoricoBackup()" id="btn-refresh-backup">
                                         <i class="ri-refresh-line"></i> Atualizar
@@ -792,6 +960,7 @@ function carregarHistoricoBackup() {
                 html += '<td class="text-muted fs-13">' + arq.tamanho + '</td>';
                 html += '<td class="text-muted fs-13">' + arq.data + '</td>';
                 html += '<td class="text-end">';
+                html += '<button type="button" class="act-btn act-restore me-1" title="Restaurar este backup nesta empresa" onclick="confirmarRestaurarServidor(\'' + arq.nome + '\')"><i class="ri-history-line"></i></button>';
                 html += '<a href="{{ route("backup-empresa.download-servidor") }}?nome=' + encodeURIComponent(arq.nome) + '" class="act-btn act-view me-1" title="Baixar este arquivo"><i class="ri-download-line"></i></a>';
                 html += '<button type="button" class="act-btn act-del" title="Excluir do servidor" onclick="removerBackup(\'' + arq.nome + '\')"><i class="ri-delete-bin-line"></i></button>';
                 html += '</td></tr>';
@@ -824,6 +993,220 @@ function removerBackup(nome) {
             alert('Erro ao excluir o arquivo do servidor.');
         }
     });
+}
+
+// ─── Seleção e UI de Arquivo de Backup ──────────────────────────────────────
+function arquivoBackupSelecionado(input) {
+    if (input.files && input.files[0]) {
+        var file = input.files[0];
+        var sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+        var sizeFormatted = sizeMb >= 1 ? sizeMb + ' MB' : (file.size / 1024).toFixed(1) + ' KB';
+
+        $('#picker-nome-arquivo').text(file.name);
+        $('#picker-tamanho-arquivo').text(sizeFormatted);
+        $('#picker-placeholder').hide();
+        $('#picker-file-info').css('display', 'flex');
+    }
+}
+
+function limparArquivoBackup(e) {
+    if (e) e.stopPropagation();
+    $('#input-arquivo-backup').val('');
+    $('#picker-file-info').hide();
+    $('#picker-placeholder').show();
+}
+
+// ─── Executar Restauração a partir do Upload ────────────────────────────────
+function iniciarRestauracaoUpload() {
+    var fileInput = document.getElementById('input-arquivo-backup');
+    if (!fileInput.files || !fileInput.files[0]) {
+        if (typeof swal === 'function') {
+            swal({
+                title: "Atenção",
+                text: "Por favor, selecione um arquivo .sql de backup antes de prosseguir.",
+                icon: "warning",
+                button: "Entendido"
+            });
+        } else {
+            alert('Por favor, selecione um arquivo .sql de backup antes de prosseguir.');
+        }
+        return;
+    }
+
+    var file = fileInput.files[0];
+    var limparAntes = $('#check-limpar-antes').is(':checked') ? 1 : 0;
+    var avisoLimpeza = limparAntes 
+        ? "Os dados atuais desta empresa serão substituídos pelos registros contidos no backup." 
+        : "Os registros do backup serão inseridos/mesclados nesta empresa.";
+
+    var mensagem = "Você confirma a restauração do arquivo \"" + file.name + "\"?\n\n" + avisoLimpeza + "\n\nApenas os dados desta empresa serão alterados.";
+
+    var executar = function() {
+        var btn = $('#btn-executar-restauracao');
+        var progress = $('#progress-restauracao-upload');
+        btn.prop('disabled', true).html('<span class="backup-spinner" style="border-top-color:#fff;"></span> Restaurando dados...');
+        progress.show();
+
+        var formData = new FormData();
+        formData.append('arquivo_backup', file);
+        formData.append('limpar_antes', limparAntes);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        $.ajax({
+            url: '{{ route("backup-empresa.restaurar-upload") }}',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            timeout: 300000,
+            success: function(res) {
+                progress.hide();
+                btn.prop('disabled', false).html('<i class="ri-history-line me-1"></i> Iniciar Restauração do Arquivo');
+                limparArquivoBackup();
+
+                if (res.success) {
+                    if (typeof swal === 'function') {
+                        swal({
+                            title: "Restauração Concluída!",
+                            text: res.message,
+                            icon: "success",
+                            button: "OK"
+                        }).then(function() {
+                            carregarHistoricoBackup();
+                        });
+                    } else {
+                        alert(res.message);
+                        carregarHistoricoBackup();
+                    }
+                } else {
+                    if (typeof swal === 'function') {
+                        swal("Atenção", res.message || "Não foi possível concluir a restauração.", "error");
+                    } else {
+                        alert(res.message);
+                    }
+                }
+            },
+            error: function(xhr) {
+                progress.hide();
+                btn.prop('disabled', false).html('<i class="ri-history-line me-1"></i> Iniciar Restauração do Arquivo');
+
+                var msgErro = "Falha ao processar a restauração.";
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    msgErro = xhr.responseJSON.message;
+                } else if (xhr.responseText) {
+                    try {
+                        var json = JSON.parse(xhr.responseText);
+                        if (json.message) msgErro = json.message;
+                    } catch(e) {}
+                }
+
+                if (typeof swal === 'function') {
+                    swal("Erro de Restauração", msgErro, "error");
+                } else {
+                    alert(msgErro);
+                }
+            }
+        });
+    };
+
+    if (typeof swal === 'function') {
+        swal({
+            title: "Confirmar Restauração?",
+            text: mensagem,
+            icon: "warning",
+            buttons: ["Cancelar", "Sim, Iniciar Restauração"],
+            dangerMode: true,
+        }).then(function(confirmou) {
+            if (confirmou) {
+                executar();
+            }
+        });
+    } else {
+        if (confirm(mensagem)) {
+            executar();
+        }
+    }
+}
+
+// ─── Executar Restauração a partir do Servidor ─────────────────────────────
+function confirmarRestaurarServidor(nome) {
+    var mensagem = "Deseja restaurar o backup \"" + nome + "\" do servidor para a sua empresa?\n\nOs dados atuais desta empresa serão sincronizados com os dados deste backup.";
+
+    var executar = function() {
+        if (typeof swal === 'function') {
+            swal({
+                title: "Restaurando Backup...",
+                text: "Aguarde enquanto os dados estão sendo aplicados. Não feche o navegador.",
+                icon: "info",
+                buttons: false,
+                closeOnClickOutside: false,
+                closeOnEsc: false
+            });
+        }
+
+        $.ajax({
+            url: '{{ route("backup-empresa.restaurar-servidor") }}',
+            type: 'POST',
+            data: {
+                nome: nome,
+                limpar_antes: 1,
+                _token: '{{ csrf_token() }}'
+            },
+            timeout: 300000,
+            success: function(res) {
+                if (res.success) {
+                    if (typeof swal === 'function') {
+                        swal({
+                            title: "Restauração Concluída!",
+                            text: res.message,
+                            icon: "success",
+                            button: "OK"
+                        }).then(function() {
+                            carregarHistoricoBackup();
+                        });
+                    } else {
+                        alert(res.message);
+                        carregarHistoricoBackup();
+                    }
+                } else {
+                    if (typeof swal === 'function') {
+                        swal("Falha", res.message, "error");
+                    } else {
+                        alert(res.message);
+                    }
+                }
+            },
+            error: function(xhr) {
+                var msg = "Erro ao executar restauração.";
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    msg = xhr.responseJSON.message;
+                }
+                if (typeof swal === 'function') {
+                    swal("Erro", msg, "error");
+                } else {
+                    alert(msg);
+                }
+            }
+        });
+    };
+
+    if (typeof swal === 'function') {
+        swal({
+            title: "Restaurar Backup do Servidor?",
+            text: mensagem,
+            icon: "warning",
+            buttons: ["Cancelar", "Sim, Restaurar"],
+            dangerMode: true,
+        }).then(function(confirmou) {
+            if (confirmou) {
+                executar();
+            }
+        });
+    } else {
+        if (confirm(mensagem)) {
+            executar();
+        }
+    }
 }
 
 // ─── Controle das abas: esconde botão Salvar na aba Backup e carrega histórico

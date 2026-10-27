@@ -905,6 +905,8 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
             Route::get('/listar', 'BackupEmpresaController@listar')->name('backup-empresa.listar');
             Route::get('/download-servidor', 'BackupEmpresaController@downloadServidor')->name('backup-empresa.download-servidor');
             Route::delete('/remover-servidor', 'BackupEmpresaController@removerServidor')->name('backup-empresa.remover-servidor');
+            Route::post('/restaurar-upload', 'BackupEmpresaController@restaurarUpload')->name('backup-empresa.restaurar-upload');
+            Route::post('/restaurar-servidor', 'BackupEmpresaController@restaurarServidor')->name('backup-empresa.restaurar-servidor');
         });
 
         // ═══════════════════════════════════════════════════════════

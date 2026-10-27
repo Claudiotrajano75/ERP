@@ -172,14 +172,79 @@
     margin-bottom: 16px;
 }
 .backup-restore-box i { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+/* ─── Botões de Ação na Tabela de Histórico (Design Profissional) ─── */
+.backup-actions-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+.act-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none !important;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none !important;
+    padding: 0;
+    line-height: 1;
+    background: #f8fafc;
+}
+.act-btn i {
+    font-size: 17px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+.act-btn:hover i {
+    transform: scale(1.15);
+}
+
+/* 1. Botão Restaurar (Amber) */
 .act-btn.act-restore {
-    background: #fef3c7;
-    color: #b45309;
+    background: #fffbeb;
+    color: #d97706;
     border-color: #fde68a;
 }
 .act-btn.act-restore:hover {
     background: #fde68a;
-    color: #78350f;
+    color: #92400e;
+    border-color: #fcd34d;
+    box-shadow: 0 3px 8px rgba(245, 158, 11, 0.25);
+    transform: translateY(-1px);
+}
+
+/* 2. Botão Download (Indigo) */
+.act-btn.act-view {
+    background: #eef2ff;
+    color: #4f46e5;
+    border-color: #c7d2fe;
+}
+.act-btn.act-view:hover {
+    background: #e0e7ff;
+    color: #3730a3;
+    border-color: #a5b4fc;
+    box-shadow: 0 3px 8px rgba(79, 70, 229, 0.25);
+    transform: translateY(-1px);
+}
+
+/* 3. Botão Excluir (Red) */
+.act-btn.act-del {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+.act-btn.act-del:hover {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fca5a5;
+    box-shadow: 0 3px 8px rgba(220, 38, 38, 0.25);
+    transform: translateY(-1px);
 }
 .backup-file-picker {
     border: 2px dashed #cbd5e1;
@@ -960,9 +1025,11 @@ function carregarHistoricoBackup() {
                 html += '<td class="text-muted fs-13">' + arq.tamanho + '</td>';
                 html += '<td class="text-muted fs-13">' + arq.data + '</td>';
                 html += '<td class="text-end">';
-                html += '<button type="button" class="act-btn act-restore me-1" title="Restaurar este backup nesta empresa" onclick="confirmarRestaurarServidor(\'' + arq.nome + '\')"><i class="ri-history-line"></i></button>';
-                html += '<a href="{{ route("backup-empresa.download-servidor") }}?nome=' + encodeURIComponent(arq.nome) + '" class="act-btn act-view me-1" title="Baixar este arquivo"><i class="ri-download-line"></i></a>';
+                html += '<div class="backup-actions-wrap">';
+                html += '<button type="button" class="act-btn act-restore" title="Restaurar este backup nesta empresa" onclick="confirmarRestaurarServidor(\'' + arq.nome + '\')"><i class="ri-history-line"></i></button>';
+                html += '<a href="{{ route("backup-empresa.download-servidor") }}?nome=' + encodeURIComponent(arq.nome) + '" class="act-btn act-view" title="Baixar este arquivo"><i class="ri-download-line"></i></a>';
                 html += '<button type="button" class="act-btn act-del" title="Excluir do servidor" onclick="removerBackup(\'' + arq.nome + '\')"><i class="ri-delete-bin-line"></i></button>';
+                html += '</div>';
                 html += '</td></tr>';
             });
             html += '</tbody></table></div>';

@@ -279,7 +279,7 @@
                         <li class="nav-item" role="presentation">
                             <a class="nav-link" data-bs-toggle="pill" href="#tab-backup" role="tab">
                                 <i class="ri-database-2-line"></i>
-                                <span>Backup</span>
+                                <span>Backup & Restauração</span>
                             </a>
                         </li>
                     </ul>

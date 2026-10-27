@@ -9,9 +9,15 @@ class ProdutoImagemService
 {
     /**
      * Busca inteligente de imagem para produto utilizando múltiplos provedores em cascata.
-     * 1. Web Product Search (DuckDuckGo Image Engine via cURL) - Alta assertividade para o mercado brasileiro
-     * 2. Open Food/Products Facts (Se código de barras EAN-13 estiver disponível)
-     * 3. Unsplash (Fallback legado mantido)
+     * 
+     * Ordem de execução:
+     * 1. Se possuir código de barras EAN válido (>= 8 dígitos): consulta Open Food Facts.
+     * 2. Sanitiza o nome do produto removendo códigos de cardápio/garçom (ex: "502-", "495-", "01.")
+     *    e gramaturas/porções (ex: "(300G)", "100 G(ATÉ 12 ANOS)").
+     * 3. Provedor 1: Bing Image Engine (alta resolução, sem captcha, excelente para pratos e produtos brasileiros).
+     * 4. Provedor 2: Google Images Thumbnail Scraper (fallback).
+     * 5. Provedor 3: DuckDuckGo Images (fallback).
+     * 6. Provedor 4: Unsplash (fallback artístico).
      *
      * @param string $productName Nome do produto
      * @param string|null $barcode Código de barras EAN (opcional)
@@ -19,25 +25,16 @@ class ProdutoImagemService
      */
     public function searchAndDownloadImage(string $productName, ?string $barcode = null): ?string
     {
-        if (empty(trim($productName))) {
+        $productName = trim($productName);
+        if (empty($productName)) {
             return null;
         }
 
-        // 1. Provedor 1: DuckDuckGo Web Images (produtos reais brasileiros de e-commerces)
-        try {
-            $imageUrl = $this->searchDuckDuckGoImage($productName);
-            if ($imageUrl) {
-                $saved = $this->downloadAndSaveImage($imageUrl, $productName);
-                if ($saved) return $saved;
-            }
-        } catch (\Exception $e) {
-            report($e);
-        }
-
-        // 2. Provedor 2: Open Food/Products Facts (se tiver EAN válido com 8 a 14 dígitos)
-        if (!empty($barcode) && strlen(trim($barcode)) >= 8 && trim($barcode) !== '0') {
+        // 1. Provedor por Código de Barras: Open Food/Products Facts (se for produto industrializado com EAN)
+        $cleanBarcode = !empty($barcode) ? preg_replace('/\D/', '', $barcode) : '';
+        if (strlen($cleanBarcode) >= 8 && $cleanBarcode !== '00000000') {
             try {
-                $imageUrl = $this->searchOpenFoodFacts(trim($barcode));
+                $imageUrl = $this->searchOpenFoodFacts($cleanBarcode);
                 if ($imageUrl) {
                     $saved = $this->downloadAndSaveImage($imageUrl, $productName);
                     if ($saved) return $saved;
@@ -47,9 +44,48 @@ class ProdutoImagemService
             }
         }
 
-        // 3. Provedor 3: Unsplash (Fallback legado)
+        // 2. Higieniza e gera variantes do nome do produto (remove códigos de cardápio, garçom, gramaturas)
+        $searchTerms = $this->sanitizeTermsForSearch($productName);
+
+        // 3. Itera sobre os termos higienizados (começando pelo termo mais limpo e comercial)
+        foreach ($searchTerms as $term) {
+            // Provedor 1: Bing Images (Web Search Direto)
+            try {
+                $imageUrl = $this->searchBingImage($term);
+                if ($imageUrl) {
+                    $saved = $this->downloadAndSaveImage($imageUrl, $term);
+                    if ($saved) return $saved;
+                }
+            } catch (\Exception $e) {
+                report($e);
+            }
+
+            // Provedor 2: Google Images Thumbnail Scraper
+            try {
+                $imageUrl = $this->searchGoogleThumbnail($term);
+                if ($imageUrl) {
+                    $saved = $this->downloadAndSaveImage($imageUrl, $term);
+                    if ($saved) return $saved;
+                }
+            } catch (\Exception $e) {
+                report($e);
+            }
+
+            // Provedor 3: DuckDuckGo Images (se disponível)
+            try {
+                $imageUrl = $this->searchDuckDuckGoImage($term);
+                if ($imageUrl) {
+                    $saved = $this->downloadAndSaveImage($imageUrl, $term);
+                    if ($saved) return $saved;
+                }
+            } catch (\Exception $e) {
+                report($e);
+            }
+        }
+
+        // 4. Provedor 4: Unsplash (Fallback legado mantido)
         try {
-            $saved = $this->downloadFromUnsplash($productName);
+            $saved = $this->downloadFromUnsplash($searchTerms[0] ?? $productName);
             if ($saved) return $saved;
         } catch (\Exception $e) {
             report($e);
@@ -59,8 +95,151 @@ class ProdutoImagemService
     }
 
     /**
+     * Higieniza o nome do produto para busca na web, removendo:
+     * - Códigos de cardápio / garçom no início (ex: "502- ", "495-", "01. ", "#10 ", "123 - ")
+     * - Gramaturas e volumes (ex: "(300G)", "100 G", "2L", "350ML", "1KG")
+     * - Observações entre parênteses (ex: "(ATÉ 12 ANOS)", "(INDIVIDUAL)", "[SERVE 2]")
+     *
+     * @param string $productName Nome bruto do produto
+     * @return array Lista de termos de busca em ordem de prioridade
+     */
+    public function sanitizeTermsForSearch(string $productName): array
+    {
+        $raw = trim($productName);
+        if (empty($raw)) return [];
+
+        $terms = [];
+
+        // 1. Remove código de cardápio / garçom no início
+        // Casos tratados:
+        // "502- QUEIJO" => "QUEIJO"
+        // "495-PRATO"   => "PRATO"
+        // "01. PIZZA"   => "PIZZA"
+        // "#10 COCA"    => "COCA"
+        // "12 - SUCO"   => "SUCO"
+        $semCodigo = preg_replace('/^\s*#?\s*\d{1,6}\s*[-–—._:]*\s*/iu', '', $raw);
+        $semCodigo = trim($semCodigo);
+
+        if (!empty($semCodigo) && $semCodigo !== $raw) {
+            // 2. Remove parênteses e colchetes explicativos (ex: "(300G)", "(ATÉ 12 ANOS)", "[PORÇÃO]")
+            $semParenteses = preg_replace('/\([^)]{1,50}\)/u', ' ', $semCodigo);
+            $semParenteses = preg_replace('/\[[^\]]{1,50}\]/u', ' ', $semParenteses);
+
+            // 3. Remove gramaturas e medidas soltas (ex: "100 G", "300g", "2L", "350ml", "1kg", "500 ml")
+            $semMedidas = preg_replace('/\b\d+(?:[.,]\d+)?\s*(?:g|kg|ml|l|gr|gramas|litros|un|und|unid|unidades)\b/iu', ' ', $semParenteses);
+
+            // 4. Limpa múltiplos espaços e pontuações residuais
+            $termoLimpo = preg_replace('/\s+/', ' ', trim($semMedidas));
+            $termoLimpo = trim($termoLimpo, " -–—._:;,/|\\()[]{}");
+
+            if (mb_strlen($termoLimpo) >= 3) {
+                $terms[] = $termoLimpo; // 1ª Prioridade: Nome limpo da comida (ex: "QUEIJO À MILANESA")
+            }
+
+            // 2ª Prioridade: Nome sem o código inicial mas com os complementos
+            $semCodigoLimpo = preg_replace('/\s+/', ' ', $semCodigo);
+            if (!in_array($semCodigoLimpo, $terms)) {
+                $terms[] = $semCodigoLimpo;
+            }
+        }
+
+        // Caso o nome original não tenha código numérico no início (ou como último fallback)
+        if (!in_array($raw, $terms)) {
+            $terms[] = $raw;
+        }
+
+        return array_values($terms);
+    }
+
+    /**
+     * Busca fotos no Bing Images (Web Image Engine).
+     * Alta taxa de acerto para marcas e culinária brasileira, sem necessidade de chave de API.
+     *
+     * @param string $query Termo higienizado
+     * @return string|null URL direta da imagem
+     */
+    public function searchBingImage(string $query): ?string
+    {
+        $cleanQuery = trim($query);
+        if (empty($cleanQuery)) return null;
+
+        $url = "https://www.bing.com/images/search?q=" . urlencode($cleanQuery) . "&form=HDRSC2&first=1";
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
+        curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $html = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($code !== 200 || empty($html)) {
+            return null;
+        }
+
+        // 1. Procura imagens em resolução original via 'murl'
+        if (preg_match_all('/murl&quot;:&quot;(https?:\/\/[^&"]+)&quot;/i', $html, $matches)) {
+            foreach ($matches[1] as $imgUrl) {
+                $imgUrl = html_entity_decode($imgUrl, ENT_QUOTES | ENT_HTML5);
+                if (filter_var($imgUrl, FILTER_VALIDATE_URL) && !preg_match('/\.(svg|gif)$/i', $imgUrl)) {
+                    return $imgUrl;
+                }
+            }
+        }
+
+        // 2. Fallback: miniaturas do Bing (tse)
+        if (preg_match_all('/src="(https?:\/\/[^"]*tse[^"]*)"/i', $html, $matches)) {
+            foreach ($matches[1] as $imgUrl) {
+                $imgUrl = html_entity_decode($imgUrl, ENT_QUOTES | ENT_HTML5);
+                if (filter_var($imgUrl, FILTER_VALIDATE_URL)) {
+                    return $imgUrl;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Fallback de miniaturas do Google Images (gstatic).
+     *
+     * @param string $query Termo higienizado
+     * @return string|null URL direta da imagem
+     */
+    public function searchGoogleThumbnail(string $query): ?string
+    {
+        $cleanQuery = trim($query);
+        if (empty($cleanQuery)) return null;
+
+        $url = "https://www.google.com/search?tbm=isch&q=" . urlencode($cleanQuery) . "&tbs=isz:m";
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $html = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($code === 200 && !empty($html)) {
+            if (preg_match_all('/(https:\/\/encrypted-tbn0\.gstatic\.com\/images\?q=[^"&]+)/i', $html, $m)) {
+                foreach ($m[1] as $imgUrl) {
+                    $imgUrl = html_entity_decode($imgUrl, ENT_QUOTES | ENT_HTML5);
+                    if (filter_var($imgUrl, FILTER_VALIDATE_URL)) {
+                        return $imgUrl;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Consulta a API de imagens do DuckDuckGo para encontrar a foto do produto na web.
-     * Utiliza cURL com cookie jar para máxima compatibilidade e evitar 403.
+     * Utiliza cURL com cookie jar para máxima compatibilidade.
      *
      * @param string $query Termo de busca (nome do produto)
      * @return string|null URL direta da imagem
@@ -80,7 +259,7 @@ class ProdutoImagemService
             curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
             curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
             curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
-            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 8);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             $html = curl_exec($ch);
             curl_close($ch);
@@ -109,7 +288,7 @@ class ProdutoImagemService
                 'Sec-Fetch-Site: same-origin'
             ]);
             curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
-            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 8);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             $res = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);

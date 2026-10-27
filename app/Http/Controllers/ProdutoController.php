@@ -1273,18 +1273,24 @@ public function removeImagem($id){
             ->whereNotNull('nome')
             ->where('nome', '!=', '');
 
-        if ($modo === 'sem_imagem') {
-            $query->where(function($q) {
-                $q->whereNull('imagem')->orWhere('imagem', '');
-            });
-        }
-
         if ($request->has('ids') && !empty($request->ids)) {
             $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
             $query->whereIn('id', $ids);
         }
 
         $produtos = $query->select('id', 'nome', 'codigo_barras', 'imagem')->get();
+
+        if ($modo === 'sem_imagem') {
+            $uploadPath = public_path('uploads/produtos/');
+            $produtos = $produtos->filter(function($p) use ($uploadPath) {
+                if (empty($p->imagem) || $p->imagem === 'no-image.png') {
+                    return true;
+                }
+                // Considera sem imagem se o arquivo não existir fisicamente no disco ou tiver tamanho zero
+                $file = $uploadPath . $p->imagem;
+                return !file_exists($file) || filesize($file) === 0;
+            })->values();
+        }
 
         return response()->json([
             'success' => true,
@@ -1306,8 +1312,12 @@ public function removeImagem($id){
         }
         __validaObjetoEmpresa($item);
 
-        // Se já tem imagem e não pediu para substituir, pula
-        if (!empty($item->imagem) && !$substituir) {
+        // Se já tem imagem e o arquivo existe fisicamente no disco, e não pediu para substituir, pula
+        $arquivoExiste = !empty($item->imagem) 
+            && file_exists(public_path('uploads/produtos/' . $item->imagem)) 
+            && filesize(public_path('uploads/produtos/' . $item->imagem)) > 500;
+
+        if ($arquivoExiste && !$substituir) {
             return response()->json([
                 'success' => true,
                 'status' => 'mantido',

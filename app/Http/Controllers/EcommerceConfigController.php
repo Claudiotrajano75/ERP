@@ -45,7 +45,9 @@ class EcommerceConfigController extends Controller
             'tipos_pagamento' => json_encode($request->tipos_pagamento),
             'politica_privacidade' => $request->politica_privacidade ?? '',
             'termos_condicoes' => $request->termos_condicoes ?? '',
-            'dados_deposito' => $request->dados_deposito ?? ''
+            'dados_deposito' => $request->dados_deposito ?? '',
+            'mercadopago_public_key' => $request->mercadopago_public_key ?? '',
+            'mercadopago_access_token' => $request->mercadopago_access_token ?? ''
         ]);
 
         if ($item != null) {

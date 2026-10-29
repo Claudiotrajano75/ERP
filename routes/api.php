@@ -21,6 +21,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('/cidadePorNome/{nome}', 'HelperController@cidadePorNome');
 Route::get('/cidadePorCodigoIbge/{codigo}', 'HelperController@cidadePorCodigoIbge');
 Route::get('/cidadePorId/{id}', 'HelperController@cidadePorId');
+Route::get('/consulta-cep/{cep?}', 'HelperController@consultaCep');
 Route::get('/buscaCidades', 'HelperController@buscaCidades');
 Route::get('/planos-conta', 'HelperController@planoContas');
 Route::get('/contas-empresa', 'HelperController@contasEmpresa');

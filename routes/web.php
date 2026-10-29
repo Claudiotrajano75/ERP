@@ -34,6 +34,7 @@ Route::get('/cotacoes-resposta/{hash_link}', 'CotacaoRespostaController@index')-
 Route::post('/cotacoes-resposta-store', 'CotacaoRespostaController@store')->name('cotacoes.resposta-store');
 Route::get('/cotacoes-finish', 'CotacaoRespostaController@finish')->name('cotacoes.finish');
 Route::get('/imprimir-nfce/{chave}', 'ImprimirNfceController@imprimir');
+Route::get('/consulta-cep/{cep?}', 'API\HelperController@consultaCep')->name('consulta.cep');
 
 Route::get('/reserva-cliente/{codigo}', 'ReservaClienteController@index');
 Route::post('/reserva-checkin-start-cliente/{id}', 'ReservaClienteController@checkinStart')->name('reservas.checkin-start-cliente');

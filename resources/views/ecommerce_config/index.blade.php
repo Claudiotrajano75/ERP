@@ -170,6 +170,7 @@
             ->post()
             ->route('config-ecommerce.store')
             ->multipart()
+            ->attrs(['id' => 'form-ecommerce-config', 'novalidate' => 'novalidate'])
             !!}
             <div>
                 @include('ecommerce_config._forms')
@@ -178,4 +179,119 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('js')
+<script src="/tinymce/tinymce.min.js"></script>
+<script type="text/javascript">
+    $(function(){
+        // Inicializa TinyMCE
+        if (typeof tinymce !== 'undefined') {
+            tinymce.init({ selector: 'textarea.tiny', language: 'pt_BR' });
+            setTimeout(() => {
+                $('.tox-promotion, .tox-statusbar__right-container').addClass('d-none');
+            }, 500);
+        }
+        changeTipo();
+    });
+
+    $('#tipos_pagamento').change(() => {
+        changeTipo();
+    });
+
+    function changeTipo(){
+        let tipos = $('#tipos_pagamento').val() || [];
+        if(tipos.includes("Depósito bancário")){
+            $('.d-deposito').removeClass('d-none');
+        } else {
+            $('.d-deposito').addClass('d-none');
+        }
+    }
+
+    function showPreview(event){
+        if(event.target.files.length > 0){
+            var src = URL.createObjectURL(event.target.files[0]);
+            var preview = document.getElementById("file-ip-1-preview");
+            if (preview) preview.src = src;
+            $('#btn-remove-imagem').removeClass('d-none');
+        }
+    }
+
+    $('#btn-remove-imagem').click(function(){
+        $('#file-ip-1-preview').attr('src', '/imgs/no-image.png');
+        $('#file-ip-1').val('');
+        $(this).addClass('d-none');
+    });
+
+    // Clique manual no botão de buscar CEP
+    $(document).on('click', '#btn-buscar-cep', function(e){
+        e.preventDefault();
+        var cep = $('#inp-cep').val();
+        if(window.ERP_CEP && typeof window.ERP_CEP.consultar === 'function'){
+            window.ERP_CEP.consultar(cep, null, $('#form-ecommerce-config'));
+        }
+    });
+
+    // Validação inteligente e submissão à prova de falhas com suporte a abas
+    $(document).on('click', '#btn-store', function(e){
+        e.preventDefault();
+        var form = document.getElementById('form-ecommerce-config') || document.querySelector('form');
+
+        var obrigatorios = [
+            { id: '#inp-nome', label: 'Nome da Loja' },
+            { id: '#inp-loja_id', label: 'ID Único da Loja (Slug)' },
+            { id: '#inp-cep', label: 'CEP' },
+            { id: '#inp-rua', label: 'Logradouro / Rua' },
+            { id: '#inp-numero', label: 'Número' },
+            { id: '#inp-bairro', label: 'Bairro' },
+            { id: '#inp-cidade_id', label: 'Cidade / UF' },
+            { id: '#inp-telefone', label: 'Telefone / WhatsApp de Atendimento' },
+            { id: '#inp-email', label: 'E-mail de Atendimento' }
+        ];
+
+        for (var i = 0; i < obrigatorios.length; i++) {
+            var item = obrigatorios[i];
+            var $campo = $(item.id).length ? $(item.id) : $('[name="' + item.id.replace('#inp-', '') + '"]');
+            var valor = ($campo.val() || '').toString().trim();
+
+            if (!valor) {
+                // Identifica a aba correspondente e ativa
+                var $tabPane = $campo.closest('.tab-pane');
+                if ($tabPane.length) {
+                    var tabId = $tabPane.attr('id');
+                    var $tabBtn = $('a[href="#' + tabId + '"], [data-bs-target="#' + tabId + '"]');
+                    if ($tabBtn.length) {
+                        if (typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+                            var tabInst = bootstrap.Tab.getOrCreateInstance ? bootstrap.Tab.getOrCreateInstance($tabBtn[0]) : new bootstrap.Tab($tabBtn[0]);
+                            tabInst.show();
+                        } else {
+                            $tabBtn.tab('show');
+                        }
+                    }
+                }
+
+                $campo.addClass('is-invalid');
+                if (typeof toastr !== 'undefined') {
+                    toastr.warning('Por favor, preencha: ' + item.label, 'Campo Obrigatório');
+                } else if (typeof swal !== 'undefined') {
+                    swal('Atenção', 'Por favor, preencha: ' + item.label, 'warning');
+                } else {
+                    alert('Por favor, preencha: ' + item.label);
+                }
+
+                setTimeout(function(){
+                    $campo.focus();
+                }, 300);
+                return false;
+            } else {
+                $campo.removeClass('is-invalid');
+            }
+        }
+
+        // Submissão garantida
+        var $btn = $(this);
+        $btn.prop('disabled', true).html('<i class="ri-loader-4-line ri-spin"></i> Salvando configurações...');
+        form.submit();
+    });
+</script>
 @endsection

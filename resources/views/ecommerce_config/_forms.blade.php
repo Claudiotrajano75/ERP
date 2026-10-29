@@ -53,13 +53,13 @@
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-4">
-                                {!!Form::text('nome', 'Nome da Loja')->required()->placeholder('Ex: Minha Loja Virtual')!!}
+                                {!!Form::text('nome', 'Nome da Loja')->attrs(['id' => 'inp-nome'])->required()->placeholder('Ex: Minha Loja Virtual')!!}
                             </div>
                             <div class="col-md-3">
-                                {!!Form::text('loja_id', 'ID Único da Loja (Slug)')->required()->placeholder('Ex: minhaloja')!!}
+                                {!!Form::text('loja_id', 'ID Único da Loja (Slug)')->attrs(['id' => 'inp-loja_id'])->required()->placeholder('Ex: minhaloja')!!}
                             </div>
                             <div class="col-md-5">
-                                {!!Form::text('descricao_breve', 'Descrição Curta / Slogan')->placeholder('Ex: A melhor loja de moda online')!!}
+                                {!!Form::text('descricao_breve', 'Descrição Curta / Slogan')->attrs(['id' => 'inp-descricao_breve'])->placeholder('Ex: A melhor loja de moda online')!!}
                             </div>
                         </div>
                     </div>
@@ -72,22 +72,32 @@
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
-                            <div class="col-md-2">
-                                {!!Form::tel('cep', 'CEP')->attrs(['class' => 'cep'])->required()->placeholder('00000-000')!!}
+                            <!-- 1. CEP (Busca automática ao digitar 8 números) -->
+                            <div class="col-md-3 col-12">
+                                {!!Form::tel('cep', 'CEP')->attrs(['class' => 'form-control cep', 'id' => 'inp-cep', 'placeholder' => '00000-000'])->required()!!}
+                                {{-- <button class="btn btn-outline-primary d-none" type="button" id="btn-buscar-cep" title="Consultar endereço pelo CEP"><i class="ri-search-line"></i></button> --}}
                             </div>
-                            <div class="col-md-4">
-                                {!!Form::text('rua', 'Logradouro / Rua')->required()->placeholder('Ex: Av. Paulista')!!}
+
+                            <!-- 2. Logradouro / Rua -->
+                            <div class="col-md-7 col-12">
+                                {!!Form::text('rua', 'Logradouro / Rua')->attrs(['class' => 'form-control', 'id' => 'inp-rua', 'placeholder' => 'Ex: Av. Paulista'])->required()!!}
                             </div>
-                            <div class="col-md-2">
-                                {!!Form::text('numero', 'Número')->required()->placeholder('Ex: 1000')!!}
+
+                            <!-- 3. Número (Recebe foco automático) -->
+                            <div class="col-md-2 col-12">
+                                {!!Form::text('numero', 'Número')->attrs(['class' => 'form-control', 'id' => 'inp-numero', 'placeholder' => 'Ex: 1000'])->required()!!}
                             </div>
-                            <div class="col-md-4">
-                                {!!Form::text('bairro', 'Bairro')->required()->placeholder('Ex: Bela Vista')!!}
+
+                            <!-- 4. Bairro -->
+                            <div class="col-md-4 col-12">
+                                {!!Form::text('bairro', 'Bairro')->attrs(['id' => 'inp-bairro'])->required()->placeholder('Ex: Bela Vista')!!}
                             </div>
-                            <div class="col-md-6">
+
+                            <!-- 5. Cidade / UF (Por último) -->
+                            <div class="col-md-8 col-12">
                                 {!!Form::select('cidade_id', 'Cidade / UF')
                                 ->required()
-                                ->attrs(['class' => 'select2 form-control cidade_id'])
+                                ->attrs(['class' => 'select2 form-control cidade_id', 'id' => 'inp-cidade_id'])
                                 ->options($item != null && $item->cidade ? [$item->cidade_id => $item->cidade->info] : [])
                                 !!}
                             </div>
@@ -103,10 +113,10 @@
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                {!!Form::tel('telefone', 'Telefone / WhatsApp de Atendimento')->attrs(['class' => 'fone'])->required()->placeholder('(00) 00000-0000')!!}
+                                {!!Form::tel('telefone', 'Telefone / WhatsApp de Atendimento')->attrs(['class' => 'fone', 'id' => 'inp-telefone'])->required()->placeholder('(00) 00000-0000')!!}
                             </div>
                             <div class="col-md-6">
-                                {!!Form::tel('email', 'E-mail de Atendimento e Suporte')->required()->type('email')->placeholder('contato@sualoja.com.br')!!}
+                                {!!Form::tel('email', 'E-mail de Atendimento e Suporte')->attrs(['id' => 'inp-email'])->required()->type('email')->placeholder('contato@sualoja.com.br')!!}
                             </div>
                         </div>
                     </div>
@@ -160,9 +170,9 @@
                         <div class="row g-3">
                             <div class="col-12">
                                 <label class="form-label fw-bold"><i class="ri-checkbox-multiple-line"></i> Métodos Aceitos no Checkout</label>
-                                <select required class="select2 form-control select2-multiple" name="tipos_pagamento[]" data-toggle="select2" multiple="multiple" id="tipos_pagamento">
+                                <select class="select2 form-control select2-multiple" name="tipos_pagamento[]" data-toggle="select2" multiple="multiple" id="tipos_pagamento">
                                     @foreach(\App\Models\EcommerceConfig::tiposPagamento() as $t)
-                                    <option @if($item != null) @if(in_array($t, $item->tipos_pagamento)) selected @endif @endif value="{{ $t }}">{{ $t }}</option>
+                                    <option @if($item != null && is_array($item->tipos_pagamento)) @if(in_array($t, $item->tipos_pagamento)) selected @endif @endif value="{{ $t }}">{{ $t }}</option>
                                     @endforeach
                                 </select>
                                 <small class="text-muted fs-12 mt-1 d-block">Selecione uma ou mais opções (Pix, Cartão de Crédito, Boleto, Depósito bancário).</small>
@@ -178,12 +188,13 @@
                         <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1 fs-11">Gateway Integrado</span>
                     </div>
                     <div class="card-body">
+                        <p class="text-muted fs-12 mb-3">Preencha suas credenciais do Mercado Pago para receber pagamentos online (Pix, Cartão e Boleto).</p>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                {!!Form::text('mercadopago_public_key', 'Mercado Pago Public Key')->required()->placeholder('APP_USR-xxxxxx-xxxxxx')!!}
+                                {!!Form::text('mercadopago_public_key', 'Mercado Pago Public Key')->placeholder('APP_USR-xxxxxx-xxxxxx')!!}
                             </div>
                             <div class="col-md-6">
-                                {!!Form::text('mercadopago_access_token', 'Mercado Pago Access Token')->required()->placeholder('APP_USR-xxxxxx-xxxxxx')!!}
+                                {!!Form::text('mercadopago_access_token', 'Mercado Pago Access Token')->placeholder('APP_USR-xxxxxx-xxxxxx')!!}
                             </div>
                         </div>
                     </div>
@@ -307,46 +318,3 @@
         </button>
     </div>
 </div>
-
-@section('js')
-<script src="/tinymce/tinymce.min.js"></script>
-<script type="text/javascript">
-    $(function(){
-        tinymce.init({ selector: 'textarea.tiny', language: 'pt_BR' });
-
-        setTimeout(() => {
-            $('.tox-promotion, .tox-statusbar__right-container').addClass('d-none');
-        }, 500);
-        changeTipo();
-    });
-
-    $('#tipos_pagamento').change(() => {
-        changeTipo();
-    });
-
-    function changeTipo(){
-        let tipos = $('#tipos_pagamento').val() || [];
-
-        if(tipos.includes("Depósito bancário")){
-            $('.d-deposito').removeClass('d-none');
-        }else{
-            $('.d-deposito').addClass('d-none');
-        }
-    }
-
-    function showPreview(event){
-        if(event.target.files.length > 0){
-            var src = URL.createObjectURL(event.target.files[0]);
-            var preview = document.getElementById("file-ip-1-preview");
-            preview.src = src;
-            $('#btn-remove-imagem').removeClass('d-none');
-        }
-    }
-
-    $('#btn-remove-imagem').click(function(){
-        $('#file-ip-1-preview').attr('src', '/imgs/no-image.png');
-        $('#file-ip-1').val('');
-        $(this).addClass('d-none');
-    });
-</script>
-@endsection

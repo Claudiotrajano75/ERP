@@ -50,36 +50,44 @@
                 <i class="ri-map-pin-line text-primary"></i> 2. Endereço e Localização
             </h5>
             <div class="row g-3">
-                <div class="col-md-3 col-6">
-                    {!!Form::text('cep', 'CEP')->attrs(['class' => 'form-control cep', 'id' => 'inp-cep', 'placeholder' => '00000-000'])->required()!!}
+                <!-- 1. CEP (Busca automática ao digitar 8 números) -->
+                <div class="col-md-3 col-12">
+                    {!!Form::tel('cep', 'CEP')->attrs(['class' => 'form-control cep', 'id' => 'inp-cep', 'placeholder' => '00000-000'])->required()!!}
+                    {{-- <button class="btn btn-outline-primary d-none" type="button" id="btn-buscar-cep" title="Buscar endereço pelo CEP"><i class="ri-search-line"></i></button> --}}
                 </div>
 
-                <div class="col-md-5 col-12">
-                    {!!Form::text('rua', 'Logradouro / Rua')->attrs(['class' => 'form-control', 'id' => 'inp-rua'])->required()!!}
+                <!-- 2. Logradouro / Rua -->
+                <div class="col-md-7 col-12">
+                    {!!Form::text('rua', 'Logradouro / Rua')->attrs(['class' => 'form-control', 'id' => 'inp-rua', 'placeholder' => 'Ex: Av. Brasil'])->required()!!}
                 </div>
 
-                <div class="col-md-2 col-6">
-                    {!!Form::text('numero', 'Número')->attrs(['class' => 'form-control', 'id' => 'inp-numero'])->required()!!}
-                </div>
-
+                <!-- 3. Número (Recebe foco automático) -->
                 <div class="col-md-2 col-12">
-                    {!!Form::text('bairro', 'Bairro')->attrs(['class' => 'form-control', 'id' => 'inp-bairro'])->required()!!}
+                    {!!Form::text('numero', 'Número')->attrs(['class' => 'form-control', 'id' => 'inp-numero', 'placeholder' => 'Ex: 1000'])->required()!!}
                 </div>
 
-                <div class="col-md-6 col-12">
+                <!-- 4. Bairro -->
+                <div class="col-md-4 col-12">
+                    {!!Form::text('bairro', 'Bairro')->attrs(['class' => 'form-control', 'id' => 'inp-bairro', 'placeholder' => 'Ex: Distrito Industrial'])->required()!!}
+                </div>
+
+                <!-- 5. Complemento / Referência -->
+                <div class="col-md-4 col-12">
+                    {!!Form::text('complemento', 'Complemento / Referência')->attrs(['class' => 'form-control', 'id' => 'inp-complemento', 'placeholder' => 'Ex: Galpão B, Sala 12'])!!}
+                </div>
+
+                <!-- 6. Cidade / UF (Por último) -->
+                <div class="col-md-4 col-12">
                     @isset($item)
-                    {!!Form::select('cidade_id', 'Cidade')
-                    ->attrs(['class' => 'select2 form-select', 'id' => 'inp-cidade_id'])->options(($item && $item->cidade) != null ? [$item->cidade_id => $item->cidade->info] : [])
+                    {!!Form::select('cidade_id', 'Cidade / UF')
+                    ->attrs(['class' => 'select2 form-select cidade_id', 'id' => 'inp-cidade_id'])
+                    ->options(($item && $item->cidade) != null ? [$item->cidade_id => $item->cidade->info] : [])
                     ->required()!!}
                     @else
-                    {!!Form::select('cidade_id', 'Cidade')
-                    ->attrs(['class' => 'select2 form-select', 'id' => 'inp-cidade_id'])
+                    {!!Form::select('cidade_id', 'Cidade / UF')
+                    ->attrs(['class' => 'select2 form-select cidade_id', 'id' => 'inp-cidade_id'])
                     ->required()!!}
                     @endisset
-                </div>
-
-                <div class="col-md-6 col-12">
-                    {!!Form::text('complemento', 'Complemento / Referência')->attrs(['class' => 'form-control', 'id' => 'inp-complemento', 'placeholder' => 'Ex: Sala 10, Galpão A'])!!}
                 </div>
             </div>
         </div>
@@ -145,20 +153,11 @@
         }
     });
 
-    $(document).on("blur", "#inp-cep", function () {
-        let cep = $(this).val().replace(/[^0-9]/g,'');
-        if(cep.length == 8){
-            $.get('https://viacep.com.br/ws/'+cep+'/json')
-            .done((res) => {
-                if(!res.erro) {
-                    findCidade(res.ibge);
-                    $('#inp-rua').val(res.logradouro);
-                    $('#inp-bairro').val(res.bairro);
-                }
-            })
-            .fail((err) => {
-                console.log(err);
-            });
+    $(document).on('click', '#btn-buscar-cep', function(e) {
+        e.preventDefault();
+        var cep = $('#inp-cep').val();
+        if (window.ERP_CEP && typeof window.ERP_CEP.consultar === 'function') {
+            window.ERP_CEP.consultar(cep, null, $(this).closest('form'));
         }
     });
 

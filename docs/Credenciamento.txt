@@ -1,0 +1,10 @@
+AMBIENTE DE PRODUÇÃO
+
+Id Token	CSC	                                                                Ativação
+1	E779D9EB-F2BF-426E-9867-3ECFB2A4798F	04/09/2026 00:00	
+
+
+AMBIENTE DE TESTES (HOMOLOGACAO)
+
+Id Token	CSC	                                                                Ativação
+1	4B682342-3636-4F46-BDE5-7912870CF10F	04/09/2026 00:00

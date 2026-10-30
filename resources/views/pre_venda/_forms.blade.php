@@ -865,6 +865,7 @@
         <script type="text/javascript">
             $(function () {
                 var codigo = @json(session('codigo'));
+                var preVendaId = @json(session('pre_venda_id')) || codigo;
                 var imprimirUrl = path_url + 'pre-venda/imprimir/' + codigo;
 
                 if (typeof swal !== 'undefined') {
@@ -889,9 +890,13 @@
                         dangerMode: false
                     }).then((isConfirm) => {
                         if (isConfirm) {
-                            var win = window.open(imprimirUrl, '_blank');
-                            if (!win) {
-                                window.location.href = imprimirUrl;
+                            if (typeof PrintThermal !== 'undefined') {
+                                PrintThermal.imprimir('prevenda', preVendaId, imprimirUrl);
+                            } else {
+                                var win = window.open(imprimirUrl, '_blank');
+                                if (!win) {
+                                    window.location.href = imprimirUrl;
+                                }
                             }
                         }
                     });

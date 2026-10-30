@@ -199,6 +199,7 @@ class PreVendaController extends Controller
                 return response()->json([
                     'success' => true,
                     'codigo' => $preVenda->codigo,
+                    'pre_venda_id' => $preVenda->id,
                     'message' => 'Pré venda realizada com sucesso!'
                 ]);
             }
@@ -214,7 +215,8 @@ class PreVendaController extends Controller
             }
         }
         $codigo = isset($preVenda) ? $preVenda->codigo : null;
-        return redirect()->back()->with(['codigo' => $codigo]);
+        $preVendaId = isset($preVenda) ? $preVenda->id : null;
+        return redirect()->back()->with(['codigo' => $codigo, 'pre_venda_id' => $preVendaId]);
     }
 
     public function edit($id)
@@ -433,10 +435,18 @@ class PreVendaController extends Controller
     }
 
     public function imprimir($codigo){
-        $item = PreVenda::with(['itens.produto', 'cliente', 'fatura', 'vendedor'])
-        ->where('codigo', $codigo)
-        ->where('empresa_id', request()->empresa_id)
-        ->first();
+        $empresaId = request()->empresa_id;
+        $query = PreVenda::with(['itens.produto', 'cliente', 'fatura', 'vendedor'])
+            ->where(function($q) use ($codigo) {
+                $q->where('codigo', $codigo)
+                  ->orWhere('id', $codigo);
+            });
+
+        if ($empresaId) {
+            $query->where('empresa_id', $empresaId);
+        }
+
+        $item = $query->first();
 
         if (!$item) {
             return abort(404, 'Pré-venda não encontrada');
@@ -444,25 +454,37 @@ class PreVendaController extends Controller
         
         $config = Empresa::with('cidade')->where('id', $item->empresa_id)->first();
         
-        // Renderiza a view personalizada
+        // Renderiza a view personalizada no padrão não fiscal do PDV
         $html = view('pre_venda.cupom', compact('item', 'config'))->render();
 
-        // Instancia Dompdf
+        // Instancia Dompdf com suporte a imagens remotas
         $options = new \Dompdf\Options();
         $options->set('isRemoteEnabled', true);
         $dompdf = new \Dompdf\Dompdf($options);
         
         $dompdf->loadHtml($html);
         
-        // Altura dinâmica: Base (~300) + (Itens * ~25)
-        $altura = 300 + (count($item->itens) * 25);
+        // Altura dinâmica segura para 1 única folha contínua (padrão 80mm / 226.77 pt)
+        // Base estrutural: cabeçalho empresa, cliente, pré-venda, totais, pagamentos, vendedor, termo e assinatura
+        $altura = 360 + (count($item->itens) * 22);
+
+        if (count($item->fatura) > 1) {
+            $altura += (count($item->fatura) - 1) * 14;
+        }
+
+        // Folga de segurança
+        $altura += 40;
         
         // 80mm = ~226.77 pt
         $dompdf->setPaper([0, 0, 226.77, $altura], 'portrait'); 
         
         $dompdf->render();
 
-        return $dompdf->stream('PRE_VENDA.pdf', ["Attachment" => false]);
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        return $dompdf->stream("PRE_VENDA_{$item->codigo}.pdf", ["Attachment" => false]);
     }
 
     private function somaItens($request)

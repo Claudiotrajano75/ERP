@@ -134,11 +134,12 @@
                         <div class="row justify-content-center">
                             <div class="col-md-6 col-12">
                                 <div class="logo-upload-box">
+                                    <input type="hidden" name="remover_logo" id="remover_logo" value="0">
                                     <div class="logo-preview-wrapper">
-                                        <button type="button" id="btn-remove-imagem" class="btn-remove-logo" title="Remover Logo">
+                                        <button type="button" id="btn-remove-imagem" class="btn-remove-logo @if(!isset($item) || !$item->logo) d-none @endif" title="Remover Logo">
                                             <i class="ri-close-line"></i>
                                         </button>
-                                        @isset($item)
+                                        @if(isset($item) && $item->logo)
                                         <img id="file-ip-1-preview" src="{{ $item->logo_img }}" alt="Logo da Loja">
                                         @else
                                         <img id="file-ip-1-preview" src="/imgs/no-image.png" alt="Sem Imagem">

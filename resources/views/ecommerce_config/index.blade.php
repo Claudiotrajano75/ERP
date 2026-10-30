@@ -166,11 +166,26 @@
         </div>
 
         <div class="card-body p-4">
+            @if (isset($errors) && $errors->any())
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="ri-error-warning-line fs-18"></i>
+                        <strong>Atenção: Por favor, corrija os seguintes erros:</strong>
+                    </div>
+                    <ul class="mb-0 ps-3">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
             {!!Form::open()->fill($item)
             ->post()
             ->route('config-ecommerce.store')
             ->multipart()
-            ->attrs(['id' => 'form-ecommerce-config', 'novalidate' => 'novalidate'])
+            ->id('form-ecommerce-config')
             !!}
             <div>
                 @include('ecommerce_config._forms')
@@ -209,10 +224,22 @@
     }
 
     function showPreview(event){
-        if(event.target.files.length > 0){
-            var src = URL.createObjectURL(event.target.files[0]);
+        if(event.target.files && event.target.files.length > 0){
+            var file = event.target.files[0];
+            // Valida tamanho máximo de 10MB no client-side
+            if (file.size > 10 * 1024 * 1024) {
+                if (typeof toastr !== 'undefined') {
+                    toastr.error('A imagem selecionada é muito grande (máximo 10MB).', 'Arquivo Excedido');
+                } else {
+                    alert('A imagem selecionada é muito grande (máximo 10MB).');
+                }
+                event.target.value = '';
+                return;
+            }
+            var src = URL.createObjectURL(file);
             var preview = document.getElementById("file-ip-1-preview");
             if (preview) preview.src = src;
+            $('#remover_logo').val('0');
             $('#btn-remove-imagem').removeClass('d-none');
         }
     }
@@ -220,6 +247,7 @@
     $('#btn-remove-imagem').click(function(){
         $('#file-ip-1-preview').attr('src', '/imgs/no-image.png');
         $('#file-ip-1').val('');
+        $('#remover_logo').val('1');
         $(this).addClass('d-none');
     });
 
@@ -235,7 +263,14 @@
     // Validação inteligente e submissão à prova de falhas com suporte a abas
     $(document).on('click', '#btn-store', function(e){
         e.preventDefault();
-        var form = document.getElementById('form-ecommerce-config') || document.querySelector('form');
+        var $btn = $(this);
+        // Garantia absoluta: busca o form pelo ID ou pelo closest form do próprio botão (nunca o logout-form)
+        var form = document.getElementById('form-ecommerce-config') || $btn.closest('form')[0];
+
+        if (!form) {
+            alert('Erro: Formulário de configuração não foi encontrado.');
+            return false;
+        }
 
         var obrigatorios = [
             { id: '#inp-nome', label: 'Nome da Loja' },
@@ -288,8 +323,7 @@
             }
         }
 
-        // Submissão garantida
-        var $btn = $(this);
+        // Submissão garantida do formulário correto
         $btn.prop('disabled', true).html('<i class="ri-loader-4-line ri-spin"></i> Salvando configurações...');
         form.submit();
     });

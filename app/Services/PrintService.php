@@ -532,6 +532,235 @@ class PrintService
     }
 
     /**
+     * Imprime Comprovante Não Fiscal de Pré-Venda diretamente na impressora térmica via ESC/POS nativo.
+     * Segue exatamente o mesmo padrão do Cupom Não Fiscal do PDV.
+     *
+     * @param \App\Models\PreVenda $preVenda
+     * @param ConfigGeral|null $config
+     * @return array
+     */
+    public function imprimirPreVendaNaoFiscal($preVenda, $config = null)
+    {
+        if ($config === null) {
+            $config = ConfigGeral::where('empresa_id', $preVenda->empresa_id)->first();
+        }
+
+        if (!$config || !$config->isPrinterConfigured()) {
+            return [
+                'success' => false,
+                'use_pdf'  => true,
+                'message'  => 'Impressora térmica não configurada. Abrindo Comprovante PDF...',
+            ];
+        }
+
+        try {
+            $empresa = \App\Models\Empresa::with('cidade')->where('id', $preVenda->empresa_id)->first();
+
+            // Largura em colunas: 80mm = 48 cols, 58mm = 32 cols
+            $cols     = ($config->printer_largura == '58') ? 32 : 48;
+            $labelCol = $cols - 14;
+            $valueCol = 14;
+
+            // ── Monta payload ESC/POS ─────────────────────────────────────
+            $cmd  = "\x1B\x40";     // ESC @ - Reset/Inicializar
+            $cmd .= "\x1B\x74\x10"; // Code page WPC1252
+
+            // ── 1. CABEÇALHO DO EMITENTE ──────────────────────────────────
+            $cmd .= "\x1B\x61\x01"; // Centralizar
+            $cmd .= "\x1B\x45\x01"; // Negrito ON
+            $nomeFantasia = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($empresa->nome_fantasia ?: $empresa->nome));
+            $cmd .= $nomeFantasia . "\n";
+            $cmd .= "\x1B\x45\x00"; // Negrito OFF
+
+            if ($empresa->nome_fantasia && $empresa->nome && ($empresa->nome_fantasia !== $empresa->nome)) {
+                $nomeRazao = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($empresa->nome));
+                $cmd .= $nomeRazao . "\n";
+            }
+
+            $cnpj = 'CNPJ: ' . $this->formatCnpj($empresa->cpf_cnpj ?? '');
+            if ($empresa->ie) {
+                $cnpj .= ' IE: ' . $empresa->ie;
+            }
+            $cmd .= $cnpj . "\n";
+
+            $rua = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', ($empresa->rua ?? '') . ', ' . ($empresa->numero ?? ''));
+            $cmd .= $rua . "\n";
+
+            if ($empresa->bairro) {
+                $bairro = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($empresa->bairro));
+                $cmd .= $bairro . "\n";
+            }
+
+            if ($empresa->cidade) {
+                $cidade = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', $empresa->cidade->nome) . '-' . $empresa->cidade->uf;
+                $cmd .= $cidade . "\n";
+            }
+
+            if ($empresa->celular || $empresa->telefone) {
+                $cmd .= 'Fone: ' . ($empresa->celular ?: $empresa->telefone) . "\n";
+            }
+
+            $cmd .= "\x1B\x61\x00"; // Esquerda
+            $cmd .= str_repeat('-', $cols) . "\n";
+
+            // ── 2. TÍTULO: COMPROVANTE DE PRÉ-VENDA ─────────────────────────
+            $cmd .= "\x1B\x61\x01"; // Centralizar
+            $cmd .= "\x1B\x45\x01"; // Negrito ON
+            $cmd .= "COMPROVANTE DE PRE-VENDA\n";
+            $cmd .= "\x1B\x45\x00"; // Negrito OFF
+            $cmd .= "\x1B\x61\x00"; // Esquerda
+            $cmd .= str_repeat('-', $cols) . "\n";
+
+            // ── 3. CLIENTE & DADOS DA PRÉ-VENDA ───────────────────────────
+            $clienteNome = $preVenda->cliente ? ($preVenda->cliente->razao_social ?: $preVenda->cliente->nome) : ($preVenda->nome ?: 'Consumidor Final');
+            $clienteNome = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', $clienteNome);
+            $cmd .= 'CLIENTE: ' . $this->truncate($clienteNome, $cols - 9) . "\n";
+
+            $dataVenda = $preVenda->created_at ? \Carbon\Carbon::parse($preVenda->created_at)->format('d/m/Y H:i') : date('d/m/Y H:i');
+            $numVenda  = 'PRE-VENDA N. ' . str_pad($preVenda->id, 6, '0', STR_PAD_LEFT);
+            $cmd .= $this->padR($dataVenda, $cols - strlen($numVenda)) . $numVenda . "\n";
+            if ($preVenda->codigo) {
+                $cmd .= "CODIGO: #" . $preVenda->codigo . "\n";
+            }
+            $cmd .= str_repeat('-', $cols) . "\n";
+
+            // ── 4. CABEÇALHO DA TABELA DE ITENS ───────────────────────────
+            if ($cols >= 48) {
+                $cCod   = 6;
+                $cDesc  = 16;
+                $cQtde  = 4;
+                $cUN    = 3;
+                $cUnit  = 9;
+                $cTotal = 10;
+            } else {
+                $cCod   = 4;
+                $cDesc  = 9;
+                $cQtde  = 3;
+                $cUN    = 2;
+                $cUnit  = 7;
+                $cTotal = 7;
+            }
+
+            $cmd .= "\x1B\x45\x01"; // Negrito ON
+            $cmd .= $this->padR('Codigo', $cCod)
+                  . $this->padR('Descricao', $cDesc)
+                  . $this->padL('Qtde', $cQtde)
+                  . $this->padL('UN', $cUN)
+                  . $this->padL('VlUnit', $cUnit)
+                  . $this->padL('VlTotal', $cTotal) . "\n";
+            $cmd .= "\x1B\x45\x00"; // Negrito OFF
+            $cmd .= str_repeat('-', $cols) . "\n";
+
+            // ── 5. ITENS DA PRÉ-VENDA ─────────────────────────────────────
+            $totalItens = 0;
+            foreach ($preVenda->itens as $item) {
+                $totalItens++;
+                $nome    = $item->produto ? $item->produto->nome : ($item->descricao() ?? 'Item ' . $item->produto_id);
+                $unidade = $item->produto ? ($item->produto->unidade ?? 'UN') : 'UN';
+                $nomeConv = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', mb_strtoupper($nome));
+
+                $subTotal = $item->quantidade * $item->valor;
+                $codStr   = $this->padR(mb_substr((string)$item->produto_id, 0, $cCod - 1), $cCod);
+                $qtdeStr  = $this->padL(number_format($item->quantidade, 0, ',', '.'), $cQtde);
+                $unStr    = $this->padL($unidade, $cUN);
+                $unitStr  = $this->padL(number_format($item->valor, 2, ',', '.'), $cUnit);
+                $totalStr = $this->padL(number_format($subTotal, 2, ',', '.'), $cTotal);
+
+                $nomeT = $this->truncate($nomeConv, $cDesc);
+                $cmd .= $codStr . $this->padR($nomeT, $cDesc) . $qtdeStr . $unStr . $unitStr . $totalStr . "\n";
+
+                if (mb_strlen($nomeConv) > $cDesc) {
+                    $resto = trim(mb_substr($nomeConv, $cDesc - 1));
+                    if ($resto) {
+                        $cmd .= str_repeat(' ', $cCod) . $this->truncate($resto, $cDesc) . "\n";
+                    }
+                }
+            }
+
+            $cmd .= str_repeat('-', $cols) . "\n";
+
+            // ── 6. TOTAIS ─────────────────────────────────────────────────
+            $cmd .= $this->padR('Qtde total de itens', $labelCol)
+                  . $this->padL((string)$totalItens, $valueCol) . "\n";
+
+            $subtotalSoma = $preVenda->valor_total + ($preVenda->desconto ?? 0) - ($preVenda->acrescimo ?? 0);
+            $cmd .= $this->padR('Valor Total R$', $labelCol)
+                  . $this->padL(number_format($subtotalSoma, 2, ',', '.'), $valueCol) . "\n";
+
+            if (($preVenda->desconto ?? 0) > 0) {
+                $cmd .= $this->padR('Desconto R$', $labelCol)
+                      . $this->padL(number_format($preVenda->desconto, 2, ',', '.'), $valueCol) . "\n";
+            }
+            if (($preVenda->acrescimo ?? 0) > 0) {
+                $cmd .= $this->padR('Acrescimo R$', $labelCol)
+                      . $this->padL(number_format($preVenda->acrescimo, 2, ',', '.'), $valueCol) . "\n";
+            }
+
+            $cmd .= str_repeat('-', $cols) . "\n";
+            $cmd .= "\x1B\x45\x01"; // Negrito ON
+            $cmd .= $this->padR('Total da Pre-Venda R$', $labelCol)
+                  . $this->padL(number_format($preVenda->valor_total, 2, ',', '.'), $valueCol) . "\n";
+            $cmd .= "\x1B\x45\x00"; // Negrito OFF
+
+            $cmd .= str_repeat('-', $cols) . "\n";
+
+            // ── 7. FORMAS DE PAGAMENTO ────────────────────────────────────
+            $cmd .= "\x1B\x45\x01"; // Negrito ON
+            $cmd .= $this->padR('FORMA PAGAMENTO', $labelCol)
+                  . $this->padL('VALOR PREVISTO', $valueCol) . "\n";
+            $cmd .= "\x1B\x45\x00"; // Negrito OFF
+
+            if (sizeof($preVenda->fatura) > 0) {
+                foreach ($preVenda->fatura as $f) {
+                    $tipoPag = \App\Models\Nfce::getTipoPagamento($f->tipo_pagamento) ?? $f->tipo_pagamento;
+                    $tipoPag = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', $tipoPag);
+                    $cmd .= $this->padR($tipoPag, $labelCol)
+                          . $this->padL(number_format($f->valor_parcela ?? $f->valor, 2, ',', '.'), $valueCol) . "\n";
+                }
+            } else {
+                $tipoPag  = $preVenda->tipo_pagamento ? (\App\Models\Nfce::getTipoPagamento($preVenda->tipo_pagamento) ?? 'Dinheiro') : 'Dinheiro';
+                $tipoPag  = iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', $tipoPag);
+                $cmd .= $this->padR($tipoPag, $labelCol)
+                      . $this->padL(number_format($preVenda->valor_total, 2, ',', '.'), $valueCol) . "\n";
+            }
+
+            $cmd .= str_repeat('-', $cols) . "\n";
+
+            // ── 8. VENDEDOR ───────────────────────────────────────────────
+            $vendedor = $preVenda->vendedor ? $preVenda->vendedor->nome : null;
+            if ($vendedor) {
+                $cmd .= 'VENDEDOR(A): ' . iconv('UTF-8', 'CP850//TRANSLIT//IGNORE', $vendedor) . "\n";
+                $cmd .= str_repeat('-', $cols) . "\n";
+            }
+
+            // ── 9. RODAPÉ / TERMO ─────────────────────────────────────────
+            $cmd .= "\x1B\x61\x01"; // Centralizar
+            $cmd .= "Recebi a(s) mercadoria(s) acima descrita(s),\n";
+            $cmd .= "concordando plenamente com os prazos e condicoes de\n";
+            $cmd .= "garantia.\n\n\n";
+            $cmd .= "__________________________________________\n";
+            $cmd .= "ASSINATURA DO CLIENTE\n\n";
+            $cmd .= "\x1B\x45\x01"; // Negrito ON
+            $cmd .= "* OBRIGADO E VOLTE SEMPRE *\n";
+            $cmd .= "\x1B\x45\x00"; // Negrito OFF
+            $cmd .= "\x1B\x61\x00"; // Esquerda
+
+            // Avanço de papel e corte
+            $cmd .= "\n\n\n";
+            $cmd .= "\x1D\x56\x41\x10"; // Corte parcial
+
+            return $this->imprimir($cmd, $config, 'prevenda', $preVenda->id);
+
+        } catch (\Exception $e) {
+            Log::error('PrintService: Erro ao gerar Pre-Venda Nao Fiscal - ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Erro ao gerar impressao da pre-venda: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
      * Imprime DANFE NFC-e fiscal diretamente na impressora termica via ESC/POS nativo.
      * Gera texto formatado com colunas corretas para 80mm (48 cols) ou 58mm (32 cols).
      * Se a impressora nao estiver configurada, retorna use_pdf=true para o

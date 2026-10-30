@@ -2,330 +2,208 @@
 
 @section('content')
 
-{{-- ═══════════════════════════════════════════
-    HERO — estático, imersivo, minimalista
-═══════════════════════════════════════════ --}}
-<section class="hero-section">
-    <div class="hero-bg">
-        @php $heroImg = $config->banner_img ?? null; @endphp
-        @if($heroImg)
-            <img src="{{ $heroImg }}" alt="{{ $config->nome }}" loading="eager">
-        @else
-            <div style="width:100%;height:100%;background:var(--luxe-gradient)"></div>
-        @endif
-    </div>
-    <div class="hero-overlay"></div>
-    <div class="hero-content container">
-        <div class="row">
-            <div class="col-lg-8 col-xl-7">
-                <span class="hero-tag">✦ {{ $config->nome }}</span>
-                <h1 class="hero-title">
-                    Bem-vindo à<br>
-                    <span class="accent">{{ $config->nome }}</span>
-                </h1>
-                <p class="hero-subtitle">
-                    {{ $config->descricao_breve ?? 'Descubra uma curadoria especial de produtos com preços justos e atendimento que você pode confiar.' }}
-                </p>
-                <div class="d-flex flex-wrap align-items-center gap-4">
-                    <a href="#produtos-destaque" class="btn-hero">
-                        Ver Produtos <i class="ri-arrow-right-line"></i>
-                    </a>
-                    @if(count($categorias) > 0)
-                    <a href="#categorias" class="btn-link light">
-                        Explorar categorias <i class="ri-arrow-right-line"></i>
-                    </a>
-                    @endif
+@php
+    // Banners do Hero
+    $banners = \App\Models\DestaqueMarketPlace::where('empresa_id', $config->empresa_id)
+        ->where('status', 1)
+        ->with('produto')
+        ->orderByDesc('id')
+        ->limit(5)
+        ->get();
+
+    // Coleções de Produtos
+    $destaques = collect($produtosEmDestaque);
+
+    // Produtos em Promoção (com percentual de desconto cadastrado)
+    $promocoes = \App\Models\Produto::where('empresa_id', $config->empresa_id)
+        ->where('status', 1)
+        ->where('ecommerce', 1)
+        ->where('percentual_desconto', '>', 0)
+        ->limit(8)
+        ->get();
+
+    // Novidades (produtos adicionados recentemente)
+    $novidades = \App\Models\Produto::where('empresa_id', $config->empresa_id)
+        ->where('status', 1)
+        ->where('ecommerce', 1)
+        ->orderByDesc('id')
+        ->limit(8)
+        ->get();
+@endphp
+
+<!-- 1. Carrossel Principal de Banners (Hero com Swiper.js) -->
+<x-loja.hero-carousel :banners="$banners" :config="$config" />
+
+<!-- 2. Barra de Benefícios Rápidos (Mobile & Desktop) -->
+<section class="border-b border-slate-100 bg-white py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            <div class="flex items-center gap-3 p-2">
+                <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl flex-shrink-0">
+                    <i class="ri-truck-line"></i>
+                </div>
+                <div>
+                    <h5 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Envio Rápido</h5>
+                    <p class="text-[11px] text-slate-400">Para todo o Brasil</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 p-2">
+                <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl flex-shrink-0">
+                    <i class="ri-shield-check-line"></i>
+                </div>
+                <div>
+                    <h5 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Pagamento Seguro</h5>
+                    <p class="text-[11px] text-slate-400">Criptografia de ponta</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 p-2">
+                <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl flex-shrink-0">
+                    <i class="ri-exchange-dollar-line"></i>
+                </div>
+                <div>
+                    <h5 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Até 10x no Cartão</h5>
+                    <p class="text-[11px] text-slate-400">Ou desconto no PIX</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 p-2">
+                <div class="w-10 h-10 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl flex-shrink-0">
+                    <i class="ri-customer-service-2-line"></i>
+                </div>
+                <div>
+                    <h5 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Suporte Dedicado</h5>
+                    <p class="text-[11px] text-slate-400">Atendimento humano</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-{{-- ═══════════════════════════════════════════
-    TRUST BAR — benefícios minimalistas
-═══════════════════════════════════════════ --}}
-<div class="trust-bar">
-    <div class="container">
-        <div class="row g-0">
-            <div class="col-6 col-md-3">
-                <div class="trust-item">
-                    <i class="ri-truck-line"></i>
-                    <div>
-                        <div class="ti-title">Frete Facilitado</div>
-                        <div class="ti-sub">Entrega para todo o Brasil</div>
-                    </div>
+<!-- 3. Vitrine de Categorias em Destaque -->
+@if(count($categorias) > 0)
+<section class="py-12 sm:py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-end justify-between mb-8">
+            <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-1 block">Navegue por departamentos</span>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Compre por Categoria</h2>
+            </div>
+            <a href="{{ route('loja.pesquisa', ['link' => $config->loja_id]) }}"
+               class="text-xs sm:text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 group">
+                <span>Ver todas</span>
+                <i class="ri-arrow-right-line group-hover:translate-x-1 transition-transform"></i>
+            </a>
+        </div>
+
+        <!-- Rolagem horizontal suave no mobile e grid no desktop -->
+        <div class="flex sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 overflow-x-auto pb-4 sm:pb-0 scrollbar-none">
+            @foreach(collect($categorias)->take(6) as $cat)
+                <div class="flex-shrink-0 w-36 sm:w-auto">
+                    <x-loja.category-card :categoria="$cat" :config="$config" />
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+<!-- 4. Vitrine de Produtos em Destaque -->
+<section class="py-12 sm:py-16 bg-white border-y border-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-amber-500 flex items-center gap-1.5 mb-1">
+                    <i class="ri-star-fill"></i> Seleção Especial
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Produtos em Destaque</h2>
+                <p class="text-xs sm:text-sm text-slate-400 mt-1">Os itens mais procurados e amados pelos nossos clientes.</p>
+            </div>
+            <a href="{{ route('loja.pesquisa', ['link' => $config->loja_id]) }}"
+               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all self-start sm:self-auto">
+                <span>Ver Todos os Produtos</span>
+                <i class="ri-arrow-right-line"></i>
+            </a>
+        </div>
+
+        <x-loja.product-grid :produtos="$destaques" :config="$config" emptyMessage="Novos produtos em destaque estarão disponíveis em breve." />
+    </div>
+</section>
+
+<!-- 5. Banner Promocional de Meio de Página (Alta Conversão) -->
+<section class="py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900 via-indigo-950 to-slate-950 text-white p-8 sm:p-14 shadow-xl">
+            <div class="relative z-10 max-w-xl space-y-4">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                    <i class="ri-fire-fill text-rose-400"></i> Oferta por Tempo Limitado
+                </span>
+                <h3 class="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
+                    Qualidade superior e condições imperdíveis.
+                </h3>
+                <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+                    Aproveite nossos descontos especiais com parcelamento facilitado em até 10x sem juros e entrega segura até o seu endereço.
+                </p>
+                <div class="pt-2 flex flex-wrap gap-3">
+                    <a href="{{ route('loja.pesquisa', ['link' => $config->loja_id]) }}"
+                       class="px-7 py-3.5 rounded-2xl bg-white hover:bg-slate-100 text-indigo-900 font-extrabold text-sm shadow-md transition-all hover:scale-105">
+                        Aproveitar Ofertas Agora
+                    </a>
                 </div>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="trust-item">
-                    <i class="ri-arrow-left-right-line"></i>
-                    <div>
-                        <div class="ti-title">Trocas Fáceis</div>
-                        <div class="ti-sub">Política simplificada</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="trust-item">
-                    <i class="ri-shield-check-line"></i>
-                    <div>
-                        <div class="ti-title">Pagamento Seguro</div>
-                        <div class="ti-sub">Ambiente 100% protegido</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="trust-item">
-                    <i class="ri-customer-service-2-line"></i>
-                    <div>
-                        <div class="ti-title">Atendimento</div>
-                        <div class="ti-sub">Suporte pelo WhatsApp</div>
-                    </div>
-                </div>
+
+            <!-- Detalhe decorativo no fundo -->
+            <div class="absolute right-0 bottom-0 top-0 w-1/2 opacity-10 pointer-events-none flex items-center justify-center">
+                <i class="ri-shopping-bag-3-fill text-[300px]"></i>
             </div>
         </div>
     </div>
+</section>
+
+<!-- 6. Seção de Promoções (Ofertas com Desconto %) -->
+@if($promocoes->count() > 0)
+<section class="py-12 sm:py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-end justify-between mb-8">
+            <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-rose-500 flex items-center gap-1.5 mb-1">
+                    <i class="ri-percent-fill"></i> Economize Mais
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Super Promoções</h2>
+                <p class="text-xs sm:text-sm text-slate-400 mt-1">Preços reduzidos por tempo limitado.</p>
+            </div>
+        </div>
+
+        <x-loja.product-carousel :produtos="$promocoes" :config="$config" id="carousel-promocoes" />
+    </div>
+</section>
+@endif
+
+<!-- 7. Seção de Novidades e Lançamentos Recentes -->
+@if($novidades->count() > 0)
+<section class="py-12 sm:py-16 bg-white border-t border-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-end justify-between mb-8">
+            <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 flex items-center gap-1.5 mb-1">
+                    <i class="ri-sparkling-2-line"></i> Recém-Chegados
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Novidades na Loja</h2>
+                <p class="text-xs sm:text-sm text-slate-400 mt-1">Fique por dentro dos últimos lançamentos adicionados ao nosso catálogo.</p>
+            </div>
+            <a href="{{ route('loja.pesquisa', ['link' => $config->loja_id]) }}"
+               class="text-xs sm:text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+                <span>Ver mais</span>
+                <i class="ri-arrow-right-line"></i>
+            </a>
+        </div>
+
+        <x-loja.product-carousel :produtos="$novidades" :config="$config" id="carousel-novidades" />
+    </div>
+</section>
+@endif
+
+<!-- 8. Newsletter -->
+<div class="px-4 sm:px-6 lg:px-8">
+    <x-loja.newsletter />
 </div>
 
-{{-- ═══════════════════════════════════════════
-    CATEGORIAS — grid clean com fotos grandes
-═══════════════════════════════════════════ --}}
-@if(count($categorias) > 0)
-<section class="section-pad" id="categorias">
-    <div class="container">
-        <div class="section-head d-flex align-items-end justify-content-between flex-wrap gap-3">
-            <div>
-                <span class="section-kicker">Categorias</span>
-                <h2>Navegue por categoria</h2>
-                <p>Encontre exatamente o que você procura.</p>
-            </div>
-            <a href="{{ route('loja.pesquisa', ['link='.$config->loja_id]) }}" class="btn-link">
-                Ver tudo <i class="ri-arrow-right-line"></i>
-            </a>
-        </div>
-
-        <div class="category-grid grid-4 reveal">
-            @foreach($categorias as $cat)
-            <a href="{{ route('loja.produtos-categoria', [$cat->hash_ecommerce, 'link='.$config->loja_id]) }}" class="category-card">
-                @if($cat->img ?? false)
-                    <img src="{{ $cat->img }}" alt="{{ $cat->nome }}" class="cc-img" loading="lazy">
-                @else
-                    <div class="cc-img d-flex align-items-center justify-content-center" style="background:var(--luxe-cream)">
-                        <i class="ri-price-tag-3-line" style="font-size:40px;color:var(--luxe-gold);opacity:0.45"></i>
-                    </div>
-                @endif
-                <div class="cc-overlay"></div>
-                <span class="cc-arrow"><i class="ri-arrow-right-line"></i></span>
-                <div class="cc-info">
-                    <div class="cc-name">{{ $cat->nome }}</div>
-                    <div class="cc-count">Conferir coleção</div>
-                </div>
-            </a>
-            @endforeach
-        </div>
-    </div>
-</section>
-@endif
-
-{{-- ═══════════════════════════════════════════
-    PRODUTOS EM DESTAQUE — grid clean
-═══════════════════════════════════════════ --}}
-<section class="section-pad-sm" id="produtos-destaque" style="background:var(--luxe-cream)">
-    <div class="container">
-        <div class="section-head d-flex align-items-end justify-content-between flex-wrap gap-3">
-            <div>
-                <span class="section-kicker">Em Destaque</span>
-                <h2>Produtos em destaque</h2>
-                <p>Os mais escolhidos pelos nossos clientes.</p>
-            </div>
-            <span style="font-size:12px;color:var(--luxe-tan)">{{ sizeof($produtosEmDestaque) }} produtos</span>
-        </div>
-
-        @if(sizeof($produtosEmDestaque) > 0)
-        <div class="row g-4 reveal">
-            @foreach(collect($produtosEmDestaque) as $p)
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="product-card">
-                    <div class="product-img-wrapper">
-                        <a href="{{ route('loja.produto-detalhe', [$p->hash_ecommerce, 'link='.$config->loja_id]) }}">
-                            <img src="{{ $p->img }}" alt="{{ $p->nome }}" class="img-primary" loading="lazy">
-                        </a>
-                        <div class="product-labels">
-                            @if($p->percentual_desconto > 0)
-                                <span class="badge-discount">-{{ $p->percentual_desconto }}%</span>
-                            @endif
-                        </div>
-                        <div class="product-actions-hover">
-                            <a href="{{ route('loja.produto-detalhe', [$p->hash_ecommerce, 'link='.$config->loja_id]) }}" class="action-icon" title="Ver Produto">
-                                <i class="ri-eye-line"></i>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="product-details">
-                        <span class="product-cat">{{ $p->categoria ? $p->categoria->nome : 'Geral' }}</span>
-                        <h3 class="product-title">
-                            <a href="{{ route('loja.produto-detalhe', [$p->hash_ecommerce, 'link='.$config->loja_id]) }}">{{ $p->nome }}</a>
-                        </h3>
-                        @if($p->valor_ecommerce > 0)
-                        <div class="product-price-row">
-                            <span class="current-price">R$ {{ __moeda($p->valor_ecommerce) }}</span>
-                            @if($p->percentual_desconto > 0)
-                            <span class="old-price">R$ {{ __moeda($p->valor_ecommerce + ($p->valor_ecommerce * $p->percentual_desconto / 100)) }}</span>
-                            @endif
-                        </div>
-                        @else
-                        <div class="product-price-row">
-                            <span style="font-size:12px;color:var(--luxe-tan)">Sob consulta</span>
-                        </div>
-                        @endif
-                    </div>
-                    <div class="product-actions">
-                        <a href="{{ route('loja.produto-detalhe', [$p->hash_ecommerce, 'link='.$config->loja_id]) }}" class="btn-buy">
-                            <i class="ri-shopping-bag-3-line"></i> Ver Detalhes
-                        </a>
-                    </div>
-                </div>
-            </div>
-            @endforeach
-        </div>
-        @else
-        <div class="empty-state">
-            <i class="ri-box-3-line"></i>
-            <h4>Nenhum produto em destaque</h4>
-            <p>Adicione produtos em destaque para aparecerem aqui.</p>
-        </div>
-        @endif
-    </div>
-</section>
-
-{{-- ═══════════════════════════════════════════
-    BANNER PROMOCIONAL — clean
-═══════════════════════════════════════════ --}}
-<section class="promo-banner reveal" style="border-radius:0">
-    <div class="container-fluid p-0">
-        <div class="row g-0">
-            <div class="col-lg-5 promo-img-col d-none d-lg-block">
-                @if($config->banner_img ?? false)
-                    <img src="{{ $config->banner_img }}" alt="Promoção" style="height:100%;width:100%;object-fit:cover">
-                @else
-                    <div style="height:100%;min-height:380px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center">
-                        <i class="ri-star-fill" style="font-size:80px;color:rgba(255,255,255,0.18)"></i>
-                    </div>
-                @endif
-            </div>
-            <div class="col-lg-7">
-                <div class="promo-content">
-                    <span class="section-kicker promo-kicker">Oferta Especial</span>
-                    <h2 style="color:#fff;font-size:clamp(26px,3.5vw,42px);font-weight:800;letter-spacing:-0.02em;margin-bottom:14px">
-                        Qualidade que você pode confiar
-                    </h2>
-                    <p style="font-size:14px;color:rgba(255,255,255,0.65);margin:0 0 20px;max-width:440px;line-height:1.7">
-                        Explore nossa coleção completa com as melhores condições de pagamento e atendimento personalizado.
-                    </p>
-                    <ul class="promo-checklist">
-                        <li>
-                            <span class="promo-check-icon"><i class="ri-check-line"></i></span>
-                            Produtos com garantia de qualidade
-                        </li>
-                        <li>
-                            <span class="promo-check-icon"><i class="ri-check-line"></i></span>
-                            Preços competitivos e condições especiais
-                        </li>
-                        <li>
-                            <span class="promo-check-icon"><i class="ri-check-line"></i></span>
-                            Entrega rápida e atendimento ágil
-                        </li>
-                    </ul>
-                    <a href="{{ route('loja.pesquisa', ['link='.$config->loja_id]) }}" class="btn-hero d-inline-flex mt-3">
-                        Ver Todos os Produtos <i class="ri-arrow-right-line"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-{{-- ═══════════════════════════════════════════
-    MAIS PRODUTOS — novidades
-═══════════════════════════════════════════ --}}
-@php
-    $novidades = collect($produtosEmDestaque)->take(8)->skip(4);
-@endphp
-@if($novidades->count() > 0)
-<section class="section-pad">
-    <div class="container">
-        <div class="section-head center reveal">
-            <span class="section-kicker">Novidades</span>
-            <h2>Mais produtos</h2>
-            <p>Confira outros produtos da nossa loja.</p>
-        </div>
-        <div class="row g-4 reveal">
-            @foreach($novidades as $p)
-            <div class="col-6 col-md-4 col-lg-3">
-                <a href="{{ route('loja.produto-detalhe', [$p->hash_ecommerce, 'link='.$config->loja_id]) }}" class="d-block text-decoration-none" style="color:inherit">
-                    <div style="position:relative;margin-bottom:12px;border-radius:12px;overflow:hidden;background:var(--luxe-cream);aspect-ratio:1">
-                        <img src="{{ $p->img }}" alt="{{ $p->nome }}" loading="lazy" style="width:100%;height:100%;object-fit:cover;transition:transform 0.5s">
-                        <div style="position:absolute;inset:0;background:rgba(66,84,186,0.45);opacity:0;transition:opacity 0.3s;display:flex;align-items:center;justify-content:center" class="quick-view-overlay">
-                            <span style="background:#fff;color:var(--luxe-brown);font-size:12px;font-weight:600;padding:8px 18px;border-radius:8px">Ver Produto</span>
-                        </div>
-                    </div>
-                    <h4 style="font-size:13px;font-weight:500;color:var(--luxe-brown);margin-bottom:4px;transition:color 0.2s" class="novidade-title">{{ $p->nome }}</h4>
-                    @if($p->valor_ecommerce > 0)
-                    <p style="font-weight:700;color:var(--luxe-brown);font-size:14px;margin:0">R$ {{ __moeda($p->valor_ecommerce) }}</p>
-                    @endif
-                </a>
-            </div>
-            @endforeach
-        </div>
-        <div class="text-center mt-5 reveal">
-            <a href="{{ route('loja.pesquisa', ['link='.$config->loja_id]) }}" class="btn-outline-luxe">
-                Ver Todos os Produtos <i class="ri-arrow-right-line"></i>
-            </a>
-        </div>
-    </div>
-</section>
-@endif
-
-{{-- ═══════════════════════════════════════════
-    CTA FINAL
-═══════════════════════════════════════════ --}}
-<section class="cta-banner reveal">
-    <div class="cta-bg">
-        @if($config->banner_img ?? false)
-        <img src="{{ $config->banner_img }}" alt="">
-        @endif
-    </div>
-    <div class="cta-content container">
-        <span class="section-kicker cta-kicker">Coleção Completa</span>
-        <h2>
-            Conheça toda a nossa<br><span class="accent">seleção de produtos</span>
-        </h2>
-        <p>De produtos essenciais a itens exclusivos, temos tudo que você precisa com qualidade garantida.</p>
-        <div class="d-flex flex-wrap justify-content-center gap-3">
-            <a href="{{ route('loja.pesquisa', ['link='.$config->loja_id]) }}" class="btn-hero">
-                Comprar Agora <i class="ri-arrow-right-line"></i>
-            </a>
-            @if($config->link_whatsapp || $config->telefone)
-            @php $waCta = $config->link_whatsapp ?: 'https://wa.me/'.preg_replace('/\D/', '', $config->telefone); @endphp
-            <a href="{{ $waCta }}" target="_blank" class="btn-hero btn-wa-light">
-                <i class="ri-whatsapp-fill"></i> Fale Conosco
-            </a>
-            @endif
-        </div>
-    </div>
-</section>
-
-@endsection
-
-@section('js')
-<script>
-// ── Quick view hover ──
-document.querySelectorAll('[href]').forEach(function(a) {
-    var ov = a.querySelector('.quick-view-overlay');
-    var img = a.querySelector('img');
-    if (!ov) return;
-    a.addEventListener('mouseenter', function() { ov.style.opacity = '1'; if(img) img.style.transform = 'scale(1.06)'; });
-    a.addEventListener('mouseleave', function() { ov.style.opacity = '0'; if(img) img.style.transform = ''; });
-});
-</script>
 @endsection

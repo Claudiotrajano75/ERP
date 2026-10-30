@@ -52,9 +52,9 @@ class ClienteController extends Controller
     }
 
     private function _getCarrinho(){
-        $data = [];
+        $data = null;
         if(isset($_SESSION["session_cart"])){
-            $data = Carrinho::where('session_cart', $_SESSION["session_cart"])
+            $data = Carrinho::with(['itens.produto'])->where('session_cart', $_SESSION["session_cart"])
             ->first();
         }
         return $data;

@@ -24,13 +24,30 @@ use Dompdf\Dompdf;
 class PedidoCardapioController extends Controller
 {
     public function index(Request $request){
-        $data = Pedido::
-        where('empresa_id', $request->empresa_id)
-        ->where('status', 1)
-        ->orderBy('created_at', 'desc')
-        ->get();
+        $base = Pedido::where('empresa_id', $request->empresa_id)
+            ->where('status', 1);
 
-        return view('pedidos.index', compact('data'));
+        $data = (clone $base)
+            ->when(!empty($request->comanda), function($q) use ($request){
+                return $q->where('comanda', 'like', "%$request->comanda%");
+            })
+            ->when(!empty($request->mesa), function($q) use ($request){
+                return $q->where('mesa', 'like', "%$request->mesa%");
+            })
+            ->when(!empty($request->cliente), function($q) use ($request){
+                return $q->where('cliente_nome', 'like', "%$request->cliente%");
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $stats = [
+            'total'          => (clone $base)->count(),
+            'em_atendimento' => (clone $base)->where('em_atendimento', 1)->count(),
+            'para_fechar'    => (clone $base)->where('em_atendimento', 0)->count(),
+            'total_valor'    => (clone $base)->sum('total'),
+        ];
+
+        return view('pedidos.index', compact('data', 'stats'));
     }
 
     public function store(Request $request){
@@ -172,22 +189,54 @@ class PedidoCardapioController extends Controller
     }
 
     public function print($id){
-        $item = Pedido::findOrFail($id);
+        $item = Pedido::with([
+            'itens.produto', 
+            'itens.adicionais.adicional', 
+            'itens.pizzas.sabor', 
+            'itens.tamanho', 
+            'itens.funcionario'
+        ])->findOrFail($id);
 
-        $height = 180;
+        $config = Empresa::with('cidade')->where('id', $item->empresa_id)->first();
 
-        $height += $item->countItens()*25;
-        $config = Empresa::where('id', $item->empresa_id)->first();
+        // Cálculo dinâmico e seguro da altura do papel (em pontos) para garantir 1 única folha
+        // 80mm de largura = 226.77 pt
+        $height = 240;
 
-        $p = view('pedidos.imprimir', compact('config', 'item'));
+        if (!empty($item->cliente_nome) || !empty($item->cliente_fone)) {
+            $height += 28;
+        }
+
+        if (!empty($item->observacao)) {
+            $height += 20;
+        }
+
+        if (!empty($item->tipo_pagamento)) {
+            $height += 14;
+        }
+
+        if (count($item->itens) == 0) {
+            $height += 25;
+        } else {
+            foreach ($item->itens as $i) {
+                $height += 22;
+                if (sizeof($i->pizzas) > 0) $height += 16;
+                if (sizeof($i->adicionais) > 0) $height += 16;
+                if (!empty($i->observacao)) $height += 16;
+            }
+        }
+
+        // Folga de segurança anti-quebra de folha
+        $height += 40;
+
+        $p = view('pedidos.imprimir', compact('config', 'item'))->render();
 
         $domPdf = new Dompdf(["enable_remote" => true]);
         $domPdf->loadHtml($p);
-        $pdf = ob_get_clean();
-        $domPdf->setPaper([0,0,204,$height]);
-        $pdf = $domPdf->render();
+        $domPdf->setPaper([0, 0, 226.77, $height], 'portrait');
+        $domPdf->render();
 
-        $domPdf->stream("Pedido $id.pdf", array("Attachment" => false));
+        return $domPdf->stream("Comanda_{$item->comanda}.pdf", ["Attachment" => false]);
     }
 
     public function finish($id){

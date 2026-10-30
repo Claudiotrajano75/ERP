@@ -29,66 +29,80 @@ class EcommerceConfigController extends Controller
 
     public function store(Request $request)
     {
-
         $item = EcommerceConfig::where('empresa_id', $request->empresa_id)
-        ->first();
+            ->first();
 
         $this->_validate($request, $item ? $item->id : null);
 
-
-        if(!isset($request->tipos_pagamento)){
-            $request->tipos_pagamento = [];
-        }
-
-        $request->merge([
-            'frete_gratis_valor' => $request->frete_gratis_valor ? __convert_value_bd($request->frete_gratis_valor) : null,
-            'tipos_pagamento' => json_encode($request->tipos_pagamento),
-            'politica_privacidade' => $request->politica_privacidade ?? '',
-            'termos_condicoes' => $request->termos_condicoes ?? '',
-            'dados_deposito' => $request->dados_deposito ?? '',
-            'mercadopago_public_key' => $request->mercadopago_public_key ?? '',
-            'mercadopago_access_token' => $request->mercadopago_access_token ?? ''
-        ]);
-
-        if ($item != null) {
-            //update
-            $file_name_logo = $item->logo;
-
-            if ($request->hasFile('logo_image')) {
-                $this->util->unlinkImage($item, '/logos', 'logo');
-                $file_name_logo = $this->util->uploadImage($request, '/logos', 'logo_image');
+        try {
+            if (!isset($request->tipos_pagamento)) {
+                $request->tipos_pagamento = [];
             }
 
             $request->merge([
-                'logo' => $file_name_logo,
+                'frete_gratis_valor' => $request->frete_gratis_valor ? __convert_value_bd($request->frete_gratis_valor) : null,
+                'tipos_pagamento' => json_encode($request->tipos_pagamento),
+                'politica_privacidade' => $request->politica_privacidade ?? '',
+                'termos_condicoes' => $request->termos_condicoes ?? '',
+                'dados_deposito' => $request->dados_deposito ?? '',
+                'mercadopago_public_key' => $request->mercadopago_public_key ?? '',
+                'mercadopago_access_token' => $request->mercadopago_access_token ?? ''
             ]);
 
-            $item->fill($request->all())->save();
-            session()->flash("flash_success", "Configuração atualizada!");
-        } else {
-            $file_name_logo = '';
+            if ($item != null) {
+                // update
+                $file_name_logo = $item->logo;
 
-            if ($request->hasFile('logo_image')) {
-                $file_name_logo = $this->util->uploadImage($request, '/logos', 'logo_image');
+                // Solicitação explícita de remoção de imagem
+                if ($request->remover_logo == '1') {
+                    $this->util->unlinkImage($item, '/logos', 'logo');
+                    $file_name_logo = '';
+                }
+
+                if ($request->hasFile('logo_image')) {
+                    $this->util->unlinkImage($item, '/logos', 'logo');
+                    $file_name_logo = $this->util->uploadImage($request, '/logos', 'logo_image');
+                }
+
+                $request->merge([
+                    'logo' => $file_name_logo,
+                ]);
+
+                $item->fill($request->all())->save();
+                session()->flash("flash_success", "Configurações da loja virtual atualizadas com sucesso!");
+            } else {
+                $file_name_logo = '';
+
+                if ($request->hasFile('logo_image')) {
+                    $file_name_logo = $this->util->uploadImage($request, '/logos', 'logo_image');
+                }
+
+                $request->merge([
+                    'logo' => $file_name_logo,
+                ]);
+
+                EcommerceConfig::create($request->all());
+                session()->flash("flash_success", "Configurações da loja virtual salvas com sucesso!");
             }
-
-            $request->merge([
-                'logo' => $file_name_logo,
-            ]);
-
-            EcommerceConfig::create($request->all());
-            session()->flash("flash_success", "Configuração cadastrada!");
+        } catch (\Exception $e) {
+            session()->flash("flash_error", "Erro ao salvar configurações: " . $e->getMessage());
+            return redirect()->back()->withInput();
         }
+
         return redirect()->back();
     }
 
-    private function _validate(Request $request, $id){
+    private function _validate(Request $request, $id)
+    {
         $rules = [
             'loja_id' => [\Illuminate\Validation\Rule::unique('ecommerce_configs')->ignore($id)],
+            'logo_image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp,ico|max:10240',
         ];
 
         $messages = [
-            'loja_id.unique' => 'Já existe uma configuração de ecommerce com este ID.'
+            'loja_id.unique' => 'Já existe uma configuração de ecommerce com este ID.',
+            'logo_image.mimes' => 'A logomarca deve estar nos formatos: PNG, JPG, JPEG, SVG, WEBP ou GIF.',
+            'logo_image.max' => 'A imagem da logomarca não pode ultrapassar 10MB.',
         ];
         $this->validate($request, $rules, $messages);
     }

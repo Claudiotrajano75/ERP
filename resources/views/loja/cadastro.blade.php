@@ -1,219 +1,300 @@
-@extends('loja.default', ['title' => 'Cadastro'])
+@extends('loja.default', ['title' => 'Criar Conta'])
 
 @section('css')
 <link href="/assets/vendor/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
 <style type="text/css">
     .select2-container .select2-selection--single {
-        height: 38px !important;
-        border: 1px solid var(--border-light);
-        border-radius: var(--radius-sm);
+        height: 46px !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 1rem !important;
+        background-color: #f8fafc !important;
+        display: flex !important;
+        align-items: center !important;
     }
     .select2-selection__rendered {
-        line-height: 36px !important;
-        font-size: 13px;
-        color: var(--luxe-brown) !important;
+        line-height: 44px !important;
+        font-size: 0.875rem !important;
+        color: #1e293b !important;
+        padding-left: 1rem !important;
     }
     .select2-selection__arrow {
-        height: 36px !important;
+        height: 44px !important;
+        right: 12px !important;
     }
 </style>
 @endsection
 
 @section('content')
 
-{{-- Barra de etapas (fluxo de compra) --}}
 @if($carrinho != [])
-@include('loja.partials.checkout_steps', ['checkoutStep' => 2])
+    @include('loja.partials.checkout_steps', ['checkoutStep' => 2])
 @endif
 
-<div class="section py-5 text-dark">
-    <div class="container">
-        
-        <form method="post" action="{{ route('loja.cadastro') }}" class="row g-4">
-            @csrf
-            <input type="hidden" name="link" value="{{ $config->loja_id }}">
-            <input type="hidden" id="empresa_id" value="{{ $config->empresa_id }}">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <form method="POST" action="{{ route('loja.cadastro') }}" class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        @csrf
+        <input type="hidden" name="link" value="{{ $config->loja_id }}">
+        <input type="hidden" id="empresa_id" value="{{ $config->empresa_id }}">
 
-            <!-- ─── FORMULÁRIO DE CADASTRO (ESQUERDA) ─── -->
-            <div class="@if($carrinho == []) col-lg-8 col-12 mx-auto @else col-lg-7 col-12 @endif">
-                <div class="card border-0 shadow-sm p-4" style="border-radius: 16px;">
-                    <div class="mb-4">
-                        <h3 class="fw-bold text-dark mb-1">Crie sua Conta</h3>
-                        <p class="text-muted fs-13">Preencha as informações abaixo para realizar o seu cadastro.</p>
-                    </div>
+        <!-- Formulário de Cadastro (Esquerda) -->
+        <div class="{{ $carrinho == [] ? 'lg:col-span-8 lg:col-start-3' : 'lg:col-span-7' }} space-y-6">
+            <div class="bg-white rounded-3xl border border-slate-100 p-6 sm:p-8 shadow-sm space-y-6">
+                
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-1 block">Passo 2 de 3</span>
+                    <h2 class="text-2xl font-black text-slate-900 tracking-tight">Identificação e Endereço</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1">Preencha os dados abaixo para emissão da nota e envio seguro do seu pedido.</p>
+                </div>
 
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label fw-bold text-dark fs-12 required">Nome Completo</label>
-                            <input required class="form-control" type="text" value="{{ old('nome')}}" name="nome" placeholder="Seu nome completo">
-                            @if($errors->has('nome'))
-                            <span class="text-danger fs-11 mt-1 d-block">{{ $errors->first('nome') }}</span>
-                            @endif
-                        </div>
-                        
-                        <div class="col-12">
-                            <label class="form-label fw-bold text-dark fs-12 required">E-mail</label>
-                            <input required class="form-control" type="email" id="email" name="email" placeholder="nome@exemplo.com" value="{{ old('email')}}">
-                            @if($errors->has('email'))
-                            <span class="text-danger fs-11 mt-1 d-block">{{ $errors->first('email') }}</span>
-                            @endif
-                        </div>
+                <!-- Dados Pessoais -->
+                <div class="space-y-4 pt-2">
+                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">1. Dados de Acesso e Pessoais</h4>
 
-                        <div class="col-md-6 col-12">
-                            <label class="form-label fw-bold text-dark fs-12 required">Senha</label>
-                            <input required class="form-control" type="password" name="senha" placeholder="Crie uma senha" value="{{ old('senha')}}">
-                            @if($errors->has('senha'))
-                            <span class="text-danger fs-11 mt-1 d-block">{{ $errors->first('senha') }}</span>
-                            @endif
-                        </div>
-
-                        <div class="col-md-6 col-12">
-                            <label class="form-label fw-bold text-dark fs-12 required">Confirme a Senha</label>
-                            <input required class="form-control" type="password" name="repita_senha" placeholder="Repita a senha" value="{{ old('repita_senha')}}">
-                        </div>
-
-                        <hr class="my-4 text-muted">
-                        <h6 class="fw-bold text-dark mb-2 mt-0">Endereço de Entrega</h6>
-
-                        <div class="col-md-4 col-12">
-                            <label class="form-label fw-bold text-dark fs-12 required">CEP</label>
-                            <input required class="form-control cep" data-mask="00000-000" type="text" name="cep" placeholder="00000-000" value="{{ $carrinho ? $carrinho->cep : ''}}">
-                        </div>
-                        <div class="col-md-8 col-12">
-                            <label class="form-label fw-bold text-dark fs-12 required">Rua / Logradouro</label>
-                            <input required class="form-control" type="text" name="rua" id="rua" placeholder="Rua, Avenida, etc." value="{{ old('rua')}}">
-                        </div>
-
-                        <div class="col-md-4 col-12">
-                            <label class="form-label fw-bold text-dark fs-12 required">Número</label>
-                            <input required class="form-control" type="text" name="numero" id="numero" placeholder="Ex: 123" value="{{ old('numero')}}">
-                        </div>
-
-                        <div class="col-md-8 col-12">
-                            <label class="form-label fw-bold text-dark fs-12 required">Cidade</label>
-                            <select required class="form-select w-100" id="inp-cidade_id" name="cidade_id" style="width: 100% !important;">
-                            </select>
-                            <input type="hidden" value="{{ old('cidade_id') }}" id="cidade_old_id">
-                        </div>
-
-                        <div class="col-md-6 col-12">
-                            <label class="form-label fw-bold text-dark fs-12 required">Bairro</label>
-                            <input required class="form-control" type="text" name="bairro" id="bairro" placeholder="Bairro" value="{{ old('bairro')}}">
-                        </div>
-
-                        <div class="col-md-6 col-12">
-                            <label class="form-label fw-bold text-dark fs-12 required">Celular / Telefone</label>
-                            <input required data-mask="(00) 00000-0000" class="form-control" type="tel" name="telefone" placeholder="(00) 90000-0000" value="{{ old('telefone') }}">
-                        </div>
-
-                        <div class="col-12">
-                            <label class="form-label fw-bold text-dark fs-12">Complemento / Referência</label>
-                            <input class="form-control" type="text" name="referencia" placeholder="Apartamento, bloco, ponto de referência..." id="complemento" value="{{ old('referencia')}}">
-                        </div>
-
-                        @if($carrinho == [])
-                        <div class="col-12 mt-4">
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="termos" value="1" name="termos">
-                                <label class="form-check-label fs-13" for="termos">
-                                    Eu li e aceito os <a href="#!" data-bs-toggle="modal" data-bs-target="#modal-termos-condicoes">Termos e Condições</a>
-                                </label>
-                                @if($errors->has('termos'))
-                                <span class="text-danger fs-11 d-block mt-1">{{ $errors->first('termos') }}</span>
-                                @endif
-                            </div>
-                            <button type="submit" class="btn-luxe-dark w-100">
-                                Confirmar Cadastro
-                            </button>
-                        </div>
+                    <div>
+                        <label for="cad-nome" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                            Nome Completo *
+                        </label>
+                        <input type="text"
+                               name="nome"
+                               id="cad-nome"
+                               required
+                               value="{{ old('nome') }}"
+                               placeholder="Ex: João da Silva"
+                               class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm text-slate-800 focus:bg-white focus:border-indigo-500 outline-none transition-all">
+                        @if($errors->has('nome'))
+                            <span class="text-rose-500 text-xs mt-1 block">{{ $errors->first('nome') }}</span>
                         @endif
                     </div>
-                </div>
-            </div>
-            
-            <!-- ─── RESUMO DO PEDIDO E CONFIRMAÇÃO (DIREITA) ─── -->
-            @if($carrinho != [])
-            <div class="col-lg-5 col-12">
-                <div class="summary-card">
-                    <h5 class="fw-bold text-dark border-bottom pb-2 mb-4">Seu Pedido</h5>
-                    
-                    <div class="mb-4">
-                        @foreach($carrinho->itens as $i)
-                        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                            <div>
-                                <span class="fw-semibold text-dark fs-14">
-                                    {{ $i->produto->nome }}
-                                </span>
-                                <span class="text-muted d-block fs-12">
-                                    Qtd: {{ number_format($i->quantidade, 0) }} x R$ {{ __moeda($i->valor_unitario) }}
-                                </span>
-                            </div>
-                            <strong class="text-dark fs-14">R$ {{ __moeda($i->sub_total) }}</strong>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="email" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                E-mail *
+                            </label>
+                            <input type="email"
+                                   name="email"
+                                   id="email"
+                                   required
+                                   value="{{ old('email') }}"
+                                   placeholder="seu.email@exemplo.com"
+                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm text-slate-800 focus:bg-white focus:border-indigo-500 outline-none transition-all">
+                            @if($errors->has('email'))
+                                <span class="text-rose-500 text-xs mt-1 block">{{ $errors->first('email') }}</span>
+                            @endif
                         </div>
+
+                        <div>
+                            <label for="telefone" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                Telefone / WhatsApp *
+                            </label>
+                            <input type="tel"
+                                   name="telefone"
+                                   id="telefone"
+                                   required
+                                   oninput="maskPhone(this)"
+                                   value="{{ old('telefone') }}"
+                                   placeholder="(00) 00000-0000"
+                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm text-slate-800 focus:bg-white focus:border-indigo-500 outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="cpf_cnpj" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                CPF / CNPJ *
+                            </label>
+                            <input type="text"
+                                   name="cpf_cnpj"
+                                   id="cpf_cnpj"
+                                   required
+                                   oninput="maskCpfCnpj(this)"
+                                   value="{{ old('cpf_cnpj') }}"
+                                   placeholder="000.000.000-00"
+                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm text-slate-800 focus:bg-white focus:border-indigo-500 outline-none transition-all">
+                        </div>
+
+                        <div>
+                            <label for="cad-senha" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                Criar Senha *
+                            </label>
+                            <input type="password"
+                                   name="senha"
+                                   id="cad-senha"
+                                   required
+                                   placeholder="••••••••"
+                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm text-slate-800 focus:bg-white focus:border-indigo-500 outline-none transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Endereço de Entrega com Busca de CEP -->
+                <div class="space-y-4 pt-6 border-t border-slate-100">
+                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">2. Endereço de Envio</h4>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label for="cad-cep" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                CEP *
+                            </label>
+                            <input type="text"
+                                   name="cep"
+                                   id="cad-cep"
+                                   required
+                                   oninput="maskCep(this)"
+                                   value="{{ $carrinho ? $carrinho->cep : old('cep') }}"
+                                   placeholder="00000-000"
+                                   class="cep w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:bg-white focus:border-indigo-500 outline-none transition-all">
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <label for="rua" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                Rua / Logradouro *
+                            </label>
+                            <input type="text"
+                                   name="rua"
+                                   id="rua"
+                                   required
+                                   value="{{ old('rua') }}"
+                                   placeholder="Ex: Rua das Flores"
+                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm text-slate-800 focus:bg-white focus:border-indigo-500 outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label for="numero" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                Número *
+                            </label>
+                            <input type="text"
+                                   name="numero"
+                                   id="numero"
+                                   required
+                                   value="{{ old('numero') }}"
+                                   placeholder="123"
+                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm text-slate-800 focus:bg-white focus:border-indigo-500 outline-none transition-all">
+                        </div>
+
+                        <div>
+                            <label for="bairro" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                Bairro *
+                            </label>
+                            <input type="text"
+                                   name="bairro"
+                                   id="bairro"
+                                   required
+                                   value="{{ old('bairro') }}"
+                                   placeholder="Centro"
+                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm text-slate-800 focus:bg-white focus:border-indigo-500 outline-none transition-all">
+                        </div>
+
+                        <div>
+                            <label for="complemento" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                Complemento
+                            </label>
+                            <input type="text"
+                                   name="complemento"
+                                   id="complemento"
+                                   value="{{ old('complemento') }}"
+                                   placeholder="Apto 101"
+                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm text-slate-800 focus:bg-white focus:border-indigo-500 outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="inp-cidade_id" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                            Cidade / UF *
+                        </label>
+                        <select required id="inp-cidade_id" name="cidade_id" class="w-full">
+                        </select>
+                        <input type="hidden" value="{{ old('cidade_id') }}" id="cidade_old_id">
+                    </div>
+                </div>
+
+                <!-- Aceite dos Termos -->
+                <div class="pt-4 border-t border-slate-100">
+                    <label class="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                        <input type="checkbox" name="termos" value="1" required class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
+                        <span>Li e concordo com os termos de compra e políticas de privacidade.</span>
+                    </label>
+                </div>
+
+                @if($carrinho == [])
+                    <button type="submit"
+                            class="w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm shadow-xl shadow-indigo-600/25 transition-all">
+                        Concluir Cadastro
+                    </button>
+                @endif
+            </div>
+        </div>
+
+        <!-- Resumo Lateral do Pedido (Direita) -->
+        @if($carrinho != [])
+            <div class="lg:col-span-5 space-y-6">
+                <div class="bg-white rounded-3xl border border-slate-100 p-6 sm:p-8 shadow-sm space-y-5 sticky top-28">
+                    <h3 class="text-base font-black text-slate-900 pb-3 border-b border-slate-100">
+                        Resumo da Compra
+                    </h3>
+
+                    <!-- Itens -->
+                    <div class="max-h-64 overflow-y-auto divide-y divide-slate-100 pr-1">
+                        @foreach($carrinho->itens as $i)
+                            <div class="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                                <div class="min-w-0">
+                                    <h5 class="text-xs font-bold text-slate-800 truncate">{{ $i->produto->nome }}</h5>
+                                    <span class="text-[11px] text-slate-400">Qtd: {{ number_format($i->quantidade, 0) }}x R$ {{ __moeda($i->valor_unitario) }}</span>
+                                </div>
+                                <span class="text-xs font-black text-slate-900">R$ {{ __moeda($i->sub_total) }}</span>
+                            </div>
                         @endforeach
                     </div>
 
-                    <div class="d-flex justify-content-between mb-3 fs-14 pb-2 border-bottom">
-                        <span class="text-muted">Entrega:</span>
-                        <strong class="text-dark">R$ {{ __moeda($carrinho->valor_frete) }}</strong>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between mb-4">
-                        <span class="fw-bold fs-16 text-dark">TOTAL:</span>
-                        <strong class="text-success fs-18">R$ {{ __moeda($carrinho->valor_total) }}</strong>
+                    <!-- Linhas de Valores -->
+                    <div class="space-y-2 pt-3 border-t border-slate-100 text-xs">
+                        <div class="flex justify-between text-slate-600">
+                            <span>Subtotal:</span>
+                            <span class="font-bold text-slate-800">R$ {{ __moeda($carrinho->valor_total) }}</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600">
+                            <span>Frete:</span>
+                            <span class="font-bold text-slate-800">
+                                @if($carrinho->valor_frete == 0)
+                                    <span class="text-emerald-600 font-bold">Grátis</span>
+                                @else
+                                    R$ {{ __moeda($carrinho->valor_frete) }}
+                                @endif
+                            </span>
+                        </div>
+                        <div class="flex justify-between text-sm font-black text-slate-900 pt-2 border-t border-slate-100">
+                            <span>Total Geral:</span>
+                            <span class="text-lg text-indigo-600">R$ {{ __moeda($carrinho->valor_total + ($carrinho->valor_frete ?? 0)) }}</span>
+                        </div>
                     </div>
 
-                    <div class="form-check mb-4">
-                        <input class="form-check-input" type="checkbox" id="termos-checkout" value="1" name="termos">
-                        <label class="form-check-label fs-13" for="termos-checkout">
-                            Eu li e aceito os <a href="#!" data-bs-toggle="modal" data-bs-target="#modal-termos-condicoes">Termos e Condições</a>
-                        </label>
-                        @if($errors->has('termos'))
-                        <span class="text-danger fs-11 d-block mt-1">{{ $errors->first('termos') }}</span>
-                        @endif
-                    </div>
-
-                    <button type="submit" class="btn-luxe-dark w-100 mb-3">
-                        Confirmar Cadastro & Continuar
+                    <!-- Botão de Envio -->
+                    <button type="submit"
+                            class="w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm shadow-xl shadow-indigo-600/30 transition-all hover:scale-[1.02] flex items-center justify-center gap-2">
+                        <span>Confirmar e Ir para Pagamento</span>
+                        <i class="ri-arrow-right-line"></i>
                     </button>
 
-                    <div class="text-center">
-                        <span class="text-muted fs-13">
-                            Já tem cadastro? 
-                            <a class="fw-bold" href="{{ route('loja.login', ['link='.$config->loja_id])}}">
-                                Fazer Login
+                    <div class="text-center pt-2">
+                        <span class="text-xs text-slate-400">
+                            Já tem conta?
+                            <a href="{{ route('loja.login', ['link' => $config->loja_id]) }}" class="font-bold text-indigo-600 hover:underline">
+                                Faça login aqui
                             </a>
                         </span>
                     </div>
                 </div>
             </div>
-            @endif
-
-        </form>
-    </div>
-</div>
-
-<!-- Modal Termos -->
-<div class="modal fade" id="modal-termos-condicoes" tabindex="-1" aria-labelledby="termosModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold" id="termosModalLabel">Termos e Condições</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body fs-14 lh-lg text-secondary">
-                {!! $config->termos_condicoes !!}
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-luxe-outline btn-sm" data-bs-dismiss="modal">Fechar</button>
-            </div>
-        </div>
-    </div>
+        @endif
+    </form>
 </div>
 
 @endsection
 
 @section('js')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="/assets/vendor/select2/js/select2.min.js"></script>
 <script type="text/javascript">
     $(function(){
@@ -225,11 +306,10 @@
         $("#inp-cidade_id").select2({
             minimumInputLength: 2,
             language: "pt-BR",
-            placeholder: "Digite a sua cidade",
-            dropdownParent: $('.card'),
+            placeholder: "Digite o nome da sua cidade",
             ajax: {
                 cache: true,
-                url: path_url + "api/buscaCidades",
+                url: "/api/buscaCidades",
                 dataType: "json",
                 data: function (params) {
                     return { pesquisa: params.term };
@@ -248,63 +328,42 @@
             }
         });
 
-        setTimeout(() => {
-            let cep = $(".cep").val().replace(/[^0-9]/g,'');
-            if(cep.length > 7){
-                buscaCep();
+        // Busca automática de CEP
+        $(document).on('blur', '#cad-cep', function(){
+            var cep = $(this).val().replace(/\D/g, '');
+            if(cep.length === 8){
+                fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                .then(r => r.json())
+                .then(data => {
+                    if(!data.erro){
+                        $('#rua').val(data.logradouro);
+                        $('#bairro').val(data.bairro);
+                        if(data.ibge){
+                            findCidadeIbge(data.ibge);
+                        }
+                    }
+                }).catch(e => console.error(e));
             }
-        }, 10);
+        });
     });
 
-    $(document).on("blur", "#email", function () {
-        let email = $(this).val();
-        let empresa_id = $('#empresa_id').val();
-        if (email) {
-            $.get(path_url + "api/ecommerce/valida-email", {
-                email: email,
-                empresa_id: empresa_id
-            })
-            .fail((err) => {
-                if(err.status == 402){
-                    Swal.fire("Erro", "Este e-mail já está cadastrado no sistema.", "error");
-                    $('#email').val('');
-                }
-            });
-        }
-    });
-
-    $(document).on("blur", ".cep", function () {
-        buscaCep();
-    });
-
-    function buscaCep(){
-        let cep = $(".cep").val().replace(/[^0-9]/g,'');
-        if(cep.length == 8){
-            $.get('https://viacep.com.br/ws/'+cep+'/json')
-            .done((res) => {
-                findCidade(res.ibge);
-                $('#rua').val(res.logradouro);
-                $('#bairro').val(res.bairro);
-                $('#complemento').val(res.complemento);
-            });
-        }
-    }
-
-    function findCidade(codigo_ibge){
-        $('#inp-cidade_id').html('');
-        $.get(path_url + "api/cidadePorCodigoIbge/" + codigo_ibge)
-        .done((res) => {
-            var newOption = new Option(res.info, res.id, false, false);
-            $('#inp-cidade_id').append(newOption).trigger('change');
+    function findCidadeIbge(ibge){
+        $.get('/api/buscaCidadeCodigoIbge/' + ibge)
+        .done(function(data){
+            if(data){
+                var option = new Option(data.info, data.id, true, true);
+                $('#inp-cidade_id').append(option).trigger('change');
+            }
         });
     }
 
     function findCidadeId(id){
-        $('#inp-cidade_id').html('');
-        $.get(path_url + "api/cidadePorId/" + id)
-        .done((res) => {
-            var newOption = new Option(res.info, res.id, false, false);
-            $('#inp-cidade_id').append(newOption).trigger('change');
+        $.get('/api/cidadePorId/' + id)
+        .done(function(data){
+            if(data){
+                var option = new Option(data.info, data.id, true, true);
+                $('#inp-cidade_id').append(option).trigger('change');
+            }
         });
     }
 </script>

@@ -27,10 +27,6 @@ class CarrinhoController extends Controller
     public function index(Request $request){
         $item = $this->_getCarrinho();
         $config = EcommerceConfig::findOrfail($request->loja_id);
-        if(isset($_SESSION["session_cart"])){
-            $item = Carrinho::where('session_cart', $_SESSION["session_cart"])
-            ->first();
-        }
 
         $categorias = CategoriaProduto::withCount(['produtos as produtos_count' => function($q){
             $q->where('ecommerce', 1);
@@ -85,13 +81,14 @@ class CarrinhoController extends Controller
             }
         }
 
-        return view('loja.carrinho', compact('item', 'config', 'categorias', 'cliente', 'enderecos', 'dataFrete', 'sugestoes'));
+        $carrinho = $item;
+        return view('loja.carrinho', compact('item', 'carrinho', 'config', 'categorias', 'cliente', 'enderecos', 'dataFrete', 'sugestoes'));
     }
 
     private function _getCarrinho(){
-        $data = [];
+        $data = null;
         if(isset($_SESSION["session_cart"])){
-            $data = Carrinho::where('session_cart', $_SESSION["session_cart"])
+            $data = Carrinho::with(['itens.produto'])->where('session_cart', $_SESSION["session_cart"])
             ->first();
         }
         return $data;
@@ -113,19 +110,25 @@ class CarrinhoController extends Controller
 
         if($produto->gerenciar_estoque){
             if(!$produto->estoque){
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json(['success' => false, 'message' => 'Produto sem estoque disponível no momento.'], 422);
+                }
                 session()->flash("flash_error", 'Produto sem estoque');
                 return redirect()->back();
             }
 
             if($quantidade > $produto->estoque->quantidade){
-                session()->flash("flash_error", 'Estoque insuficinete, quantidade máxima de ' . number_format($produto->estoque->quantidade, 0) . ' ' . $produto->unidade .  ' para este item!');
+                $msg = 'Estoque insuficiente, quantidade máxima de ' . number_format($produto->estoque->quantidade, 0) . ' ' . $produto->unidade .  ' para este item!';
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json(['success' => false, 'message' => $msg], 422);
+                }
+                session()->flash("flash_error", $msg);
                 return redirect()->back();
             }
         }
 
         $carrinho = Carrinho::where('session_cart', $session_cart)
         ->first();
-
 
         $produtoVariacao = null;
         if(isset($request->variacao_id)){
@@ -138,7 +141,7 @@ class CarrinhoController extends Controller
         }
 
         if($carrinho == null){
-            //novo carrinho
+            // novo carrinho
             $clienteLogado = $this->_getClienteLogado();
 
             $carrinho = Carrinho::create([
@@ -161,7 +164,6 @@ class CarrinhoController extends Controller
             ]);
             session()->flash("flash_success", "Produto adicionado ao carrinho!");
         }else{
-
             ItemCarrinho::create([
                 'carrinho_id' => $carrinho->id,
                 'produto_id' => $request->produto_id,
@@ -174,10 +176,37 @@ class CarrinhoController extends Controller
             session()->flash("flash_success", "Produto adicionado ao carrinho!");
         }
         $this->_atualizaValorCarrinho($carrinho->id);
+
+        if ($request->ajax() || $request->wantsJson() || $request->has('ajax') || $request->header('Accept') == 'application/json' || $request->header('X-Requested-With') == 'XMLHttpRequest') {
+            return response()->json($this->_formatarCarrinhoJson($carrinho));
+        }
+
         if ($request->comprar_agora == 1) {
             return redirect()->route('loja.pagamento', 'link='.$config->loja_id);
         }
         return redirect()->route('loja.carrinho', 'link='.$config->loja_id);
+    }
+
+    private function _formatarCarrinhoJson($carrinho) {
+        $carrinho->refresh();
+        $carrinho->load('itens.produto');
+        return [
+            'success' => true,
+            'message' => 'Produto adicionado ao carrinho!',
+            'total' => (float)$carrinho->valor_total,
+            'total_formatado' => __moeda($carrinho->valor_total),
+            'count' => count($carrinho->itens),
+            'itens' => $carrinho->itens->map(function($ci) {
+                return [
+                    'id' => $ci->id,
+                    'nome' => $ci->produto ? $ci->produto->nome : 'Produto',
+                    'img' => $ci->produto ? $ci->produto->img : '/imgs/no-image.png',
+                    'quantidade' => (float)$ci->quantidade,
+                    'valor_unitario' => __moeda($ci->valor_unitario),
+                    'sub_total' => __moeda($ci->sub_total),
+                ];
+            })->values()
+        ];
     }
 
     private function _getClienteLogado(){
@@ -189,41 +218,61 @@ class CarrinhoController extends Controller
 
     public function removeItem(Request $request, $id){
         $item = ItemCarrinho::findOrfail($id);
+        $carrinhoId = $item->carrinho_id;
         try {
             $item->delete();
+            $this->_atualizaValorCarrinho($carrinhoId);
 
-            $this->_atualizaValorCarrinho($item->carrinho_id);
+            if ($request->ajax() || $request->wantsJson()) {
+                $carrinho = Carrinho::find($carrinhoId);
+                return response()->json($this->_formatarCarrinhoJson($carrinho));
+            }
+
             session()->flash("flash_success", "Item removido com sucesso!");
         } catch (\Exception $e) {
-            session()->flash("flash_error", 'Algo deu errado.', $e->getMessage());
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            }
+            session()->flash("flash_error", 'Algo deu errado: ' . $e->getMessage());
         }
         return redirect()->back();
     }
 
     private function _atualizaValorCarrinho($carrinho_id){
         $item = Carrinho::findOrfail($carrinho_id);
-        $item->valor_total = $item->itens->sum('sub_total') + $item->valor_frete;
+        $item->valor_total = $item->itens->sum('sub_total') + ($item->valor_frete ?? 0);
         $item->save();
     }
 
     public function atualizaQuantidade(Request $request, $id){
         $item = ItemCarrinho::findOrfail($id);
         try {
-
             $item->quantidade = (float)$request->quantidade;
-            if($item->produto->gerenciar_estoque){
-
-                if($item->quantidade > $item->produto->estoque->quantidade){
-                    session()->flash("flash_error", 'Estoque insuficinete, quantidade máxima de ' . number_format($item->produto->estoque->quantidade, 0) . ' ' . $item->produto->unidade .  ' para este item!');
+            if($item->produto && $item->produto->gerenciar_estoque){
+                if($item->produto->estoque && $item->quantidade > $item->produto->estoque->quantidade){
+                    $msg = 'Estoque insuficiente, quantidade máxima de ' . number_format($item->produto->estoque->quantidade, 0) . ' ' . $item->produto->unidade .  ' para este item!';
+                    if ($request->ajax() || $request->wantsJson()) {
+                        return response()->json(['success' => false, 'message' => $msg], 422);
+                    }
+                    session()->flash("flash_error", $msg);
                     return redirect()->back();
                 }
             }
             $item->sub_total = $item->valor_unitario * (float)$request->quantidade;
             $item->save();
             $this->_atualizaValorCarrinho($item->carrinho_id);
+
+            if ($request->ajax() || $request->wantsJson()) {
+                $carrinho = Carrinho::find($item->carrinho_id);
+                return response()->json($this->_formatarCarrinhoJson($carrinho));
+            }
+
             session()->flash("flash_success", "Quantidade atualizada com sucesso!");
         } catch (\Exception $e) {
-            session()->flash("flash_error", 'Algo deu errado.', $e->getMessage());
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            }
+            session()->flash("flash_error", 'Algo deu errado: ' . $e->getMessage());
         }
         return redirect()->back();
     }

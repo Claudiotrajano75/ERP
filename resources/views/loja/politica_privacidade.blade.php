@@ -2,27 +2,29 @@
 
 @section('content')
 
-{{-- Page Hero --}}
-<section class="page-hero">
-    <div class="page-hero-content container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-2">
-                <li class="breadcrumb-item"><a href="{{ route('loja.index', ['link='.$config->loja_id]) }}">Home</a></li>
-                <li class="breadcrumb-item active">Política de Privacidade</li>
-            </ol>
-        </nav>
-        <h1>Política de Privacidade</h1>
-        <p class="badge-count-info">Como tratamos e protegemos os seus dados.</p>
-    </div>
-</section>
+@php
+    $breadcrumbs = [
+        ['label' => 'Política de Privacidade', 'url' => null]
+    ];
+@endphp
 
-{{-- Conteúdo --}}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="static-content">
+<x-loja.breadcrumbs :links="$breadcrumbs" :config="$config" />
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+    <div class="bg-white rounded-3xl border border-slate-100 p-8 sm:p-12 shadow-sm space-y-6">
+        <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-1 block">Institucional</span>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Política de Privacidade & Segurança</h1>
+            <p class="text-xs text-slate-400 mt-1">Última atualização em {{ date('d/m/Y') }}</p>
+        </div>
+
+        <div class="prose max-w-none text-slate-700 leading-relaxed text-sm pt-4 border-t border-slate-100">
+            @if(!empty($config->politica_privacidade))
                 {!! $config->politica_privacidade !!}
-            </div>
+            @else
+                <p>Nossa loja tem o compromisso com a privacidade e a segurança dos dados de seus clientes durante todo o processo de navegação e compra no site.</p>
+                <p>Os dados cadastrais dos clientes não são vendidos, trocados ou divulgados para terceiros, exceto quando essas informações são necessárias para o processo de entrega ou para cobrança.</p>
+            @endif
         </div>
     </div>
 </div>

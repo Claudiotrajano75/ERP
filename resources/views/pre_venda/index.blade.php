@@ -477,6 +477,34 @@
                                                         </button>
                                                         <ul class="dropdown-menu dropdown-menu-start action-dropdown-card shadow-lg">
 
+                                                        {{-- Imprimir Não Fiscal (Térmica IP) --}}
+                                                        <li>
+                                                            <a class="dropdown-item action-menu-item" href="javascript:void(0)" onclick="PrintThermal.imprimir('prevenda', {{$item->id}}, '{{ route('pre-venda.imprimir', [$item->codigo]) }}')">
+                                                                <div class="action-item-icon icon-primary">
+                                                                    <i class="ri-printer-line"></i>
+                                                                </div>
+                                                                <div class="action-item-content">
+                                                                    <span class="action-item-title">Imprimir Não Fiscal</span>
+                                                                    <span class="action-item-desc">Enviar direto p/ impressora IP</span>
+                                                                </div>
+                                                            </a>
+                                                        </li>
+
+                                                        {{-- Cupom Não Fiscal (PDF) --}}
+                                                        <li>
+                                                            <a class="dropdown-item action-menu-item" target="_blank" href="{{ route('pre-venda.imprimir', [$item->codigo]) }}">
+                                                                <div class="action-item-icon icon-info">
+                                                                    <i class="ri-file-text-line"></i>
+                                                                </div>
+                                                                <div class="action-item-content">
+                                                                    <span class="action-item-title">Cupom Não Fiscal (PDF)</span>
+                                                                    <span class="action-item-desc">Abrir PDF no navegador</span>
+                                                                </div>
+                                                            </a>
+                                                        </li>
+
+                                                        <li><hr class="dropdown-divider my-1"></li>
+
                                                         {{-- Finalizar Pré-venda --}}
                                                         @if($item->status == 1)
                                                             @can('nfce_create')

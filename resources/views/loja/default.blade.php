@@ -1,548 +1,215 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="h-full scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $title }} — {{ $config->nome }}</title>
+    <title>{{ $title ?? 'Início' }} — {{ $config->nome }}</title>
     <meta name="description" content="{{ $config->descricao_breve ?? $config->nome }}">
 
-    <!-- Aplica o tema salvo antes do CSS (evita flash) -->
-    <script>
-        (function(){
-            try {
-                var t = localStorage.getItem('ecommerce-theme');
-                if (t === 'dark') {
-                    document.documentElement.setAttribute('data-theme', 'dark');
-                    document.documentElement.setAttribute('data-bs-theme', 'dark');
-                }
-            } catch (e) {}
-        })();
-    </script>
+    <!-- Open Graph / Redes Sociais -->
+    <link rel="canonical" href="{{ url()->full() }}">
+    @php $ogImage = $config->logo_img ?: ($config->banner_img ?? null); @endphp
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ $config->nome }}">
+    <meta property="og:title" content="{{ $title ?? 'Início' }} — {{ $config->nome }}">
+    <meta property="og:description" content="{{ $config->descricao_breve ?? $config->nome }}">
+    @if($ogImage)
+        <meta property="og:image" content="{{ $ogImage }}">
+    @endif
+    <meta name="theme-color" content="#4f46e5">
 
-    <!-- Google Fonts: Roboto (fonte padrão do ERP) -->
+    <!-- Tipografia Moderna: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind CSS (CDN com configuração otimizada) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
     <!-- Remix Icons -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
-    <!-- noUISlider -->
-    <link type="text/css" rel="stylesheet" href="/ecommerce/css/nouislider.min.css"/>
+    <!-- Swiper.js CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
 
-    <!-- E-commerce Design System (ToolCraft Style) -->
-    <link type="text/css" rel="stylesheet" href="/ecommerce/css/ecommerce_modern.css?v={{ time() }}"/>
-    <link rel="stylesheet" type="text/css" href="/assets/css/toastr.min.css">
-
-    @yield('css')
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
 
     <style>
-        body.loading { overflow: hidden; }
-        body.loading .modal-loading { display: flex; }
-        .modal-loading {
-            display: none;
-            position: fixed; z-index: 10000; inset: 0;
-            background: rgba(243,243,248,0.82);
-            align-items: center; justify-content: center;
-        }
-        .modal-loading::after {
-            content: '';
-            width: 36px; height: 36px;
-            border: 3px solid rgba(99,121,195,0.25);
-            border-top-color: #6379c3;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        [x-cloak] { display: none !important; }
+        body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+        /* Estilos de customização da paginação do Swiper */
+        .swiper-pagination-bullet { background: rgba(255, 255, 255, 0.45); opacity: 1; transition: all 0.3s ease; }
+        .swiper-pagination-bullet-active { background: #ffffff !important; width: 28px !important; border-radius: 9999px !important; }
+        .swiper-pagination-bullet-active-main { background: #4f46e5 !important; }
+        /* Scrollbar elegante */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
+
+    @yield('css')
 </head>
-<body>
-
-<!-- ═══ ANNOUNCEMENT BAR ═══ -->
-<div class="announcement-bar" id="announcementBar">
-    🎉 Frete Grátis para compras acima de R$ 199 — Aproveite!
-    <button class="ann-close" onclick="document.getElementById('announcementBar').style.display='none'" aria-label="Fechar">✕</button>
-</div>
-
-<!-- ═══ TOP HEADER ═══ -->
-<div class="top-header">
-    <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <div class="d-flex align-items-center gap-3 flex-wrap">
-            @if($config->telefone)
-            <a href="tel:{{ $config->telefone }}" class="d-flex align-items-center gap-1">
-                <i class="ri-phone-line"></i> {{ $config->telefone }}
-            </a>
-            @endif
-            @if($config->email)
-            <a href="mailto:{{ $config->email }}" class="d-flex align-items-center gap-1">
-                <i class="ri-mail-line"></i> {{ $config->email }}
-            </a>
-            @endif
-            @if($config->endereco)
-            <span class="d-flex align-items-center gap-1" style="color:color-mix(in srgb, var(--luxe-tan) 55%, transparent)">
-                <i class="ri-map-pin-line"></i> {{ $config->endereco }}
-            </span>
-            @endif
-        </div>
-        <div class="d-flex align-items-center gap-3">
-            <a href="{{ route('loja.minha-conta', ['link='.$config->loja_id]) }}" class="d-flex align-items-center gap-1 fw-medium" style="color:var(--luxe-tan)">
-                <i class="ri-user-3-line"></i> Minha Conta
-            </a>
-        </div>
-    </div>
-</div>
-
-<!-- ═══ MAIN HEADER ═══ -->
-<header class="main-header" id="mainHeader">
-    <div class="container">
-        <div class="d-flex align-items-center gap-3 gap-md-4">
-
-            <!-- LOGO -->
-            <a href="{{ route('loja.index', ['link='.$config->loja_id]) }}" class="text-decoration-none flex-shrink-0">
-                @if($config->logo_img)
-                    <img src="{{ $config->logo_img }}" alt="{{ $config->nome }}" class="logo-img" style="max-height:42px;object-fit:contain;">
-                @else
-                    <div class="logo-brand">
-                        <div class="logo-icon">{{ strtoupper(substr($config->nome, 0, 1)) }}</div>
-                        <span>{{ strtoupper($config->nome) }}</span>
-                    </div>
-                @endif
-            </a>
-
-            <!-- NAV LINKS (desktop) -->
-            <nav class="d-none d-lg-block">
-                @php $cats = collect($categorias); @endphp
-                <ul class="main-nav">
-                    <li><a href="{{ route('loja.index', ['link='.$config->loja_id]) }}" class="{{ request()->routeIs('loja.index') ? 'active' : '' }}">Home</a></li>
-                    @foreach($cats->take(3) as $c)
-                    <li><a href="{{ route('loja.produtos-categoria', [$c->hash_ecommerce, 'link='.$config->loja_id]) }}">{{ $c->nome }}</a></li>
-                    @endforeach
-                    @if($cats->count() > 0)
-                    <li class="has-megamenu">
-                        <a href="#" class="mm-trigger">Categorias <i class="ri-arrow-down-s-line"></i></a>
-                        <div class="megamenu" id="megamenu">
-                            @foreach($cats as $c)
-                            <a href="{{ route('loja.produtos-categoria', [$c->hash_ecommerce, 'link='.$config->loja_id]) }}" class="mm-item">
-                                @if($c->img ?? false)
-                                <img src="{{ $c->img }}" alt="{{ $c->nome }}">
-                                @else
-                                <img src="/ecommerce/img/placeholder-cat.png" alt="{{ $c->nome }}" onerror="this.style.display='none'">
-                                @endif
-                                <span>
-                                    <span class="mm-name d-block">{{ $c->nome }}</span>
-                                    @if(isset($c->produtos_count))
-                                    <span class="mm-count">{{ $c->produtos_count }} produtos</span>
-                                    @endif
-                                </span>
-                            </a>
-                            @endforeach
-                            <div class="mm-all">
-                                <a href="{{ route('loja.pesquisa', ['link='.$config->loja_id]) }}" class="btn-link">
-                                    Ver todos os produtos <i class="ri-arrow-right-line"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </li>
-                    @endif
-                </ul>
-            </nav>
-
-            <!-- SEARCH BAR -->
-            <form method="get" action="{{ route('loja.pesquisa') }}" class="search-wrapper flex-grow-1 d-none d-md-block">
-                <input type="hidden" value="{{ $config->loja_id }}" name="link" id="ecommerce-loja-id">
-                <input
-                    id="search-input"
-                    autocomplete="off"
-                    class="search-input"
-                    placeholder="Buscar produtos..."
-                    name="pesquisa"
-                    @isset($pesquisa) value="{{ $pesquisa }}" @endif
-                >
-                <button class="search-btn" type="submit" aria-label="Buscar">
-                    <i class="ri-search-line"></i>
-                </button>
-                <div class="search-autocomplete" id="autocomplete-box"></div>
-            </form>
-
-            <!-- HEADER ACTIONS -->
-            <div class="d-flex align-items-center gap-1 flex-shrink-0 ms-auto ms-md-0">
-                <!-- Tema claro/escuro -->
-                <button class="header-icon" id="themeToggle" type="button" title="Alternar tema claro/escuro" aria-label="Alternar tema">
-                    <i class="ri-moon-line" id="themeIcon" style="font-size:18px"></i>
-                </button>
-
-                <!-- Conta -->
-                <a href="{{ route('loja.minha-conta', ['link='.$config->loja_id]) }}" class="header-icon d-none d-md-flex" title="Minha Conta">
-                    <i class="ri-user-3-line" style="font-size:18px"></i>
-                </a>
-
-                <!-- Carrinho -->
-                @isset($carrinho)
-                <div class="dropdown">
-                    <button class="header-icon" data-bs-toggle="dropdown" aria-expanded="false" title="Carrinho" type="button">
-                        <i class="ri-shopping-bag-3-line" style="font-size:18px"></i>
-                        @php $cartTotal = $carrinho != [] ? sizeof($carrinho->itens) : 0; @endphp
-                        @if($cartTotal > 0)
-                        <span class="badge-count">{{ $cartTotal }}</span>
-                        @endif
-                    </button>
-
-                    <div class="dropdown-menu dropdown-menu-end p-0 border-0 shadow-lg" style="width:320px;border-radius:14px;overflow:hidden" id="header-cart-dropdown">
-                        <div style="padding:16px 18px 12px;border-bottom:1px solid var(--border-light)">
-                            <span class="fw-playfair fw-bold" style="font-size:15px;color:var(--luxe-brown)">Meu Carrinho</span>
-                            <span class="text-gold fw-bold ms-2" style="font-size:12px">{{ $cartTotal }} {{ $cartTotal == 1 ? 'item' : 'itens' }}</span>
-                        </div>
-
-                        @if($carrinho != [] && sizeof($carrinho->itens) > 0)
-                        <div style="max-height:240px;overflow-y:auto;padding:12px 18px">
-                            @foreach($carrinho->itens as $ci)
-                            <div class="d-flex align-items-center gap-3 mb-3 pb-3" style="border-bottom:1px solid var(--border-light)">
-                                <div style="width:52px;height:52px;flex-shrink:0;border-radius:8px;overflow:hidden;background:var(--luxe-cream)">
-                                    <img src="{{ $ci->produto->img }}" style="width:100%;height:100%;object-fit:cover">
-                                </div>
-                                <div class="flex-grow-1" style="min-width:0">
-                                    <div class="text-truncate" style="font-size:12px;font-weight:500;color:var(--luxe-brown)">{{ $ci->produto->nome }}</div>
-                                    <div style="font-size:11px;color:color-mix(in srgb, var(--luxe-tan) 50%, transparent)">{{ number_format($ci->quantidade, 0) }}x R${{ __moeda($ci->valor_unitario) }}</div>
-                                </div>
-                                <span class="text-gold fw-bold" style="font-size:13px;flex-shrink:0">R${{ __moeda($ci->sub_total) }}</span>
-                            </div>
-                            @endforeach
-                        </div>
-                        <div style="padding:12px 18px;border-top:1px solid var(--border-light)">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span style="font-size:13px;color:var(--luxe-tan)">Total:</span>
-                                <strong style="font-size:16px;color:var(--luxe-brown)">R$ {{ __moeda($carrinho->valor_total) }}</strong>
-                            </div>
-                            <div class="d-grid gap-2">
-                                <a href="{{ route('loja.carrinho', ['link='.$config->loja_id]) }}" class="btn-buy outline text-center" style="border-radius:8px;padding:8px">Ver Carrinho</a>
-                                <a href="{{ route('loja.pagamento', ['link='.$config->loja_id]) }}" class="btn-buy text-center" style="border-radius:8px;padding:8px">Finalizar Compra</a>
-                            </div>
-                        </div>
-                        @else
-                        <div class="text-center py-5" style="color:color-mix(in srgb, var(--luxe-tan) 45%, transparent)">
-                            <i class="ri-shopping-bag-3-line" style="font-size:36px;display:block;margin-bottom:10px;color:var(--luxe-gold);opacity:0.5"></i>
-                            <span style="font-size:13px">Seu carrinho está vazio.</span>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-                @endif
-
-                <!-- Mobile menu -->
-                <button class="header-icon d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#mobileNav" aria-label="Menu">
-                    <i class="ri-menu-line" style="font-size:20px"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- MOBILE SEARCH + NAV -->
-        <div class="collapse d-md-none mt-3" id="mobileSearchCollapse">
-            <form method="get" action="{{ route('loja.pesquisa') }}" class="search-wrapper w-100">
-                <input type="hidden" value="{{ $config->loja_id }}" name="link">
-                <input class="search-input" placeholder="Buscar produtos..." name="pesquisa">
-                <button class="search-btn" type="submit"><i class="ri-search-line"></i></button>
-            </form>
-        </div>
-        <div class="collapse d-lg-none mt-2" id="mobileNav">
-            <nav class="py-2">
-                <ul class="list-unstyled m-0">
-                    <li><a href="{{ route('loja.index', ['link='.$config->loja_id]) }}" class="d-block py-2 px-3 rounded" style="color:var(--luxe-brown);font-size:14px;font-weight:500">Home</a></li>
-                    @foreach($categorias as $c)
-                    <li><a href="{{ route('loja.produtos-categoria', [$c->hash_ecommerce, 'link='.$config->loja_id]) }}" class="d-block py-2 px-3 rounded" style="color:var(--luxe-tan);font-size:14px">{{ $c->nome }}</a></li>
-                    @endforeach
-                    <li><a href="{{ route('loja.minha-conta', ['link='.$config->loja_id]) }}" class="d-block py-2 px-3 rounded" style="color:var(--luxe-tan);font-size:14px"><i class="ri-user-3-line me-1"></i>Minha Conta</a></li>
-                </ul>
-            </nav>
-        </div>
-    </div>
-</header>
-
-<!-- ═══ CONTENT ═══ -->
-<main>
-    @yield('content')
-</main>
-
-<!-- ═══ FOOTER ═══ -->
-<footer class="site-footer">
-    <div class="container">
-        <div class="row g-5">
-            <!-- Col 1: Brand -->
-            <div class="col-lg-3 col-md-6">
-                <div class="footer-brand">
-                    @if($config->logo_img)
-                        <img src="{{ $config->logo_img }}" alt="{{ $config->nome }}" style="max-height:32px;object-fit:contain;filter:brightness(10)">
-                    @else
-                        <div class="logo-icon">{{ strtoupper(substr($config->nome, 0, 1)) }}</div>
-                        <span>{{ strtoupper($config->nome) }}</span>
-                    @endif
-                </div>
-                @if($config->descricao_breve)
-                <p class="footer-desc">{{ $config->descricao_breve }}</p>
-                @else
-                <p class="footer-desc">Produtos selecionados com qualidade e preços justos para você.</p>
-                @endif
-                <div class="footer-social">
-                    @if($config->link_facebook)
-                    <a href="{{ $config->link_facebook }}" target="_blank" class="social-icon" title="Facebook"><i class="ri-facebook-fill"></i></a>
-                    @endif
-                    @if($config->link_instagram)
-                    <a href="{{ $config->link_instagram }}" target="_blank" class="social-icon" title="Instagram"><i class="ri-instagram-fill"></i></a>
-                    @endif
-                    @if($config->link_whatsapp)
-                    <a href="{{ $config->link_whatsapp }}" target="_blank" class="social-icon" title="WhatsApp"><i class="ri-whatsapp-fill"></i></a>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Col 2: Links Rápidos -->
-            <div class="col-lg-2 col-md-6">
-                @php $cats = collect($categorias); @endphp
-                <div class="footer-col-title">Links Rápidos</div>
-                <ul class="footer-links">
-                    <li><a href="{{ route('loja.index', ['link='.$config->loja_id]) }}">Home</a></li>
-                    @foreach($cats->take(5) as $c)
-                    <li><a href="{{ route('loja.produtos-categoria', [$c->hash_ecommerce, 'link='.$config->loja_id]) }}">{{ $c->nome }}</a></li>
-                    @endforeach
-                </ul>
-            </div>
-
-            <!-- Col 3: Atendimento -->
-            <div class="col-lg-3 col-md-6">
-                <div class="footer-col-title">Atendimento</div>
-                <ul class="footer-links">
-                    <li><a href="{{ route('loja.minha-conta', ['link='.$config->loja_id]) }}">Minha Conta</a></li>
-                    @if($config->politica_privacidade)
-                    <li><a href="{{ route('loja.politica-privacidade', ['link='.$config->loja_id]) }}">Política de Privacidade</a></li>
-                    @endif
-                    @if($config->link_whatsapp)
-                    <li><a href="{{ $config->link_whatsapp }}" target="_blank">Fale pelo WhatsApp</a></li>
-                    @endif
-                </ul>
-                @if($config->endereco)
-                <div class="footer-contact-item"><i class="ri-map-pin-2-line"></i> {{ $config->endereco }}</div>
-                @endif
-                @if($config->telefone)
-                <div class="footer-contact-item"><i class="ri-phone-line"></i> {{ $config->telefone }}</div>
-                @endif
-                @if($config->email)
-                <div class="footer-contact-item"><i class="ri-mail-line"></i> {{ $config->email }}</div>
-                @endif
-            </div>
-
-            <!-- Col 4: Newsletter -->
-            <div class="col-lg-4 col-md-6">
-                <div class="footer-col-title">Newsletter</div>
-                <p style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;margin-bottom:14px">
-                    Cadastre-se e receba novidades, promoções exclusivas e ofertas especiais diretamente no seu e-mail.
-                </p>
-                <div class="footer-newsletter-input-wrap">
-                    <input type="email" name="email" class="footer-newsletter-input" placeholder="Seu e-mail">
-                    <button class="footer-newsletter-btn" type="button" title="Inscrever"><i class="ri-arrow-right-line"></i></button>
-                </div>
-                <div style="margin-top:20px;display:flex;gap:10px;align-items:center;opacity:0.4">
-                    <i class="ri-visa-fill" style="font-size:24px;color:#fff"></i>
-                    <i class="ri-mastercard-fill" style="font-size:24px;color:#fff"></i>
-                    <i class="ri-secure-payment-line" style="font-size:20px;color:#fff"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        <div class="container">
-            &copy; {{ date('Y') }} {{ $config->nome }}. Todos os direitos reservados.
-        </div>
-    </div>
-</footer>
-
-<!-- ═══ WHATSAPP FLOATING ═══ -->
-@if($config->link_whatsapp || $config->telefone)
-    @php
-        $waLink = $config->link_whatsapp ?: 'https://wa.me/' . preg_replace('/\D/', '', $config->telefone);
-    @endphp
-    <a href="{{ $waLink }}" target="_blank" class="whatsapp-float" title="Fale conosco no WhatsApp">
-        <i class="ri-whatsapp-fill"></i>
-    </a>
-@endif
-
-<div class="modal-loading"></div>
-
-<!-- ═══ BOTTOM NAVIGATION (MOBILE) ═══ -->
-@php
-    $bnCart = (isset($carrinho) && $carrinho != []) ? sizeof($carrinho->itens) : 0;
-    $bnRoute = request()->route() ? request()->route()->getName() : '';
-@endphp
-<nav class="bottom-nav">
-    <a href="{{ route('loja.index', ['link='.$config->loja_id]) }}" class="bn-item {{ $bnRoute == 'loja.index' ? 'active' : '' }}">
-        <i class="ri-home-4-line"></i> Início
-    </a>
-    <a href="{{ route('loja.pesquisa', ['link='.$config->loja_id]) }}" class="bn-item {{ $bnRoute == 'loja.pesquisa' ? 'active' : '' }}">
-        <i class="ri-search-line"></i> Buscar
-    </a>
-    <a href="{{ route('loja.carrinho', ['link='.$config->loja_id]) }}" class="bn-item {{ $bnRoute == 'loja.carrinho' ? 'active' : '' }}">
-        <i class="ri-shopping-bag-3-line"></i> Carrinho
-        @if($bnCart > 0)
-        <span class="bn-badge">{{ $bnCart }}</span>
+<body class="min-h-full flex flex-col bg-slate-50/50 text-slate-800 antialiased selection:bg-indigo-500 selection:text-white"
+      x-data="{
+        toast: { show: false, message: '', type: 'success' },
+        showToast(msg, type = 'success') {
+            this.toast.message = msg;
+            this.toast.type = type;
+            this.toast.show = true;
+            setTimeout(() => { this.toast.show = false; }, 4000);
+        }
+      }"
+      @show-toast.window="showToast($event.detail.message, $event.detail.type || 'success')"
+      x-init="
+        @if(session('flash_success'))
+            showToast('{{ addslashes(session('flash_success')) }}', 'success');
+        @elseif(session('flash_error'))
+            showToast('{{ addslashes(session('flash_error')) }}', 'error');
+        @elseif(session('flash_warning'))
+            showToast('{{ addslashes(session('flash_warning')) }}', 'warning');
         @endif
-    </a>
-    <a href="{{ route('loja.minha-conta', ['link='.$config->loja_id]) }}" class="bn-item {{ $bnRoute == 'loja.minha-conta' ? 'active' : '' }}">
-        <i class="ri-user-3-line"></i> Conta
-    </a>
-</nav>
+      ">
 
-<!-- ═══ SCRIPTS ═══ -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="/ecommerce/js/jquery.min.js"></script>
-<script src="/ecommerce/js/nouislider.min.js"></script>
-<script src="/assets/js/toastr.min.js"></script>
-<script src="/assets/vendor/jquery-mask-plugin/jquery.mask.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Notificação Flutuante (Toast Global) -->
+    <div x-show="toast.show"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 translate-y-3"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 translate-y-3"
+         class="fixed bottom-6 right-6 z-50 max-w-sm rounded-2xl p-4 shadow-2xl flex items-center gap-3 border text-sm font-semibold"
+         :class="{
+            'bg-emerald-600 text-white border-emerald-500 shadow-emerald-600/20': toast.type === 'success',
+            'bg-rose-600 text-white border-rose-500 shadow-rose-600/20': toast.type === 'error',
+            'bg-amber-500 text-slate-900 border-amber-400 shadow-amber-500/20': toast.type === 'warning'
+         }"
+         style="display: none;">
+        <i :class="{
+            'ri-checkbox-circle-fill text-xl': toast.type === 'success',
+            'ri-error-warning-fill text-xl': toast.type === 'error',
+            'ri-alert-fill text-xl': toast.type === 'warning'
+        }"></i>
+        <span x-text="toast.message" class="flex-1"></span>
+        <button type="button" @click="toast.show = false" class="opacity-70 hover:opacity-100">
+            <i class="ri-close-line text-lg"></i>
+        </button>
+    </div>
 
-<script>
-    // ── Toggle tema claro/escuro ──
-    (function(){
-        var root = document.documentElement;
-        var icon = document.getElementById('themeIcon');
+    <!-- 1. Topbar Promocional -->
+    <x-loja.topbar :config="$config" />
 
-        function apply(theme){
-            try {
-                if (theme === 'dark') {
-                    root.setAttribute('data-theme', 'dark');
-                    root.setAttribute('data-bs-theme', 'dark');
-                    if (icon) icon.className = 'ri-sun-line';
-                } else {
-                    root.removeAttribute('data-theme');
-                    root.removeAttribute('data-bs-theme');
-                    if (icon) icon.className = 'ri-moon-line';
-                }
-                localStorage.setItem('ecommerce-theme', theme);
-            } catch (e) {}
-        }
+    <!-- 2. Header Principal -->
+    <x-loja.header :config="$config" :categorias="$categorias ?? []" :carrinho="$carrinho ?? $item ?? null" />
 
-        var btn = document.getElementById('themeToggle');
-        if (btn) {
-            btn.addEventListener('click', function(){
-                apply(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-            });
-        }
+    <!-- 3. Conteúdo da Página -->
+    <main class="flex-1">
+        @yield('content')
+    </main>
 
-        // Sincroniza o ícone com o tema já aplicado
-        if (root.getAttribute('data-theme') === 'dark' && icon) icon.className = 'ri-sun-line';
-    })();
+    <!-- 4. Carrinho Lateral Deslizante (Cart Drawer) -->
+    <x-loja.cart-drawer :config="$config" :carrinho="$carrinho ?? $item ?? null" />
 
-    // ── Megamenu (Categorias) ──
-    (function(){
-        var trigger = document.querySelector('.mm-trigger');
-        var menu = document.getElementById('megamenu');
-        var item = document.querySelector('.has-megamenu');
-        if (!trigger || !menu || !item) return;
+    <!-- 5. Rodapé Institucional -->
+    <x-loja.footer :config="$config" :categorias="$categorias ?? []" />
 
-        function open(){ menu.classList.add('open'); }
-        function close(){ menu.classList.remove('open'); }
+    <!-- Scripts Globais: Swiper.js & Utilitários de Máscaras -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
-        item.addEventListener('mouseenter', open);
-        item.addEventListener('mouseleave', close);
-        trigger.addEventListener('click', function(e){
-            e.preventDefault();
-            menu.classList.toggle('open');
-        });
-        document.addEventListener('click', function(e){
-            if (!item.contains(e.target)) close();
-        });
-    })();
-
-    // ── Header scroll effect ──
-    window.addEventListener('scroll', function() {
-        const h = document.getElementById('mainHeader');
-        if (h) h.classList.toggle('scrolled', window.scrollY > 50);
-    }, { passive: true });
-
-    // ── Flash messages ──
-    @if(session()->has('flash_success'))
-        toastr.success('{{ session()->get('flash_success') }}');
-    @endif
-    @if(session()->has('flash_error'))
-        toastr.error('{{ session()->get('flash_error') }}');
-    @endif
-
-    const path_url = window.location.protocol + "//" + window.location.host + "/";
-
-    // ── AJAX loader ──
-    $(document).on({
-        ajaxStart: () => $("body").addClass("loading"),
-        ajaxStop:  () => $("body").removeClass("loading")
-    });
-
-    // ── Helpers de moeda ──
-    function convertMoedaToFloat(v) {
-        if (!v) return 0;
-        return parseFloat(v.replaceAll(".", "").replaceAll(",", ".").replace(/[^0-9\.]+/g, ""));
-    }
-    function convertFloatToMoeda(v) {
-        return parseFloat(v).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    // ── Auto-complete Search ──
-    $(function() {
-        var timer = null;
-        var lojaId = $("#ecommerce-loja-id").val();
-
-        $("#search-input").on("input", function() {
-            var q = $(this).val().trim();
-            clearTimeout(timer);
-            if (q.length < 3) { $("#autocomplete-box").removeClass("active").html(""); return; }
-
-            timer = setTimeout(function() {
-                $.get(path_url + "loja-pesquisa-autocomplete", { pesquisa: q, loja_id: lojaId })
-                .done(function(data) {
-                    var html = "";
-                    if (data.length > 0) {
-                        data.forEach(function(item) {
-                            html += `<a class="autocomplete-item" href="/produto-ecommerce-detalhe/${item.hash_ecommerce}?link=${lojaId}">
-                                <img src="${item.img}" alt="${item.nome}">
-                                <div>
-                                    <div class="ac-name">${item.nome}</div>
-                                    <div class="ac-price">R$ ${convertFloatToMoeda(item.valor)}</div>
-                                </div>
-                            </a>`;
-                        });
-                    } else {
-                        html = '<div style="padding:14px;text-align:center;font-size:13px;color:color-mix(in srgb, var(--luxe-tan) 50%, transparent)">Nenhum produto encontrado.</div>';
+    <script>
+        // Inicialização global do Swiper do Hero (quando presente na página)
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.querySelector('.hero-swiper')) {
+                new Swiper('.hero-swiper', {
+                    loop: true,
+                    speed: 700,
+                    autoplay: {
+                        delay: 6000,
+                        disableOnInteraction: false,
+                        pauseOnMouseEnter: true
+                    },
+                    grabCursor: true,
+                    effect: 'fade',
+                    fadeEffect: { crossFade: true },
+                    pagination: {
+                        el: '.swiper-pagination',
+                        clickable: true
+                    },
+                    navigation: {
+                        nextEl: '.swiper-button-next',
+                        prevEl: '.swiper-button-prev'
                     }
-                    $("#autocomplete-box").html(html).addClass("active");
                 });
-            }, 280);
-        });
-
-        $(document).on("click", function(e) {
-            if (!$(e.target).closest(".search-wrapper").length) {
-                $("#autocomplete-box").removeClass("active");
             }
         });
-    });
 
-    // ── Scroll Reveal ──
-    (function() {
-        const els = document.querySelectorAll('.reveal');
-        const io = new IntersectionObserver((entries) => {
-            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
-        }, { threshold: 0.1 });
-        els.forEach(el => io.observe(el));
-    })();
+        // Máscaras de entrada limpas sem jQuery
+        function maskCpfCnpj(input) {
+            let v = input.value.replace(/\D/g, '');
+            if (v.length <= 11) {
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            } else {
+                v = v.slice(0, 14);
+                v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+                v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                v = v.replace(/(\d{4})(\d)/, '$1-$2');
+            }
+            input.value = v;
+        }
 
-    // ── Masks ──
-    var cpfMask = function(v) { return v.replace(/\D/g,"").length > 11 ? "00.000.000/0000-00" : "000.000.000-009"; };
-    $(document).on("focus", ".cpf_cnpj", function() {
-        $(this).mask(cpfMask, { onKeyPress: function(v,e,f,o){ f.mask(cpfMask.apply({},arguments),o); } });
-    });
-</script>
+        function maskCep(input) {
+            let v = input.value.replace(/\D/g, '').slice(0, 8);
+            if (v.length > 5) v = v.replace(/^(\d{5})(\d)/, '$1-$2');
+            input.value = v;
+        }
 
-@yield('js')
+        function maskPhone(input) {
+            let v = input.value.replace(/\D/g, '').slice(0, 11);
+            if (v.length > 10) {
+                v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+            } else if (v.length > 5) {
+                v = v.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+            } else if (v.length > 2) {
+                v = v.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
+            }
+            input.value = v;
+        }
+    </script>
 
+    @stack('scripts')
+    @yield('js')
 </body>
 </html>

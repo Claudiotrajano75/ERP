@@ -39,13 +39,15 @@ class UploadUtil
     public function unlinkImage($item, $dir, $attr = 'image')
     {
         if (isset($item->imagem)) {
-            if (file_exists(public_path('uploads') . $dir . "/$item->imagem") && $item->imagem != "") {
-                unlink(public_path('uploads') . $dir . "/$item->imagem");
+            $path = public_path('uploads') . $dir . "/$item->imagem";
+            if (!empty($item->imagem) && is_file($path)) {
+                @unlink($path);
             }
         } else {
-            $fileName = $item[$attr];
-            if (file_exists(public_path('uploads') . $dir . "/$fileName") && $fileName != "") {
-                unlink(public_path('uploads') . $dir . "/$fileName");
+            $fileName = is_array($item) ? ($item[$attr] ?? null) : ($item->{$attr} ?? null);
+            $path = public_path('uploads') . $dir . "/$fileName";
+            if (!empty($fileName) && is_file($path)) {
+                @unlink($path);
             }
         }
     }

@@ -154,34 +154,47 @@ class PrintController extends Controller
     }
 
     /**
-     * Imprime cupom de pre-venda na impressora termica
+     * Imprime cupom de pre-venda na impressora termica (Nativo ESC/POS idêntico ao PDV)
      */
     public function imprimirPreVenda($id)
     {
         try {
-            $item = \App\Models\PreVenda::with(['itens.produto', 'cliente'])->findOrFail($id);
-            $config = Empresa::with('cidade')->where('id', $item->empresa_id)->first();
+            $item = \App\Models\PreVenda::with(['itens.produto', 'cliente', 'fatura', 'vendedor'])
+                ->where(function($q) use ($id) {
+                    $q->where('id', $id)
+                      ->orWhere('codigo', $id);
+                })
+                ->firstOrFail();
+
             $configGeral = ConfigGeral::where('empresa_id', $item->empresa_id)->first();
 
             if (!$configGeral || !$configGeral->isPrinterConfigured()) {
                 return response()->json([
                     'success' => false,
                     'use_pdf' => true,
-                    'message' => 'Impressora nao configurada. Use o PDF.'
+                    'url'     => route('pre-venda.imprimir', ['codigo' => $item->codigo]),
+                    'message' => 'Impressora não configurada. Abrindo comprovante PDF...'
                 ]);
             }
 
-            $html = view('pre_venda.cupom', compact('item', 'config'))->render();
-            $texto = $this->printService->htmlToText($html);
-            $textoFormatado = $this->printService->formatarEscPos($texto);
-            $resultado = $this->printService->imprimir($textoFormatado, $configGeral);
+            // Modo USB: Abre cupom térmico no navegador para impressão via spooler local
+            if ($configGeral->isPrinterUsb()) {
+                return response()->json([
+                    'success' => true,
+                    'is_usb'  => true,
+                    'url'     => route('pre-venda.imprimir', ['codigo' => $item->codigo]),
+                    'message' => 'Abrindo comprovante da pré-venda (USB)...'
+                ]);
+            }
+
+            $resultado = $this->printService->imprimirPreVendaNaoFiscal($item, $configGeral);
 
             return response()->json($resultado);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao gerar cupom de pre-venda: ' . $e->getMessage()
+                'message' => 'Erro ao gerar cupom de pré-venda: ' . $e->getMessage()
             ], 500);
         }
     }

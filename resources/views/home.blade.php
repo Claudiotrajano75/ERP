@@ -193,7 +193,7 @@
 
     @section('content')
         <div class="mt-2">
-            <div class="row">
+            <div class="dashboard-wrapper">
 
                 @if(__isAdmin())
                 <div class="dashboard-head d-flex flex-wrap align-items-end justify-content-between gap-3">

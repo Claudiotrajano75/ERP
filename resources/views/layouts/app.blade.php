@@ -33,8 +33,8 @@
     <link href="/assets/css/app.css" rel="stylesheet" type="text/css" id="app-style" />
     <link href="/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" type="text/css" href="/assets/css/toastr.min.css">
-    <link rel="stylesheet" type="text/css" href="/css/style.css">
-    <link rel="stylesheet" type="text/css" href="/css/dashboard-skin.css">
+    <link rel="stylesheet" type="text/css" href="/css/style.css?v={{ time() }}">
+    <link rel="stylesheet" type="text/css" href="/css/dashboard-skin.css?v={{ time() }}">
 
     {{-- <link href="/bs5-tour/css/bs5-intro-tour.css" rel="stylesheet" /> --}}
 
@@ -43,6 +43,85 @@
     @yield('css')
 
     <style>
+        /* Regras Críticas de Responsividade Mobile */
+        @media (max-width: 991.98px) {
+            html, body {
+                overflow-x: hidden !important;
+                max-width: 100vw !important;
+                width: 100% !important;
+            }
+            .wrapper {
+                overflow-x: hidden !important;
+                max-width: 100vw !important;
+                width: 100% !important;
+            }
+            .content-page {
+                margin-left: 0 !important;
+                width: 100% !important;
+                max-width: 100vw !important;
+                min-width: 0 !important;
+                padding: 0 !important;
+                overflow-x: hidden !important;
+            }
+            .content-page .content {
+                padding: 0 10px 40px !important;
+                max-width: 100vw !important;
+                box-sizing: border-box !important;
+            }
+            .leftside-menu {
+                position: fixed !important;
+                top: 0 !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                width: 285px !important;
+                max-width: 85vw !important;
+                z-index: 1060 !important;
+                transform: translateX(-105%) !important;
+                margin-left: 0 !important;
+                visibility: hidden !important;
+                transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.28s !important;
+                box-shadow: none !important;
+                background: #ffffff !important;
+            }
+            html.sidebar-enable .leftside-menu,
+            body.sidebar-enable .leftside-menu {
+                transform: translateX(0) !important;
+                visibility: visible !important;
+                box-shadow: 0 0 50px rgba(15, 23, 42, 0.45) !important;
+            }
+            .button-close-fullsidebar {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                position: absolute !important;
+                top: 16px !important;
+                right: 14px !important;
+                z-index: 1070 !important;
+                width: 36px !important;
+                height: 36px !important;
+                border-radius: 50% !important;
+                background: #f1f5f9 !important;
+                color: #475569 !important;
+                cursor: pointer !important;
+                font-size: 20px !important;
+            }
+            .navbar-custom {
+                left: 0 !important;
+                margin-left: 0 !important;
+                width: 100% !important;
+                max-width: 100vw !important;
+                padding: 0 8px !important;
+            }
+            .navbar-custom .logo-topbar a.logo-light,
+            .navbar-custom .logo-topbar .logo-sm {
+                display: none !important;
+            }
+            .navbar-custom .logo-topbar a.logo-dark {
+                display: inline-flex !important;
+                align-items: center !important;
+            }
+        }
+
         /* Ajuste do tamanho da logo no sidebar esquerdo */
         .leftside-menu .logo {
             height: 80px !important;
@@ -329,20 +408,20 @@
                     <div class="d-flex align-items-center gap-2 ms-auto">
                         @if (Auth::user()->empresa && !__isContador())
                             @if(Auth::user()->empresa->empresa->ambiente == 2)
-                                <span class="env-chip env-homolog"><i class="ri-circle-fill"></i> HOMOLOGAÇÃO</span>
+                                <span class="env-chip env-homolog d-none d-lg-inline-flex"><i class="ri-circle-fill"></i> HOMOLOGAÇÃO</span>
                             @else
-                                <span class="env-chip env-prod"><i class="ri-circle-fill"></i> PRODUÇÃO</span>
+                                <span class="env-chip env-prod d-none d-lg-inline-flex"><i class="ri-circle-fill"></i> PRODUÇÃO</span>
                             @endif
                         @endif
 
                         @if (Auth::user()->empresa && Auth::user()->empresa->empresa->plano)
-                            <span class="plan-chip">
+                            <span class="plan-chip d-none d-lg-inline-flex">
                                 <i class="ri-vip-crown-2-fill"></i>
                                 <strong>{{ Auth::user()->empresa->empresa->plano->plano->nome }}</strong>
                                 <small>(Expira: {{ __data_pt(Auth::user()->empresa->empresa->plano->data_expiracao, 0) }})</small>
                             </span>
 
-                            <a href="{{ route('upgrade.index') }}" class="btn-top top-upgrade"><i class="ri-arrow-up-circle-line"></i> Upgrade</a>
+                            <a href="{{ route('upgrade.index') }}" class="btn-top top-upgrade d-none d-lg-inline-flex"><i class="ri-arrow-up-circle-line"></i> Upgrade</a>
 
                             <button type="button" class="btn-top top-tour d-none" id="click-tour" style="display: none !important;"><i class="ri-compass-3-line"></i> Tour</button>
 
@@ -350,15 +429,15 @@
                                 @can('pdv_create')
                                     <a href="{{ route('frontbox.create') }}" class="btn-top-pdv-modern" title="Abrir Frente de Caixa PDV">
                                         <span class="pdv-icon-badge"><i class="ri-shopping-cart-2-fill"></i></span>
-                                        <span class="pdv-text">PDV · Frente de Caixa</span>
-                                        <i class="ri-arrow-right-s-line pdv-arrow"></i>
+                                        <span class="pdv-text d-none d-lg-inline">PDV · Frente de Caixa</span>
+                                        <i class="ri-arrow-right-s-line pdv-arrow d-none d-lg-inline"></i>
                                     </a>
                                 @endcan
                             @endif
                         @endif
 
                         <!-- Botão Central de Ajuda Visível para Todas as Empresas -->
-                        <a href="{{ route('central-ajuda.index') }}" class="btn-top-central-ajuda" title="Central de Ajuda · Vídeos Tutoriais">
+                        <a href="{{ route('central-ajuda.index') }}" class="btn-top-central-ajuda d-none d-lg-inline-flex" title="Central de Ajuda · Vídeos Tutoriais">
                             <span class="ajuda-icon-badge"><i class="ri-video-chat-line"></i></span>
                             <span class="ajuda-text">Central de Ajuda</span>
                         </a>

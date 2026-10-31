@@ -234,7 +234,7 @@
 
                 <!-- KPI Cards -->
                 <div class="row g-3">
-                    <div class="col-6 col-xl-3">
+                    <div class="col-12 col-sm-6 col-xl-3">
                         <div class="kpi-card kpi-indigo">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
@@ -249,7 +249,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-6 col-xl-3">
+                    <div class="col-12 col-sm-6 col-xl-3">
                         <div class="kpi-card kpi-green">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
@@ -264,7 +264,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-6 col-xl-3">
+                    <div class="col-12 col-sm-6 col-xl-3">
                         <div class="kpi-card kpi-red">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
@@ -279,7 +279,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-6 col-xl-3">
+                    <div class="col-12 col-sm-6 col-xl-3">
                         <div class="kpi-card kpi-blue">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
@@ -347,16 +347,16 @@
                                     <span class="badge bg-primary-subtle text-primary"><i class="ri-arrow-up-line me-1"></i>{{ $mes }}</span>
                                 </div>
                                 <div class="row g-2">
-                                    <div class="col-6">
+                                    <div class="col-12 col-sm-6">
                                         <div class="p-3 rounded-3" style="background:#eef0ff;">
                                              <div class="fs-12 text-muted fw-semibold">Total de {{ $mes }}</div>
                                             <div class="fs-4 fw-bold" style="color:var(--skin-text);">R$ {{ __moeda($totalVendasMes) }}</div>
                                         </div>
                                     </div>
                                     @foreach($somaVendasMesesAnteriores as $key => $s)
-                                    <div class="col-6">
+                                    <div class="col-12 col-sm-6">
                                         <div class="p-3 rounded-3" style="background:#f8fafc;border:1px solid var(--skin-border);">
-                                            <div class="fs-12 text-muted fw-semibold">{{ $key }}</div>
+                                             <div class="fs-12 text-muted fw-semibold">{{ $key }}</div>
                                             <div class="fs-4 fw-bold" style="color:var(--skin-text);">R$ {{ __moeda($s) }}</div>
                                         </div>
                                     </div>
@@ -373,7 +373,7 @@
                                     <span class="fs-12 text-muted">Volume do mês</span>
                                 </div>
                                 <div class="row g-2 mb-3">
-                                    <div class="col-6">
+                                    <div class="col-12 col-sm-6">
                                         <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background:#f8fafc;border:1px solid var(--skin-border);">
                                             <div class="kpi-icon" style="width:38px;height:38px;font-size:18px;background:#eef0ff;color:#4f46e5;"><i class="ri-file-list-3-line"></i></div>
                                             <div>
@@ -382,7 +382,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-6">
+                                    <div class="col-12 col-sm-6">
                                         <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background:#f8fafc;border:1px solid var(--skin-border);">
                                             <div class="kpi-icon" style="width:38px;height:38px;font-size:18px;background:#dcfce7;color:#16a34a;"><i class="ri-focus-3-line"></i></div>
                                             <div>

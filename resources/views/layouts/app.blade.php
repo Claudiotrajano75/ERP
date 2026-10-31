@@ -64,26 +64,34 @@
             transform: translate(-50%, -50%) !important;
         }
 
-        /* Ajuste do tamanho da logo no topbar (mobile/detached) */
-        .navbar-custom .logo-topbar {
-            height: 70px !important;
-            line-height: 70px !important;
-            padding: 0 !important;
-            width: 220px !important;
-            background: #fff !important;
-            position: relative !important;
+        /* Ajuste do tamanho da logo no topbar (desktop vs mobile) */
+        @media (min-width: 992px) {
+            .navbar-custom .logo-topbar {
+                display: none !important;
+            }
         }
+        @media (max-width: 991.98px) {
+            .navbar-custom .logo-topbar {
+                height: 48px !important;
+                line-height: 48px !important;
+                padding: 0 4px !important;
+                width: auto !important;
+                max-width: 130px !important;
+                background: transparent !important;
+                position: relative !important;
+                display: inline-flex !important;
+                align-items: center !important;
+            }
 
-        .navbar-custom .logo-topbar img {
-            height: auto !important;
-            max-height: 55px !important;
-            width: auto !important;
-            max-width: 90% !important;
-            object-fit: contain !important;
-            position: absolute !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
+            .navbar-custom .logo-topbar img {
+                height: auto !important;
+                max-height: 38px !important;
+                width: auto !important;
+                max-width: 100% !important;
+                object-fit: contain !important;
+                position: static !important;
+                transform: none !important;
+            }
         }
 
         /* ─── Efeito Moderno & Deslocamento nos Sub-menus da Sidebar ─── */
@@ -2234,6 +2242,9 @@
             </div>
         </div>
 
+        <!-- Backdrop Mobile da Sidebar -->
+        <div id="sidebar-backdrop"></div>
+
         <div class="content-page">
             <div class="content">
                 <div class="container-fluid">
@@ -2405,10 +2416,40 @@
                 toastr.warning('{{ session()->get('flash_warning') }}');
             @endif
 
-            @if (!Auth::user()->sidebar_active)
+            // Controle responsivo da sidebar para mobile vs desktop
+            function applyResponsiveSidebar() {
+                var isMobile = window.innerWidth <= 991.98;
+                if (isMobile) {
+                    $('html').attr('data-sidenav-size', 'full');
+                } else {
+                    @if (!Auth::user()->sidebar_active)
+                        $('html').attr('data-sidenav-size', 'condensed');
+                    @else
+                        if ($('html').attr('data-sidenav-size') === 'full') {
+                            $('html').attr('data-sidenav-size', 'default');
+                        }
+                    @endif
+                }
+            }
+            applyResponsiveSidebar();
+            $(window).on('resize', applyResponsiveSidebar);
 
-                $(html).attr('data-sidenav-size', 'condensed')
-            @endif
+            // Fechamento da sidebar mobile ao clicar no backdrop ou botão de fechar
+            $(document).on('click', '#sidebar-backdrop, .button-close-fullsidebar', function() {
+                $('html, body').removeClass('sidebar-enable');
+                var customBackdrop = document.getElementById('custom-backdrop');
+                if (customBackdrop) {
+                    customBackdrop.remove();
+                    document.body.style.overflow = null;
+                }
+            });
+
+            // Toggle seguro no mobile ao clicar no botão hambúrguer
+            $(document).on('click', '.button-toggle-menu', function(e) {
+                if (window.innerWidth <= 991.98) {
+                    $('html, body').toggleClass('sidebar-enable');
+                }
+            });
 
             function hideLoader() {
                 setTimeout(() => {

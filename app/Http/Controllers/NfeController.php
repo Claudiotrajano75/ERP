@@ -240,11 +240,19 @@ class NfeController extends Controller
         __validaObjetoEmpresa($item);
 
         $empresa = $item->empresa;
-        if (file_exists(public_path('xml_nfe/') . $item->chave . '.xml')) {
-            $xml = file_get_contents(public_path('xml_nfe/') . $item->chave . '.xml');
+        $xml = null;
 
+        if (!empty($item->chave) && file_exists(public_path('xml_nfe/') . $item->chave . '.xml')) {
+            $xml = file_get_contents(public_path('xml_nfe/') . $item->chave . '.xml');
+        } elseif (!empty($item->chave_importada) && file_exists(public_path('xml_entrada/') . $item->chave_importada . '.xml')) {
+            $xml = file_get_contents(public_path('xml_entrada/') . $item->chave_importada . '.xml');
+        } elseif (!empty($item->chave_importada) && file_exists(public_path('xml_dfe/') . $item->chave_importada . '.xml')) {
+            $xml = file_get_contents(public_path('xml_dfe/') . $item->chave_importada . '.xml');
+        }
+
+        if ($xml) {
             $danfe = new Danfe($xml);
-            if($empresa->logo){
+            if($empresa && $empresa->logo){
                 $logoPath = public_path('/uploads/logos/') . $empresa->logo;
                 if(file_exists($logoPath)){
                     $logo = 'data://text/plain;base64,'. base64_encode(file_get_contents($logoPath));
@@ -265,6 +273,14 @@ class NfeController extends Controller
     {
         $item = Nfe::findOrFail($id);
         __validaObjetoEmpresa($item);
+
+        if (!empty($item->chave_importada)) {
+            if (file_exists(public_path('xml_entrada/') . $item->chave_importada . '.xml')) {
+                return response()->download(public_path('xml_entrada/') . $item->chave_importada . '.xml');
+            } elseif (file_exists(public_path('xml_dfe/') . $item->chave_importada . '.xml')) {
+                return response()->download(public_path('xml_dfe/') . $item->chave_importada . '.xml');
+            }
+        }
 
         if($item->estado == 'aprovado'){
             if (file_exists(public_path('xml_nfe/') . $item->chave . '.xml')) {

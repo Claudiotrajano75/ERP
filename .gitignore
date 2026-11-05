@@ -79,3 +79,8 @@ nul
 /public/zips/*
 /public/extract/*
 /public/barcode/*
+
+# Dumps e Backups de Banco de Dados
+/backups/*
+!/backups/.gitkeep
+*.sql

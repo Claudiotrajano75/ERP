@@ -68,9 +68,15 @@ class NfeEntradaXmlController extends Controller
         $zip_file = public_path('zips') . '/xml-'.$doc.'.zip';
         $zip->open($zip_file, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
         foreach($data as $item){
-            if (file_exists(public_path('xml_nfe/') . $item->chave . '.xml')) {
+            if (!empty($item->chave) && file_exists(public_path('xml_nfe/') . $item->chave . '.xml')) {
                 $filename = public_path('xml_nfe/') . $item->chave . '.xml';
                 $zip->addFile($filename, $item->chave . '.xml');
+            } elseif (!empty($item->chave_importada) && file_exists(public_path('xml_entrada/') . $item->chave_importada . '.xml')) {
+                $filename = public_path('xml_entrada/') . $item->chave_importada . '.xml';
+                $zip->addFile($filename, $item->chave_importada . '.xml');
+            } elseif (!empty($item->chave_importada) && file_exists(public_path('xml_dfe/') . $item->chave_importada . '.xml')) {
+                $filename = public_path('xml_dfe/') . $item->chave_importada . '.xml';
+                $zip->addFile($filename, $item->chave_importada . '.xml');
             }
         }
 
@@ -105,9 +111,15 @@ class NfeEntradaXmlController extends Controller
         $zip_file = public_path('zips') . '/xml-'.$doc.'.zip';
         $zip->open($zip_file, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
         foreach($data as $item){
-            if (file_exists(public_path('xml_nfe/') . $item->chave . '.xml')) {
+            if (!empty($item->chave) && file_exists(public_path('xml_nfe/') . $item->chave . '.xml')) {
                 $filename = public_path('xml_nfe/') . $item->chave . '.xml';
                 $zip->addFile($filename, $item->chave . '.xml');
+            } elseif (!empty($item->chave_importada) && file_exists(public_path('xml_entrada/') . $item->chave_importada . '.xml')) {
+                $filename = public_path('xml_entrada/') . $item->chave_importada . '.xml';
+                $zip->addFile($filename, $item->chave_importada . '.xml');
+            } elseif (!empty($item->chave_importada) && file_exists(public_path('xml_dfe/') . $item->chave_importada . '.xml')) {
+                $filename = public_path('xml_dfe/') . $item->chave_importada . '.xml';
+                $zip->addFile($filename, $item->chave_importada . '.xml');
             }
         }
 

@@ -641,7 +641,7 @@
                                                         <ul class="dropdown-menu dropdown-menu-end action-dropdown-card shadow-lg">
                                                             
                                                             {{-- Imprimir DANFE --}}
-                                                            @if($item->estado == 'aprovado')
+                                                            @if($item->estado == 'aprovado' || !empty($item->chave_importada))
                                                             <li>
                                                                 <a class="dropdown-item action-menu-item" target="_blank" href="{{ route('nfe.imprimir', [$item->id]) }}">
                                                                     <div class="action-item-icon icon-primary">
@@ -654,6 +654,19 @@
                                                                 </a>
                                                             </li>
                                                             @endif
+
+                                                            {{-- Baixar XML --}}
+                                                            <li>
+                                                                <a class="dropdown-item action-menu-item" href="{{ route('nfe.download-xml', [$item->id]) }}">
+                                                                    <div class="action-item-icon icon-purple">
+                                                                        <i class="ri-file-download-line"></i>
+                                                                    </div>
+                                                                    <div class="action-item-content">
+                                                                        <span class="action-item-title">Baixar XML</span>
+                                                                        <span class="action-item-desc">Download do arquivo XML</span>
+                                                                    </div>
+                                                                </a>
+                                                            </li>
 
                                                             {{-- Pedido de Compra --}}
                                                             <li>
@@ -668,8 +681,8 @@
                                                                 </a>
                                                             </li>
 
-                                                            {{-- Transmitir ao SEFAZ --}}
-                                                            @if($item->estado == 'novo' || $item->estado == 'rejeitado')
+                                                            {{-- Transmitir ao SEFAZ (Apenas para emissão própria de entrada, NUNCA para compras importadas de fornecedores) --}}
+                                                            @if(($item->estado == 'novo' || $item->estado == 'rejeitado') && empty($item->chave_importada))
                                                                 @can('nfe_transmitir')
                                                                 <li>
                                                                     <a class="dropdown-item action-menu-item" href="javascript:void(0)" onclick="transmitir('{{$item->id}}')">
@@ -703,7 +716,7 @@
                                                             @endif
 
                                                             {{-- Carta de Correção (CC-e) --}}
-                                                            @if($item->estado == 'aprovado')
+                                                            @if($item->estado == 'aprovado' && empty($item->chave_importada))
                                                                 @can('nfe_transmitir')
                                                                 <li>
                                                                     <a class="dropdown-item action-menu-item" href="javascript:void(0)" onclick="corrigir(
@@ -727,7 +740,7 @@
                                                             @endif
 
                                                             {{-- Consultar Protocolo SEFAZ --}}
-                                                            @if($item->estado == 'aprovado' || $item->estado == 'cancelado')
+                                                            @if(($item->estado == 'aprovado' || $item->estado == 'cancelado') && empty($item->chave_importada))
                                                             <li>
                                                                 <a class="dropdown-item action-menu-item" href="javascript:void(0)" onclick="consultar('{{$item->id}}', '{{$item->numero}}')">
                                                                     <div class="action-item-icon icon-teal">
@@ -785,7 +798,7 @@
                                                             @endif
 
                                                             {{-- XML Temporário --}}
-                                                            @if($item->estado == 'novo' || $item->estado == 'rejeitado')
+                                                            @if(($item->estado == 'novo' || $item->estado == 'rejeitado') && empty($item->chave_importada))
                                                             <li>
                                                                 <a class="dropdown-item action-menu-item" target="_blank" href="{{ route('nfe.xml-temp', $item->id) }}">
                                                                     <div class="action-item-icon icon-purple">
@@ -815,7 +828,7 @@
                                                             @endif
 
                                                             {{-- Cancelar NFe SEFAZ --}}
-                                                            @if($item->estado == 'aprovado')
+                                                            @if($item->estado == 'aprovado' && empty($item->chave_importada))
                                                                 @can('nfe_transmitir')
                                                                 <li><hr class="dropdown-divider my-1"></li>
                                                                 <li>
@@ -840,7 +853,7 @@
                                                             @endif
 
                                                             {{-- Excluir Compra --}}
-                                                            @if($item->estado == 'novo' || $item->estado == 'rejeitado')
+                                                            @if($item->estado == 'novo' || $item->estado == 'rejeitado' || !empty($item->chave_importada))
                                                                 @can('compras_delete')
                                                                 <li><hr class="dropdown-divider my-1"></li>
                                                                 <li>
@@ -896,7 +909,11 @@
 
                                             {{-- Estado da Emissão --}}
                                             <td>
-                                                @if($item->estado == 'aprovado')
+                                                @if(!empty($item->chave_importada))
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-11" title="Compra importada via XML de fornecedor">
+                                                        <i class="ri-check-double-line me-1"></i>Importada
+                                                    </span>
+                                                @elseif($item->estado == 'aprovado')
                                                     <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-11">Aprovado</span>
                                                 @elseif($item->estado == 'cancelado')
                                                     <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fs-11">Cancelado</span>
@@ -919,7 +936,9 @@
 
                                             {{-- Tipo de Emissão --}}
                                             <td>
-                                                @if($item->api)
+                                                @if(!empty($item->chave_importada))
+                                                    <span class="badge bg-info-subtle text-info border border-info-subtle" title="Documento emitido pelo fornecedor">XML Fornecedor</span>
+                                                @elseif($item->api)
                                                     <span class="badge bg-success-subtle text-success border border-success-subtle">API</span>
                                                 @else
                                                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Painel</span>

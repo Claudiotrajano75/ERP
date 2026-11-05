@@ -122,9 +122,17 @@ class CompraController extends Controller
         $base = Nfe::where('empresa_id', request()->empresa_id)->where('tpNF', 0);
         $stats = [
             'total'     => (clone $base)->count(),
-            'aprovadas' => (clone $base)->where('estado', 'aprovado')->count(),
+            'aprovadas' => (clone $base)->where(function($q) {
+                $q->where('estado', 'aprovado')->orWhere(function($sub) {
+                    $sub->whereNotNull('chave_importada')->where('chave_importada', '!=', '')->where('estado', '!=', 'cancelado');
+                });
+            })->count(),
             'canceladas'=> (clone $base)->where('estado', 'cancelado')->count(),
-            'valor'     => (clone $base)->where('estado', 'aprovado')->sum('total'),
+            'valor'     => (clone $base)->where(function($q) {
+                $q->where('estado', 'aprovado')->orWhere(function($sub) {
+                    $sub->whereNotNull('chave_importada')->where('chave_importada', '!=', '')->where('estado', '!=', 'cancelado');
+                });
+            })->sum('total'),
         ];
 
         return view('compras.index', compact('data', 'fornecedores', 'contigencia', 'stats'));
@@ -993,7 +1001,7 @@ class CompraController extends Controller
                     'numero_serie' => $config->numero_serie_nfe ? $config->numero_serie_nfe : 1,
                     'numero' => $request->numero_nfe,
                     'chave_importada' => $request->chave_importada,
-                    'estado' => 'novo',
+                    'estado' => 'aprovado',
                     'total' => __convert_value_bd($request->valor_total),
                     'desconto' => $request->desconto ? __convert_value_bd($request->desconto) : 0,
                     'acrescimo' => $request->acrescimo ? __convert_value_bd($request->acrescimo) : 0,

@@ -85,7 +85,14 @@ class SpedController extends Controller
                     ->count(),
                 'nfe_entrada' => Nfe::where('empresa_id', $empresaId)
                     ->where('tpNF', 0)
-                    ->where('estado', 'aprovado')
+                    ->where(function($q) {
+                        $q->where('estado', 'aprovado')
+                          ->orWhere(function($sub) {
+                              $sub->whereNotNull('chave_importada')
+                                  ->where('chave_importada', '!=', '')
+                                  ->where('estado', '!=', 'cancelado');
+                          });
+                    })
                     ->whereDate('created_at', '>=', $firstDate)
                     ->whereDate('created_at', '<=', $lastDate)
                     ->count(),
@@ -243,84 +250,112 @@ class SpedController extends Controller
         ->whereDate('created_at', '<=', $dataFinal)
         ->where('estado', 'aprovado')
         ->where('tpNF', 0)
+        ->where(function($q) {
+            $q->whereNull('chave_importada')->orWhere('chave_importada', '');
+        })
         ->where('empresa_id', $this->empresa_id)
         ->get();
 
         $comprasImportadas = Nfe::whereDate('created_at', '>=', $dataInicial)
         ->whereDate('created_at', '<=', $dataFinal)
-        ->where('estado', 'aprovado')
         ->where('tpNF', 0)
-        ->where('chave_importada', 1)
+        ->whereNotNull('chave_importada')
+        ->where('chave_importada', '!=', '')
+        ->where('estado', '!=', 'cancelado')
         ->where('empresa_id', $this->empresa_id)
         ->get();
 
         $comprasManifesto = Nfe::whereDate('created_at', '>=', $dataInicial)
         ->whereDate('created_at', '<=', $dataFinal)
-        ->where('estado', 'aprovado')
         ->where('tpNF', 0)
-        ->where('chave', '!=', '')
+        ->where(function($q) {
+            $q->where('chave', '!=', '')->orWhere('chave_importada', '!=', '');
+        })
+        ->where('estado', '!=', 'cancelado')
         ->where('empresa_id', $this->empresa_id)
         ->get();
 
         $speedService = new SpeedService($config);
         $dataXml = [];
+        $chavesAdicionadas = [];
+
         foreach($vendas as $v){
             $xml = $speedService->getXml($v, 'xml_nfe/');
-            $temp = [
-                'xml_importado' => 0,
-                'tipo' => 'venda',
-                'xml' => $xml
-            ];
             if($xml != null){
-                array_push($dataXml, $temp);
+                $chaveXml = $speedService->getChave($xml);
+                if($chaveXml && !in_array($chaveXml, $chavesAdicionadas)){
+                    $chavesAdicionadas[] = $chaveXml;
+                    $temp = [
+                        'xml_importado' => 0,
+                        'tipo' => 'venda',
+                        'xml' => $xml
+                    ];
+                    array_push($dataXml, $temp);
+                }
             }
         }
 
         foreach($vendasPdv as $v){
             $xml = $speedService->getXml($v, 'xml_nfce/');
             if($xml != null){
-                $temp = [
-                    'xml_importado' => 0,
-                    'tipo' => 'pdv',
-                    'xml' => $xml
-                ];
-                array_push($dataXml, $temp);
+                $chaveXml = $speedService->getChave($xml);
+                if($chaveXml && !in_array($chaveXml, $chavesAdicionadas)){
+                    $chavesAdicionadas[] = $chaveXml;
+                    $temp = [
+                        'xml_importado' => 0,
+                        'tipo' => 'pdv',
+                        'xml' => $xml
+                    ];
+                    array_push($dataXml, $temp);
+                }
             }
         }
 
         foreach($compras as $v){
             $xml = $speedService->getXml($v, 'xml_entrada_emitida/');
             if($xml != null){
-                $temp = [
-                    'xml_importado' => 0,
-                    'tipo' => 'compra',
-                    'xml' => $xml
-                ];
-                array_push($dataXml, $temp);
+                $chaveXml = $speedService->getChave($xml);
+                if($chaveXml && !in_array($chaveXml, $chavesAdicionadas)){
+                    $chavesAdicionadas[] = $chaveXml;
+                    $temp = [
+                        'xml_importado' => 0,
+                        'tipo' => 'compra',
+                        'xml' => $xml
+                    ];
+                    array_push($dataXml, $temp);
+                }
             }
         }
 
         foreach($comprasImportadas as $v){
             $xml = $speedService->getXml($v, 'xml_entrada/');
             if($xml != null){
-                $temp = [
-                    'xml_importado' => 1,
-                    'tipo' => 'compra',
-                    'xml' => $xml
-                ];
-                array_push($dataXml, $temp);
+                $chaveXml = $speedService->getChave($xml);
+                if($chaveXml && !in_array($chaveXml, $chavesAdicionadas)){
+                    $chavesAdicionadas[] = $chaveXml;
+                    $temp = [
+                        'xml_importado' => 1,
+                        'tipo' => 'compra',
+                        'xml' => $xml
+                    ];
+                    array_push($dataXml, $temp);
+                }
             }
         }
 
         foreach($comprasManifesto as $v){
             $xml = $speedService->getXml($v, 'xml_dfe/');
             if($xml != null){
-                $temp = [
-                    'xml_importado' => 1,
-                    'tipo' => 'compra',
-                    'xml' => $xml
-                ];
-                array_push($dataXml, $temp);
+                $chaveXml = $speedService->getChave($xml);
+                if($chaveXml && !in_array($chaveXml, $chavesAdicionadas)){
+                    $chavesAdicionadas[] = $chaveXml;
+                    $temp = [
+                        'xml_importado' => 1,
+                        'tipo' => 'compra',
+                        'xml' => $xml
+                    ];
+                    array_push($dataXml, $temp);
+                }
             }
         }
 
@@ -1280,7 +1315,10 @@ class SpedController extends Controller
     }
 
     private function getCompra($chave){
-        $item = Nfe::where('chave', $chave)->where('empresa_id', $this->empresa_id)
+        $item = Nfe::where(function($q) use ($chave) {
+            $q->where('chave', $chave)->orWhere('chave_importada', $chave);
+        })
+        ->where('empresa_id', $this->empresa_id)
         ->first();
         return $item;
     }

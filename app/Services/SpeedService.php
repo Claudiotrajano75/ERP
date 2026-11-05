@@ -40,7 +40,7 @@ class SpeedService
         if (is_string($model)) {
             $chave = $model;
         } elseif (is_object($model)) {
-            $chave = $model->chave ?? null;
+            $chave = !empty($model->chave) ? $model->chave : ($model->chave_importada ?? null);
         }
 
         if (empty($chave)) {
@@ -53,7 +53,13 @@ class SpeedService
         $filePath = public_path($path . $chave . '.xml');
 
         if (!file_exists($filePath)) {
-            return null;
+            if ($path === 'xml_entrada/' && file_exists(public_path('xml_dfe/' . $chave . '.xml'))) {
+                $filePath = public_path('xml_dfe/' . $chave . '.xml');
+            } elseif ($path === 'xml_dfe/' && file_exists(public_path('xml_entrada/' . $chave . '.xml'))) {
+                $filePath = public_path('xml_entrada/' . $chave . '.xml');
+            } else {
+                return null;
+            }
         }
 
         $content = file_get_contents($filePath);

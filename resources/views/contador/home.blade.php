@@ -280,6 +280,35 @@
                     </div>
                 </div>
 
+                @php
+                    $empAtiva = $empresaSelecionadaId ? App\Models\Empresa::find($empresaSelecionadaId) : null;
+                @endphp
+                @if($empAtiva)
+                <div class="alert alert-primary bg-primary bg-opacity-10 border-0 shadow-sm p-3 mb-4 rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="ri-checkbox-circle-fill text-primary fs-3"></i>
+                        <div>
+                            <strong class="d-block text-dark">Empresa Ativa Selecionada: {{ $empAtiva->nome }}</strong>
+                            <small class="text-muted">CNPJ: {{ $empAtiva->cpf_cnpj }} — Você está visualizando os dados e arquivos fiscais desta empresa.</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <a href="{{ route('contador-empresa.fechamento') }}" class="btn btn-sm btn-success fw-bold shadow-sm">
+                            <i class="ri-file-zip-line me-1"></i> Fechamento Mensal (.ZIP)
+                        </a>
+                        <a href="{{ route('contador-empresa.sped') }}" class="btn btn-sm btn-primary fw-medium shadow-sm">
+                            <i class="ri-file-list-3-line me-1"></i> SPED Fiscal
+                        </a>
+                        <a href="{{ route('contador-empresa.nfe') }}" class="btn btn-sm btn-outline-dark fw-medium">
+                            <i class="ri-file-text-line me-1"></i> NFe
+                        </a>
+                        <a href="{{ route('contador-empresa.nfce') }}" class="btn btn-sm btn-outline-dark fw-medium">
+                            <i class="ri-shopping-bag-3-line me-1"></i> NFCe
+                        </a>
+                    </div>
+                </div>
+                @endif
+
                 {{-- ═══ TABELA DE EMPRESAS ═══ --}}
                 <div class="tb-wrap">
                     <div class="table-responsive">

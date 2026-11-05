@@ -293,7 +293,7 @@
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         @if(isset($contXml) && $contXml > 0)
-                        <a class="dash-btn dash-btn-zip" href="{{ route('contador-empresa-cte-zip', ['start_date='.request()->start_date, 'end_date='.request()->end_date]) }}">
+                        <a class="dash-btn dash-btn-zip" href="{{ route('contador-empresa-cte-zip', ['start_date='.request()->start_date, 'end_date='.request()->end_date, 'estado='.request()->estado]) }}">
                             <i class="ri-file-zip-line"></i> Baixar ZIP ({{ $contXml }} XMLs)
                         </a>
                         @endif

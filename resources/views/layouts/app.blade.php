@@ -2313,6 +2313,18 @@
                                     <li>
                                         <a href="{{ route('contador-empresa.mdfe') }}">MDFe</a>
                                     </li>
+                                    <li>
+                                        <a href="{{ route('contador-empresa.sped') }}">
+                                            <span class="badge bg-primary float-end">EFD</span>
+                                            <span>SPED Fiscal</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('contador-empresa.fechamento') }}">
+                                            <span class="badge bg-success float-end">ZIP</span>
+                                            <span>Fechamento Mensal</span>
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                         </li>

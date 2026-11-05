@@ -243,6 +243,13 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
     Route::get('contador-empresa-mdfe-download/{id}', 'ContadorAdminMDFeController@downloadMDFe')->name('contador-empresa-mdfe.download');
     Route::get('contador-empresa-mdfe-dacte/{id}', 'ContadorAdminMDFeController@damdfe')->name('contador-empresa-mdfe.damdfe');
     Route::get('contador-empresa-mdfe-zip', 'ContadorAdminMDFeController@downloadZip')->name('contador-empresa-mdfe-zip');
+
+    // SPED Fiscal e Fechamento Mensal Contador
+    Route::get('contador-empresa-sped', 'ContadorAdminSpedController@index')->name('contador-empresa.sped');
+    Route::post('contador-empresa-sped-store', 'ContadorAdminSpedController@store')->name('contador-empresa.sped-store');
+    Route::get('contador-empresa-fechamento', 'ContadorAdminFechamentoController@index')->name('contador-empresa.fechamento');
+    Route::get('contador-empresa-fechamento-zip', 'ContadorAdminFechamentoController@downloadZip')->name('contador-empresa.fechamento-zip');
+    Route::post('contador-empresa-fechamento-email', 'ContadorAdminFechamentoController@enviarEmail')->name('contador-empresa.fechamento-email');
     // rotas do contador fim
 
     Route::get('nfe/imprimir/{id}', 'NfeController@imprimir')->name('nfe.imprimir');

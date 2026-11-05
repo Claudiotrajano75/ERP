@@ -87,34 +87,54 @@ class ContadorAdminMDFeController extends Controller
     public function downloadZip(Request $request){
         $start_date = $request->get('start_date');
         $end_date = $request->get('end_date');
+        $estado = $request->get('estado');
 
         $contador = Empresa::findOrFail(request()->empresa_id);
-        $doc = preg_replace('/[^0-9]/', '', $contador->cpf_cnpj);
         $empresaSelecionada = $contador->empresa_selecionada;
+        $empresa = Empresa::find($empresaSelecionada);
+        $doc = $empresa ? preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj) : 'empresa';
+
         $data = Mdfe::where('empresa_id', $empresaSelecionada)
         ->when(!empty($start_date), function ($query) use ($start_date) {
             return $query->whereDate('created_at', '>=', $start_date);
         })
-        ->when(!empty($end_date), function ($query) use ($end_date,) {
+        ->when(!empty($end_date), function ($query) use ($end_date) {
             return $query->whereDate('created_at', '<=', $end_date);
         })
-        ->where('estado_emissao', 'aprovado')
+        ->when(!empty($estado), function ($query) use ($estado) {
+            return $query->where('estado_emissao', $estado);
+        })
+        ->where('estado_emissao', '!=', 'novo')
         ->get();
-        $zip = new \ZipArchive();
-        $zip_file = public_path('zips') . '/xml-'.$doc.'.zip';
-        $zip->open($zip_file, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
-        foreach($data as $item){
-            if (file_exists(public_path('xml_mdfe/') . $item->chave . '.xml')) {
-                $filename = public_path('xml_mdfe/') . $item->chave . '.xml';
 
-                $zip->addFile($filename, $item->chave . '.xml');
+        $zip = new \ZipArchive();
+        $zip_file = public_path('zips') . '/mdfe-'.$doc.'-'.time().'.zip';
+        $zip->open($zip_file, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        $adicionados = 0;
+
+        foreach($data as $item){
+            $chave = $item->chave;
+            if (!$chave) continue;
+
+            if ($item->estado_emissao == 'aprovado' && file_exists(public_path('xml_mdfe/') . $chave . '.xml')) {
+                $zip->addFile(public_path('xml_mdfe/') . $chave . '.xml', "Autorizadas/{$chave}.xml");
+                $adicionados++;
+            } elseif ($item->estado_emissao == 'cancelado') {
+                if (file_exists(public_path('xml_mdfe_cancelada/') . $chave . '.xml')) {
+                    $zip->addFile(public_path('xml_mdfe_cancelada/') . $chave . '.xml', "Canceladas/{$chave}-canc.xml");
+                    $adicionados++;
+                } elseif (file_exists(public_path('xml_mdfe/') . $chave . '.xml')) {
+                    $zip->addFile(public_path('xml_mdfe/') . $chave . '.xml', "Canceladas/{$chave}.xml");
+                    $adicionados++;
+                }
             }
         }
         $zip->close();
-        if (file_exists($zip_file)){
+
+        if ($adicionados > 0 && file_exists($zip_file)){
             return response()->download($zip_file, 'mdfe_'.$doc.'.zip');
         }else{
-            session()->flash("flash_error", "Arquivo não encontrado");
+            session()->flash("flash_error", "Nenhum arquivo XML de MDFe encontrado para os filtros selecionados.");
             return redirect()->back();
         }
     }

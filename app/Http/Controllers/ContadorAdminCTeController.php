@@ -87,34 +87,54 @@ class ContadorAdminCTeController extends Controller
     public function downloadZip(Request $request){
         $start_date = $request->get('start_date');
         $end_date = $request->get('end_date');
+        $estado = $request->get('estado');
 
         $contador = Empresa::findOrFail(request()->empresa_id);
-        $doc = preg_replace('/[^0-9]/', '', $contador->cpf_cnpj);
         $empresaSelecionada = $contador->empresa_selecionada;
+        $empresa = Empresa::find($empresaSelecionada);
+        $doc = $empresa ? preg_replace('/[^0-9]/', '', $empresa->cpf_cnpj) : 'empresa';
+
         $data = Cte::where('empresa_id', $empresaSelecionada)
         ->when(!empty($start_date), function ($query) use ($start_date) {
             return $query->whereDate('created_at', '>=', $start_date);
         })
-        ->when(!empty($end_date), function ($query) use ($end_date,) {
+        ->when(!empty($end_date), function ($query) use ($end_date) {
             return $query->whereDate('created_at', '<=', $end_date);
         })
-        ->where('estado', 'aprovado')
+        ->when(!empty($estado), function ($query) use ($estado) {
+            return $query->where('estado', $estado);
+        })
+        ->where('estado', '!=', 'novo')
         ->get();
-        $zip = new \ZipArchive();
-        $zip_file = public_path('zips') . '/xml-'.$doc.'.zip';
-        $zip->open($zip_file, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
-        foreach($data as $item){
-            if (file_exists(public_path('xml_cte/') . $item->chave . '.xml')) {
-                $filename = public_path('xml_cte/') . $item->chave . '.xml';
 
-                $zip->addFile($filename, $item->chave . '.xml');
+        $zip = new \ZipArchive();
+        $zip_file = public_path('zips') . '/cte-'.$doc.'-'.time().'.zip';
+        $zip->open($zip_file, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        $adicionados = 0;
+
+        foreach($data as $item){
+            $chave = $item->chave;
+            if (!$chave) continue;
+
+            if ($item->estado == 'aprovado' && file_exists(public_path('xml_cte/') . $chave . '.xml')) {
+                $zip->addFile(public_path('xml_cte/') . $chave . '.xml', "Autorizadas/{$chave}.xml");
+                $adicionados++;
+            } elseif ($item->estado == 'cancelado') {
+                if (file_exists(public_path('xml_cte_cancelada/') . $chave . '.xml')) {
+                    $zip->addFile(public_path('xml_cte_cancelada/') . $chave . '.xml', "Canceladas/{$chave}-canc.xml");
+                    $adicionados++;
+                } elseif (file_exists(public_path('xml_cte/') . $chave . '.xml')) {
+                    $zip->addFile(public_path('xml_cte/') . $chave . '.xml', "Canceladas/{$chave}.xml");
+                    $adicionados++;
+                }
             }
         }
         $zip->close();
-        if (file_exists($zip_file)){
+
+        if ($adicionados > 0 && file_exists($zip_file)){
             return response()->download($zip_file, 'cte_'.$doc.'.zip');
         }else{
-            session()->flash("flash_error", "Arquivo não encontrado");
+            session()->flash("flash_error", "Nenhum arquivo XML de CTe encontrado para os filtros selecionados.");
             return redirect()->back();
         }
     }

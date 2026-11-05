@@ -92,3 +92,4 @@ class EnviarFechamentoContadorCommand extends Command
         return Command::SUCCESS;
     }
 }
+

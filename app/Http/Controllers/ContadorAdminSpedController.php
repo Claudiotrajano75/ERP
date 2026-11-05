@@ -84,3 +84,4 @@ class ContadorAdminSpedController extends Controller
         return $spedController->store($request);
     }
 }
+

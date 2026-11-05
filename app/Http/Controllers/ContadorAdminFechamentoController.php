@@ -303,3 +303,4 @@ class ContadorAdminFechamentoController extends Controller
         return $arquivosAdicionados > 0 ? $zipFile : null;
     }
 }
+

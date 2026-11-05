@@ -141,7 +141,7 @@
 
                     {{-- SPED File Info --}}
                     @if($spedFileInfo)
-                    <div class="alert alert-success file-info-card d-flex align-items-start gap-3 fade-in rounded-3" role="alert">
+                    <div class="alert alert-success file-info-card d-flex align-items-start gap-3 fade-in rounded-3 mb-4" role="alert">
                         <i class="ri-file-text-line fs-3 text-success mt-1"></i>
                         <div class="flex-grow-1">
                             <strong class="d-block">Último SPED gerado</strong>
@@ -153,6 +153,35 @@
                             <a href="{{ $spedFileInfo['url'] }}" class="btn btn-sm btn-success shadow-sm mt-2 fw-medium" download>
                                 <i class="ri-download-2-line me-1"></i> Baixar Arquivo
                             </a>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($stats && (!$stats['escritorio_configurado'] || !$stats['sped_configurado']))
+                    <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center justify-content-between p-3 mb-4 rounded-3 fade-in">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="ri-alert-fill fs-2 text-warning"></i>
+                            <div>
+                                <h6 class="mb-1 text-dark fw-bold">Pendências de Configuração para o SPED</h6>
+                                <p class="mb-0 fs-13 text-muted">
+                                    Para gerar o arquivo SPED válido, é obrigatório preencher:
+                                    @if(!$stats['escritorio_configurado']) <strong class="text-danger">Escritório Contábil</strong> @endif
+                                    @if(!$stats['escritorio_configurado'] && !$stats['sped_configurado']) e @endif
+                                    @if(!$stats['sped_configurado']) <strong class="text-danger">Configuração SPED</strong> @endif.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            @if(!$stats['escritorio_configurado'])
+                            <a href="{{ route('escritorio-contabil.index') }}" class="btn btn-sm btn-danger fw-semibold shadow-sm">
+                                <i class="ri-building-2-line me-1"></i> Cadastrar Escritório
+                            </a>
+                            @endif
+                            @if(!$stats['sped_configurado'])
+                            <a href="{{ route('sped-config.index') }}" class="btn btn-sm btn-primary fw-semibold shadow-sm">
+                                <i class="ri-settings-3-line me-1"></i> Configurar SPED
+                            </a>
+                            @endif
                         </div>
                     </div>
                     @endif
@@ -266,6 +295,9 @@
 @section('js')
 <script type="text/javascript">
     $(document).ready(function() {
+        var escritorioConfigurado = {{ $stats && $stats['escritorio_configurado'] ? 'true' : 'false' }};
+        var spedConfigurado = {{ $stats && $stats['sped_configurado'] ? 'true' : 'false' }};
+
         // Toggle inventário fields
         $('#inventario-switch').on('change', function() {
             if ($(this).is(':checked')) {
@@ -275,44 +307,64 @@
             }
         });
 
-        // Confirm and progress before generating
-        $('#btn-gerar').on('click', function(e) {
+        // Validação e feedback no submit
+        $('#form-sped').on('submit', function(e) {
+            if (!escritorioConfigurado || !spedConfigurado) {
+                e.preventDefault();
+                var msg = 'Atenção:\n';
+                if (!escritorioConfigurado && !spedConfigurado) {
+                    msg += 'Configure o Escritório Contábil e os Parâmetros do SPED antes de gerar o arquivo!';
+                } else if (!escritorioConfigurado) {
+                    msg += 'Configure o Escritório Contábil antes de gerar o arquivo!';
+                } else {
+                    msg += 'Configure os Parâmetros do SPED antes de gerar o arquivo!';
+                }
+                if (typeof swal === 'function') {
+                    swal('Atenção', msg, 'warning');
+                } else {
+                    alert(msg);
+                }
+                return false;
+            }
+
             if (!confirm('Gerar o arquivo SPED para o período selecionado? Isso pode levar alguns segundos.')) {
                 e.preventDefault();
                 return false;
             }
 
-            // Show progress bar
+            // Exibe barra de progresso
             $('#progress-container').slideDown(300);
-            $(this).prop('disabled', true).html('<i class="ri-loader-4-line ri-spin me-1"></i> Gerando...');
+            var $btn = $('#btn-gerar');
+            $btn.prop('disabled', true).html('<i class="ri-loader-4-line ri-spin me-1"></i> Gerando arquivo...');
 
-            // Animate progress (simulated)
             var progress = 0;
             var $bar = $('#progress-bar');
             var $percent = $('#progress-percent');
             var $text = $('#progress-text');
 
+            $bar.removeClass('bg-primary').addClass('bg-success');
+
             var interval = setInterval(function() {
-                progress += Math.random() * 15;
-                if (progress > 90) {
+                progress += Math.floor(Math.random() * 15) + 8;
+                if (progress >= 90) {
                     progress = 90;
                     clearInterval(interval);
-                    $text.text('Finalizando arquivo SPED...');
+                    $text.text('Estruturando blocos fiscais e compilando arquivo...');
+
+                    // Transição suave para 100% e aviso de download iniciado
+                    setTimeout(function() {
+                        $bar.css('width', '100%').attr('aria-valuenow', 100);
+                        $percent.text('100%');
+                        $text.html('<i class="ri-checkbox-circle-fill text-success me-1"></i> Arquivo gerado com sucesso! O download foi iniciado.');
+
+                        setTimeout(function() {
+                            $btn.prop('disabled', false).html('<i class="ri-file-download-line me-1"></i> Gerar SPED Novamente');
+                        }, 2500);
+                    }, 2000);
                 }
                 $bar.css('width', progress + '%').attr('aria-valuenow', progress);
                 $percent.text(Math.round(progress) + '%');
-            }, 400);
-
-            // Store interval so we can clear it on form submit
-            $('#form-sped').data('progress-interval', interval);
-        });
-
-        // Clear progress interval on form submit (page will reload/redirect)
-        $('#form-sped').on('submit', function() {
-            var interval = $(this).data('progress-interval');
-            if (interval) {
-                clearInterval(interval);
-            }
+            }, 300);
         });
     });
 </script>

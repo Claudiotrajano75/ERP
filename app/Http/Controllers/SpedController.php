@@ -131,7 +131,19 @@ class SpedController extends Controller
         $dataInventario = $request->data_inventario;
         $motivoInventario = $request->motivo_inventario;
 
-        $this->empresa_id = request()->empresa_id;
+        $this->empresa_id = $request->empresa_id ?? (request()->empresa_id ?? session('user_empresa_id'));
+
+        $contador = EscritorioContabil::where('empresa_id', $this->empresa_id)->first();
+        if($contador == null){
+            session()->flash("flash_error", "Cadastre o Escritório Contábil antes de gerar o SPED!");
+            return redirect()->route('escritorio-contabil.index');
+        }
+
+        $spedConfig = SpedConfig::where('empresa_id', $this->empresa_id)->first();
+        if($spedConfig == null){
+            session()->flash("flash_error", "Configure os parâmetros do SPED antes de gerar o arquivo!");
+            return redirect()->route('sped-config.index');
+        }
 
         $empresa = Empresa::with('cidade')->findOrFail($this->empresa_id);
         $config = $empresa;
@@ -140,9 +152,6 @@ class SpedController extends Controller
         $dInicial = \Carbon\Carbon::parse($dataInicial)->format('dmY');
         $dFinal = \Carbon\Carbon::parse($dataFinal)->format('dmY');
         $mesRef = \Carbon\Carbon::parse($dataFinal)->format('mY');
-
-        $spedConfig = SpedConfig::where('empresa_id', $this->empresa_id)
-        ->first();
 
         $std = new \stdClass();
         $std->COD_VER = '018';
@@ -198,12 +207,6 @@ class SpedController extends Controller
             echo $e->getMessage();
         }
 
-        $contador = EscritorioContabil::where('empresa_id', $this->empresa_id)->first();
-
-        if($contador == null){
-            session()->flash("mensagem_erro", "Configure o contador primeiro!");
-            return redirect('/escritorio');
-        }
         $std = new \stdClass();
         $std->NOME = $contador->razao_social;
         $doc = preg_replace('/[^0-9]/', '', $contador->cnpj);
@@ -556,7 +559,7 @@ class SpedController extends Controller
                         $estoque[] = ["produto" => (string)$prod->cProd, "quantidade" => $qtdEstoque, "id" => $pId];
                         $std = new \stdClass();
 
-                        $codBarras = (string)$prod->cEAN;
+                        $codBarras = isset($prod->cEAN) ? (string)$prod->cEAN : '';
                         $std->COD_ITEM = strtoupper((string)$prod->cProd);
                         // dd((string)$prod->cProd);
                         $std->DESCR_ITEM = (string)$prod->xProd;
@@ -585,7 +588,7 @@ class SpedController extends Controller
                         $std->COD_GEN = substr($prod->NCM, 0, 2);
                         $std->COD_LST = '';
                         $std->ALIQ_ICMS = (float)$pICMS;
-                        $std->CEST = trim((string)$prod->CEST);
+                        $std->CEST = isset($prod->CEST) ? trim((string)$prod->CEST) : '';
 
                         try {
 
@@ -678,21 +681,24 @@ class SpedController extends Controller
                     }
                 }
                 $std->COD_PART = $codPart;
-                $std->VL_BC_ICMS_ST = (float)$total->vBCST;
-                $std->VL_ICMS_ST = (float)$total->vST;
-                $std->VL_IPI = (float)$total->vIPI;
-                $std->VL_PIS = (float)$total->vPIS;
-                $std->VL_COFINS = (float)$total->vCOFINS;
+                $std->VL_BC_ICMS_ST = (float)($total->vBCST ?? 0);
+                $std->VL_ICMS_ST = (float)($total->vST ?? 0);
+                $std->VL_IPI = (float)($total->vIPI ?? 0);
+                $std->VL_PIS = (float)($total->vPIS ?? 0);
+                $std->VL_COFINS = (float)($total->vCOFINS ?? 0);
                 $std->VL_PIS_ST = '0.00';
                 $std->VL_COFINS_ST = '0.00';
 
-                $dhEmi = substr((string)$ide->dhEmi, 0, 10);
-                $dhSaiEnt = substr((string)$ide->dhSaiEnt, 0, 10);
+                $dhEmi = isset($ide->dhEmi) ? substr((string)$ide->dhEmi, 0, 10) : date('Y-m-d');
+                $dhSaiEnt = (isset($ide->dhSaiEnt) && !empty((string)$ide->dhSaiEnt)) ? substr((string)$ide->dhSaiEnt, 0, 10) : $dhEmi;
                 if($l['tipo'] == 'compra'){
                     $compra = $this->getCompra($chave);
-                    if($compra){
+                    if($compra && !empty($compra->created_at)){
                         $dhSaiEnt = substr((string)$compra->created_at, 0, 10);
                     }
+                }
+                if(empty($dhSaiEnt)){
+                    $dhSaiEnt = $dhEmi;
                 }
             }
 
@@ -712,19 +718,19 @@ class SpedController extends Controller
 
             $std->DT_DOC = $dhEmi;
             $std->DT_E_S = $dhSaiEnt;
-            $std->VL_DOC = (float)$total->vNF;
+            $std->VL_DOC = (float)($total->vNF ?? 0);
 
             $std->IND_PGTO = '2';
-            $std->VL_DESC = (float)$total->vDesc;
+            $std->VL_DESC = (float)($total->vDesc ?? 0);
 
             $std->VL_ABAT_NT = '0.00';
-            $std->VL_MERC = (float)$total->vProd;
+            $std->VL_MERC = (float)($total->vProd ?? 0);
             $std->IND_FRT = '3';
-            $std->VL_FRT = (float)$total->vFrete;
-            $std->VL_SEG = (float)$total->vSeg;
-            $std->VL_OUT_DA = (float)$total->vOutro;
-            $std->VL_BC_ICMS = (float)$total->vBC;
-            $std->VL_ICMS = (float)$total->vICMS;
+            $std->VL_FRT = (float)($total->vFrete ?? 0);
+            $std->VL_SEG = (float)($total->vSeg ?? 0);
+            $std->VL_OUT_DA = (float)($total->vOutro ?? 0);
+            $std->VL_BC_ICMS = (float)($total->vBC ?? 0);
+            $std->VL_ICMS = (float)($total->vICMS ?? 0);
             if($std->VL_ICMS > 0 && $l['tipo'] != 'compra'){
                 $somaICMSSaida += $std->VL_ICMS;
             }
@@ -760,16 +766,17 @@ class SpedController extends Controller
                     $std->UNID = (string)$prod->uCom;
 
                     $std->VL_ITEM = (float)$prod->vProd;
-                    $std->VL_DESC = (float)$prod->vDesc;
+                    $std->VL_DESC = (float)($prod->vDesc ?? 0);
                     $std->IND_MOV = '0';
-                    $arr = (array_values((array)$imposto->ICMS));
-                    $vBC = isset($arr[0]->vBC) ? (float)$arr[0]->vBC : 0;
-                    $vBCST = isset($arr[0]->vBCST) ? (float)$arr[0]->vBCST : 0;
-                    $vICMSST = isset($arr[0]->vICMSST) ? (float)$arr[0]->vICMSST : 0;
-                    $pICMSST = isset($arr[0]->pICMSST) ? (float)$arr[0]->pICMSST : 0;
-                    $vICMS = isset($arr[0]->vICMS) ? (float)$arr[0]->vICMS : 0;
-                    $pRedBC = isset($arr[0]->pRedBC) ? (float)$arr[0]->pRedBC : 0;
-                    $cst_csosn = $arr[0]->CST ? $arr[0]->CST : $arr[0]->CSOSN;
+                    $arr = isset($imposto->ICMS) ? (array_values((array)$imposto->ICMS)) : [];
+                    $firstIcms = $arr[0] ?? new \stdClass();
+                    $vBC = (float)($firstIcms->vBC ?? 0);
+                    $vBCST = (float)($firstIcms->vBCST ?? 0);
+                    $vICMSST = (float)($firstIcms->vICMSST ?? 0);
+                    $pICMSST = (float)($firstIcms->pICMSST ?? 0);
+                    $vICMS = (float)($firstIcms->vICMS ?? 0);
+                    $pRedBC = (float)($firstIcms->pRedBC ?? 0);
+                    $cst_csosn = $firstIcms->CST ?? ($firstIcms->CSOSN ?? '00');
                     $cst_csosn = (string)$cst_csosn;
                     if(strlen($cst_csosn) == 2){
                         $cst_csosn = "0".$cst_csosn;
@@ -779,7 +786,7 @@ class SpedController extends Controller
                     $std->CFOP = $cfop;
                     $std->COD_NAT = '';
                     $std->VL_BC_ICMS = $vBC;
-                    $pICMS = $arr[0]->pICMS ?? 0;
+                    $pICMS = $firstIcms->pICMS ?? 0;
 
                     $std->ALIQ_ICMS = number_format((float)$pICMS, 2, '.', '');
                     $std->VL_ICMS = $vICMS;
@@ -790,47 +797,41 @@ class SpedController extends Controller
                     $std->IND_APUR = '0';
 
                     $std->COD_ENQ = null;
-                    $arr = (array_values((array)$imposto->IPI));
-                    if(isset($arr[1])){
-                        $cst_ipi = (string)$arr[1]->CST ?? '99';
-                        $cst_ipi = $this->converterCstIpi($cst_ipi);
-                        $std->CST_IPI = $cst_ipi;
-                        $pIPI = $arr[0]->IPI ?? 0;
+                    $std->CST_IPI = '99';
+                    $std->ALIQ_IPI = 0.00;
+                    $std->VL_BC_IPI = '0.00';
+                    $std->VL_IPI = 0.00;
 
-                        if(isset($arr[1]->pIPI)){
-                            $pIPI = $arr[1]->pIPI ?? 0;
-                        }else{
-                            if(isset($arr[4]->pIPI)){
-                                $ipi = $arr[4]->CST;
-                                $pIPI = $arr[4]->pIPI;
-                            }else{
-                                $pIPI = 0;
-                            }
+                    if (isset($imposto->IPI)) {
+                        $arr = array_values((array)$imposto->IPI);
+                        if(isset($arr[1])){
+                            $cst_ipi = (string)($arr[1]->CST ?? '99');
+                            $cst_ipi = $this->converterCstIpi($cst_ipi);
+                            $std->CST_IPI = $cst_ipi;
+                            $pIPI = $arr[1]->pIPI ?? ($arr[0]->IPI ?? 0);
+                            $std->ALIQ_IPI = (float)$pIPI;
+                            $std->VL_BC_IPI = (string)($arr[1]->vBC ?? '0.00');
+                            $std->VL_IPI = (float)($arr[1]->vIPI ?? 0);
                         }
-                        $std->ALIQ_IPI = (float)$pIPI;
-                        $std->VL_BC_IPI = (string)$arr[1]->vBC;
-                        $std->ALIQ_IPI = (float)$pIPI;
-                        $std->VL_IPI = (float)$arr[1]->vIPI;
-
                     }
 
-                    $arr = (array_values((array)$imposto->PIS));
-
-                    $std->CST_PIS = (string)$arr[0]->CST;
-                    $std->VL_BC_PIS = (float)$arr[0]->vBC;
-                    $std->ALIQ_PIS = (float)$arr[0]->pPIS;
-
+                    $arr = isset($imposto->PIS) ? (array_values((array)$imposto->PIS)) : [];
+                    $firstPis = $arr[0] ?? new \stdClass();
+                    $std->CST_PIS = (string)($firstPis->CST ?? '99');
+                    $std->VL_BC_PIS = (float)($firstPis->vBC ?? 0);
+                    $std->ALIQ_PIS = (float)($firstPis->pPIS ?? 0);
                     $std->QUANT_BC_PIS = '0.00';
                     $std->ALIQ_PIS_QUANT = '0.00';
-                    $std->VL_PIS = (float)$arr[0]->vPIS;
+                    $std->VL_PIS = (float)($firstPis->vPIS ?? 0);
 
-                    $arr = (array_values((array)$imposto->COFINS));
-                    $std->CST_COFINS = (string)$arr[0]->CST;
-                    $std->VL_BC_COFINS = (float)$arr[0]->vBCCOFINS;
-                    $std->ALIQ_COFINS = (float)$arr[0]->pCOFINS;
+                    $arr = isset($imposto->COFINS) ? (array_values((array)$imposto->COFINS)) : [];
+                    $firstCofins = $arr[0] ?? new \stdClass();
+                    $std->CST_COFINS = (string)($firstCofins->CST ?? '99');
+                    $std->VL_BC_COFINS = (float)($firstCofins->vBCCOFINS ?? ($firstCofins->vBC ?? 0));
+                    $std->ALIQ_COFINS = (float)($firstCofins->pCOFINS ?? 0);
                     $std->QUANT_BC_COFINS = '0.00';
                     $std->ALIQ_COFINS_QUANT = '0.00';
-                    $std->VL_COFINS = (float)$arr[0]->vCOFINS;
+                    $std->VL_COFINS = (float)($firstCofins->vCOFINS ?? 0);
                     $std->COD_CTA = '';
                     $std->VL_ABAT_NT = '0.00';
                     // dd($prod);
@@ -1027,7 +1028,7 @@ class SpedController extends Controller
         // inicio e116
 
         $mes = (int)substr($mesRef, 0, 2);
-        $ano = date('Y');
+        $ano = strlen($mesRef) >= 6 ? (int)substr($mesRef, 2, 4) : (int)date('Y');
         if($mes == 12){
             $mes = 1;
             $ano++;
@@ -1038,9 +1039,9 @@ class SpedController extends Controller
         $mes = $mes < 10 ? "0".$mes : (string)$mes;
         if($std->VL_TOT_DEBITOS > $std->VL_TOT_CREDITOS){
             $std = new \stdClass();
-            $std->COD_OR = $spedConfig->codigo_obrigacao;
+            $std->COD_OR = $spedConfig ? $spedConfig->codigo_obrigacao : '000';
             $std->VL_OR = $VL_OR;
-            $std->DT_VCTO = $spedConfig->data_vencimento.$mes.$ano;
+            $std->DT_VCTO = ($spedConfig ? $spedConfig->data_vencimento : '20').$mes.$ano;
             $std->COD_REC = $spedConfig ? $spedConfig->codigo_receita : '';
             $std->MES_REF = $mesRef;
             // dd($std);
@@ -1100,7 +1101,7 @@ class SpedController extends Controller
                 $std->IND_PROP = 1;
                 $std->COD_PART = $cnpj;
                 $std->TXT_COMPL = $i->produto->nome;
-                $std->COD_CTA = $spedConfig->codigo_conta_analitica;
+                $std->COD_CTA = $spedConfig ? $spedConfig->codigo_conta_analitica : '';
                 $H010 = new H010($std);
 
                 $sped .= $H010;

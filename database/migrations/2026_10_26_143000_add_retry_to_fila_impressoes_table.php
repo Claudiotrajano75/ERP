@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('fila_impressoes', function (Blueprint $table) {
-            $table->unsignedInteger('tentativas')->default(0)->after('status')->index();
-            $table->timestamp('tentativa_em')->nullable()->after('tentativas');
+            if (!Schema::hasColumn('fila_impressoes', 'tentativas')) {
+                $table->unsignedInteger('tentativas')->default(0)->after('status')->index();
+            }
+            if (!Schema::hasColumn('fila_impressoes', 'tentativa_em')) {
+                $table->timestamp('tentativa_em')->nullable()->after('tentativas');
+            }
         });
     }
 

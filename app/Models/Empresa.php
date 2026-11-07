@@ -17,7 +17,7 @@ class Empresa extends Model
         'numero_ultima_cte_producao', 'numero_ultima_cte_homologacao', 'numero_serie_cte', 'natureza_id_pdv',
         'numero_ultima_mdfe_producao', 'numero_ultima_mdfe_homologacao', 'numero_serie_mdfe', 'logo',
         'tipo_contador', 'limite_cadastro_empresas', 'percentual_comissao', 'exclusao_icms_pis_cofins',
-        'token_nfse', 'numero_ultima_nfse', 'numero_serie_nfse', 'aut_xml', 'observacao_padrao_nfe', 'observacao_padrao_nfce',
+        'token_nfse', 'numero_ultima_nfse', 'numero_serie_nfse', 'numero_ultima_dps', 'numero_serie_dps', 'aut_xml', 'observacao_padrao_nfe', 'observacao_padrao_nfce',
         'perc_ap_cred', 'mensagem_aproveitamento_credito', 'simples_hibrido'
     ];
 

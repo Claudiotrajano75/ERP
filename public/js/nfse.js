@@ -82,6 +82,9 @@ function getSerico(servico_id) {
         $('#inp-aliquota_inss').val(res.aliquota_inss)
         $('#inp-aliquota_iss').val(res.aliquota_iss)
         $('#inp-codigo_tributacao_municipio').val(res.codigo_tributacao_municipio)
+        if ($('#inp-codigo_tributacao_nacional').length && res.codigo_tributacao_nacional) {
+            $('#inp-codigo_tributacao_nacional').val(res.codigo_tributacao_nacional)
+        }
 
     })
     .fail((err) => {

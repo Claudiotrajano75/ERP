@@ -76,17 +76,22 @@
                 {!!Form::text('tempo_tolerancia', '')->attrs(['class' => 'form-control', 'data-mask' => '00'])!!}
             </div>
 
-            <div class="col-md-2 col-6 uf-field">
+            <div class="col-md-3 col-6 uf-field">
                 <label class="form-label"><i class="ri-barcode-line"></i> Cód. do Serviço</label>
                 {!!Form::tel('codigo_servico', '')->attrs(['class' => 'form-control'])!!}
             </div>
 
-            <div class="col-md-4 col-12 uf-field">
+            <div class="col-md-3 col-6 uf-field">
+                <label class="form-label"><i class="ri-government-line"></i> Cód. Trib. Nacional (NFS-e)</label>
+                {!!Form::text('codigo_tributacao_nacional', '')->attrs(['class' => 'form-control', 'placeholder' => 'Ex: 01.01.01'])!!}
+            </div>
+
+            <div class="col-md-3 col-6 uf-field">
                 <label class="form-label"><i class="ri-building-line"></i> Cód. Tributação Municipal</label>
                 {!!Form::tel('codigo_tributacao_municipio', '')->attrs(['class' => 'form-control'])!!}
             </div>
 
-            <div class="col-md-2 col-6 uf-field">
+            <div class="col-md-3 col-6 uf-field">
                 <label class="form-label"><i class="ri-toggle-line"></i> Status</label>
                 {!!Form::select('status', '', ['1' => 'Ativo', '0' => 'Inativo'])->attrs(['class' => 'form-select'])!!}
             </div>

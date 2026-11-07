@@ -254,7 +254,7 @@
                                 !!}
                             </div>
 
-                            <div class="col-md-3 col-6 uf-field">
+                            <div class="col-md-2 col-6 uf-field">
                                 <label class="form-label required" for="inp-codigo_servico"><i class="ri-barcode-line"></i> Código do Serviço</label>
                                 @isset($servicoPadrao)
                                 {!!Form::text('codigo_servico', '')->attrs(['class' => 'form-control', 'id' => 'inp-codigo_servico'])
@@ -267,8 +267,15 @@
                                 @endif
                             </div>
 
-                            <div class="col-md-3 col-6 uf-field">
-                                <label class="form-label" for="inp-codigo_tributacao_municipio"><i class="ri-government-line"></i> Cód. Tributação Município</label>
+                            <div class="col-md-2 col-6 uf-field">
+                                <label class="form-label" for="inp-codigo_tributacao_nacional"><i class="ri-government-line"></i> Cód. Trib. Nacional</label>
+                                {!!Form::text('codigo_tributacao_nacional', '')->attrs(['class' => 'form-control', 'id' => 'inp-codigo_tributacao_nacional', 'placeholder' => 'Ex: 01.01.01'])
+                                ->value(isset($item) ? ($item->servico->codigo_tributacao_nacional ?? ($item->servico->servico->codigo_tributacao_nacional ?? '')) : (isset($servicoPadrao) ? $servicoPadrao->codigo_tributacao_nacional : ''))
+                                !!}
+                            </div>
+
+                            <div class="col-md-2 col-6 uf-field">
+                                <label class="form-label" for="inp-codigo_tributacao_municipio"><i class="ri-building-line"></i> Cód. Trib. Município</label>
                                 {!!Form::text('codigo_tributacao_municipio', '')->attrs(['class' => 'form-control', 'id' => 'inp-codigo_tributacao_municipio'])
                                 ->value(isset($item) ? $item->servico->codigo_tributacao_municipio : '')
                                 !!}

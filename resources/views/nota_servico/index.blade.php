@@ -43,6 +43,8 @@
 .act-send:hover { box-shadow: 0 4px 12px rgba(21,128,61,.3); }
 .act-query { background: #f1f5f9; color: #475569; }
 .act-query:hover { box-shadow: 0 4px 12px rgba(71,85,105,.3); }
+.act-xml { background: #fef3c7; color: #b45309; }
+.act-xml:hover { box-shadow: 0 4px 12px rgba(180,83,9,.3); }
 
 /* ─── Badges (Pills) ─── */
 .pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 8px; padding: 4px 10px; font-size: 11.5px; font-weight: 700; }
@@ -214,15 +216,23 @@
                                                 @csrf
                                                 <div class="act-group">
                                                     @if($item->estado == 'aprovado')
-                                                    <a class="act-btn act-view" title="Imprimir NFSe" target="_blank" href="{{ route('nota-servico.imprimir', [$item->id]) }}">
+                                                    <a class="act-btn act-view" title="Imprimir DANFSE" target="_blank" href="{{ route('nota-servico.imprimir', [$item->id]) }}">
                                                         <i class="ri-printer-line"></i>
                                                     </a>
-                                                    <button title="Cancelar NFSe" type="button" class="act-btn act-del" onclick="cancelar('{{$item->id}}', '{{$item->numero}}')">
+                                                    <a class="act-btn act-xml" title="Baixar XML Oficial" href="{{ route('nota-servico.xml', [$item->id]) }}">
+                                                        <i class="ri-file-code-line"></i>
+                                                    </a>
+                                                    <button title="Cancelar NFSe" type="button" class="act-btn act-del" onclick="cancelar('{{$item->id}}', '{{$item->numero_nfse ?: $item->id}}')">
                                                         <i class="ri-close-circle-line"></i>
                                                     </button>
                                                     @else
-                                                    <a title="Visualizar PDF Temporário" class="act-btn act-view" href="{{ route('nota-servico.preview', [$item->id]) }}">
-                                                        <i class="ri-file-ppt-line"></i>
+                                                    @if(!empty($item->xml_dps))
+                                                    <a class="act-btn act-xml" title="Baixar XML da DPS" href="{{ route('nota-servico.xml', [$item->id]) }}">
+                                                        <i class="ri-file-code-line"></i>
+                                                    </a>
+                                                    @endif
+                                                    <a title="Prévia XML da DPS" class="act-btn act-view" target="_blank" href="{{ route('nota-servico.preview', [$item->id]) }}">
+                                                        <i class="ri-eye-line"></i>
                                                     </a>
                                                     @endif
                                                     
@@ -239,12 +249,12 @@
                                                         </button>
                                                         @endcan
                                                         
-                                                        <button title="Transmitir NFSe" type="button" class="act-btn act-send" onclick="transmitir('{{$item->id}}')">
+                                                        <button title="Transmitir NFS-e ao Portal Nacional" type="button" class="act-btn act-send" onclick="transmitir('{{$item->id}}')">
                                                             <i class="ri-send-plane-fill"></i>
                                                         </button>
                                                     @endif
 
-                                                    <button title="Consultar NFSe" type="button" class="act-btn act-query" onclick="consultar('{{$item->id}}', '{{$item->numero}}')">
+                                                    <button title="Consultar no Emissor Nacional" type="button" class="act-btn act-query" onclick="consultar('{{$item->id}}', '{{$item->numero_nfse ?: $item->id}}')">
                                                         <i class="ri-file-search-line"></i>
                                                     </button>
                                                 </div>
@@ -303,7 +313,7 @@
                 </div>
                 <div class="alert alert-warning mt-3 mb-0 d-flex gap-2 align-items-center rounded-3">
                     <i class="ri-information-line fs-20"></i>
-                    <span class="fs-12">Esta operação é irreversível. O cancelamento será registrado diretamente no Web Service municipal.</span>
+                    <span class="fs-12">Esta operação é irreversível. O cancelamento será registrado diretamente no Portal Nacional da NFS-e (Receita Federal).</span>
                 </div>
             </div>
             <div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-end gap-2">

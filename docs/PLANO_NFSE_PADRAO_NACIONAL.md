@@ -133,8 +133,9 @@ Campos a serem adicionados para o Padrão Nacional:
 - [x] Rodar a migration para adicionar os campos de DPS na tabela `nota_servicos` e código nacional em `servicos` (Fase 1 Concluída).
 - [x] Criar a classe `app/Services/NfseNacionalService.php` (Fase 2 Concluída).
 - [x] Implementar a geração da tag `<infDPS>` e a assinatura digital com o certificado A1 da empresa via RSA-SHA256 (Fase 2 Concluída).
-- [ ] Fazer o primeiro teste de conexão com o endpoint de homologação da Receita Federal (Fase 3).
-- [ ] Ajustar o botão de transmissão na tela para o novo fluxo.
+- [x] Fazer a integração de endpoints e cliente mTLS com o Ambiente de Dados Nacional (Fase 3 Concluída).
+- [x] Ajustar o controller de transmissão, rotas e botões de ação na tela para o novo fluxo (Fase 4 Concluída).
+- [ ] Testes práticos com dados reais e validação de homologação (Fase 5).
 
 ---
 *Documento gerado automaticamente para preservação do planejamento e continuidade dos trabalhos.*

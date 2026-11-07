@@ -62,24 +62,27 @@ function consultar(id){
 $('#btn-cancelar').click(() => {
 	console.clear()
 
+	let motivo = $('#inp-motivo-cancela').val()
+	if (!motivo || motivo.trim() === '') {
+		swal("Aviso", "Por favor, preencha o motivo do cancelamento.", "warning")
+		return
+	}
+
 	$.post(path_url + "api/nfse/cancelar", {
 		id: IDNFSE,
-		motivo: $('#inp-motivo-cancela').val()
+		motivo: motivo
 	})
-	.done((success) => {
-		swal("Sucesso", e.mensagem, "success")
+	.done((res) => {
+		$('#modal-cancelar').modal('hide')
+		swal("Sucesso", res.mensagem || "NFS-e cancelada com sucesso!", "success").then(() => {
+			location.reload()
+		})
 	}).fail((err) => {
-		try{
-			swal("Erro", err.responseJSON.mensagem, "error").then(() => {
-				location.reload()
-			})
-		}catch{
-			try{
-				swal("Erro", e.responseJSON.mensagem, "error")
-			}catch{
-				swal("Erro", e.responseJSON, "error")
-			}
+		let msg = "Erro ao cancelar NFS-e"
+		if (err.responseJSON && err.responseJSON.mensagem) {
+			msg = err.responseJSON.mensagem
 		}
+		swal("Erro", msg, "error")
 	})
 })
 

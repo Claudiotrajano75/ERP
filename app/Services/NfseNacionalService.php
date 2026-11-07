@@ -45,6 +45,14 @@ class NfseNacionalService
     }
 
     /**
+     * Retorna a URL base do ambiente (Produção ou Homologação)
+     */
+    public function getBaseUrl(): string
+    {
+        return $this->baseUrl;
+    }
+
+    /**
      * Gera o identificador unico padrao da DPS (atributo Id da tag <infDPS>)
      * Formato oficial: "DPS" + 42 digitos numericos
      * (cLocEmi 7d + tpInsc 1d + doc 14d + serie 5d + nDPS 15d = 42 digitos)
@@ -580,3 +588,4 @@ class NfseNacionalService
         return trim(preg_replace('/\s+/', ' ', $limpo));
     }
 }
+

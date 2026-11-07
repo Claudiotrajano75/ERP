@@ -9,7 +9,7 @@ use App\Models\ContaReceber;
 use App\Models\Reserva;
 use App\Models\ItemNotaServico;
 use Illuminate\Support\Facades\DB;
-use CloudDfe\SdkPHP\Nfse;
+use App\Services\NfseNacionalService;
 
 class NotaServicoController extends Controller
 {
@@ -298,107 +298,82 @@ public function destroy($id)
     return redirect()->route('nota-servico.index');
 }
 
-public function imprimir($id){
+public function imprimir($id)
+{
     $item = NotaServico::findOrFail($id);
-    return redirect($item->url_pdf_nfse);
+    if (!empty($item->url_pdf_nfse)) {
+        return redirect($item->url_pdf_nfse);
+    }
+    if (!empty($item->chave)) {
+        $empresa = $item->empresa;
+        $baseUrl = ($empresa && $empresa->ambiente == 1)
+            ? 'https://adn.nfse.gov.br'
+            : 'https://adn.producaorestrita.nfse.gov.br';
+        return redirect("{$baseUrl}/danfse/{$item->chave}");
+    }
+    session()->flash("flash_warning", "O DANFSE oficial da NFS-e ainda não foi gerado pelo Emissor Nacional.");
+    return redirect()->back();
 }
 
-public function preview($id){
+public function downloadXml($id)
+{
     $item = NotaServico::findOrFail($id);
-    
-    if(!is_dir(public_path('nfse_temp'))){
-        mkdir(public_path('nfse_temp'), 0777, true);
+    $pastaXml = public_path('xml_nota_servico');
+
+    // 1. Tenta o XML oficial retornado pela SEFIN Nacional
+    if (!empty($item->chave)) {
+        $arquivo = "{$pastaXml}/{$item->chave}.xml";
+        if (file_exists($arquivo)) {
+            return response()->download($arquivo, "NFSe-{$item->numero_nfse}-{$item->chave}.xml");
+        }
     }
 
-    $empresa = Empresa::findOrFail($item->empresa_id);
-    $params = [
-        'token' => $empresa->token_nfse,
-        'ambiente' => Nfse::AMBIENTE_PRODUCAO,
-            // 'ambiente' => $config->ambiente == 2 ? Nfse::AMBIENTE_HOMOLOGACAO : Nfse::AMBIENTE_PRODUCAO,
-        'options' => [
-            'debug' => false,
-            'timeout' => 60,
-            'port' => 443,
-            'http_version' => CURL_HTTP_VERSION_NONE
-        ]
-    ];
-    $nfse = new Nfse($params);
-    $servico = $item->servico;
+    // 2. Tenta o XML da DPS assinado
+    if (!empty($item->chave_dps)) {
+        $arquivoDps = "{$pastaXml}/{$item->chave_dps}.xml";
+        if (file_exists($arquivoDps)) {
+            return response()->download($arquivoDps, "DPS-{$item->numero_dps}-{$item->chave_dps}.xml");
+        }
+    }
+
+    // 3. Fallback: conteúdo armazenado no banco
+    if (!empty($item->xml_dps)) {
+        return response($item->xml_dps, 200, [
+            'Content-Type' => 'application/xml',
+            'Content-Disposition' => 'attachment; filename="DPS-' . ($item->numero_dps ?: $item->id) . '.xml"'
+        ]);
+    }
+
+    session()->flash("flash_error", "Arquivo XML da NFS-e / DPS não encontrado.");
+    return redirect()->back();
+}
+
+public function preview($id)
+{
+    $item = NotaServico::findOrFail($id);
     try {
-
-        $doc = preg_replace('/[^0-9]/', '', $item->documento);
-        $im = preg_replace('/[^0-9]/', '', $item->im);
-        $ie = preg_replace('/[^0-9]/', '', $item->ie);
-        $novoNumeroNFse = $empresa->numero_ultima_nfse+1;
-        
-        $payload = [
-            "numero" => $novoNumeroNFse,
-            "serie" => $empresa->numero_serie_nfse,
-            "tipo" => "1",
-            "status" => "1",
-            "data_emissao" => date("Y-m-d\TH:i:sP"),
-            "data_competencia" => date("Y-m-d\TH:i:sP"),
-
-            "tomador" => [
-                "cnpj" => strlen($doc) == 14 ? $doc : null,
-                "cpf" => strlen($doc) == 11 ? $doc : null,
-                "im" => $im ? $im : null,
-                "ie" => $ie ? $ie : null,
-                "razao_social" => $item->razao_social,
-                "endereco" => [
-                    "logradouro" => $this->retiraAcentos($item->rua),
-                    "numero" => $this->retiraAcentos($item->numero),
-                    "complemento" => $this->retiraAcentos($item->complemento),
-                    "bairro" => $this->retiraAcentos($item->bairro),
-                    "codigo_municipio" => $item->cidade->codigo,
-                    "uf" => $item->cidade->uf,
-                    "cep" => preg_replace('/[^0-9]/', '', $item->cep)
-                ]
-            ],
-            "servico" => [
-                "codigo" => $servico->codigo_servico,
-                "codigo_tributacao_municipio" => $servico->codigo_tributacao_municipio,
-                "discriminacao" => $this->retiraAcentos($servico->discriminacao),
-                "codigo_municipio" => $empresa->cidade->codigo,
-                "valor_servicos" => $servico->valor_servico,
-                "valor_pis" => $servico->aliquota_pis,
-                "valor_aliquota" => $servico->aliquota_iss,
-                "itens" => [
-                    [
-                        "codigo" => $servico->codigo_servico,
-                        "codigo_tributacao_municipio" => $servico->codigo_tributacao_municipio,
-                        "discriminacao" => $this->retiraAcentos($servico->discriminacao),
-                        "codigo_municipio" => $empresa->cidade->codigo,
-                        "valor_servicos" => $servico->valor_servico,
-                        "valor_pis" => $servico->aliquota_pis,
-                        "valor_aliquota" => $servico->aliquota_iss,
-                    ]
-                ]
-            ]
-        ];
-            // return response()->json($payload, 404);
-        $rute = "nfse_temp/temp.pdf";
-        $resp = $nfse->preview($payload);
-
-        if(isset($resp->pdf)){
-            $pdf_b64 = base64_decode($resp->pdf);
-
-            if(file_put_contents($rute, $pdf_b64)){
-                header("Content-type: application/pdf");
-                echo $pdf_b64;
-            }
-        }else{
-            dd($resp);
+        $empresa = Empresa::findOrFail($item->empresa_id);
+        if (empty($empresa->arquivo) || empty($empresa->senha)) {
+            session()->flash('flash_warning', 'Certificado digital A1 não configurado para prévia da DPS.');
+            return redirect()->back();
         }
 
-    }catch (\Exception $e) {
-        session()->flash('flash_error', 'Algo deu errado: ' . $e->getMessage());
+        $service = new NfseNacionalService($empresa);
+        $gerado = $service->gerarDpsAssinada($item, false);
+
+        return response($gerado['xmlCru'], 200, [
+            'Content-Type' => 'application/xml',
+            'Content-Disposition' => 'inline; filename="DPS-preview-' . $item->id . '.xml"'
+        ]);
+
+    } catch (\Exception $e) {
+        session()->flash('flash_error', 'Algo deu errado ao gerar prévia da DPS: ' . $e->getMessage());
         return redirect()->back();
     }
-
 }
 
-private function retiraAcentos($texto){
+private function retiraAcentos($texto)
+{
     return preg_replace(array("/(á|à|ã|â|ä)/","/(Á|À|Ã|Â|Ä)/","/(é|è|ê|ë)/","/(É|È|Ê|Ë)/","/(í|ì|î|ï)/","/(Í|Ì|Î|Ï)/","/(ó|ò|õ|ô|ö)/","/(Ó|Ò|Õ|Ô|Ö)/","/(ú|ù|û|ü)/","/(Ú|Ù|Û|Ü)/","/(ñ)/","/(Ñ)/", "/(ç)/", "/(&)/"),explode(" ","a A e E i I o O u U n N c e"),$texto);
 }
 

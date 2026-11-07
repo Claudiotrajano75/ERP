@@ -4,215 +4,160 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use CloudDfe\SdkPHP\Nfse;
-use App\Models\Empresa;
 use App\Models\NotaServico;
+use App\Services\NfseNacionalService;
 
 class NotaServicoController extends Controller
 {
-    public function transmitir(Request $request){
-        $item = NotaServico::findOrFail($request->id);
-        $empresa = $item->empresa;
-
-        $params = [
-            'token' => $empresa->token_nfse,
-            'ambiente' => Nfse::AMBIENTE_PRODUCAO,
-            // 'ambiente' => $empresa->ambiente == 2 ? Nfse::AMBIENTE_HOMOLOGACAO : Nfse::AMBIENTE_PRODUCAO,
-            'options' => [
-                'debug' => false,
-                'timeout' => 60,
-                'port' => 443,
-                'http_version' => CURL_HTTP_VERSION_NONE
-            ]
-        ];
-
-        $nfse = new Nfse($params);
-        $servico = $item->servico;
-
-        $novoNumeroNFse = $empresa->numero_ultima_nfse+1;
-
+    /**
+     * Transmite a DPS para autorização da NFS-e no Emissor Nacional.
+     */
+    public function transmitir(Request $request)
+    {
         try {
+            $item = NotaServico::findOrFail($request->id);
+            $empresa = $item->empresa;
 
-            $doc = preg_replace('/[^0-9]/', '', $item->documento);
-            $im = preg_replace('/[^0-9]/', '', $item->im);
-            $ie = preg_replace('/[^0-9]/', '', $item->ie);
+            if (empty($empresa->arquivo) || empty($empresa->senha)) {
+                return response()->json([
+                    'sucesso'  => false,
+                    'mensagem' => 'Certificado Digital A1 não configurado para esta empresa. Cadastre o certificado e a senha no cadastro da empresa antes de transmitir.'
+                ], 422);
+            }
 
-            $payload = [
-                "numero" => $novoNumeroNFse,
-                "serie" => $empresa->numero_serie_nfse,
-                "tipo" => "1",
-                "status" => "1",
-                "data_emissao" => date("Y-m-d\TH:i:sP"),
-                "data_competencia" => date("Y-m-d\TH:i:sP"),
+            $service = new NfseNacionalService($empresa);
+            $resultado = $service->transmitirDps($item);
 
-                "tomador" => [
-                    "cnpj" => strlen($doc) == 14 ? $doc : null,
-                    "cpf" => strlen($doc) == 11 ? $doc : null,
-                    "im" => $im ? $im : null,
-                    "ie" => $ie ? $ie : null,
-                    "razao_social" => $item->razao_social,
-                    "endereco" => [
-                        "logradouro" => $this->retiraAcentos($item->rua),
-                        "numero" => $this->retiraAcentos($item->numero),
-                        "complemento" => $this->retiraAcentos($item->complemento),
-                        "bairro" => $this->retiraAcentos($item->bairro),
-                        "codigo_municipio" => $item->cidade->codigo,
-                        "uf" => $item->cidade->uf,
-                        "cep" => preg_replace('/[^0-9]/', '', $item->cep)
-                    ]
-                ],
-                "servico" => [
-                    "codigo" => $servico->codigo_servico,
-                    "codigo_tributacao_municipio" => $servico->codigo_tributacao_municipio,
-                    "discriminacao" => $this->retiraAcentos($servico->discriminacao),
-                    "codigo_municipio" => $empresa->cidade->codigo,
-                    "valor_servicos" => $servico->valor_servico,
-                    "valor_pis" => $servico->aliquota_pis,
-                    "valor_aliquota" => $servico->aliquota_iss,
-                    "itens" => [
-                        [
-                            "codigo" => $servico->codigo_servico,
-                            "codigo_tributacao_municipio" => $servico->codigo_tributacao_municipio,
-                            "discriminacao" => $this->retiraAcentos($servico->discriminacao),
-                            "codigo_municipio" => $empresa->cidade->codigo,
-                            "valor_servicos" => $servico->valor_servico,
-                            "valor_pis" => $servico->aliquota_pis,
-                            "valor_aliquota" => $servico->aliquota_iss,
-                        ]
-                    ]
-                ]
-            ];
+            if ($resultado['sucesso']) {
+                return response()->json($resultado, 200);
+            }
 
-            $resp = $nfse->cria($payload);
-            if($resp->sucesso == true){
-                if(isset($resp->chave)){
-                    $item->chave = $resp->chave;
-                    $item->save();
-                }
-                // return response()->json($resp, 200);
+            return response()->json($resultado, 404);
 
+        } catch (\Exception $e) {
+            return response()->json([
+                'sucesso'  => false,
+                'mensagem' => 'Erro ao processar NFS-e: ' . $e->getMessage()
+            ], 403);
+        }
+    }
 
-                $chave = $resp->chave;
-                sleep(15);
-                $tentativa = 1;
-                while ($tentativa <= 5) {
-                    $payload = [
-                        'chave' => $item->chave
-                    ];
-                    $resp = $nfse->consulta($payload);
-                    if ($resp->codigo != 5023) {
-                        if ($resp->sucesso) {
-                    // autorizado
+    /**
+     * Consulta o status da NFS-e ou da DPS no Ambiente Nacional.
+     */
+    public function consultar(Request $request)
+    {
+        try {
+            $item = NotaServico::findOrFail($request->id);
+            $empresa = $item->empresa;
 
-                            $item->estado = 'aprovado';
-                            $item->url_pdf_nfse = $resp->link_pdf;
-                            $item->numero_nfse = $resp->numero;
-                            $item->codigo_verificacao = $resp->codigo_verificacao;
+            if (empty($empresa->arquivo) || empty($empresa->senha)) {
+                return response()->json([
+                    'sucesso'  => false,
+                    'mensagem' => 'Certificado Digital A1 da empresa não configurado.'
+                ], 422);
+            }
 
-                            $item->save();
+            $service = new NfseNacionalService($empresa);
 
-                            $empresa->numero_ultima_nfse = (int)$resp->numero;
-                            $empresa->save();
-                            $xml = $resp->xml;
-                            file_put_contents(public_path('xml_nota_servico/')."$item->chave.xml", $xml);
-                            return response()->json($resp, 200);
-                        } else {
-                            return response()->json($resp, 200);
+            // Se ja possuir chave de acesso oficial da NFS-e
+            if (!empty($item->chave)) {
+                $resp = $service->consultarNfse($item->chave);
+            } elseif (!empty($item->chave_dps)) {
+                // Consulta pelo ID da DPS
+                $resp = $service->consultarDps($item->chave_dps);
+            } else {
+                return response()->json([
+                    'sucesso'  => false,
+                    'mensagem' => 'Esta nota não possui chave de acesso nem DPS transmitida para consulta.'
+                ], 404);
+            }
+
+            if ($resp['sucesso']) {
+                $dados = $resp['dados'] ?? [];
+                if (!empty($dados['chaveAcesso'])) {
+                    $item->estado = 'aprovado';
+                    $item->chave = $dados['chaveAcesso'];
+                    if (!empty($dados['numero'])) {
+                        $item->numero_nfse = $dados['numero'];
+                    }
+                    $item->url_pdf_nfse = $dados['linkDanfse'] ?? "{$service->getBaseUrl()}/danfse/{$item->chave}";
+
+                    if (!empty($dados['nfseXmlGZipB64'])) {
+                        $xml = gzdecode(base64_decode($dados['nfseXmlGZipB64']));
+                        if ($xml) {
+                            $pastaXml = public_path('xml_nota_servico');
+                            if (!is_dir($pastaXml)) {
+                                mkdir($pastaXml, 0755, true);
+                            }
+                            file_put_contents("{$pastaXml}/{$item->chave}.xml", $xml);
+                            $item->url_xml = "/xml_nota_servico/{$item->chave}.xml";
                         }
                     }
-                    sleep(3);
-                    $tentativa++;
-                }
-
-            }else{
-                if($resp->codigo == 5008){
-                    $item->chave = $resp->chave;
-                    $item->save();
-                }
-                return response()->json($resp, 404);
-            }
-
-        }catch (\Exception $e) {
-            return response()->json($e->getMessage(), 403);
-        }
-    }
-
-    public function consultar(Request $request){
-        $item = NotaServico::findOrFail($request->id);
-        $empresa = $item->empresa;
-        $params = [
-            'token' => $empresa->token_nfse,
-            'ambiente' => Nfse::AMBIENTE_PRODUCAO,
-            // 'ambiente' => $empresa->ambiente == 2 ? Nfse::AMBIENTE_HOMOLOGACAO : Nfse::AMBIENTE_PRODUCAO,
-            'options' => [
-                'debug' => false,
-                'timeout' => 60,
-                'port' => 443,
-                'http_version' => CURL_HTTP_VERSION_NONE
-            ]
-        ];
-        try{
-
-            $nfse = new Nfse($params);
-            $payload = [
-                'chave' => $item->chave
-            ];
-            $resp = $nfse->consulta($payload);
-            if($resp->sucesso == true){
-                if($resp->codigo == 100){
-                    $item->estado = 'aprovado';
-                    $item->url_pdf_nfse = $resp->link_pdf;
-                    $item->numero_nfse = $resp->numero;
-                    $item->codigo_verificacao = $resp->codigo_verificacao;
 
                     $item->save();
-
-                    $empresa->numero_ultima_nfse = (int)$resp->numero;
-                    $empresa->save();
-                    $xml = $resp->xml;
-                    file_put_contents(public_path('xml_nota_servico/')."$item->chave.xml", $xml);
                 }
-                return response()->json($resp, 200);
+
+                return response()->json([
+                    'sucesso'   => true,
+                    'mensagem'  => 'Consulta realizada com sucesso!',
+                    'link_pdf'  => $item->url_pdf_nfse ?: "{$service->getBaseUrl()}/danfse/{$item->chave}",
+                    'dados'     => $dados
+                ], 200);
             }
-            return response()->json($resp, 404);
-        }catch (\Exception $e) {
-            return response()->json($e->getMessage(), 403);
+
+            return response()->json([
+                'sucesso'  => false,
+                'mensagem' => $resp['mensagem'] ?? 'Nota ainda não processada pelo Emissor Nacional.',
+                'dados'    => $resp['dados'] ?? null
+            ], 404);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'sucesso'  => false,
+                'mensagem' => 'Erro ao consultar NFS-e: ' . $e->getMessage()
+            ], 403);
         }
     }
 
-    public function cancelar(Request $request){
-        $item = NotaServico::findOrFail($request->id);
-        $empresa = $item->empresa;
-        $params = [
-            'token' => $empresa->token_nfse,
-            'ambiente' => Nfse::AMBIENTE_PRODUCAO,
-            // 'ambiente' => $empresa->ambiente == 2 ? Nfse::AMBIENTE_HOMOLOGACAO : Nfse::AMBIENTE_PRODUCAO,
-            'options' => [
-                'debug' => false,
-                'timeout' => 60,
-                'port' => 443,
-                'http_version' => CURL_HTTP_VERSION_NONE
-            ]
-        ];
-        try{
+    /**
+     * Cancela a NFS-e no Emissor Nacional.
+     */
+    public function cancelar(Request $request)
+    {
+        try {
+            $item = NotaServico::findOrFail($request->id);
+            $empresa = $item->empresa;
 
-            $nfse = new Nfse($params);
-            $payload = [
-                'chave' => $item->chave,
-                'justificativa' => $request->motivo
-            ];
-            $resp = $nfse->cancela($payload);
-            if($resp->sucesso == true){
-                return response()->json($resp, 404);
+            if (empty($empresa->arquivo) || empty($empresa->senha)) {
+                return response()->json([
+                    'sucesso'  => false,
+                    'mensagem' => 'Certificado Digital A1 da empresa não configurado.'
+                ], 422);
             }
 
-            return response()->json($resp, 404);
-        }catch (\Exception $e) {
-            return response()->json($e->getMessage(), 403);
-        }
-    }
+            if (empty($item->chave)) {
+                return response()->json([
+                    'sucesso'  => false,
+                    'mensagem' => 'Esta nota não possui chave de acesso autorizada para cancelamento.'
+                ], 422);
+            }
 
-    private function retiraAcentos($texto){
-        return preg_replace(array("/(á|à|ã|â|ä)/","/(Á|À|Ã|Â|Ä)/","/(é|è|ê|ë)/","/(É|È|Ê|Ë)/","/(í|ì|î|ï)/","/(Í|Ì|Î|Ï)/","/(ó|ò|õ|ô|ö)/","/(Ó|Ò|Õ|Ô|Ö)/","/(ú|ù|û|ü)/","/(Ú|Ù|Û|Ü)/","/(ñ)/","/(Ñ)/", "/(ç)/", "/(&)/"),explode(" ","a A e E i I o O u U n N c e"),$texto);
+            $service = new NfseNacionalService($empresa);
+            $motivo = $request->motivo ?: 'Cancelamento por solicitacao do emitente';
+            $resultado = $service->cancelarNfse($item, $motivo, '1');
+
+            if ($resultado['sucesso']) {
+                return response()->json($resultado, 200);
+            }
+
+            return response()->json($resultado, 404);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'sucesso'  => false,
+                'mensagem' => 'Erro ao cancelar NFS-e: ' . $e->getMessage()
+            ], 403);
+        }
     }
 }

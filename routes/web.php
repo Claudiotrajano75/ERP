@@ -474,6 +474,7 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
 
         Route::get('nota-servico-imprimir/{id}', 'NotaServicoController@imprimir')->name('nota-servico.imprimir');
         Route::get('nota-servico-preview/{id}', 'NotaServicoController@preview')->name('nota-servico.preview');
+        Route::get('nota-servico-xml/{id}', 'NotaServicoController@downloadXml')->name('nota-servico.xml');
 
         Route::get('cte-inutilizar', 'CteController@inutilizar')->name('cte.inutilizar');
         Route::post('cte-inutilizar-store', 'CteController@inutilStore')->name('cte-inutilizar.store');

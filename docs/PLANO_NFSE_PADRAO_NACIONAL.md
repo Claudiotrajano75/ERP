@@ -131,9 +131,9 @@ Campos a serem adicionados para o Padrão Nacional:
 ## 📌 Checklist para Início dos Trabalhos (Amanhã)
 
 - [x] Rodar a migration para adicionar os campos de DPS na tabela `nota_servicos` e código nacional em `servicos` (Fase 1 Concluída).
-- [ ] Criar a classe `app/Services/NfseNacionalService.php`.
-- [ ] Implementar a geração da tag `<infDPS>` e a assinatura digital com o certificado A1 da empresa.
-- [ ] Fazer o primeiro teste de conexão com o endpoint de homologação da Receita Federal.
+- [x] Criar a classe `app/Services/NfseNacionalService.php` (Fase 2 Concluída).
+- [x] Implementar a geração da tag `<infDPS>` e a assinatura digital com o certificado A1 da empresa via RSA-SHA256 (Fase 2 Concluída).
+- [ ] Fazer o primeiro teste de conexão com o endpoint de homologação da Receita Federal (Fase 3).
 - [ ] Ajustar o botão de transmissão na tela para o novo fluxo.
 
 ---

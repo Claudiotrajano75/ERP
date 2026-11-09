@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <title>DANFSE - Documento Auxiliar da NFS-e Nacional</title>
@@ -8,6 +9,7 @@
             margin: 10mm 10mm 10mm 10mm;
             size: A4 portrait;
         }
+
         body {
             font-family: Arial, Helvetica, sans-serif;
             font-size: 9px;
@@ -16,6 +18,7 @@
             margin: 0;
             padding: 0;
         }
+
         .tarja-homologacao {
             background-color: #fee2e2;
             color: #991b1b;
@@ -28,15 +31,18 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 6px;
         }
+
         .box {
             border: 1px solid #333;
             margin-bottom: 6px;
         }
+
         .box-header {
             background-color: #f1f5f9;
             border-bottom: 1px solid #333;
@@ -45,12 +51,23 @@
             text-transform: uppercase;
             padding: 3px 6px;
         }
+
         .box-body {
             padding: 4px 6px;
         }
-        .text-center { text-align: center; }
-        .text-end { text-align: right; }
-        .text-bold { font-weight: bold; }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-end {
+            text-align: right;
+        }
+
+        .text-bold {
+            font-weight: bold;
+        }
+
         .chave-acesso {
             font-family: "Courier New", Courier, monospace;
             font-size: 11px;
@@ -62,16 +79,20 @@
             border: 1px solid #94a3b8;
             margin: 4px 0;
         }
-        .table-valores td, .table-valores th {
+
+        .table-valores td,
+        .table-valores th {
             border: 1px solid #cbd5e1;
             padding: 3px 4px;
             font-size: 8.5px;
         }
+
         .table-valores th {
             background-color: #f8fafc;
             text-align: center;
             font-weight: bold;
         }
+
         .lbl {
             font-size: 7.5px;
             color: #475569;
@@ -79,6 +100,7 @@
             display: block;
             margin-bottom: 1px;
         }
+
         .val {
             font-size: 9px;
             font-weight: bold;
@@ -86,19 +108,21 @@
         }
     </style>
 </head>
+
 <body>
 
     @if($item->ambiente == 2)
-    <div class="tarja-homologacao">
-        NFS-E EMITIDA EM AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL (PRODUÇÃO RESTRITA)
-    </div>
+        <div class="tarja-homologacao">
+            NFS-E EMITIDA EM AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL (PRODUÇÃO RESTRITA)
+        </div>
     @endif
 
     <!-- CABEÇALHO OFICIAL DO DANFSE -->
     <div class="box">
         <table style="width: 100%; margin: 0;">
             <tr>
-                <td style="width: 25%; text-align: center; vertical-align: middle; padding: 6px; border-right: 1px solid #333;">
+                <td
+                    style="width: 25%; text-align: center; vertical-align: middle; padding: 6px; border-right: 1px solid #333;">
                     <div style="font-size: 10px; font-weight: bold; text-transform: uppercase;">
                         REPÚBLICA FEDERATIVA DO BRASIL
                     </div>
@@ -109,7 +133,8 @@
                         SISTEMA NACIONAL DA NFS-e
                     </div>
                 </td>
-                <td style="width: 50%; text-align: center; vertical-align: middle; padding: 6px; border-right: 1px solid #333;">
+                <td
+                    style="width: 50%; text-align: center; vertical-align: middle; padding: 6px; border-right: 1px solid #333;">
                     <div style="font-size: 12px; font-weight: bold;">
                         DANFSE - Documento Auxiliar da NFS-e
                     </div>
@@ -137,11 +162,15 @@
                         </tr>
                         <tr>
                             <td><span class="lbl">Data Emissão:</span></td>
-                            <td class="text-end"><span class="val">{{ $item->created_at ? $item->created_at->format('d/m/Y H:i') : date('d/m/Y H:i') }}</span></td>
+                            <td class="text-end"><span
+                                    class="val">{{ $item->created_at ? $item->created_at->format('d/m/Y H:i') : date('d/m/Y H:i') }}</span>
+                            </td>
                         </tr>
                         <tr>
                             <td><span class="lbl">Competência:</span></td>
-                            <td class="text-end"><span class="val">{{ $item->created_at ? $item->created_at->format('d/m/Y') : date('d/m/Y') }}</span></td>
+                            <td class="text-end"><span
+                                    class="val">{{ $item->created_at ? $item->created_at->format('d/m/Y') : date('d/m/Y') }}</span>
+                            </td>
                         </tr>
                     </table>
                 </td>
@@ -171,7 +200,10 @@
                     <td colspan="2" style="padding-top: 4px;">
                         <span class="lbl">Endereço:</span>
                         <span class="val">
-                            {{ $empresa->rua }}, {{ $empresa->numero }} {{ $empresa->complemento ? ' - ' . $empresa->complemento : '' }} - {{ $empresa->bairro }} - CEP: {{ $empresa->cep }} - {{ $empresa->cidade ? $empresa->cidade->nome . '/' . $empresa->cidade->uf : '' }}
+                            {{ $empresa->rua }}, {{ $empresa->numero }}
+                            {{ $empresa->complemento ? ' - ' . $empresa->complemento : '' }} - {{ $empresa->bairro }} -
+                            CEP: {{ $empresa->cep }} -
+                            {{ $empresa->cidade ? $empresa->cidade->nome . '/' . $empresa->cidade->uf : '' }}
                         </span>
                     </td>
                 </tr>
@@ -197,30 +229,37 @@
                 <tr>
                     <td style="width: 65%;">
                         <span class="lbl">Nome / Razão Social:</span>
-                        <span class="val">{{ $item->razao_social ?: ($item->cliente ? $item->cliente->razao_social : 'CONSUMIDOR') }}</span>
+                        <span
+                            class="val">{{ $item->razao_social ?: ($item->cliente ? $item->cliente->razao_social : 'CONSUMIDOR') }}</span>
                     </td>
                     <td style="width: 35%;">
                         <span class="lbl">CPF / CNPJ:</span>
-                        <span class="val">{{ $item->documento ?: ($item->cliente ? $item->cliente->cpf_cnpj : '') }}</span>
+                        <span
+                            class="val">{{ $item->documento ?: ($item->cliente ? $item->cliente->cpf_cnpj : '') }}</span>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2" style="padding-top: 4px;">
                         <span class="lbl">Endereço:</span>
                         <span class="val">
-                            {{ $item->rua ?: ($item->cliente ? $item->cliente->rua : '') }}, {{ $item->numero ?: ($item->cliente ? $item->cliente->numero : 'S/N') }}
-                            {{ $item->bairro ? ' - ' . $item->bairro : '' }} - CEP: {{ $item->cep ?: ($item->cliente ? $item->cliente->cep : '') }} - {{ $item->cidade ? $item->cidade->nome . '/' . $item->cidade->uf : ($item->cliente && $item->cliente->cidade ? $item->cliente->cidade->nome . '/' . $item->cliente->cidade->uf : '') }}
+                            {{ $item->rua ?: ($item->cliente ? $item->cliente->rua : '') }},
+                            {{ $item->numero ?: ($item->cliente ? $item->cliente->numero : 'S/N') }}
+                            {{ $item->bairro ? ' - ' . $item->bairro : '' }} - CEP:
+                            {{ $item->cep ?: ($item->cliente ? $item->cliente->cep : '') }} -
+                            {{ $item->cidade ? $item->cidade->nome . '/' . $item->cidade->uf : ($item->cliente && $item->cliente->cidade ? $item->cliente->cidade->nome . '/' . $item->cliente->cidade->uf : '') }}
                         </span>
                     </td>
                 </tr>
                 <tr>
                     <td style="padding-top: 4px;">
                         <span class="lbl">E-mail:</span>
-                        <span class="val">{{ $item->email ?: ($item->cliente ? $item->cliente->email : 'Não informado') }}</span>
+                        <span
+                            class="val">{{ $item->email ?: ($item->cliente ? $item->cliente->email : 'Não informado') }}</span>
                     </td>
                     <td style="padding-top: 4px;">
                         <span class="lbl">Telefone:</span>
-                        <span class="val">{{ $item->telefone ?: ($item->cliente ? $item->cliente->telefone : 'Não informado') }}</span>
+                        <span
+                            class="val">{{ $item->telefone ?: ($item->cliente ? $item->cliente->telefone : 'Não informado') }}</span>
                     </td>
                 </tr>
             </table>
@@ -234,7 +273,8 @@
             <div style="margin-bottom: 6px;">
                 <span class="lbl">Código de Tributação Nacional (LC 116 / NBS):</span>
                 <span class="val">
-                    {{ $item->servico && $item->servico->codigo_tributacao_nacional ? $item->servico->codigo_tributacao_nacional : '140101' }} - Lubrificação, limpeza, revisão, manutenção e conservação de máquinas e equipamentos.
+                    {{ $item->servico && $item->servico->codigo_tributacao_nacional ? $item->servico->codigo_tributacao_nacional : '140101' }}
+                    - Lubrificação, limpeza, revisão, manutenção e conservação de máquinas e equipamentos.
                 </span>
             </div>
             <div>
@@ -268,13 +308,15 @@
                         <td>R$ 0,00</td>
                         <td>R$ 0,00</td>
                         <td>R$ {{ number_format($item->valor_total, 2, ',', '.') }}</td>
-                        <td>{{ $item->servico && $item->servico->aliquota_iss > 0 ? number_format($item->servico->aliquota_iss, 2, ',', '.') . '%' : 'DAS (SN)' }}</td>
-                        <td>{{ $item->servico && $item->servico->iss_retido == 1 ? 'R$ ' . number_format($item->valor_total * ($item->servico->aliquota_iss / 100), 2, ',', '.') : 'Recolhido no DAS' }}</td>
+                        <td>{{ $item->servico && $item->servico->aliquota_iss > 0 ? number_format($item->servico->aliquota_iss, 2, ',', '.') . '%' : 'DAS (SN)' }}
+                        </td>
+                        <td>{{ $item->servico && $item->servico->iss_retido == 1 ? 'R$ ' . number_format($item->valor_total * ($item->servico->aliquota_iss / 100), 2, ',', '.') : 'Recolhido no DAS' }}
+                        </td>
                         <td>{{ $item->servico && $item->servico->iss_retido == 1 ? 'SIM' : 'NÃO' }}</td>
                     </tr>
                 </tbody>
             </table>
-            
+
             <table class="table-valores" style="margin: 0; border-top: 1px solid #333;">
                 <thead>
                     <tr>
@@ -309,12 +351,16 @@
         <div class="box-header">Informações Complementares / Observações</div>
         <div class="box-body" style="font-size: 8px; color: #334155;">
             <div>• Documento emitido por ME ou EPP optante pelo Simples Nacional nos termos da LC nº 123/2006.</div>
-            <div>• Os tributos municipais e federais são apurados e recolhidos unificadamente no regime do Simples Nacional (PGDAS-D).</div>
-            <div>• Identificador Nacional da DPS: <strong>{{ $item->chave_dps ?: 'DPS231290824155666300017400001000000000000002' }}</strong></div>
+            <div>• Os tributos municipais e federais são apurados e recolhidos unificadamente no regime do Simples
+                Nacional (PGDAS-D).</div>
+            <div>• Identificador Nacional da DPS:
+                <strong>{{ $item->chave_dps ?: 'DPS231290824155666300017400001000000000000002' }}</strong></div>
             <div>• Município de Incidência do ISS: <strong>Sobral/CE (IBGE: 2312908)</strong></div>
-            <div>• Protocolo / Ambiente de Processamento: <strong>SEFIN Nacional da Receita Federal (Versão do Aplicativo 1.6.0)</strong></div>
+            <div>• Protocolo / Ambiente de Processamento: <strong>SEFIN Nacional da Receita Federal (Versão do
+                    Aplicativo 1.6.0)</strong></div>
         </div>
     </div>
 
 </body>
+
 </html>

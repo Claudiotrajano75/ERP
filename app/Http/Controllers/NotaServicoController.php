@@ -10,6 +10,8 @@ use App\Models\Reserva;
 use App\Models\ItemNotaServico;
 use Illuminate\Support\Facades\DB;
 use App\Services\NfseNacionalService;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class NotaServicoController extends Controller
 {
@@ -301,18 +303,42 @@ public function destroy($id)
 public function imprimir($id)
 {
     $item = NotaServico::findOrFail($id);
-    if (!empty($item->url_pdf_nfse)) {
-        return redirect($item->url_pdf_nfse);
+    $empresa = $item->empresa;
+
+    // Em PRODUÇÃO (ambiente == 1), redireciona diretamente para o modelo original do portal da Receita Federal
+    if ((int)$item->ambiente === 1 && !empty($item->chave)) {
+        return redirect("https://www.nfse.gov.br/consultapublica/danfse/{$item->chave}");
     }
-    if (!empty($item->chave)) {
-        $empresa = $item->empresa;
-        $baseUrl = ($empresa && $empresa->ambiente == 1)
-            ? 'https://adn.nfse.gov.br'
-            : 'https://adn.producaorestrita.nfse.gov.br';
-        return redirect("{$baseUrl}/danfse/{$item->chave}");
+
+    // Em HOMOLOGAÇÃO (ambiente == 2), o portal externo da Receita Federal dá erro por ser ambiente de teste.
+    // Renderizamos o DANFSE Nacional oficial diretamente via Dompdf no ERP:
+    if ($item->estado === 'aprovado' || !empty($item->chave) || !empty($item->xml_dps)) {
+        return $this->gerarDanfsePdf($item);
     }
-    session()->flash("flash_warning", "O DANFSE oficial da NFS-e ainda não foi gerado pelo Emissor Nacional.");
+
+    session()->flash("flash_warning", "A NFS-e precisa estar autorizada para gerar o DANFSE.");
     return redirect()->back();
+}
+
+protected function gerarDanfsePdf(NotaServico $item)
+{
+    $empresa = $item->empresa;
+    $html = view('nota_servico.danfse_nacional', compact('item', 'empresa'))->render();
+
+    $options = new Options();
+    $options->set('isRemoteEnabled', true);
+    $options->set('defaultFont', 'Arial');
+
+    $domPdf = new Dompdf($options);
+    $domPdf->loadHtml($html);
+    $domPdf->setPaper('A4', 'portrait');
+    $domPdf->render();
+
+    $nomeArquivo = "DANFSE-" . ($item->numero_nfse ?: $item->id) . ".pdf";
+    return response($domPdf->output(), 200, [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' => "inline; filename=\"{$nomeArquivo}\""
+    ]);
 }
 
 public function downloadXml($id)

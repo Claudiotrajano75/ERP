@@ -133,9 +133,14 @@ Campos a serem adicionados para o Padrão Nacional:
 - [x] Rodar a migration para adicionar os campos de DPS na tabela `nota_servicos` e código nacional em `servicos` (Fase 1 Concluída).
 - [x] Criar a classe `app/Services/NfseNacionalService.php` (Fase 2 Concluída).
 - [x] Implementar a geração da tag `<infDPS>` e a assinatura digital com o certificado A1 da empresa via RSA-SHA256 (Fase 2 Concluída).
-- [x] Fazer a integração de endpoints e cliente mTLS com o Ambiente de Dados Nacional (Fase 3 Concluída).
+- [x] Fazer a integração de endpoints e cliente mTLS com a SEFIN Nacional (Fase 3 Concluída).
 - [x] Ajustar o controller de transmissão, rotas e botões de ação na tela para o novo fluxo (Fase 4 Concluída).
-- [ ] Testes práticos com dados reais e validação de homologação (Fase 5).
+- [x] Testes práticos com dados reais e validação de homologação (Fase 5 Concluída com Sucesso).
+  - Emitente: COMERCIAL DE ARMARINHO BRASIL LTDA (CNPJ: 41.556.663/0001-74)
+  - Chave de Acesso Oficial de 50 dígitos: `23129082241556663000174000000000000226110866071798`
+  - Número NFS-e: `2`
+  - XML Oficial autorizado armazenado em `public/xml_nota_servico/`
+  - Autenticação mTLS via OpenSSL/cURL validada com sucesso pelo governo federal.
 
 ---
 *Documento gerado automaticamente para preservação do planejamento e continuidade dos trabalhos.*

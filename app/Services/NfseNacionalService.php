@@ -22,10 +22,10 @@ class NfseNacionalService
         $this->empresa = $empresa;
         $this->ambiente = (int)($empresa->ambiente ?? 2);
         
-        // Endpoints oficiais do Ambiente de Dados Nacional (ADN) da Receita Federal
+        // Endpoints oficiais da SEFIN Nacional (Emissor e Recepção de DPS) da Receita Federal
         $this->baseUrl = $this->ambiente === 1
-            ? 'https://adn.nfse.gov.br'
-            : 'https://adn.producaorestrita.nfse.gov.br';
+            ? 'https://sefin.nfse.gov.br/SefinNacional'
+            : 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional';
 
         if (!empty($empresa->arquivo) && !empty($empresa->senha)) {
             try {
@@ -60,7 +60,7 @@ class NfseNacionalService
     public function gerarIdDps(string $cLocEmi, string $doc, string $serie, int $nDPS): string
     {
         $docLimpo = preg_replace('/\D/', '', $doc);
-        $tpInsc = strlen($docLimpo) > 11 ? '1' : '2'; // 1 = CNPJ, 2 = CPF
+        $tpInsc = strlen($docLimpo) > 11 ? '2' : '1'; // 1 = CPF, 2 = CNPJ
         $docPad = str_pad($docLimpo, 14, '0', STR_PAD_LEFT);
         $cLocEmiPad = str_pad(preg_replace('/\D/', '', $cLocEmi), 7, '0', STR_PAD_LEFT);
         $seriePad = str_pad(preg_replace('/\D/', '', $serie ?: '1'), 5, '0', STR_PAD_LEFT);
@@ -150,7 +150,7 @@ class NfseNacionalService
             default => '1' // Tributavel
         };
 
-        // Construcao do XML com a ordem estrita do schema dps_v1.00.xsd
+        // Construcao do XML com a ordem estrita do schema dps_v1.00.xsd (NT 09)
         $xml = '<DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.00">';
         $xml .= '<infDPS Id="' . $idDps . '">';
         $xml .= '<tpAmb>' . $this->ambiente . '</tpAmb>';
@@ -160,6 +160,7 @@ class NfseNacionalService
         $xml .= '<nDPS>' . $nDPS . '</nDPS>';
         $xml .= '<dCompet>' . $dCompet . '</dCompet>';
         $xml .= '<tpEmit>1</tpEmit>';
+        $xml .= '<finNFSe>0</finNFSe>';
         $xml .= '<cLocEmi>' . $cLocEmi . '</cLocEmi>';
 
         // <prest>
@@ -177,6 +178,7 @@ class NfseNacionalService
         if ($regApTribSN) {
             $xml .= '<regApTribSN>' . $regApTribSN . '</regApTribSN>';
         }
+        $xml .= '<regEspTrib>0</regEspTrib>';
         $xml .= '</regTrib>';
         $xml .= '</prest>';
 
@@ -217,8 +219,12 @@ class NfseNacionalService
         $xml .= '</locPrest>';
         $xml .= '<cServ>';
         $xml .= '<cTribNac>' . $cTribNac . '</cTribNac>';
-        if (!empty($cTribMun)) {
-            $xml .= '<cTribMun>' . $cTribMun . '</cTribMun>';
+        // cTribMun e opcional no padrao nacional e so deve ser enviado se tiver formato correto
+        if (!empty($cTribMun) && strlen($cTribMun) <= 20 && !str_contains($cTribMun, '.')) {
+            // Se for igual a cTribNac ou cServ sem convenção, omitir para evitar erro de schema
+            if ($cTribMun !== $cTribNac && strlen($cTribMun) <= 10) {
+                $xml .= '<cTribMun>' . $cTribMun . '</cTribMun>';
+            }
         }
         $xml .= '<xDescServ>' . htmlspecialchars(mb_substr($xDescServ, 0, 2000)) . '</xDescServ>';
         $xml .= '</cServ>';
@@ -245,10 +251,23 @@ class NfseNacionalService
         $xml .= '<trib>';
         $xml .= '<tribMun>';
         $xml .= '<tribISSQN>' . $tribISSQN . '</tribISSQN>';
-        $xml .= '<pAliq>' . number_format($aliquotaIss, 2, '.', '') . '</pAliq>';
-        $xml .= '<vISSQN>' . $vIss . '</vISSQN>';
         $xml .= '<tpRetISSQN>' . $tpRetIss . '</tpRetISSQN>';
+
+        // Para optantes do Simples Nacional sem retencao (opSimpNac = 3 e tpRetISSQN = 1),
+        // o ISS e recolhido no DAS unificado, portanto nao se informa pAliq nem vISSQN (regra E0625)
+        if ($opSimpNac !== '3' || $tpRetIss === '2') {
+            $xml .= '<pAliq>' . number_format($aliquotaIss, 2, '.', '') . '</pAliq>';
+        }
         $xml .= '</tribMun>';
+
+        // Grupo totTrib (Transparencia Fiscal - Lei 12.741)
+        $xml .= '<totTrib>';
+        if ($opSimpNac === '3') {
+            $xml .= '<pTotTribSN>0.00</pTotTribSN>';
+        } else {
+            $xml .= '<indTotTrib>0</indTotTrib>';
+        }
+        $xml .= '</totTrib>';
         $xml .= '</trib>';
 
         $xml .= '</valores>';
@@ -268,8 +287,19 @@ class NfseNacionalService
             throw new Exception("Certificado digital da empresa não configurado ou senha inválida.");
         }
 
+        $prologo = '<?xml version="1.0" encoding="utf-8"?>';
+        if (!str_starts_with(trim($xmlDps), '<?xml')) {
+            $xmlDps = $prologo . "\n" . $xmlDps;
+        }
+
         // A assinatura no Padrao Nacional da NFS-e exige obrigatoriamente RSA-SHA256
-        return Signer::sign($this->certificate, $xmlDps, 'infDPS', 'Id', OPENSSL_ALGO_SHA256);
+        $xmlAssinado = Signer::sign($this->certificate, $xmlDps, 'infDPS', 'Id', OPENSSL_ALGO_SHA256);
+
+        if (!str_starts_with(trim($xmlAssinado), '<?xml')) {
+            $xmlAssinado = $prologo . "\n" . $xmlAssinado;
+        }
+
+        return $xmlAssinado;
     }
 
     /**
@@ -338,7 +368,7 @@ class NfseNacionalService
         $geracao = $this->gerarDpsAssinada($nota, true);
         $payload = $geracao['payload'];
 
-        $endpoint = "{$this->baseUrl}/dps";
+        $endpoint = "{$this->baseUrl}/nfse";
         $response = $this->requisicaoHttpMtls('POST', $endpoint, $payload);
 
         if ($response['status'] >= 200 && $response['status'] < 300) {
@@ -346,8 +376,8 @@ class NfseNacionalService
 
             // Extrai chave de acesso e numero oficial da NFS-e
             $chaveNfse = $dados['chaveAcesso'] ?? null;
-            $numeroNfse = $dados['numero'] ?? null;
-            $linkPdf = $dados['linkDanfse'] ?? "{$this->baseUrl}/danfse/{$chaveNfse}";
+            $numeroNfse = $dados['numero'] ?? ($dados['idDps'] ?? null);
+            $linkPdf = $dados['linkDanfse'] ?? ($chaveNfse ? "https://www.nfse.gov.br/consultapublica/danfse/{$chaveNfse}" : null);
 
             $nota->estado = 'aprovado';
             if ($chaveNfse) $nota->chave = $chaveNfse;
@@ -366,6 +396,12 @@ class NfseNacionalService
                     $nomeArquivo = ($chaveNfse ?: $geracao['idDps']) . '.xml';
                     file_put_contents("{$pastaXml}/{$nomeArquivo}", $xmlNfse);
                     $nota->url_xml = "/xml_nota_servico/{$nomeArquivo}";
+
+                    // Extrai o numero sequencial oficial da NFS-e (<nNFSe>) de dentro do XML retornado
+                    if (empty($numeroNfse) && preg_match('/<nNFSe>(\d+)<\/nNFSe>/', $xmlNfse, $mNum)) {
+                        $numeroNfse = (int)$mNum[1];
+                        $nota->numero_nfse = $numeroNfse;
+                    }
                 }
             }
 
@@ -481,10 +517,13 @@ class NfseNacionalService
         curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        curl_setopt($ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
 
         // mTLS - Certificado do cliente e chave privada
         curl_setopt($ch, CURLOPT_SSLCERT, $tempCert);
         curl_setopt($ch, CURLOPT_SSLKEY, $tempKey);
+        curl_setopt($ch, CURLOPT_SSLCERTTYPE, 'PEM');
+        curl_setopt($ch, CURLOPT_SSLKEYTYPE, 'PEM');
 
         $headers = [
             'Accept: application/json',
@@ -545,9 +584,14 @@ class NfseNacionalService
                 $mensagens = [];
                 foreach ($dados['erros'] as $err) {
                     if (is_array($err)) {
-                        $codigo = $err['codigo'] ?? '';
-                        $desc = $err['mensagem'] ?? ($err['descricao'] ?? json_encode($err));
-                        $mensagens[] = "[$codigo] $desc";
+                        $codigo = $err['codigo'] ?? ($err['Codigo'] ?? '');
+                        $desc = $err['mensagem'] ?? ($err['Descricao'] ?? ($err['descricao'] ?? ''));
+                        $comp = $err['Complemento'] ?? ($err['complemento'] ?? '');
+                        $txt = $codigo ? "[$codigo] $desc" : $desc;
+                        if ($comp) {
+                            $txt .= " ({$comp})";
+                        }
+                        $mensagens[] = $txt;
                     } else {
                         $mensagens[] = (string)$err;
                     }

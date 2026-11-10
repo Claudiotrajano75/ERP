@@ -145,3 +145,30 @@ Campos a serem adicionados para o Padrão Nacional:
 ---
 *Documento gerado automaticamente para preservação do planejamento e continuidade dos trabalhos.*
 
+
+💡 Como podemos resolver no ERP?
+
+Para você não depender do portal externo da Receita Federal estar fora do ar ou dar erro (especialmente em testes de homologação), podemos renderizar o DANFSE Nacional Oficial direto dentro do ERP:
+
+Como o ERP já baixou e salvou o XML oficial autorizado da NFS-e (com a assinatura e protocolo do governo em public/xml_nota_servico/), podemos usar o motor PDF do sistema (Dompdf) com o layout oficial do DANFSE da Receita Federal.
+Assim, ao clicar no botão "Imprimir" na listagem de Notas de Serviço:
+O ERP gera o DANFSE em PDF na hora, idêntico ao modelo oficial, com QR Code, Chave de Acesso de 50 dígitos, tributos e protocolo de autorização.
+Funciona perfeitamente tanto em Homologação quanto em Produção!
+
+Deseja que eu crie agora a tela/gerador do DANFSE em PDF nativo do ERP para essa impressão direta?
+
+
+🌐 Como funciona agora:
+
+Em Modo PRODUÇÃO (ambiente = 1):
+
+Ao clicar em "Imprimir", o ERP redireciona diretamente para o portal externo oficial da Receita Federal: https://www.nfse.gov.br/consultapublica/danfse/{chaveAcesso}
+Abrirá o modelo original do governo federal, com QR Code público e autenticidade da SEFIN Nacional.
+
+Em Modo HOMOLOGAÇÃO (ambiente = 2):
+
+Como o portal público da Receita Federal não disponibiliza consulta para notas de teste (dando aquele erro de servidor), o ERP agora renderiza o DANFSE Nacional oficial diretamente em PDF na tela com a tarja:
+
+NFS-E EMITIDA EM AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL (PRODUÇÃO RESTRITA)
+
+Assim, durante a fase de testes e homologação, você consegue visualizar e imprimir o PDF sem depender de links externos e sem nenhum erro.

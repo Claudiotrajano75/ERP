@@ -157,9 +157,13 @@
 <script src="/js/nfe.js"></script>
 <script src="/js/import_xml.js"></script>
 <script type="text/javascript">
+    // Remove listener delegado anterior no document para impedir submissão antecipada
+    $(document).off('click', '.btn-salvar-nfe');
+
     // Ao clicar em Salvar, valida os campos e abre o modal de confirmação e lembretes
-    $('.btn-salvar-nfe').off('click').on('click', function (e) {
+    $(document).on('click', '.btn-abrir-confirmar-xml, .btn-salvar-nfe', function (e) {
         e.preventDefault();
+        e.stopImmediatePropagation();
         if (addClassRequired()) {
             let $selectContaPagar = $('#inp-gerar_conta_pagar');
             let gerarConta = $selectContaPagar.length && $selectContaPagar.val() == '0' ? false : true;

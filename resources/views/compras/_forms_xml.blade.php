@@ -664,7 +664,7 @@
     </div>
     <hr class="mt-4">
     <div class="col-12" style="text-align: right;">
-        <button type="submit" class="btn btn-success btn-salvar-nfe px-5 m-3">Salvar</button>
+        <button type="button" class="btn btn-success btn-abrir-confirmar-xml px-5 m-3">Salvar</button>
     </div>
 </div>
 

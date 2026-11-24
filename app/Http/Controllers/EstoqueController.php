@@ -9,6 +9,7 @@ use App\Models\MovimentacaoProduto;
 use App\Utils\EstoqueUtil;
 use App\Models\ProdutoLocalizacao;
 use App\Models\Localizacao;
+use App\Models\Empresa;
 use Illuminate\Support\Facades\DB;
 
 class EstoqueController extends Controller
@@ -21,7 +22,7 @@ class EstoqueController extends Controller
         $this->util = $util;
         $this->middleware('permission:estoque_create', ['only' => ['create', 'store', 'ajuste']]);
         $this->middleware('permission:estoque_edit', ['only' => ['edit', 'update']]);
-        $this->middleware('permission:estoque_view', ['only' => ['show', 'index', 'movimentacoes']]);
+        $this->middleware('permission:estoque_view', ['only' => ['show', 'index', 'movimentacoes', 'relatorioPdf']]);
         $this->middleware('permission:estoque_delete', ['only' => ['destroy']]);
     }
 
@@ -55,6 +56,87 @@ class EstoqueController extends Controller
         ];
 
         return view('estoque.index', compact('data', 'stats'));
+    }
+
+    public function relatorioPdf(Request $request)
+    {
+        $query = Estoque::select('estoques.*')
+            ->join('produtos', 'produtos.id', '=', 'estoques.produto_id')
+            ->where('produtos.empresa_id', request()->empresa_id)
+            ->when(!empty($request->produto), function ($q) use ($request) {
+                return $q->where(function ($sub) use ($request) {
+                    $sub->where('produtos.nome', 'LIKE', "%$request->produto%")
+                        ->orWhere('produtos.codigo_barras', 'LIKE', "%$request->produto%")
+                        ->orWhere('produtos.referencia', 'LIKE', "%$request->produto%");
+                });
+            })
+            ->with(['produto.categoria', 'produto.estoqueLocais.local', 'local', 'produtoVariacao'])
+            ->orderBy('produtos.nome', 'asc');
+
+        $data = $query->get();
+
+        // ─── KPI Stats Consolidados ───
+        $statsQuery = Estoque::join('produtos', 'produtos.id', '=', 'estoques.produto_id')
+            ->where('produtos.empresa_id', request()->empresa_id)
+            ->when(!empty($request->produto), function ($q) use ($request) {
+                return $q->where(function ($sub) use ($request) {
+                    $sub->where('produtos.nome', 'LIKE', "%$request->produto%")
+                        ->orWhere('produtos.codigo_barras', 'LIKE', "%$request->produto%")
+                        ->orWhere('produtos.referencia', 'LIKE', "%$request->produto%");
+                });
+            });
+
+        $stats = [
+            'total_produtos' => (clone $statsQuery)->count(DB::raw('DISTINCT estoques.produto_id')),
+            'total_itens'    => (clone $statsQuery)->sum('estoques.quantidade'),
+            'valor_estoque'  => (clone $statsQuery)
+                ->selectRaw('COALESCE(SUM(estoques.quantidade * produtos.valor_unitario), 0) as total')
+                ->value('total'),
+            'valor_custo'    => (clone $statsQuery)
+                ->selectRaw('COALESCE(SUM(estoques.quantidade * produtos.valor_compra), 0) as total')
+                ->value('total'),
+            'estoque_baixo'  => (clone $statsQuery)
+                ->where('produtos.gerenciar_estoque', 1)
+                ->whereColumn('estoques.quantidade', '<=', 'produtos.estoque_minimo')
+                ->count(DB::raw('DISTINCT estoques.produto_id')),
+        ];
+
+        $empresa = Empresa::findOrFail(request()->empresa_id);
+
+        $logoBase64 = null;
+        if (!empty($empresa->logo) && file_exists(public_path('uploads/logos/' . $empresa->logo))) {
+            $logoPath = public_path('uploads/logos/' . $empresa->logo);
+            $mime = @mime_content_type($logoPath) ?: 'image/png';
+            $logoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($logoPath));
+        } elseif (file_exists(public_path('logo.png'))) {
+            $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('logo.png')));
+        }
+
+        $countLocais = Localizacao::where('empresa_id', $empresa->id)->where('status', 1)->count();
+        $pesquisaProduto = $request->produto ?? '';
+
+        $html = view('estoque.relatorio_pdf', compact(
+            'data',
+            'stats',
+            'empresa',
+            'logoBase64',
+            'countLocais',
+            'pesquisaProduto'
+        ))->render();
+
+        $options = new \Dompdf\Options();
+        $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
+
+        $domPdf = new \Dompdf\Dompdf($options);
+        $domPdf->loadHtml($html);
+        $domPdf->setPaper('A4', 'landscape');
+        $domPdf->render();
+
+        $nomeArquivo = 'Relatorio_Estoque_' . date('d_m_Y_His') . '.pdf';
+        return response($domPdf->output(), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="' . $nomeArquivo . '"');
     }
 
     public function movimentacoes(Request $request){

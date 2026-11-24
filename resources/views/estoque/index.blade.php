@@ -94,6 +94,9 @@
                         <a href="{{ route('estoque.movimentacoes') }}" class="dash-btn dash-btn-light">
                             <i class="ri-history-line align-middle me-1"></i> Movimentações
                         </a>
+                        <button type="button" onclick="imprimirRelatorioEstoque()" class="dash-btn dash-btn-light" title="Imprimir Relatório de Estoque em PDF">
+                            <i class="ri-printer-line align-middle me-1"></i> Imprimir Relatório
+                        </button>
                         @endcan
                     </div>
                 </div>
@@ -155,6 +158,9 @@
                             <div class="d-flex gap-2 w-100">
                                 <button class="btn btn-primary flex-grow-1" style="border-radius:10px;" type="submit">
                                     <i class="ri-search-line"></i> Buscar
+                                </button>
+                                <button type="button" class="btn btn-outline-primary border px-3" onclick="imprimirRelatorioEstoque()" style="border-radius:10px;" title="Imprimir Relatório em PDF">
+                                    <i class="ri-printer-line"></i>
                                 </button>
                                 <a class="btn btn-light border px-3" style="border-radius:10px;" href="{{ route('estoque.index') }}" title="Limpar Filtros">
                                     <i class="ri-eraser-line"></i>
@@ -318,5 +324,12 @@
             }
         });
     });
+
+    function imprimirRelatorioEstoque() {
+        let form = $('.filter-wrap form');
+        let params = form.length ? form.serialize() : '';
+        let url = "{{ route('estoque.relatorio-pdf') }}" + (params ? '?' + params : '');
+        window.open(url, '_blank');
+    }
 </script>
 @endsection

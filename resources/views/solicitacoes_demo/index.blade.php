@@ -108,49 +108,38 @@
                 <td style="padding:13px 16px;color:#64748b;font-size:.83rem;white-space:nowrap;">
                     {{ $item->created_at->format('d/m/Y H:i') }}
                 </td>
-                <td style="padding:13px 16px;text-align:center;">
-                    <div style="display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;">
+                <td style="padding:10px 16px;text-align:center;">
+                    <div style="display:flex;flex-direction:row;gap:6px;justify-content:center;align-items:center;flex-wrap:nowrap;">
+
                         {{-- WhatsApp --}}
                         <a href="{{ $item->whatsapp_link }}" target="_blank"
-                           style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:#25d366;color:#fff;border-radius:8px;font-size:.8rem;font-weight:600;text-decoration:none;white-space:nowrap;"
+                           style="display:inline-flex;align-items:center;gap:4px;padding:6px 11px;background:#25d366;color:#fff;border-radius:8px;font-size:.78rem;font-weight:600;text-decoration:none;white-space:nowrap;flex-shrink:0;"
                            title="Falar no WhatsApp">
                             <i class="fa fa-whatsapp"></i> WhatsApp
                         </a>
 
-                        {{-- Alterar Status --}}
-                        <div style="position:relative;" x-data="{ open: false }">
-                            <button @click="open = !open"
-                                    style="padding:6px 12px;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.8rem;font-weight:600;color:#475569;cursor:pointer;white-space:nowrap;">
-                                Status <i class="fa fa-chevron-down" style="font-size:.7rem;"></i>
-                            </button>
-                            <div x-show="open" @click.away="open = false"
-                                 style="position:absolute;right:0;top:110%;background:#fff;border:1px solid #e2e8f0;border-radius:10px;min-width:170px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:50;padding:6px 0;">
+                        {{-- Alterar Status via select nativo --}}
+                        <form method="POST" action="{{ route('solicitacoes-demo.update-status', $item->id) }}" style="margin:0;flex-shrink:0;">
+                            @csrf @method('PUT')
+                            <select name="status" onchange="this.form.submit()"
+                                    style="padding:5px 8px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.78rem;font-weight:600;color:#475569;background:#f8fafc;cursor:pointer;outline:none;max-width:140px;">
                                 @foreach(\App\Models\SolicitacaoDemonstracao::statusList() as $key => $label)
-                                    @if($key !== $item->status)
-                                    <form method="POST" action="{{ route('solicitacoes-demo.update-status', $item->id) }}">
-                                        @csrf @method('PUT')
-                                        <input type="hidden" name="status" value="{{ $key }}">
-                                        <button type="submit"
-                                                style="width:100%;text-align:left;padding:8px 16px;background:none;border:none;font-size:.85rem;color:#334155;cursor:pointer;transition:background .15s;"
-                                                onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">
-                                            {{ $label }}
-                                        </button>
-                                    </form>
-                                    @endif
+                                    <option value="{{ $key }}" {{ $item->status === $key ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
-                            </div>
-                        </div>
+                            </select>
+                        </form>
 
                         {{-- Excluir --}}
                         <form method="POST" action="{{ route('solicitacoes-demo.destroy', $item->id) }}"
-                              onsubmit="return confirm('Excluir este lead permanentemente?')">
+                              onsubmit="return confirm('Excluir este lead permanentemente?')" style="margin:0;flex-shrink:0;">
                             @csrf @method('DELETE')
                             <button type="submit"
-                                    style="padding:6px 10px;background:#fef2f2;border:1.5px solid #fecaca;border-radius:8px;color:#dc2626;cursor:pointer;font-size:.82rem;"
+                                    style="padding:6px 9px;background:#fef2f2;border:1.5px solid #fecaca;border-radius:8px;color:#dc2626;cursor:pointer;font-size:.82rem;line-height:1;"
                                     title="Excluir">
                                 <i class="fa fa-trash"></i>
                             </button>
                         </form>
+
                     </div>
                 </td>
             </tr>

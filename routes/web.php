@@ -26,9 +26,8 @@ Route::get('/clear-all', function () {
     return redirect()->back();
 })->name('clear');
 
-Route::get('/', function () {
-    return redirect()->route('home');
-});
+Route::get('/', 'LandingController@index')->name('landing');
+Route::post('/solicitar-demonstracao', 'LandingController@enviarContato')->name('landing.contato');
 
 Route::get('/cotacoes-resposta/{hash_link}', 'CotacaoRespostaController@index')->name('cotacoes.resposta');
 Route::post('/cotacoes-resposta-store', 'CotacaoRespostaController@store')->name('cotacoes.resposta-store');
@@ -141,6 +140,11 @@ Route::middleware(['authh', 'validaEmpresa'])->group(function () {
         Route::resource('segmentos', 'SegmentoController');
         Route::resource('gerenciar-planos', 'GerenciarPlanoController');
         Route::resource('ticket-super', 'TicketSuperController');
+
+        // Solicitações de demonstração (leads da Landing Page)
+        Route::get('solicitacoes-demo', 'SolicitacaoDemonstracaoController@index')->name('solicitacoes-demo.index');
+        Route::put('solicitacoes-demo/{id}/status', 'SolicitacaoDemonstracaoController@updateStatus')->name('solicitacoes-demo.update-status');
+        Route::delete('solicitacoes-demo/{id}', 'SolicitacaoDemonstracaoController@destroy')->name('solicitacoes-demo.destroy');
         Route::delete('ticket-super-destroy-select', 'TicketSuperController@destroySelecet')->name('ticket-super.destroy-select');
 
         Route::put('ticket-super-add-mensagem/{id}', 'TicketSuperController@addMensagem')->name('ticket-super.add-mensagem');

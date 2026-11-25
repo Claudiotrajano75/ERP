@@ -744,6 +744,15 @@
                                         <a href="{{ route('ticket-super.index') }}">Ticket</a>
                                     </li>
                                     <li>
+                                        <a href="{{ route('solicitacoes-demo.index') }}">
+                                            Demos Solicitadas
+                                            @php $__countDemos = \App\Models\SolicitacaoDemonstracao::where('status','novo')->count(); @endphp
+                                            @if($__countDemos > 0)
+                                                <span style="background:#dc2626;color:#fff;border-radius:9999px;font-size:11px;font-weight:700;padding:1px 7px;margin-left:5px;">{{ $__countDemos }}</span>
+                                            @endif
+                                        </a>
+                                    </li>
+                                    <li>
                                         <a href="{{ route('configuracao-super.index') }}">Configuração</a>
                                     </li>
                                     <li>

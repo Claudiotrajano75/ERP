@@ -2,212 +2,277 @@
 
 @section('css')
 <style>
-    .modulo-header-gradient {
-        background: linear-gradient(135deg, #2d1b6e 0%, #4f46e5 60%, #6366f1 100%);
-        border-radius: 12px 12px 0 0 !important;
-        border-bottom: none !important;
-    }
-    .modulo-header-gradient .modulo-title { color: #fff; font-weight: 700; letter-spacing: -0.3px; }
-    .modulo-header-gradient .modulo-title i { background: rgba(255,255,255,0.15); padding: 8px; border-radius: 10px; color: #fff; }
-    .modulo-header-gradient .modulo-subtitle { color: rgba(255,255,255,0.80) !important; font-weight: 400; }
+    /* ─── Cards de Estatísticas ─── */
+    .stat-card { border: 0; border-radius: 16px; padding: 18px 20px; height: 100%; color: #fff; position: relative; overflow: hidden; transition: transform .18s ease, box-shadow .18s ease; }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-card::after { content: ''; position: absolute; top: -44px; right: -44px; width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,.12); }
+    .stat-indigo { background: linear-gradient(135deg,#6366f1,#4f46e5); box-shadow: 0 6px 18px rgba(79,70,229,.32); }
+    .stat-blue   { background: linear-gradient(135deg,#3b82f6,#2563eb); box-shadow: 0 6px 18px rgba(37,99,235,.32); }
+    .stat-amber  { background: linear-gradient(135deg,#f59e0b,#d97706); box-shadow: 0 6px 18px rgba(217,119,6,.32); }
+    .stat-green  { background: linear-gradient(135deg,#24c98a,#109f61); box-shadow: 0 6px 18px rgba(16,185,129,.32); }
+    .stat-card .st-label { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: rgba(255,255,255,.85); }
+    .stat-card .st-value { font-size: 26px; font-weight: 800; color: #fff; margin-top: 4px; line-height: 1.1; }
+    .stat-card .st-sub   { font-size: 11.5px; color: rgba(255,255,255,.75); margin-top: 4px; }
+    .stat-card .st-icon  { width: 46px; height: 46px; border-radius: 13px; background: rgba(255,255,255,.22); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
-    .table-custom thead th { background-color: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; border-bottom: 2px solid #e2e8f0; border-top: none; padding: 13px 14px; }
-    .table-custom tbody tr { transition: background .15s; border-bottom: 1px solid #eef0f5; }
-    .table-custom tbody tr:hover { background-color: #f8fafc; }
-    .table-custom tbody td { padding: 13px 14px; vertical-align: middle; color: #1e293b; font-size: 14px; }
+    /* ─── Filtro ─── */
+    .filter-wrap { background: #fff; border: 1px solid #e9ecf3; border-radius: 14px; box-shadow: 0 1px 2px rgba(16,24,40,.04); padding: 18px 20px; margin-bottom: 18px; }
+    .filter-title { font-size: 13px; font-weight: 700; color: #3f3e6a; text-transform: uppercase; letter-spacing: .5px; }
+    .filter-title i { color: #4f46e5; margin-right: 6px; }
+    .filter-wrap label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #8c8ca6; }
+    .filter-wrap .form-control,
+    .filter-wrap .form-select { height: 40px; border-radius: 10px; border: 1px solid #dcdce9; font-size: 13.5px; background: #fcfdfe; }
+    .filter-wrap .form-control:focus,
+    .filter-wrap .form-select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.12); background: #fff; }
 
-    .kpi-card { border-radius: 14px; padding: 20px 22px; color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,.15); }
-    .kpi-card .kpi-num { font-size: 2rem; font-weight: 800; line-height: 1; }
-    .kpi-card .kpi-label { font-size: .83rem; opacity: .85; margin-top: 5px; }
+    /* ─── Tabela ─── */
+    .tb-wrap { border-radius: 14px; border: 1px solid #eef0f5; overflow: hidden; background: #fff; }
+    .tb-wrap table { margin-bottom: 0; }
+    .tb-wrap thead th { background: #f8f9fc; color: #5a5a7a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 13px 16px; border-bottom: 1px solid #e8eaf6; white-space: nowrap; }
+    .tb-wrap tbody td { padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f0f2f8; font-size: 13.5px; color: #374151; }
+    .tb-wrap tbody tr:hover { background: #f5f6fe; }
+    .tb-wrap tbody tr:last-child td { border-bottom: none; }
 
-    .badge-status-novo       { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; border-radius: 999px; padding: 3px 11px; font-size: .77rem; font-weight: 700; white-space:nowrap; }
-    .badge-status-em         { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; border-radius: 999px; padding: 3px 11px; font-size: .77rem; font-weight: 700; white-space:nowrap; }
-    .badge-status-concluido  { background: #f0fdf4; color: #109f61; border: 1px solid #bbf7d0; border-radius: 999px; padding: 3px 11px; font-size: .77rem; font-weight: 700; white-space:nowrap; }
+    /* ─── Grade de botões de ação ─── */
+    .act-group { display: inline-flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
+    .act-btn { width: 34px; height: 34px; border-radius: 10px; border: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; text-decoration: none; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; flex-shrink: 0; }
+    .act-btn:hover { transform: translateY(-2px); text-decoration: none; }
+    .act-whatsapp { background: #dcfce7; color: #16a34a; }
+    .act-whatsapp:hover { box-shadow: 0 4px 12px rgba(22,163,74,.35); }
+    .act-del { background: #fee2e2; color: #dc2626; }
+    .act-del:hover { box-shadow: 0 4px 12px rgba(220,38,38,.3); }
+
+    /* ─── Select de status inline ─── */
+    .status-select { height: 34px; border-radius: 10px; border: 1.5px solid #dcdce9; font-size: 12px; font-weight: 600; color: #374151; background: #f8f9fc; padding: 0 8px; cursor: pointer; min-width: 140px; }
+    .status-select:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.12); }
+
+    /* ─── Badges (pills) ─── */
+    .pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 8px; padding: 4px 10px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+    .pill-novo    { background: #eff6ff; color: #2563eb; }
+    .pill-em      { background: #fffbeb; color: #d97706; }
+    .pill-ok      { background: #dcfce7; color: #15803d; }
+
+    /* ─── Estado vazio ─── */
+    .empty-state { padding: 52px 20px; text-align: center; }
+    .empty-state i { font-size: 52px; color: #c5cae9; display: block; margin-bottom: 12px; }
+    .empty-state p { color: #9e9eb8; font-size: 14px; margin: 0; }
 </style>
 @endsection
 
 @section('content')
-<div class="mt-3 text-dark">
-
-    {{-- KPI Cards --}}
-    @php
-        $total      = $kpis['total'] ?? 0;
-        $novos      = $kpis['novos'] ?? 0;
-        $emAnd      = $kpis['em_atendimento'] ?? 0;
-        $concluidos = $kpis['concluidos'] ?? 0;
-    @endphp
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-            <div class="kpi-card" style="background:linear-gradient(135deg,#4f46e5,#818cf8);">
-                <div class="kpi-num">{{ $total }}</div>
-                <div class="kpi-label">Total de Leads</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="kpi-card" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">
-                <div class="kpi-num">{{ $novos }}</div>
-                <div class="kpi-label">Novos</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="kpi-card" style="background:linear-gradient(135deg,#d97706,#fbbf24);">
-                <div class="kpi-num">{{ $emAnd }}</div>
-                <div class="kpi-label">Em Atendimento</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="kpi-card" style="background:linear-gradient(135deg,#109f61,#34d399);">
-                <div class="kpi-num">{{ $concluidos }}</div>
-                <div class="kpi-label">Concluídos</div>
-            </div>
-        </div>
-    </div>
-
+<div class="mt-3">
     <div class="row">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm" style="border-radius:14px;overflow:hidden;">
+        <div class="card border-0 shadow-sm">
 
-                {{-- Header --}}
-                <div class="card-header modulo-header-gradient py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                        <div>
-                            <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
-                                <i class="fa fa-paper-plane"></i>
-                                Demos Solicitadas
-                            </h4>
-                            <p class="mb-0 modulo-subtitle fs-13">
-                                Leads que solicitaram demonstração pela landing page
-                            </p>
+            {{-- ═══ CABEÇALHO ═══ --}}
+            <div class="card-header modulo-header-gradient py-3 px-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
+                            <i class="fa fa-paper-plane"></i>
+                            Demos Solicitadas
+                        </h4>
+                        <p class="text-muted mb-0 modulo-subtitle fs-13">Leads que solicitaram demonstração pela landing page.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+
+                {{-- ═══ Cards de Estatísticas ═══ --}}
+                @php
+                    $total      = $kpis['total'] ?? 0;
+                    $novos      = $kpis['novos'] ?? 0;
+                    $emAnd      = $kpis['em_atendimento'] ?? 0;
+                    $concluidos = $kpis['concluidos'] ?? 0;
+                @endphp
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-indigo">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Total de Leads</div>
+                                    <div class="st-value">{{ $total }}</div>
+                                    <div class="st-sub">Todas as solicitações</div>
+                                </div>
+                                <div class="st-icon"><i class="fa fa-users"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-blue">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Novos</div>
+                                    <div class="st-value">{{ $novos }}</div>
+                                    <div class="st-sub">Aguardando atendimento</div>
+                                </div>
+                                <div class="st-icon"><i class="fa fa-envelope"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-amber">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Em Atendimento</div>
+                                    <div class="st-value">{{ $emAnd }}</div>
+                                    <div class="st-sub">Em contato com lead</div>
+                                </div>
+                                <div class="st-icon"><i class="fa fa-headphones"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card stat-green">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="st-label">Concluídos</div>
+                                    <div class="st-value">{{ $concluidos }}</div>
+                                    <div class="st-sub">Atendimento finalizado</div>
+                                </div>
+                                <div class="st-icon"><i class="fa fa-check-circle"></i></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- Filtros --}}
-                <div class="card-body bg-white p-4 pb-2">
-                    <form method="GET" action="{{ route('solicitacoes-demo.index') }}">
-                        <div class="row g-2 align-items-end mb-3">
-                            <div class="col-md-5">
-                                <label class="form-label small fw-semibold text-muted mb-1">BUSCAR</label>
-                                <input type="text" name="q" value="{{ request('q') }}"
-                                       placeholder="Nome, empresa, e-mail ou telefone..."
-                                       class="form-control">
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label small fw-semibold text-muted mb-1">STATUS</label>
-                                <select name="status" class="form-select">
-                                    <option value="">Todos</option>
-                                    <option value="novo"           {{ request('status')=='novo'           ? 'selected':'' }}>Novo</option>
-                                    <option value="em_atendimento" {{ request('status')=='em_atendimento' ? 'selected':'' }}>Em Atendimento</option>
-                                    <option value="concluido"      {{ request('status')=='concluido'      ? 'selected':'' }}>Concluído</option>
-                                </select>
-                            </div>
-                            <div class="col-md-auto">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fa fa-search me-1"></i> Buscar
-                                </button>
-                                <a href="{{ route('solicitacoes-demo.index') }}" class="btn btn-danger ms-1">
-                                    <i class="fa fa-eraser me-1"></i> Limpar
-                                </a>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                {{-- Tabela --}}
-                <div class="table-responsive px-4 pb-2">
-                    <table class="table table-custom mb-0">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Nome</th>
-                                <th>Empresa</th>
-                                <th>Telefone</th>
-                                <th>E-mail</th>
-                                <th>Mensagem</th>
-                                <th class="text-center">Status</th>
-                                <th>Data</th>
-                                <th class="text-center" width="220">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($data as $item)
-                            <tr>
-                                <td class="text-muted small">{{ $item->id }}</td>
-                                <td><strong>{{ $item->nome }}</strong></td>
-                                <td>{{ $item->empresa ?: '—' }}</td>
-                                <td>{{ $item->telefone }}</td>
-                                <td class="small">{{ $item->email }}</td>
-                                <td class="small text-muted" style="max-width:160px;">
-                                    <span title="{{ $item->mensagem }}">{{ Str::limit($item->mensagem, 45) ?: '—' }}</span>
-                                </td>
-                                <td class="text-center">
-                                    @if($item->status == 'novo')
-                                        <span class="badge-status-novo">Novo</span>
-                                    @elseif($item->status == 'em_atendimento')
-                                        <span class="badge-status-em">Em Atendimento</span>
-                                    @else
-                                        <span class="badge-status-concluido">Concluído</span>
-                                    @endif
-                                </td>
-                                <td class="small text-muted" style="white-space:nowrap;">
-                                    {{ $item->created_at->format('d/m/Y H:i') }}
-                                </td>
-                                <td>
-                                    {{-- Ações: linha única com gap --}}
-                                    <div class="d-flex align-items-center gap-1 justify-content-center flex-nowrap">
-
-                                        {{-- WhatsApp --}}
-                                        <a href="{{ $item->whatsapp_link }}" target="_blank"
-                                           class="btn btn-sm fw-semibold"
-                                           style="background:#25d366;color:#fff;white-space:nowrap;"
-                                           title="Falar no WhatsApp">
-                                            <i class="fa fa-whatsapp"></i> WhatsApp
+                {{-- ═══ Filtros de Busca ═══ --}}
+                <div class="filter-wrap">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h5 class="filter-title mb-0"><i class="fa fa-search"></i> Filtrar Leads</h5>
+                    </div>
+                    <div class="mt-3">
+                        <form method="GET" action="{{ route('solicitacoes-demo.index') }}">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-5 col-12">
+                                    <label>Nome / Empresa / E-mail / Telefone</label>
+                                    <input type="text" name="q" value="{{ request('q') }}"
+                                           class="form-control"
+                                           placeholder="Digite para buscar...">
+                                </div>
+                                <div class="col-md-3 col-12">
+                                    <label>Status</label>
+                                    <select name="status" class="form-select">
+                                        <option value="">Todos</option>
+                                        <option value="novo"           {{ request('status')=='novo'           ? 'selected':'' }}>Novo</option>
+                                        <option value="em_atendimento" {{ request('status')=='em_atendimento' ? 'selected':'' }}>Em Atendimento</option>
+                                        <option value="concluido"      {{ request('status')=='concluido'      ? 'selected':'' }}>Concluído</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 col-12">
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-primary flex-grow-1" type="submit" style="border-radius:10px;">
+                                            <i class="fa fa-search"></i> Buscar
+                                        </button>
+                                        <a class="btn btn-light border px-3" href="{{ route('solicitacoes-demo.index') }}" title="Limpar Filtros" style="border-radius:10px;">
+                                            <i class="fa fa-eraser"></i>
                                         </a>
-
-                                        {{-- Mudar Status --}}
-                                        <form method="POST" action="{{ route('solicitacoes-demo.update-status', $item->id) }}" class="m-0">
-                                            @csrf @method('PUT')
-                                            <select name="status" onchange="this.form.submit()"
-                                                    class="form-select form-select-sm"
-                                                    style="min-width:130px;cursor:pointer;">
-                                                @foreach(\App\Models\SolicitacaoDemonstracao::statusList() as $key => $label)
-                                                    <option value="{{ $key }}" {{ $item->status === $key ? 'selected' : '' }}>{{ $label }}</option>
-                                                @endforeach
-                                            </select>
-                                        </form>
-
-                                        {{-- Excluir --}}
-                                        <form method="POST" action="{{ route('solicitacoes-demo.destroy', $item->id) }}"
-                                              onsubmit="return confirm('Excluir este lead permanentemente?')" class="m-0">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm" title="Excluir">
-                                                <i class="fa fa-trash"></i>
-                                            </button>
-                                        </form>
-
                                     </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="9" class="text-center py-5">
-                                    <i class="fa fa-inbox" style="font-size:2.5rem;display:block;margin-bottom:12px;opacity:.3;"></i>
-                                    <span class="text-muted">Nenhuma solicitação encontrada.</span>
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
-                {{-- Rodapé paginação --}}
-                <div class="card-footer bg-light d-flex align-items-center justify-content-between flex-wrap gap-2 p-3">
-                    <span class="small text-muted">{{ $data->total() }} registro(s) encontrado(s)</span>
-                    {!! $data->appends(request()->all())->links() !!}
+                {{-- ═══ Tabela ═══ --}}
+                <div class="tb-wrap">
+                    <div class="table-responsive">
+                        <table class="table table-centered table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nome</th>
+                                    <th>Empresa</th>
+                                    <th>Telefone</th>
+                                    <th>E-mail</th>
+                                    <th>Mensagem</th>
+                                    <th>Status</th>
+                                    <th>Data</th>
+                                    <th class="text-end" style="width:260px;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($data as $item)
+                                <tr>
+                                    <td class="text-muted" style="font-size:12px;">{{ $item->id }}</td>
+                                    <td>
+                                        <div class="fw-semibold" style="color:#1f2937;">{{ $item->nome }}</div>
+                                    </td>
+                                    <td>{{ $item->empresa ?: '—' }}</td>
+                                    <td>{{ $item->telefone }}</td>
+                                    <td style="font-size:12.5px;">{{ $item->email }}</td>
+                                    <td style="max-width:160px;font-size:12.5px;color:#64748b;">
+                                        <span title="{{ $item->mensagem }}">{{ Str::limit($item->mensagem, 45) ?: '—' }}</span>
+                                    </td>
+                                    <td>
+                                        @if($item->status == 'novo')
+                                            <span class="pill pill-novo"><i class="fa fa-circle" style="font-size:7px;"></i> Novo</span>
+                                        @elseif($item->status == 'em_atendimento')
+                                            <span class="pill pill-em"><i class="fa fa-circle" style="font-size:7px;"></i> Em Atendimento</span>
+                                        @else
+                                            <span class="pill pill-ok"><i class="fa fa-circle" style="font-size:7px;"></i> Concluído</span>
+                                        @endif
+                                    </td>
+                                    <td style="font-size:12px;white-space:nowrap;color:#94a3b8;">
+                                        {{ $item->created_at->format('d/m/Y H:i') }}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="act-group justify-content-end">
+
+                                            {{-- WhatsApp --}}
+                                            <a href="{{ $item->whatsapp_link }}" target="_blank"
+                                               class="act-btn act-whatsapp" title="Falar no WhatsApp">
+                                                <i class="fa fa-whatsapp"></i>
+                                            </a>
+
+                                            {{-- Mudar Status --}}
+                                            <form method="POST" action="{{ route('solicitacoes-demo.update-status', $item->id) }}" class="m-0">
+                                                @csrf @method('PUT')
+                                                <select name="status" onchange="this.form.submit()" class="status-select">
+                                                    @foreach(\App\Models\SolicitacaoDemonstracao::statusList() as $key => $label)
+                                                        <option value="{{ $key }}" {{ $item->status === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </form>
+
+                                            {{-- Excluir --}}
+                                            <form method="POST" action="{{ route('solicitacoes-demo.destroy', $item->id) }}"
+                                                  onsubmit="return confirm('Excluir este lead permanentemente?')" class="m-0">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="act-btn act-del" title="Excluir Lead">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            </form>
+
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="9">
+                                        <div class="empty-state">
+                                            <i class="fa fa-inbox"></i>
+                                            <p>Nenhuma solicitação encontrada.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-            </div>{{-- /card --}}
-        </div>
+                {{-- ═══ Footer / Paginação ═══ --}}
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
+                    <div class="fs-12" style="color:#94a3b8;">
+                        Exibindo <strong>{{ $data->count() }}</strong> de <strong>{{ $data->total() }}</strong> leads
+                    </div>
+                    <div>{!! $data->appends(request()->all())->links() !!}</div>
+                </div>
+
+            </div>{{-- /card-body --}}
+        </div>{{-- /card --}}
     </div>
 </div>
 @endsection

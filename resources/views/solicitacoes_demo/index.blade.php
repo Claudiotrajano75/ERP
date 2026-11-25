@@ -69,7 +69,7 @@
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div>
                         <h4 class="mb-1 modulo-title d-flex align-items-center gap-2">
-                            <i class="fa fa-paper-plane"></i>
+                            <i class="ri-send-plane-fill"></i>
                             Demos Solicitadas
                         </h4>
                         <p class="text-muted mb-0 modulo-subtitle fs-13">Leads que solicitaram demonstração pela landing page.</p>
@@ -95,7 +95,7 @@
                                     <div class="st-value">{{ $total }}</div>
                                     <div class="st-sub">Todas as solicitações</div>
                                 </div>
-                                <div class="st-icon"><i class="fa fa-users"></i></div>
+                                <div class="st-icon"><i class="ri-group-line"></i></div>
                             </div>
                         </div>
                     </div>
@@ -107,7 +107,7 @@
                                     <div class="st-value">{{ $novos }}</div>
                                     <div class="st-sub">Aguardando atendimento</div>
                                 </div>
-                                <div class="st-icon"><i class="fa fa-envelope"></i></div>
+                                <div class="st-icon"><i class="ri-mail-line"></i></div>
                             </div>
                         </div>
                     </div>
@@ -119,7 +119,7 @@
                                     <div class="st-value">{{ $emAnd }}</div>
                                     <div class="st-sub">Em contato com lead</div>
                                 </div>
-                                <div class="st-icon"><i class="fa fa-headphones"></i></div>
+                                <div class="st-icon"><i class="ri-headphone-line"></i></div>
                             </div>
                         </div>
                     </div>
@@ -131,7 +131,7 @@
                                     <div class="st-value">{{ $concluidos }}</div>
                                     <div class="st-sub">Atendimento finalizado</div>
                                 </div>
-                                <div class="st-icon"><i class="fa fa-check-circle"></i></div>
+                                <div class="st-icon"><i class="ri-checkbox-circle-line"></i></div>
                             </div>
                         </div>
                     </div>
@@ -140,7 +140,7 @@
                 {{-- ═══ Filtros de Busca ═══ --}}
                 <div class="filter-wrap">
                     <div class="d-flex align-items-center justify-content-between">
-                        <h5 class="filter-title mb-0"><i class="fa fa-search"></i> Filtrar Leads</h5>
+                        <h5 class="filter-title mb-0"><i class="ri-search-line"></i> Filtrar Leads</h5>
                     </div>
                     <div class="mt-3">
                         <form method="GET" action="{{ route('solicitacoes-demo.index') }}">
@@ -163,10 +163,10 @@
                                 <div class="col-md-4 col-12">
                                     <div class="d-flex gap-2">
                                         <button class="btn btn-primary flex-grow-1" type="submit" style="border-radius:10px;">
-                                            <i class="fa fa-search"></i> Buscar
+                                            <i class="ri-search-line"></i> Buscar
                                         </button>
                                         <a class="btn btn-light border px-3" href="{{ route('solicitacoes-demo.index') }}" title="Limpar Filtros" style="border-radius:10px;">
-                                            <i class="fa fa-eraser"></i>
+                                            <i class="ri-eraser-line"></i>
                                         </a>
                                     </div>
                                 </div>
@@ -207,11 +207,11 @@
                                     </td>
                                     <td>
                                         @if($item->status == 'novo')
-                                            <span class="pill pill-novo"><i class="fa fa-circle" style="font-size:7px;"></i> Novo</span>
+                                            <span class="pill pill-novo"><i class="ri-record-circle-line" style="font-size:7px;"></i> Novo</span>
                                         @elseif($item->status == 'em_atendimento')
-                                            <span class="pill pill-em"><i class="fa fa-circle" style="font-size:7px;"></i> Em Atendimento</span>
+                                            <span class="pill pill-em"><i class="ri-record-circle-line" style="font-size:7px;"></i> Em Atendimento</span>
                                         @else
-                                            <span class="pill pill-ok"><i class="fa fa-circle" style="font-size:7px;"></i> Concluído</span>
+                                            <span class="pill pill-ok"><i class="ri-record-circle-line" style="font-size:7px;"></i> Concluído</span>
                                         @endif
                                     </td>
                                     <td style="font-size:12px;white-space:nowrap;color:#94a3b8;">
@@ -223,7 +223,7 @@
                                             {{-- WhatsApp --}}
                                             <a href="{{ $item->whatsapp_link }}" target="_blank"
                                                class="act-btn act-whatsapp" title="Falar no WhatsApp">
-                                                <i class="fa fa-whatsapp"></i>
+                                                <i class="ri-whatsapp-line"></i>
                                             </a>
 
                                             {{-- Mudar Status --}}
@@ -241,7 +241,7 @@
                                                   onsubmit="return confirm('Excluir este lead permanentemente?')" class="m-0">
                                                 @csrf @method('DELETE')
                                                 <button type="submit" class="act-btn act-del" title="Excluir Lead">
-                                                    <i class="fa fa-trash"></i>
+                                                    <i class="ri-delete-bin-line"></i>
                                                 </button>
                                             </form>
 
@@ -252,7 +252,7 @@
                                 <tr>
                                     <td colspan="9">
                                         <div class="empty-state">
-                                            <i class="fa fa-inbox"></i>
+                                            <i class="ri-inbox-2-line"></i>
                                             <p>Nenhuma solicitação encontrada.</p>
                                         </div>
                                     </td>
@@ -276,3 +276,4 @@
     </div>
 </div>
 @endsection
+

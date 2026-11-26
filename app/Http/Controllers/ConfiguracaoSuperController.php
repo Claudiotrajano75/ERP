@@ -55,9 +55,12 @@ class ConfiguracaoSuperController extends Controller
                 }
 
                 $file = $request->file('logo');
-                $ext = $file->getClientOriginalExtension();
+                $ext = strtolower($file->getClientOriginalExtension());
                 $fileName = 'logo_' . time() . '.' . $ext;
+                $destPath = public_path('uploads/logo/' . $fileName);
                 $file->move(public_path('uploads/logo'), $fileName);
+
+                $this->recortarMargensLogo($destPath, $ext);
 
                 $item->logo = $fileName;
                 $item->save();
@@ -122,6 +125,7 @@ class ConfiguracaoSuperController extends Controller
         $this->__validate($request);
         $item = ConfiguracaoSuper::first();
         $request->merge([
+            'name' => $request->name ?? '',
             'timeout_nfe' => $request->timeout_nfe ?? 8,
             'timeout_nfce' => $request->timeout_nfe ?? 8,
             'timeout_cte' => $request->timeout_nfe ?? 8,
@@ -145,16 +149,81 @@ class ConfiguracaoSuperController extends Controller
     {
         $rules = [
             'cpf_cnpj' => 'required',
-            'name' => 'required',
             'email' => 'required',
             'telefone' => 'required',
         ];
         $messages = [
             'cpf_cnpj.required' => 'Campo obrigatório',
-            'name.required' => 'Campo obrigatório',
             'email.required' => 'Campo obrigatório',
             'telefone.required' => 'Campo obrigatório'
         ];
         $this->validate($request, $rules, $messages);
+    }
+
+    /**
+     * Remove automaticamente o excesso de margem branca/transparente ao redor da logo.
+     */
+    private function recortarMargensLogo(string $path, string $ext): void
+    {
+        if (!function_exists('imagecreatefrompng') || !file_exists($path)) {
+            return;
+        }
+
+        $img = match ($ext) {
+            'png' => @imagecreatefrompng($path),
+            'jpg', 'jpeg' => @imagecreatefromjpeg($path),
+            'webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($path) : null,
+            default => null,
+        };
+
+        if (!$img) {
+            return;
+        }
+
+        $w = imagesx($img);
+        $h = imagesy($img);
+        $minX = $w;
+        $minY = $h;
+        $maxX = 0;
+        $maxY = 0;
+
+        for ($y = 0; $y < $h; $y++) {
+            for ($x = 0; $x < $w; $x++) {
+                $rgba = imagecolorat($img, $x, $y);
+                $a = ($rgba >> 24) & 0x7F;
+                $r = ($rgba >> 16) & 0xFF;
+                $g = ($rgba >> 8) & 0xFF;
+                $b = $rgba & 0xFF;
+                if ($a < 120 && ($r < 245 || $g < 245 || $b < 245)) {
+                    if ($x < $minX) $minX = $x;
+                    if ($x > $maxX) $maxX = $x;
+                    if ($y < $minY) $minY = $y;
+                    if ($y > $maxY) $maxY = $y;
+                }
+            }
+        }
+
+        if ($maxX > $minX && $maxY > $minY) {
+            $pad = 20;
+            $cropX = max(0, $minX - $pad);
+            $cropY = max(0, $minY - $pad);
+            $cropW = min($w - $cropX, ($maxX - $minX + 1) + $pad * 2);
+            $cropH = min($h - $cropY, ($maxY - $minY + 1) + $pad * 2);
+
+            $cropped = imagecrop($img, ['x' => $cropX, 'y' => $cropY, 'width' => $cropW, 'height' => $cropH]);
+            if ($cropped) {
+                if ($ext === 'png') {
+                    imagesavealpha($cropped, true);
+                    imagepng($cropped, $path, 6);
+                } elseif ($ext === 'webp' && function_exists('imagewebp')) {
+                    imagewebp($cropped, $path, 90);
+                } else {
+                    imagejpeg($cropped, $path, 92);
+                }
+                imagedestroy($cropped);
+            }
+        }
+
+        imagedestroy($img);
     }
 }

@@ -62,7 +62,8 @@ class MDFeService{
 
 		$doc = preg_replace('/[^0-9]/', '', $mdfe->veiculoTracao->proprietario_documento);
 
-		if($cnpjEmitente != $doc){
+		// NT 2026.001: Para Transportador de Carga Própria (tpEmit = 2), não preencher tpTransp
+		if($mdfe->tp_emit != '2' && $cnpjEmitente != $doc){
 			$std->tpTransp = $mdfe->tp_transp; 
 		}
 		// if($emitente->ambiente == 2){
@@ -152,7 +153,7 @@ class MDFeService{
 			$infCIOT = new \stdClass();
 			$infCIOT->CIOT = $c->codigo;
 
-			$doc = preg_replace('/[^0-9]/', '', $c->cnpj_forneccpf_cnpjedor_pagador);
+			$doc = preg_replace('/[^0-9]/', '', $c->cpf_cnpj ?? $c->cnpj_forneccpf_cnpjedor_pagador ?? '');
 
 			if(strlen($doc) == 11) $infCIOT->CPF = $doc;
 			else $infCIOT->CNPJ = $doc;

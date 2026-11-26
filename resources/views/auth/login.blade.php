@@ -619,8 +619,7 @@
                 </h1>
                 
                 <p class="banner-description">
-                    Gerencie vendas, frente de caixa PDV, estoque, financeiro, emissão de NF-e/NFC-e e SPED Fiscal
-                    em uma única plataforma inteligente, integrada e segura.
+                    Centralize suas Vendas, Pré-vendas, PDV, Financeiro, Estoque, Emissão Fiscal (NF-e, NFC-e, NFS-e, CT-e, MDF-e), CRM e Relatórios Gerenciais em Tempo Real, com Agilidade e Controle Total do seu Negócio.
                 </p>
 
                 <div class="feature-grid">

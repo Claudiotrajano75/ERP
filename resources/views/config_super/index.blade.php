@@ -184,8 +184,8 @@
                         </p>
                         <div class="row g-3">
                             <div class="col-md-4 col-12">
-                                <label class="form-label required"><i class="ri-building-line me-1"></i> Razão Social / Nome</label>
-                                {!!Form::text('name', '')->required()->attrs(['class' => 'form-control', 'placeholder' => 'Nome da Software House'])!!}
+                                <label class="form-label"><i class="ri-building-line me-1"></i> Razão Social / Nome</label>
+                                {!!Form::text('name', '')->attrs(['class' => 'form-control', 'placeholder' => 'Nome da Software House (opcional)'])!!}
                             </div>
                             <div class="col-md-2 col-6">
                                 <label class="form-label required"><i class="ri-fingerprint-line me-1"></i> CNPJ</label>

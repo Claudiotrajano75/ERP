@@ -124,23 +124,66 @@
 
         /* Ajuste do tamanho da logo no sidebar esquerdo */
         .leftside-menu .logo {
-            height: 80px !important;
-            line-height: 80px !important;
-            padding: 0 !important;
+            height: 105px !important;
+            line-height: normal !important;
+            padding: 8px 14px !important;
             background: #fff !important;
-            position: relative !important;
+            position: sticky !important;
+            top: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        .leftside-menu .logo.logo-light {
+            display: none !important;
+        }
+        html[data-menu-color=brand] .leftside-menu .logo.logo-light,
+        html[data-menu-color=dark] .leftside-menu .logo.logo-light,
+        html[data-bs-theme=dark] .leftside-menu .logo.logo-light {
+            display: flex !important;
+        }
+        html[data-menu-color=brand] .leftside-menu .logo.logo-dark,
+        html[data-menu-color=dark] .leftside-menu .logo.logo-dark,
+        html[data-bs-theme=dark] .leftside-menu .logo.logo-dark {
+            display: none !important;
+        }
+
+        .leftside-menu .logo span.logo-lg {
+            width: 100% !important;
+            height: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
 
         .leftside-menu .logo img {
             height: auto !important;
-            max-height: 65px !important;
+            max-height: 88px !important;
             width: auto !important;
-            max-width: 90% !important;
+            max-width: 100% !important;
             object-fit: contain !important;
-            position: absolute !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
+            position: static !important;
+            transform: none !important;
+        }
+
+        html[data-sidenav-size=condensed] .leftside-menu .logo,
+        html[data-sidenav-size=sm-hover] .leftside-menu:not(:hover) .logo {
+            padding: 8px 6px !important;
+        }
+        html[data-sidenav-size=condensed] .leftside-menu .logo span.logo-lg,
+        html[data-sidenav-size=sm-hover] .leftside-menu:not(:hover) .logo span.logo-lg {
+            display: none !important;
+        }
+        html[data-sidenav-size=condensed] .leftside-menu .logo span.logo-sm,
+        html[data-sidenav-size=sm-hover] .leftside-menu:not(:hover) .logo span.logo-sm {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        html[data-sidenav-size=condensed] .leftside-menu .logo img,
+        html[data-sidenav-size=sm-hover] .leftside-menu:not(:hover) .logo img {
+            max-height: 40px !important;
         }
 
         /* Ajuste do tamanho da logo no topbar (desktop vs mobile) */
@@ -151,11 +194,11 @@
         }
         @media (max-width: 991.98px) {
             .navbar-custom .logo-topbar {
-                height: 48px !important;
-                line-height: 48px !important;
-                padding: 0 4px !important;
+                height: 54px !important;
+                line-height: normal !important;
+                padding: 0 6px !important;
                 width: auto !important;
-                max-width: 130px !important;
+                max-width: 165px !important;
                 background: transparent !important;
                 position: relative !important;
                 display: inline-flex !important;
@@ -164,7 +207,7 @@
 
             .navbar-custom .logo-topbar img {
                 height: auto !important;
-                max-height: 38px !important;
+                max-height: 46px !important;
                 width: auto !important;
                 max-width: 100% !important;
                 object-fit: contain !important;

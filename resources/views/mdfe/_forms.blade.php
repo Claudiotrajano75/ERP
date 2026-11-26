@@ -617,13 +617,14 @@
 
         <!-- CIOT -->
         <div class="dashboard-card">
-            <div class="dashboard-card-title">CIOT</div>
-            <div class="d-flex flex-column gap-3 mt-3">
-                <a href="#" class="text-orange text-decoration-none fs-13 d-flex align-items-center gap-1 fw-semibold">
+            <div class="dashboard-card-title d-flex align-items-center justify-content-between">
+                <span>CIOT</span>
+                <span class="badge bg-light text-muted fw-normal fs-11" id="badge-ciot-qtd">{{ isset($item) && $item->ciots ? $item->ciots->count() : 0 }}</span>
+            </div>
+            <div id="lista-ciots-card" class="d-flex flex-column gap-2 mt-2"></div>
+            <div class="d-flex flex-column gap-2 mt-3">
+                <a href="javascript:void(0)" onclick="abrirModalAdicionarCiot()" class="text-orange text-decoration-none fs-13 d-flex align-items-center gap-1 fw-semibold">
                     <i class="ri-add-line fw-bold"></i> Adicionar CIOT
-                </a>
-                <a href="#" class="text-orange text-decoration-none fs-13 d-flex align-items-center gap-1 fw-semibold">
-                    <i class="ri-file-list-3-line"></i> Emitir CIOT
                 </a>
             </div>
         </div>
@@ -658,6 +659,35 @@
 {{-- Modal de Edição de Viagem (Carregamento e Percurso) --}}
 @include('modals._editar_viagem')
 
+{{-- Modal de Adicionar CIOT --}}
+<div class="modal fade" id="modal-adicionar-ciot" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 14px;">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold">Adicionar CIOT</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body pt-3">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold fs-13">Código CIOT *</label>
+                    <input type="text" id="inp-modal-ciot-codigo" class="form-control" maxlength="12" placeholder="Somente números (12 dígitos)">
+                    <small class="text-muted">Gerado na IPEF habilitada pela ANTT antes da viagem.</small>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label fw-semibold fs-13">CPF ou CNPJ do Responsável (Contratante) *</label>
+                    <input type="text" id="inp-modal-ciot-doc" class="form-control cpf_cnpj" maxlength="18" placeholder="000.000.000-00 ou 00.000.000/0000-00">
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="salvarCiotModal()">
+                    <i class="ri-check-line me-1"></i> Adicionar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Container de Inputs Ocultos do Formulário -->
 <div id="hidden-form-inputs">
     <input type="hidden" name="valor_carga" id="inp-valor_carga" value="{{ isset($item) && $item->valor_carga ? number_format($item->valor_carga, 2, ',', '.') : '0' }}">
@@ -689,10 +719,78 @@
             @endforeach
         @endif
     </div>
+    <div id="hidden-ciot-container"></div>
 </div>
 
 <script>
 window.mdfeDocumentos = {!! json_encode($docsIniciais ?? []) !!};
+window.mdfeCiots = {!! json_encode(
+    (isset($item) && $item->ciots)
+        ? $item->ciots->map(fn($c) => ['codigo' => $c->codigo, 'cpf_cnpj' => $c->cpf_cnpj])->values()
+        : []
+) !!};
+
+window.renderizarListaCiots = function() {
+    const lista = $('#lista-ciots-card');
+    const hidden = $('#hidden-ciot-container');
+    lista.empty();
+    hidden.empty();
+
+    $('#badge-ciot-qtd').text(window.mdfeCiots.length);
+
+    window.mdfeCiots.forEach((c, idx) => {
+        const codigoEsc = $('<div>').text(c.codigo).html();
+        const docEsc = $('<div>').text(c.cpf_cnpj).html();
+        lista.append(`
+            <div class="d-flex align-items-center justify-content-between bg-light rounded px-2 py-1 fs-12">
+                <div class="text-truncate">
+                    <strong class="text-dark">${codigoEsc}</strong>
+                    <div class="text-muted" style="font-size: 11px;">${docEsc}</div>
+                </div>
+                <button type="button" class="btn btn-sm p-0 text-danger ms-2" onclick="removerCiot(${idx})" title="Remover CIOT">
+                    <i class="ri-close-line fs-16"></i>
+                </button>
+            </div>
+        `);
+        hidden.append(`<input type="hidden" name="codigo_ciot[]" value="${codigoEsc}">`);
+        hidden.append(`<input type="hidden" name="cpf_cnpj[]" value="${docEsc}">`);
+    });
+};
+
+window.abrirModalAdicionarCiot = function() {
+    $('#inp-modal-ciot-codigo').val('');
+    $('#inp-modal-ciot-doc').val('');
+    const modalEl = document.getElementById('modal-adicionar-ciot');
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+};
+
+window.salvarCiotModal = function() {
+    const codigo = ($('#inp-modal-ciot-codigo').val() || '').replace(/\D/g, '');
+    const doc = ($('#inp-modal-ciot-doc').val() || '').trim();
+    const docDigits = doc.replace(/\D/g, '');
+
+    if (!codigo || codigo.length < 12) {
+        alert('Informe o código CIOT válido (12 dígitos numéricos).');
+        return;
+    }
+    if (docDigits.length !== 11 && docDigits.length !== 14) {
+        alert('Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.');
+        return;
+    }
+
+    window.mdfeCiots.push({ codigo: codigo, cpf_cnpj: doc });
+    window.renderizarListaCiots();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('modal-adicionar-ciot')).hide();
+};
+
+window.removerCiot = function(idx) {
+    window.mdfeCiots.splice(idx, 1);
+    window.renderizarListaCiots();
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    window.renderizarListaCiots();
+});
 
 // Funções para Modais de Viagem
 window.abrirModalEditarCarregamento = function() {

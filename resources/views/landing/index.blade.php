@@ -3,7 +3,7 @@
        CONFIGURAÇÕES RÁPIDAS EDITÁVEIS DA LANDING PAGE
        Altere aqui os dados institucionais, links e informações de contato
        ═══════════════════════════════════════════════════════════════════════════ */
-    $brandName     = $config->name ?? 'Code Sistemas ERP';
+    $brandName     = !empty($config->name) ? $config->name : 'Code Sistemas ERP';
     $brandTagline  = 'Gestão Empresarial Inteligente';
     $logoUrl       = $config ? $config->logo_url : '/logo.jpg';
     $contactEmail  = $config->email ?? 'trajano75@hotmail.com';
@@ -223,9 +223,10 @@
         }
 
         .brand img {
-            height: 36px;
+            height: 46px;
+            max-width: 180px;
             width: auto;
-            border-radius: 8px;
+            border-radius: 6px;
             object-fit: contain;
         }
 
@@ -1272,8 +1273,8 @@
     <nav class="navbar" id="navbar">
         <div class="container nav-inner">
             <a href="#inicio" class="brand">
-                <img src="{{ $logoUrl }}" alt="Logo {{ $brandName }}" onerror="this.style.display='none'">
-                <span>{{ $brandName }}</span>
+                <img src="{{ $logoUrl }}" alt="Logo {{ $brandName }}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='inline';">
+                <span @if($config && $config->logo) style="display: none;" @endif>{{ $brandName }}</span>
             </a>
 
             <ul class="nav-links" id="nav-links">
@@ -1313,10 +1314,10 @@
                         <i class="ri-sparkling-line"></i> Plataforma ERP em Nuvem
                     </span>
                     <h1 class="hero-title">
-                        Gerencie toda a sua empresa em um único <span>sistema ERP inteligente</span>.
+                        Gerencie toda a sua empresa em um único <span>Sistema ERP Inteligente</span>
                     </h1>
                     <p class="hero-desc">
-                        Centralize vendas, PDV, financeiro, estoque, emissão fiscal (NF-e, NFC-e, NFS-e), CRM e relatórios gerenciais em tempo real — com agilidade e controle total.
+                        Centralize suas Vendas, Pré-vendas, PDV, Financeiro, Estoque, Emissão Fiscal (NF-e, NFC-e, NFS-e, CT-e, MDF-e), CRM e Relatórios Gerenciais em Tempo Real, com Agilidade e Controle Total do seu Negócio.
                     </p>
 
                     <div class="hero-ctas">
@@ -1455,7 +1456,7 @@
                     <div class="testimonial-author">
                         <div class="avatar-circle">RM</div>
                         <div>
-                            <strong>Ricardo Mendes</strong>
+                            <strong>Junior Tavares</strong>
                             <span>Diretor — Comercial Brasil Ltda</span>
                         </div>
                     </div>
@@ -1483,7 +1484,7 @@
                     <div class="testimonial-author">
                         <div class="avatar-circle" style="background: linear-gradient(135deg, #4d94ff, #1d4ed8);">FA</div>
                         <div>
-                            <strong>Fernando Almeida</strong>
+                            <strong>Kevin Souza</strong>
                             <span>Sócio — Villa Rius Food</span>
                         </div>
                     </div>
@@ -2036,8 +2037,8 @@
             <div class="footer-grid">
                 <div>
                     <a href="#inicio" class="brand" style="margin-bottom: 12px;">
-                        <img src="{{ $logoUrl }}" alt="Logo {{ $brandName }}" onerror="this.style.display='none'">
-                        <span>{{ $brandName }}</span>
+                        <img src="{{ $logoUrl }}" alt="Logo {{ $brandName }}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='inline';">
+                        <span @if($config && $config->logo) style="display: none;" @endif>{{ $brandName }}</span>
                     </a>
                     <p style="font-size: 13.5px; color: var(--skin-muted); max-width: 280px;">
                         {{ $brandTagline }}. Sistema completo em nuvem para emissão fiscal, estoque, vendas e controle financeiro.
